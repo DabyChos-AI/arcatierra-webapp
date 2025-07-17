@@ -67,7 +67,8 @@ const DELIVERY_FREQUENCIES = [
 ]
 
 export default function SuscripcionesPage() {
-  const { data: session } = useSession()
+  const sessionResult = useSession()
+  const { data: session } = sessionResult || { data: null }
   const [selectedPlan, setSelectedPlan] = useState('familiar')
   const [selectedFrequency, setSelectedFrequency] = useState('weekly')
   const [isSubscribing, setIsSubscribing] = useState(false)

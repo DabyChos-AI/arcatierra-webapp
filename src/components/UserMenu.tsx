@@ -59,7 +59,7 @@ export default function UserMenu() {
                 <div>
                   <p className="font-medium text-gray-900">{session.user?.name}</p>
                   <p className="text-sm text-gray-500">{session.user?.email}</p>
-                  {session.user?.role === 'admin' && (
+                  {(session.user as any)?.role === 'admin' && (
                     <span className="inline-block px-2 py-1 text-xs bg-[#33503E] text-white rounded-full mt-1">
                       Administrador
                     </span>
@@ -97,7 +97,7 @@ export default function UserMenu() {
                 <ChefHat className="w-4 h-4" />
                 Mis Catering
               </a>
-              {session.user?.role === 'admin' && (
+              {(session.user as any)?.role === 'admin' && (
                 <a
                   href="/dashboard"
                   className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"

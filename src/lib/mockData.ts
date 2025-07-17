@@ -1,5 +1,4 @@
 // lib/mockData/mockData.ts
-import { Product, Producer, Experience } from '@/lib/supabase/supabase';
 
 // Mock de Productores
 export const mockProducers: Producer[] = [

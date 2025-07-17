@@ -91,7 +91,7 @@ export default function DeliveryMap({ address, postalCode, onValidAddress }: Del
           parseInt(foundPostalCode) >= 1000 && 
           parseInt(foundPostalCode) <= 16999
 
-        const isValidAddress = isInCDMX && isValidPostalCode
+        const isValidAddress = Boolean(isInCDMX && isValidPostalCode)
 
         // Actualizar mapa
         map.setCenter(location)

@@ -8,7 +8,8 @@ import { ShoppingCart, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
 export default function CheckoutPage() {
-  const { data: session, status } = useSession()
+  const sessionResult = useSession()
+  const { data: session, status } = sessionResult || { data: null, status: 'loading' }
   const router = useRouter()
   const [cartItems, setCartItems] = useState([])
 
