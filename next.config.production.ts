@@ -110,7 +110,7 @@ const nextConfig = {
   },
 
   // Configuración de webpack para optimización
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+  webpack: (config: any, { buildId, dev, isServer, defaultLoaders, webpack }: any) => {
     // Optimizaciones para producción
     if (!dev && !isServer) {
       config.optimization.splitChunks.chunks = 'all';
