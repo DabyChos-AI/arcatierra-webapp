@@ -1,0 +1,158 @@
+version: '3.8'
+
+services:
+  # Aplicación Next.js de Arca Tierra
+  arcatierra-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: arcatierra-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_SITE_URL=https://arcatierra.com
+      - DATABASE_URL=postgresql://arcatierra:${POSTGRES_PASSWORD}@arca-postgres:5432/arcatierra_db
+      - NEXT_PUBLIC_GA_ID=${GA_TRACKING_ID}
+    env_file:
+      - .env.production
+    depends_on:
+      - arca-postgres
+      - redis-cache
+    networks:
+      - vps-net
+    volumes:
+      - ./logs:/app/logs
+      - ./uploads:/app/public/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Base de datos PostgreSQL
+  arca-postgres:
+    image: postgres:15-alpine
+    container_name: arca-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: arcatierra_db
+      POSTGRES_USER: arcatierra
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=es_MX.UTF-8 --lc-ctype=es_MX.UTF-8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+      - ./database/backups:/backups
+    networks:
+      - vps-net
+    ports:
+      - "127.0.0.1:5432:5432"  # Solo accesible desde localhost
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arcatierra -d arcatierra_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis para caché y sesiones
+  redis-cache:
+    image: redis:7-alpine
+    container_name: redis-cache
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - vps-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Nginx Reverse Proxy (opcional si prefieres Docker)
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/sites:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/ssl/certs:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - arcatierra-app
+    networks:
+      - vps-net
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Herramientas de monitoreo y administración
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"  # Solo accesible desde localhost
+    environment:
+      ADMINER_DEFAULT_SERVER: arca-postgres
+      ADMINER_DESIGN: pepa-linha
+    networks:
+      - vps-net
+    depends_on:
+      - arca-postgres
+
+  # Servicio de backup automático
+  postgres-backup:
+    image: postgres:15-alpine
+    container_name: postgres-backup
+    restart: "no"
+    environment:
+      POSTGRES_DB: arcatierra_db
+      POSTGRES_USER: arcatierra
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./database/backups:/backups
+      - ./scripts:/scripts:ro
+    networks:
+      - vps-net
+    depends_on:
+      - arca-postgres
+    command: /scripts/backup.sh
+    profiles:
+      - backup
+
+  # Servicio de logs centralizados (opcional)
+  logrotate:
+    image: alpine:latest
+    container_name: logrotate
+    restart: unless-stopped
+    volumes:
+      - ./logs:/logs
+      - ./scripts/logrotate.conf:/etc/logrotate.conf:ro
+    command: sh -c "while true; do logrotate /etc/logrotate.conf; sleep 86400; done"
+    profiles:
+      - logging
+
+networks:
+  vps-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+

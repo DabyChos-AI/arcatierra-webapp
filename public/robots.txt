@@ -1,0 +1,30 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.arcatierra.com/sitemap.xml
+
+# Crawl-delay para bots específicos
+User-agent: Bingbot
+Crawl-delay: 1
+
+User-agent: Slurp
+Crawl-delay: 1
+
+# Bloquear archivos no necesarios para SEO
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/
+Disallow: /dashboard/private/
+Disallow: *.json$
+Disallow: *.xml$
+Disallow: /search?*
+
+# Permitir acceso a recursos importantes
+Allow: /api/sitemap
+Allow: /_next/static/
+Allow: /_next/image/
+
+# Información adicional
+# Host: www.arcatierra.com
+

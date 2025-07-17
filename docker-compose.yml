@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  arcatierra-webapp:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    volumes:
+      # Opcional: montar código para desarrollo
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - arcatierra-net
+
+  # Opcional: Base de datos PostgreSQL para futuro
+  # postgres:
+  #   image: postgres:15-alpine
+  #   environment:
+  #     POSTGRES_DB: arcatierra
+  #     POSTGRES_USER: arcatierra
+  #     POSTGRES_PASSWORD: arcatierra123
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - arcatierra-net
+
+networks:
+  arcatierra-net:
+    driver: bridge
+
+# volumes:
+#   postgres_data:
+

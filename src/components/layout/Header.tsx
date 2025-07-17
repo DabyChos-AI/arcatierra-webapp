@@ -1,0 +1,450 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { signIn, useSession } from 'next-auth/react';
+import { Menu, X, ShoppingCart, User, Phone, Heart } from 'lucide-react';
+import LogoutButton from '../auth/LogoutButton';
+
+interface User {
+  name: string;
+  email: string;
+}
+
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  unit: string;
+}
+
+const Header: React.FC = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { data: session } = useSession();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    if (session?.user) {
+      const userData = {
+        name: session.user.name || 'Usuario',
+        email: session.user.email || ''
+      };
+      setCurrentUser(userData);
+      
+      // Guardar en localStorage para persistencia
+      localStorage.setItem('arcaTierraCurrentUser', JSON.stringify(userData));
+    } else {
+      // Verificar si hay datos en localStorage antes de establecer como null
+      checkAuthStatus();
+    }
+    
+    // Cargar carrito desde localStorage
+    loadCartFromStorage();
+    
+    // Escuchar cambios en localStorage (otras pestañas)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'arcaTierraCurrentUser') {
+        checkAuthStatus();
+      } else if (e.key === 'arcaTierraCart') {
+        loadCartFromStorage();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [session]);
+
+  const checkAuthStatus = () => {
+    const storedUserData = localStorage.getItem('arcaTierraCurrentUser');
+    if (storedUserData) {
+      try {
+        const parsedUserData = JSON.parse(storedUserData);
+        setCurrentUser(parsedUserData);
+      } catch (e) {
+        // Si hay error al parsear, eliminar el dato corrupto
+        localStorage.removeItem('arcaTierraCurrentUser');
+        setCurrentUser(null);
+      }
+    } else {
+      setCurrentUser(null);
+    }
+  };
+
+  const loadCartFromStorage = () => {
+    const storedCart = localStorage.getItem('arcaTierraCart');
+    if (storedCart) {
+      try {
+        const parsedCart = JSON.parse(storedCart);
+        setCartItems(parsedCart);
+        
+        // Calcular total de items
+        const totalItems = parsedCart.reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
+        setCartCount(totalItems);
+      } catch (e) {
+        // Si hay error al parsear, crear un carrito vacío
+        setCartItems([]);
+        setCartCount(0);
+      }
+    } else {
+      setCartItems([]);
+      setCartCount(0);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('arcaTierraCurrentUser');
+    setCurrentUser(null);
+    // Evento personalizado para notificar cambios
+    window.dispatchEvent(new CustomEvent('authStateChanged', { 
+      detail: { isAuthenticated: false } 
+    }));
+    // Redirigir a inicio
+    window.location.href = '/';
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleCartClick = () => {
+    // Disparar evento para abrir el carrito lateral
+    window.dispatchEvent(new CustomEvent('toggleCartSidebar'));
+  };
+
+  return (
+    <header className="main-header bg-white shadow-sm border-b border-gray-100 w-full sticky top-0 z-50" role="banner">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-center w-full">
+          <div className="w-full max-w-6xl relative">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo Container */}
+              <div className="logo-container flex-shrink-0">
+                <Link href="/" aria-label="ArcaTierra - Página de inicio" className="flex items-center">
+                  <Image
+                    src="/logo-arcatierra.png"
+                    alt="ArcaTierra - Productos orgánicos de esta"
+                    width={140}
+                    height={40}
+                    priority
+                    className="h-8 w-auto"
+                  />
+                </Link>
+              </div>
+
+              {/* Desktop Navigation */}
+              <nav className="hidden lg:flex lg:items-center lg:justify-center flex-1 mx-auto" role="navigation" aria-label="Navegación principal">
+                <ul className="flex items-center space-x-6" role="menubar">
+                  {/* Inicio eliminado, ahora solo el logo funciona como enlace a inicio */}
+                  <li role="none">
+                    <Link 
+                      href="/tienda" 
+                      role="menuitem"
+                      className="nav-link text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2"
+                    >
+                      Tienda
+                    </Link>
+                  </li>
+                  <li role="none">
+                    <Link 
+                      href="/experiencias-premium" 
+                      role="menuitem"
+                      className="nav-link text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2"
+                    >
+                      Experiencias
+                    </Link>
+                  </li>
+                  <li role="none">
+                    {/* Experiencias Premium renombrado a Experiencias arriba */}
+                  </li>
+                  <li role="none">
+                    <Link 
+                      href="/catering2" 
+                      role="menuitem"
+                      className="nav-link text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2"
+                    >
+                      Catering
+                    </Link>
+                  </li>
+                  <li role="none" className="relative group">
+                    <Link 
+                      href="/baldio" 
+                      role="menuitem"
+                      className="nav-link text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2 flex items-center"
+                    >
+                      Baldío Restaurante
+                      <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </Link>
+                    <div className="absolute left-0 z-10 mt-1 w-48 origin-top-left rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden group-hover:block">
+                      <Link 
+                        href="/baldio/menu" 
+                        className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-gray-100"
+                      >
+                        Menú
+                      </Link>
+                      <Link 
+                        href="/baldio/equipo" 
+                        className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-gray-100"
+                      >
+                        Nuestro Equipo
+                      </Link>
+                      <Link 
+                        href="/baldio/sostenibilidad" 
+                        className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-gray-100"
+                      >
+                        Sostenibilidad
+                      </Link>
+                      <Link 
+                        href="/baldio/chinampas" 
+                        className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-gray-100"
+                      >
+                        Chinampas
+                      </Link>
+                      <Link 
+                        href="/baldio/reservas" 
+                        className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-gray-100"
+                      >
+                        Reservaciones
+                      </Link>
+                    </div>
+                  </li>
+                  <li role="none">
+                    <Link 
+                      href="/nosotros" 
+                      role="menuitem"
+                      className="nav-link text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2"
+                    >
+                      Nosotros
+                    </Link>
+                  </li>
+                  <li role="none">
+                    <Link 
+                      href="/contacto" 
+                      role="menuitem"
+                      className="nav-link text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2"
+                    >
+                      Contacto
+                    </Link>
+                  </li>
+                  <li role="none">
+                    <Link 
+                      href="/entregas" 
+                      role="menuitem"
+                      className="nav-link text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2"
+                    >
+                      Entregas
+                    </Link>
+                  </li>
+                </ul>
+              </nav>
+
+              {/* Desktop User/Cart Actions */}
+              <div className="hidden lg:flex lg:items-center">
+                {/* Contact Button */}
+                <a href="tel:+527225471091" aria-label="Llámanos" className="group p-2 relative text-verde-tipografia hover:text-terracota focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-terracota">
+                  <Phone className="h-5 w-5" />
+                  <span className="sr-only">Contacto telefónico</span>
+                  <span className="absolute bottom-0 right-0 transform translate-x-1 translate-y-1 h-2 w-2 rounded-full bg-terracota"></span>
+                </a>
+
+                {/* Cart Button */}
+                <button 
+                  onClick={handleCartClick}
+                  className="relative group p-2 text-verde-tipografia hover:text-terracota focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-terracota" 
+                  aria-label="Carrito de compras"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  <span className="sr-only">Carrito de compras</span>
+                  {cartCount > 0 && (
+                    <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 flex items-center justify-center h-4 w-4 rounded-full bg-terracota text-white text-xs">
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* User Button or Login */}
+                {currentUser ? (
+                  <div className="relative">
+                    <button className="flex items-center space-x-1 ml-4 text-verde-tipografia hover:text-terracota group p-2">
+                      <span className="text-sm font-medium">
+                        {currentUser.name}
+                      </span>
+                      <span className="h-6 w-6 rounded-full bg-verde-oscuro text-white flex items-center justify-center text-xs">
+                        {getInitials(currentUser.name)}
+                      </span>
+                    </button>
+                    <div className="absolute right-0 z-10 mt-1 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden group-hover:block">
+                      <Link href="/perfil" className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-gray-100">Tu perfil</Link>
+                      <Link href="/pedidos" className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-gray-100">Tus pedidos</Link>
+                      <LogoutButton />
+                      {/* Nota: El cierre de sesión ahora se maneja internamente en LogoutButton */}
+                    </div>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => signIn()}
+                    className="ml-4 px-3 py-1.5 rounded text-sm font-medium text-white bg-terracota hover:bg-terracota-oscuro focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-terracota"
+                  >
+                    Iniciar Sesión
+                  </button>
+                )}
+              </div>
+
+              {/* Mobile menu button */}
+              <div className="lg:hidden flex items-center">
+                {/* Cart Icon for Mobile */}
+                <button 
+                  onClick={handleCartClick}
+                  className="relative p-2 mr-2 text-verde-tipografia focus:outline-none focus:ring-2 focus:ring-inset focus:ring-terracota" 
+                  aria-label="Carrito de compras"
+                >
+                  <ShoppingCart className="h-6 w-6" />
+                  {cartCount > 0 && (
+                    <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 flex items-center justify-center h-4 w-4 rounded-full bg-terracota text-white text-xs">
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Hamburger Menu Button */}
+                <button
+                  type="button"
+                  onClick={toggleMenu}
+                  className="p-2 rounded-md text-verde-tipografia focus:outline-none focus:ring-2 focus:ring-inset focus:ring-terracota"
+                  aria-controls="mobile-menu"
+                  aria-expanded={isMenuOpen}
+                >
+                  <span className="sr-only">Abrir menú principal</span>
+                  {isMenuOpen ? (
+                    <X className="h-6 w-6" aria-hidden="true" />
+                  ) : (
+                    <Menu className="h-6 w-6" aria-hidden="true" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        <div
+          className={`lg:hidden ${isMenuOpen ? 'block' : 'hidden'}`}
+          id="mobile-menu"
+        >
+          <div className="pt-2 pb-4 space-y-1">
+            <Link
+              href="/"
+              className="block pl-3 pr-4 py-2 text-base font-medium text-verde-tipografia hover:bg-gray-50"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Inicio
+            </Link>
+            <Link
+              href="/tienda"
+              className="block pl-3 pr-4 py-2 text-base font-medium text-verde-tipografia hover:bg-gray-50"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Tienda
+            </Link>
+            <Link
+              href="/experiencias-premium"
+              className="block pl-3 pr-4 py-2 text-base font-medium text-verde-tipografia hover:bg-gray-50"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Experiencias
+            </Link>
+            <Link
+              href="/catering2"
+              className="block pl-3 pr-4 py-2 text-base font-medium text-verde-tipografia hover:bg-gray-50"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Catering
+            </Link>
+            <Link
+              href="/baldio"
+              className="block pl-3 pr-4 py-2 text-base font-medium text-verde-tipografia hover:bg-gray-50"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Baldío Restaurante
+            </Link>
+            <Link
+              href="/nosotros"
+              className="block pl-3 pr-4 py-2 text-base font-medium text-verde-tipografia hover:bg-gray-50"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Nosotros
+            </Link>
+            <Link
+              href="/contacto"
+              className="block pl-3 pr-4 py-2 text-base font-medium text-verde-tipografia hover:bg-gray-50"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Contacto
+            </Link>
+            <Link
+              href="/entregas"
+              className="block pl-3 pr-4 py-2 text-base font-medium text-verde-tipografia hover:bg-gray-50"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Entregas
+            </Link>
+
+            <div className="pt-4 pb-3 border-t border-gray-200">
+              <div className="flex items-center px-4">
+                {currentUser ? (
+                  <>
+                    <div className="flex-shrink-0">
+                      <div className="h-10 w-10 rounded-full bg-verde-oscuro text-white flex items-center justify-center">
+                        {getInitials(currentUser.name)}
+                      </div>
+                    </div>
+                    <div className="ml-3">
+                      <div className="text-base font-medium text-verde-tipografia">{currentUser.name}</div>
+                      <div className="text-sm font-medium text-gray-500">{currentUser.email}</div>
+                    </div>
+                    <button 
+                      className="ml-auto flex-shrink-0 p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-terracota"
+                      onClick={handleLogout}
+                    >
+                      <span className="sr-only">Cerrar sesión</span>
+                      <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="block rounded-lg px-3 py-2.5 text-base font-medium text-white bg-terracota hover:bg-terracota-oscuro text-center"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Iniciar Sesión
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header;

@@ -1,0 +1,488 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { signIn, useSession } from 'next-auth/react';
+import { Menu, X, ShoppingCart, User, Phone, Heart } from 'lucide-react';
+import LogoutButton from '../auth/LogoutButton';
+
+interface User {
+  name: string;
+  email: string;
+}
+
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  unit: string;
+}
+
+const Header: React.FC = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { data: session } = useSession();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    if (session?.user) {
+      const userData = {
+        name: session.user.name || 'Usuario',
+        email: session.user.email || ''
+      };
+      setCurrentUser(userData);
+      
+      // Guardar en localStorage para persistencia
+      localStorage.setItem('arcaTierraCurrentUser', JSON.stringify(userData));
+    } else {
+      // Verificar si hay datos en localStorage antes de establecer como null
+      checkAuthStatus();
+    }
+    
+    // Cargar carrito desde localStorage
+    loadCartFromStorage();
+    
+    // Escuchar cambios en localStorage (otras pestañas)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'arcaTierraCurrentUser') {
+        checkAuthStatus();
+      }
+      if (e.key === 'arcaTierraCart') {
+        loadCartFromStorage();
+      }
+    };
+    
+    // Escuchar eventos personalizados del carrito
+    const handleCartUpdate = () => {
+      loadCartFromStorage();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
+  }, [session]); // Añadir session como dependencia para que se actualice cuando cambie
+
+  const checkAuthStatus = () => {
+    try {
+      const userData = localStorage.getItem('arcaTierraCurrentUser');
+      setCurrentUser(userData ? JSON.parse(userData) : null);
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+      setCurrentUser(null);
+    }
+  };
+
+  const loadCartFromStorage = () => {
+    try {
+      const cartData = localStorage.getItem('arcaTierraCart');
+      const items = cartData ? JSON.parse(cartData) : [];
+      setCartItems(items);
+      
+      // Calcular total de items
+      const totalItems = items.reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
+      setCartCount(totalItems);
+    } catch (error) {
+      console.error('Error loading cart:', error);
+      setCartItems([]);
+      setCartCount(0);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('arcaTierraCurrentUser');
+    setCurrentUser(null);
+    // Evento personalizado para notificar cambios
+    window.dispatchEvent(new CustomEvent('authStateChanged', { 
+      detail: { isAuthenticated: false } 
+    }));
+    // Redirigir a inicio
+    window.location.href = '/';
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleCartClick = () => {
+    // Disparar evento para abrir el carrito lateral
+    window.dispatchEvent(new CustomEvent('toggleCartSidebar'));
+  };
+
+  return (
+    <header className="main-header bg-white shadow-sm border-b border-gray-100 w-full sticky top-0 z-50" role="banner">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-center w-full">
+          <div className="w-full max-w-6xl relative">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo Container */}
+              <div className="logo-container flex-shrink-0">
+                <Link href="/" aria-label="ArcaTierra - Página de inicio" className="flex items-center">
+                  <Image
+                    src="/logo-arcatierra.png"
+                    alt="ArcaTierra - Productos orgánicos de esta"
+                    width={140}
+                    height={40}
+                    priority
+                    className="h-8 w-auto"
+                  />
+                </Link>
+              </div>
+
+              {/* Desktop Navigation */}
+              <nav className="hidden lg:flex lg:items-center lg:justify-center flex-1 mx-auto" role="navigation" aria-label="Navegación principal">
+                <ul className="flex items-center space-x-6" role="menubar">
+            {/* Inicio eliminado, ahora solo el logo funciona como enlace a inicio */}
+            <li role="none">
+              <Link 
+                href="/tienda" 
+                role="menuitem"
+                className="nav-link text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2"
+              >
+                Tienda
+              </Link>
+            </li>
+            <li role="none">
+              <Link 
+                href="/experiencias-premium" 
+                role="menuitem"
+                className="nav-link text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2"
+              >
+                Experiencias
+              </Link>
+            </li>
+            <li role="none">
+              {/* Experiencias Premium renombrado a Experiencias arriba */}
+            </li>
+            <li role="none">
+              <Link 
+                href="/catering2" 
+                role="menuitem"
+                className="nav-link text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2"
+              >
+                Catering
+              </Link>
+            </li>
+            <li role="none">
+              <Link 
+                href="/baldio" 
+                role="menuitem"
+                className="nav-link text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2"
+              >
+                Baldío Restaurante
+              </Link>
+            </li>
+            <li role="none">
+              <Link 
+                href="/nosotros" 
+                role="menuitem"
+                className="nav-link text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2"
+              >
+                Nosotros
+              </Link>
+            </li>
+            <li role="none">
+              <Link 
+                href="/contacto" 
+                role="menuitem"
+                className="nav-link text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2"
+              >
+                Contacto
+              </Link>
+            </li>
+            <li role="none">
+              <Link 
+                href="/prensa" 
+                role="menuitem"
+                className="nav-link text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2"
+              >
+                Prensa
+              </Link>
+            </li>
+            <li role="none">
+              <Link 
+                href="/suscripciones" 
+                role="menuitem"
+                className="nav-link text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2"
+              >
+                Suscripciones
+              </Link>
+            </li>
+          </ul>
+
+          {/* User Section - Desktop */}
+          <div className="hidden lg:flex lg:items-center lg:space-x-3" aria-live="polite">
+            {/* Carrito Principal */}
+            <button 
+              onClick={handleCartClick}
+              className="relative p-2 text-verde-tipografia hover:text-terracota transition-colors rounded-lg hover:bg-gray-50"
+              aria-label={`Ver carrito de compras (${cartCount} productos)`}
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-terracota text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
+            </button>
+
+            {/* Favoritos */}
+            <Link 
+              href="/favoritos" 
+              className="p-2 text-verde-tipografia hover:text-terracota transition-colors rounded-lg hover:bg-gray-50"
+              aria-label="Ver productos favoritos"
+            >
+              <Heart className="h-5 w-5" />
+            </Link>
+
+            {/* Teléfono */}
+            <Link 
+              href="tel:+525512345678" 
+              className="p-2 text-verde-tipografia hover:text-terracota transition-colors rounded-lg hover:bg-gray-50"
+              aria-label="Llamar a ArcaTierra"
+            >
+              <Phone className="h-5 w-5" />
+            </Link>
+
+            {/* Usuario */}
+            {currentUser ? (
+              <div className="relative group">
+                <button 
+                  className="flex items-center justify-center w-8 h-8 bg-terracota text-white rounded-full font-semibold text-sm hover:bg-terracota-oscuro transition-colors"
+                  aria-label="Menú de usuario"
+                  aria-expanded="false"
+                >
+                  {getInitials(currentUser.name)}
+                </button>
+                
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <Link 
+                    href="/dashboard" 
+                    className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-neutro-crema"
+                  >
+                    Mi Cuenta
+                  </Link>
+                  <Link 
+                    href="/ordenes" 
+                    className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-neutro-crema"
+                  >
+                    Mis Órdenes
+                  </Link>
+                  <Link 
+                    href="/suscripciones" 
+                    className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-neutro-crema"
+                  >
+                    Suscripciones
+                  </Link>
+                  <hr className="my-1" />
+                  <LogoutButton variant="minimal" />
+                </div>
+              </div>
+            ) : (
+              <button 
+                onClick={() => signIn('google', { callbackUrl: '/dashboard', redirect: true })}
+                className="btn-primary text-sm font-medium px-3 py-1.5 rounded-lg bg-terracota text-white hover:bg-terracota-oscuro transition-colors"
+              >
+                Iniciar Sesión
+              </button>
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            className="lg:hidden p-2 text-verde-tipografia hover:text-terracota transition-colors rounded-lg hover:bg-gray-50"
+            onClick={toggleMenu}
+            aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú de navegación"}
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-nav"
+          >
+            {isMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+          </button>
+        </div>
+                </ul>
+              </nav>
+
+      {/* Mobile Navigation */}
+      <div 
+        id="mobile-nav"
+        className={`lg:hidden ${isMenuOpen ? 'block' : 'hidden'}`}
+        role="dialog"
+        aria-modal="true"
+      >
+        <div className="fixed inset-0 z-50">
+          <div className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+            <div className="flex items-center justify-between">
+              <Link href="/" className="flex items-center" onClick={() => setIsMenuOpen(false)}>
+                <Image
+                  src="/logo-arcatierra.png"
+                  alt="ArcaTierra"
+                  width={120}
+                  height={36}
+                  className="h-8 w-auto"
+                />
+              </Link>
+              <button
+                type="button"
+                className="p-2 text-verde-tipografia rounded-lg hover:bg-gray-50"
+                onClick={() => setIsMenuOpen(false)}
+                aria-label="Cerrar menú"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="mt-6 flow-root">
+              <div className="-my-6 divide-y divide-gray-500/10">
+                <div className="space-y-2 py-6">
+                  {/* Inicio eliminado, ahora solo el logo funciona como enlace a inicio */}
+                  <Link
+                    href="/tienda"
+                    className="block rounded-lg px-3 py-2 text-base font-medium text-verde-tipografia hover:bg-neutro-crema"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Tienda
+                  </Link>
+                  <Link
+                    href="/experiencias-premium"
+                    className="block rounded-lg px-3 py-2 text-base font-medium text-verde-tipografia hover:bg-neutro-crema"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Experiencias
+                  </Link>
+                  {/* Experiencias Premium renombrado a Experiencias arriba */}
+                  <Link
+                    href="/catering2"
+                    className="block rounded-lg px-3 py-2 text-base font-medium text-verde-tipografia hover:bg-neutro-crema"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Catering
+                  </Link>
+                  <Link
+                    href="/nosotros"
+                    className="block rounded-lg px-3 py-2 text-base font-medium text-verde-tipografia hover:bg-neutro-crema"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Nosotros
+                  </Link>
+                  <Link
+                    href="/contacto"
+                    className="block rounded-lg px-3 py-2 text-base font-medium text-verde-tipografia hover:bg-neutro-crema"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Contacto
+                  </Link>
+                  <Link
+                    href="/prensa"
+                    className="block rounded-lg px-3 py-2 text-base font-medium text-verde-tipografia hover:bg-neutro-crema"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Prensa
+                  </Link>
+                  <Link
+                    href="/suscripciones"
+                    className="block rounded-lg px-3 py-2 text-base font-medium text-verde-tipografia hover:bg-neutro-crema"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Suscripciones
+                  </Link>
+                </div>
+                
+                <div className="py-6">
+                  {/* Carrito móvil */}
+                  <button
+                    onClick={() => {
+                      handleCartClick();
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex items-center w-full rounded-lg px-3 py-2 text-base font-medium text-verde-tipografia hover:bg-neutro-crema mb-2"
+                  >
+                    <ShoppingCart className="h-5 w-5 mr-3" />
+                    Carrito ({cartCount})
+                  </button>
+
+                  {/* Favoritos móvil */}
+                  <Link
+                    href="/favoritos"
+                    className="flex items-center w-full rounded-lg px-3 py-2 text-base font-medium text-verde-tipografia hover:bg-neutro-crema mb-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Heart className="h-5 w-5 mr-3" />
+                    Mis Favoritos
+                  </Link>
+
+                  {currentUser ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center px-3 py-2">
+                        <div className="flex items-center justify-center w-8 h-8 bg-terracota text-white rounded-full font-semibold text-sm mr-3">
+                          {getInitials(currentUser.name)}
+                        </div>
+                        <span className="text-base font-medium text-verde-tipografia">
+                          {currentUser.name}
+                        </span>
+                      </div>
+                      <Link
+                        href="/dashboard"
+                        className="block rounded-lg px-3 py-2 text-base font-medium text-verde-tipografia hover:bg-neutro-crema"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Mi Cuenta
+                      </Link>
+                      <Link
+                        href="/ordenes"
+                        className="block rounded-lg px-3 py-2 text-base font-medium text-verde-tipografia hover:bg-neutro-crema"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Mis Órdenes
+                      </Link>
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setIsMenuOpen(false);
+                        }}
+                        className="block w-full text-left rounded-lg px-3 py-2 text-base font-medium text-verde-tipografia hover:bg-neutro-crema"
+                      >
+                        Cerrar Sesión
+                      </button>
+                    </div>
+                  ) : (
+                    <Link
+                      href="/login"
+                      className="block rounded-lg px-3 py-2.5 text-base font-medium text-white bg-terracota hover:bg-terracota-oscuro text-center"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Iniciar Sesión
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
+

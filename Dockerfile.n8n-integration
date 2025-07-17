@@ -1,0 +1,98 @@
+# Dockerfile optimizado para integración con n8n Gateway
+# Basado en la arquitectura de microservicios del usuario
+# Multi-stage build para optimización de tamaño
+
+# Etapa 1: Dependencias
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+# Instalar dependencias del sistema
+RUN apk add --no-cache libc6-compat curl
+
+# Copiar archivos de dependencias
+COPY package.json package-lock.json ./
+
+# Instalar dependencias con optimizaciones
+RUN npm ci --only=production --ignore-scripts && \
+    npm cache clean --force
+
+# Etapa 2: Builder
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# Copiar dependencias de la etapa anterior
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copiar código fuente
+COPY . .
+
+# Variables de build para integración n8n
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+# Configuración específica para n8n integration
+ENV NEXT_PUBLIC_API_URL=https://arcatierra.dabychos.com/api
+ENV NEXT_PUBLIC_N8N_WEBHOOK_URL=https://arcatierra.dabychos.com/webhook
+
+# Build optimizado
+RUN npm run build
+
+# Etapa 3: Runner (imagen final)
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+# Configuración de seguridad
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Instalar dependencias de runtime
+RUN apk add --no-cache \
+    curl \
+    dumb-init \
+    && rm -rf /var/cache/apk/*
+
+# Copiar archivos necesarios
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./package.json
+
+# Copiar build de Next.js con permisos correctos
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Crear directorios para logs y uploads
+RUN mkdir -p /app/logs /app/uploads && \
+    chown -R nextjs:nodejs /app/logs /app/uploads
+
+# Variables de entorno para producción
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Configuración específica para n8n integration
+ENV N8N_INTEGRATION=true
+ENV API_GATEWAY=n8n
+ENV INTERNAL_NETWORK=vps-net
+
+# Exponer puerto
+EXPOSE 3000
+
+# Cambiar a usuario no-root
+USER nextjs
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Comando de inicio con dumb-init para manejo de señales
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "server.js"]
+
+# Labels para metadatos
+LABEL maintainer="Arca Tierra <info@arcatierra.com>"
+LABEL version="1.0.0"
+LABEL description="Arca Tierra Web Application - n8n Gateway Integration"
+LABEL org.opencontainers.image.source="https://github.com/DabyChos-AI/documentacion-webapp-Arcatierra"
+LABEL org.opencontainers.image.title="Arca Tierra WebApp"
+LABEL org.opencontainers.image.description="Aplicación web de Arca Tierra integrada con n8n como API Gateway"
+

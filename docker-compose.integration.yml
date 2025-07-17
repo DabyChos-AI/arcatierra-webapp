@@ -1,0 +1,130 @@
+version: '3.8'
+
+services:
+  # Aplicación Next.js de Arca Tierra - Integrada con infraestructura existente
+  arcatierra-webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: arcatierra-webapp
+    restart: unless-stopped
+    environment:
+      # Configuración de producción
+      - NODE_ENV=production
+      - NEXT_PUBLIC_SITE_URL=https://arcatierra.dabychos.com
+      - NEXT_PUBLIC_API_URL=https://arcatierra.dabychos.com/api
+      
+      # Base de datos existente (arca-postgres)
+      - DATABASE_URL=postgresql://arca_user:HD8,UO0j\H-+ZHH05R&9@arca-postgres:5432/arca_tierra_db
+      - POSTGRES_HOST=arca-postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=arca_tierra_db
+      - POSTGRES_USER=arca_user
+      - POSTGRES_PASSWORD=HD8,UO0j\H-+ZHH05R&9
+      
+      # Integración con n8n (gateway)
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook
+      - N8N_INTERNAL_URL=http://n8n:5678
+      
+      # Configuración de embeddings (mxbai ya configurado)
+      - EMBEDDINGS_ENABLED=true
+      - MXBAI_ENDPOINT=http://mxbai-embed-large:8080
+      
+      # Configuración de dominio
+      - DOMAIN_NAME=arcatierra.dabychos.com
+      
+      # Configuración de seguridad
+      - NEXTAUTH_URL=https://arcatierra.dabychos.com
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-generate_random_secret_32_chars}
+      - JWT_SECRET=${JWT_SECRET:-generate_random_jwt_secret_32_chars}
+      
+      # Analytics y monitoreo
+      - NEXT_PUBLIC_GA_ID=${GA_TRACKING_ID:-}
+      
+      # Configuración de archivos
+      - UPLOAD_DIR=/app/public/uploads
+      - MAX_FILE_SIZE=10485760
+      
+    labels:
+      # Configuración de Traefik para integración con reverse proxy existente
+      - "traefik.enable=true"
+      - "traefik.http.routers.arcatierra.rule=Host(`arcatierra.dabychos.com`)"
+      - "traefik.http.routers.arcatierra.entrypoints=websecure"
+      - "traefik.http.routers.arcatierra.tls.certresolver=letsencrypt"
+      - "traefik.http.services.arcatierra.loadbalancer.server.port=3000"
+      - "traefik.docker.network=vps-net"
+      
+      # Headers de seguridad
+      - "traefik.http.middlewares.arcatierra-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.arcatierra-headers.headers.customrequestheaders.X-Forwarded-For="
+      - "traefik.http.routers.arcatierra.middlewares=arcatierra-headers"
+      
+    networks:
+      - vps-net
+    volumes:
+      - ./uploads:/app/public/uploads
+      - ./logs:/app/logs
+    depends_on:
+      - arca-postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Servicio de API para webhooks y comunicación con n8n
+  arcatierra-api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: arcatierra-api
+    restart: unless-stopped
+    environment:
+      # Configuración de base de datos
+      - DATABASE_URL=postgresql://arca_user:HD8,UO0j\H-+ZHH05R&9@arca-postgres:5432/arca_tierra_db
+      
+      # Configuración de n8n
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook
+      - N8N_API_URL=http://n8n:5678/api/v1
+      
+      # Configuración de embeddings
+      - MXBAI_ENDPOINT=http://mxbai-embed-large:8080
+      - PGVECTOR_ENABLED=true
+      
+      # CORS para comunicación con frontend
+      - CORS_ORIGIN=https://arcatierra.dabychos.com
+      
+    labels:
+      # API endpoints a través de Traefik
+      - "traefik.enable=true"
+      - "traefik.http.routers.arcatierra-api.rule=Host(`arcatierra.dabychos.com`) && PathPrefix(`/api/`)"
+      - "traefik.http.routers.arcatierra-api.entrypoints=websecure"
+      - "traefik.http.routers.arcatierra-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.arcatierra-api.loadbalancer.server.port=8000"
+      - "traefik.docker.network=vps-net"
+      
+    networks:
+      - vps-net
+    depends_on:
+      - arca-postgres
+    volumes:
+      - ./api/logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# Usar la red existente vps-net
+networks:
+  vps-net:
+    external: true
+
+# Volúmenes para persistencia
+volumes:
+  uploads:
+    driver: local
+  logs:
+    driver: local
+

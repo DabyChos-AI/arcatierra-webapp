@@ -1,0 +1,74 @@
+{
+  "name": "Arca Tierra - Productos Orgánicos y Experiencias Sustentables",
+  "short_name": "Arca Tierra",
+  "description": "Red local de agricultura regenerativa y comercio justo de alimentos mexicanos naturales. Productos orgánicos, experiencias en chinampas y catering sustentable.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E3DBCB",
+  "theme_color": "#B15543",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "es-MX",
+  "categories": ["food", "shopping", "lifestyle", "education"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-arcatierra.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tienda",
+      "short_name": "Tienda",
+      "description": "Comprar productos orgánicos",
+      "url": "/tienda",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Experiencias",
+      "short_name": "Experiencias",
+      "description": "Reservar experiencias en chinampas",
+      "url": "/experiencias",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Catering",
+      "short_name": "Catering",
+      "description": "Solicitar servicio de catering",
+      "url": "/catering",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
+

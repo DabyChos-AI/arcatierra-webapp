@@ -1,0 +1,287 @@
+'use client'
+
+import { Calendar, ExternalLink, Share2, Star } from 'lucide-react'
+import Image from 'next/image'
+
+export default function ArticleCard({ article }) {
+  const formatDate = (dateString) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
+
+  const getBadgeClass = (category) => {
+    switch (category) {
+      case 'nacional':
+        return 'badge badge-nacional'
+      case 'internacional':
+        return 'badge badge-internacional'
+      default:
+        return 'badge'
+    }
+  }
+
+  const getTypeBadgeClass = (type) => {
+    switch (type) {
+      case 'video':
+        return 'badge badge-video'
+      case 'podcast':
+        return 'badge badge-podcast'
+      default:
+        return 'badge badge-articulo'
+    }
+  }
+
+  const getTypeLabel = (type) => {
+    switch (type) {
+      case 'video':
+        return 'Video'
+      case 'podcast':
+        return 'Podcast'
+      default:
+        return 'Artículo'
+    }
+  }
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: article.title,
+          text: article.description,
+          url: article.url,
+        })
+      } catch (err) {
+        console.log('Error sharing:', err)
+      }
+    } else {
+      // Fallback: copiar al portapapeles
+      navigator.clipboard.writeText(article.url)
+      // Aquí podrías mostrar un toast de confirmación
+    }
+  }
+
+  return (
+    <article className="bg-white rounded-lg card-shadow overflow-hidden group hover:scale-[1.02] transition-all duration-300">
+      {/* Contenido del artículo */}
+      <div className="p-6">
+        {/* Badges */}
+        <div className="flex flex-wrap gap-2 mb-3">
+          <span className={getTypeBadgeClass(article.type)}>
+            {getTypeLabel(article.type)}
+          </span>
+          <span className={getBadgeClass(article.category)}>
+            {article.category.charAt(0).toUpperCase() + article.category.slice(1)}
+          </span>
+          
+          {/* Etiqueta destacado */}
+          {article.featured && (
+            <div className="flex items-center gap-1 bg-amber-500 text-white text-xs font-medium py-1 px-2 rounded-md shadow-md">
+              <Star size={12} strokeWidth={2} />
+              <span>Destacado</span>
+            </div>
+          )}
+        </div>
+        
+        {/* Fecha */}
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+          <Calendar className="h-4 w-4" />
+          {formatDate(article.date)}
+        </div>
+        
+        {/* Título */}
+        <h3 className="text-lg font-bold text-principal mb-3 group-hover:text-terracota transition-colors line-clamp-2">
+          {article.title}
+        </h3>
+        
+        {/* Descripción */}
+        <p className="text-secundario text-sm mb-4 line-clamp-3">
+          {article.description}
+        </p>
+
+        {/* Logo grande de la publicación con efecto hover */}
+        <div className="mb-4 relative group">
+          {article.publicationLogo ? (
+            <div className="w-full h-16 md:h-20 overflow-hidden bg-white flex items-center justify-start border border-gray-200 rounded-sm p-2 relative">
+              <Image 
+                src={article.publicationLogo} 
+                alt={article.publication}
+                width={120}
+                height={60}
+                className="object-contain group-hover:scale-95 transition-transform duration-300"
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-200 to-transparent h-0 group-hover:h-8 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center">
+                <span className="text-black text-xs font-medium pb-1">{article.publication}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="w-full h-16 md:h-20 bg-terracota bg-opacity-20 flex items-center justify-center relative">
+              <span className="text-terracota text-2xl font-bold z-10 group-hover:scale-95 transition-transform duration-300">
+                {article.publication.charAt(0)}
+              </span>
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-200 to-transparent h-0 group-hover:h-8 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center">
+                <span className="text-black text-xs font-medium pb-1">{article.publication}</span>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Área inferior con leer artículo y compartir */}
+        <div className="flex flex-col space-y-3">
+          
+          {/* Botones de acción */}
+          <div className="flex items-center justify-between">
+            <a
+              href={article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-terracota text-sm font-medium hover:underline"
+            >
+              Leer artículo <ExternalLink className="h-4 w-4" />
+            </a>
+            
+            <button
+              onClick={handleShare}
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="Compartir"
+            >
+              <Share2 className="h-4 w-4 text-gray-500" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+// Componente para artículos destacados con diseño especial
+
+// Componente para artículos destacados con diseño especial
+export function FeaturedArticleCard({ article }) {
+  const formatDate = (dateString) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
+  
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: article.title,
+          text: article.description,
+          url: article.url,
+        })
+      } catch (err) {
+        console.log('Error sharing:', err)
+      }
+    } else {
+      // Fallback: copiar al portapapeles
+      navigator.clipboard.writeText(article.url)
+      // Aquí podrías mostrar un toast de confirmación
+    }
+  }
+
+  return (
+    <article className="bg-gradient-to-br from-terracota to-terracota-dark text-white rounded-lg card-shadow overflow-hidden group hover:scale-[1.02] transition-all duration-300">
+      {/* Imagen del artículo con overlay */}
+      <div className="relative h-56 overflow-hidden">
+        <Image
+          src={article.image || '/chinampas-default.jpg'}
+          alt={`Imagen del artículo: ${article.title}`}
+          fill
+          className="object-cover opacity-40 group-hover:scale-105 transition-transform duration-300"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
+        
+        {/* Badge destacado */}
+        <div className="absolute top-4 left-4">
+          <div className="badge badge-destacado bg-white text-terracota flex items-center gap-1">
+            <Star className="h-3 w-3" />
+            Destacado
+          </div>
+        </div>
+        
+        {/* Fecha */}
+        <div className="absolute bottom-4 right-4">
+          <div className="text-sm bg-black bg-opacity-40 px-3 py-1 rounded-full">
+            {formatDate(article.date)}
+          </div>
+        </div>
+      </div>
+
+      {/* Contenido del artículo */}
+      <div className="p-6">
+        <h3 className="text-xl font-bold mb-4 group-hover:underline">
+          {article.title}
+        </h3>
+        
+        <p className="text-white text-opacity-80 text-sm mb-6 line-clamp-3">
+          {article.description}
+        </p>
+
+        {/* Logo grande de la publicación con efecto hover */}
+        <div className="mb-4 relative group">
+          {article.publicationLogo ? (
+            <div className="relative w-full h-20 overflow-hidden bg-white rounded-sm">
+              <Image 
+                src={article.publicationLogo} 
+                alt={article.publication}
+                fill
+                className="object-contain p-2 group-hover:scale-95 transition-transform duration-300"
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-200 to-transparent h-0 group-hover:h-8 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center">
+                <span className="text-black text-xs font-medium pb-1">{article.publication}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="w-full h-20 bg-white flex items-center justify-center relative">
+              <span className="text-terracota text-2xl font-bold z-10 group-hover:scale-95 transition-transform duration-300">
+                {article.publication.charAt(0)}
+              </span>
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-200 to-transparent h-0 group-hover:h-8 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center">
+                <span className="text-black text-xs font-medium pb-1">{article.publication}</span>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Área inferior con categoría, leer artículo y compartir */}
+        <div className="flex flex-col space-y-3">
+          {/* Categoría */}
+          <div className="flex items-center justify-end">
+            <div className="badge badge-white">
+              {article.category === 'nacional' ? 'Nacional' : 'Internacional'}
+            </div>
+          </div>
+          
+          {/* Botones de acción */}
+          <div className="flex items-center justify-between border-t border-white border-opacity-20 pt-4">
+            <a
+              href={article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-white font-medium hover:underline"
+            >
+              Leer artículo <ExternalLink className="h-4 w-4" />
+            </a>
+            
+            <button
+              onClick={handleShare}
+              className="p-2 rounded-full hover:bg-white hover:bg-opacity-10 transition-colors"
+              aria-label="Compartir"
+            >
+              <Share2 className="h-4 w-4 text-white" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
+  )
+}

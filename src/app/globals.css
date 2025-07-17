@@ -1,0 +1,547 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* IMPORTAR TIPOGRAFÍA OFICIAL */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap');
+
+/* VARIABLES CSS OFICIALES ARCA TIERRA */
+:root {
+  /* TERRACOTA (40% - Elementos de Acción) */
+  --arcatierra-terracota-principal: #B15543;
+  --arcatierra-terracota-medio: #BA6440;
+  --arcatierra-terracota-oscuro: #975543;
+  --arcatierra-terracota-claro: #d89c8c;
+  
+  /* VERDE (30% - Información/Educación) */
+  --arcatierra-verde-tipografia: #3A4741;
+  --arcatierra-verde-principal: #33503E;
+  --arcatierra-verde-claro: #475A52;
+  --arcatierra-verde-suave: #748880;
+  
+  /* NEUTROS (30% - Base/Respiro) */
+  --arcatierra-crema-principal: #E3DBCB;
+  --arcatierra-beige-medio: #CCBB9A;
+  --arcatierra-beige-calido: #DCB584;
+  --arcatierra-gris-azulado: #C1CCCE;
+  --arcatierra-beige-bg: #F9F4E8;
+  
+  /* TIPOGRAFÍA Y ESPACIADO */
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Open Sans', sans-serif;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.8;
+  --letter-spacing-tight: -0.02em;
+  --letter-spacing-normal: 0em;
+  --letter-spacing-wide: 0.05em;
+  
+  /* VARIABLES TAILWIND PERSONALIZADAS */
+  --background: var(--arcatierra-crema-principal);
+  --foreground: var(--arcatierra-verde-tipografia);
+  --primary: var(--arcatierra-terracota-principal);
+  --primary-foreground: #ffffff;
+  --secondary: var(--arcatierra-verde-principal);
+  --secondary-foreground: #ffffff;
+  --muted: var(--arcatierra-beige-medio);
+  --muted-foreground: var(--arcatierra-verde-tipografia);
+  --accent: var(--arcatierra-terracota-medio);
+  --accent-foreground: #ffffff;
+  --border: var(--arcatierra-beige-medio);
+  --input: var(--arcatierra-crema-principal);
+  --ring: var(--arcatierra-terracota-principal);
+  --radius: 0.75rem;
+  
+  /* SOMBRAS Y EFECTOS */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 35px rgba(0, 0, 0, 0.15), 0 10px 10px rgba(0, 0, 0, 0.05);
+  
+  /* TRANSICIONES */
+  --transition-fast: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ESTILOS BASE OFICIALES */
+* {
+  border-color: hsl(var(--border));
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--arcatierra-crema-principal);
+  color: var(--arcatierra-verde-tipografia);
+  font-family: var(--font-body);
+  line-height: var(--line-height-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* TIPOGRAFÍA OFICIAL MEJORADA */
+h1, h2, h3 {
+  font-family: var(--font-heading);
+  color: var(--arcatierra-verde-tipografia);
+  font-weight: 700;
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  margin-bottom: 1.25rem;
+}
+
+h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--arcatierra-verde-tipografia);
+  font-weight: 500;
+  line-height: var(--line-height-tight);
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+h2 {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+}
+
+h3 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+/* ENLACES OFICIALES MEJORADOS */
+a {
+  color: var(--arcatierra-terracota-principal);
+  text-decoration: none;
+  transition: color var(--transition-normal), text-decoration-color var(--transition-normal);
+  position: relative;
+}
+
+a:hover {
+  color: var(--arcatierra-terracota-oscuro);
+}
+
+a.animated-link {
+  position: relative;
+  padding-bottom: 2px;
+  text-decoration: none;
+}
+
+a.animated-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  transform: scaleX(0);
+  height: 1px;
+  background-color: var(--arcatierra-terracota-oscuro);
+  transform-origin: bottom right;
+  transition: transform var(--transition-normal);
+}
+
+a.animated-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+/* BOTONES OFICIALES MEJORADOS */
+.btn-primary,
+.btn-secondary,
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  padding: 0.75rem 1.75rem;
+  border-radius: var(--radius);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border: none;
+  outline: none;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background-color: var(--arcatierra-terracota-principal);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: var(--arcatierra-terracota-oscuro);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background-color: var(--arcatierra-verde-principal);
+  color: #ffffff;
+}
+
+.btn-secondary:hover {
+  background-color: var(--arcatierra-verde-claro);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 2px solid var(--arcatierra-terracota-principal);
+  color: var(--arcatierra-terracota-principal);
+}
+
+.btn-outline:hover {
+  background-color: var(--arcatierra-terracota-principal);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+/* Botón con efecto ripple */
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+
+.btn-ripple:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  20% {
+    transform: scale(25, 25);
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(40, 40);
+  }
+}
+
+/* CARDS OFICIALES MEJORADAS */
+.card {
+  background-color: #fff;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-normal),
+              box-shadow var(--transition-normal),
+              border-color var(--transition-normal);
+  border: 1px solid transparent;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--arcatierra-beige-medio);
+}
+
+.card-interactive {
+  cursor: pointer;
+}
+
+.card-highlight {
+  border-top: 3px solid var(--arcatierra-terracota-principal);
+}
+
+.card-highlight:hover {
+  border-color: var(--arcatierra-terracota-principal);
+}
+
+.card-feature {
+  position: relative;
+  padding-top: 4rem;
+}
+
+.card-feature::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3rem;
+  background-color: var(--arcatierra-terracota-principal);
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
+  z-index: 0;
+}
+
+.card-feature .icon {
+  position: relative;
+  z-index: 1;
+  margin-top: -2rem;
+  background-color: #fff;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Card con efecto de superposición */
+.card-overlay {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-overlay .overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(177, 85, 67, 0.9);
+  color: #fff;
+  padding: 1rem;
+  transform: translateY(100%);
+  transition: transform var(--transition-normal);
+}
+
+.card-overlay:hover .overlay {
+  transform: translateY(0);
+}
+
+/* HEADER OFICIAL */
+.main-header {
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.main-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 5%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.nav-link {
+  color: var(--arcatierra-verde-tipografia);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 0;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link[aria-current="page"] {
+  color: var(--arcatierra-terracota-principal);
+}
+
+.nav-link[aria-current="page"]::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--arcatierra-terracota-principal);
+}
+
+/* FOOTER OFICIAL */
+.main-footer {
+  background-color: var(--arcatierra-terracota-principal);
+  color: #ffffff;
+  padding: 3rem 5% 1rem;
+  margin-top: 4rem;
+}
+
+.footer-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.footer-section h3 {
+  color: #ffffff;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.footer-section a {
+  color: #ffffff;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+  display: inline-block;
+  padding: 0.25rem 0;
+}
+
+.footer-section a:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* HERO SECTION */
+.hero {
+  background: linear-gradient(135deg, var(--arcatierra-crema-principal) 0%, var(--arcatierra-beige-medio) 100%);
+  padding: 4rem 5%;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('/logo-arcatierra.png') no-repeat center center;
+  background-size: contain;
+  opacity: 0.05;
+  z-index: 0;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* SECCIONES INFORMATIVAS */
+.section-info {
+  background-color: var(--arcatierra-verde-principal);
+  color: #ffffff;
+  padding: 3rem 5%;
+  margin: 2rem 0;
+}
+
+.section-info h2,
+.section-info h3 {
+  color: #ffffff;
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 768px) {
+  .main-nav {
+    padding: 1rem 4%;
+  }
+  
+  h1 {
+    font-size: 2rem;
+  }
+  
+  h2 {
+    font-size: 1.75rem;
+  }
+  
+  .hero {
+    padding: 3rem 4%;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* ANIMACIONES SUAVES */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* UTILIDADES PERSONALIZADAS */
+.text-terracota {
+  color: var(--arcatierra-terracota-principal);
+}
+
+.text-verde {
+  color: var(--arcatierra-verde-principal);
+}
+
+.bg-terracota {
+  background-color: var(--arcatierra-terracota-principal);
+}
+
+.bg-verde {
+  background-color: var(--arcatierra-verde-principal);
+}
+
+.bg-crema {
+  background-color: var(--arcatierra-crema-principal);
+}
+
+.border-terracota {
+  border-color: var(--arcatierra-terracota-principal);
+}
+
+/* ESTADOS DE FOCUS ACCESIBLES */
+*:focus {
+  outline: 2px solid var(--arcatierra-terracota-principal);
+  outline-offset: 2px;
+}
+
+/* OPTIMIZACIÓN PARA IMPRESIÓN */
+@media print {
+  .main-header,
+  .main-footer {
+    position: static;
+    box-shadow: none;
+  }
+  
+  .hero {
+    background: none;
+    color: black;
+  }
+}
+

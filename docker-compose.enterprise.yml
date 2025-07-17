@@ -1,0 +1,478 @@
+version: '3.9'
+
+# 🚀 CONFIGURACIÓN EMPRESARIAL ARCA TIERRA
+# Basada en análisis completo de documentación GitHub
+# Arquitectura de microservicios con IA integrada
+
+services:
+  # 🌐 FRONTEND: Arca Tierra PWA Enterprise
+  arca-tierra-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.enterprise
+    container_name: arca-tierra-frontend
+    restart: unless-stopped
+    
+    environment:
+      # Configuración de producción
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=https://arcatierra.dabychos.com/api
+      - NEXT_PUBLIC_N8N_WEBHOOK=https://arcatierra.dabychos.com/webhook
+      - NEXT_PUBLIC_DOMAIN=arcatierra.dabychos.com
+      
+      # Base de datos existente
+      - DATABASE_URL=postgresql://arca_user:HD8,UO0j\H-+ZHH05R&9@arca-postgres:5432/arca_tierra_db
+      - POSTGRES_HOST=arca-postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=arca_tierra_db
+      - POSTGRES_USER=arca_user
+      - POSTGRES_PASSWORD=HD8,UO0j\H-+ZHH05R&9
+      
+      # Servicios de IA existentes
+      - MXBAI_EMBED_URL=http://mxbai-embed-large:11434
+      - LLAMA_CHAT_URL=http://llama-chat:11434
+      - EMBEDDING_MODEL=mxbai-embed-large
+      
+      # Redis existente (n8n)
+      - REDIS_URL=redis://n8n-redis:6379/1
+      - REDIS_HOST=n8n-redis
+      - REDIS_PORT=6379
+      
+      # n8n Gateway existente
+      - N8N_WEBHOOK_BASE_URL=http://n8n:5678/webhook/arca-tierra
+      - N8N_INTERNAL_URL=http://n8n:5678
+      
+      # Configuración PWA
+      - PWA_ENABLED=true
+      - PWA_OFFLINE_SUPPORT=true
+      - PWA_PUSH_NOTIFICATIONS=true
+      
+      # Configuración de seguridad
+      - NEXTAUTH_URL=https://arcatierra.dabychos.com
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-arca_tierra_auth_secret_2024}
+      - JWT_SECRET=${JWT_SECRET:-arca_tierra_jwt_secret_2024}
+      
+      # E-commerce
+      - GIGSTCK_PUBLIC_KEY=${GIGSTCK_PUBLIC_KEY}
+      - STRIPE_PUBLIC_KEY=${STRIPE_PUBLIC_KEY}
+      
+      # Analytics
+      - GOOGLE_ANALYTICS_ID=${GOOGLE_ANALYTICS_ID}
+      - FACEBOOK_PIXEL_ID=${FACEBOOK_PIXEL_ID}
+      
+    networks:
+      - vps-net
+    
+    # Labels Traefik para dominio principal
+    labels:
+      - "traefik.enable=true"
+      
+      # Router principal
+      - "traefik.http.routers.arca-tierra.rule=Host(`arcatierra.dabychos.com`)"
+      - "traefik.http.routers.arca-tierra.entrypoints=websecure"
+      - "traefik.http.routers.arca-tierra.tls=true"
+      - "traefik.http.routers.arca-tierra.tls.certresolver=letsencrypt"
+      
+      # Servicio
+      - "traefik.http.services.arca-tierra.loadbalancer.server.port=3000"
+      
+      # Middleware de seguridad empresarial
+      - "traefik.http.routers.arca-tierra.middlewares=security-headers,rate-limit-smart,compression"
+      
+      # Security Headers
+      - "traefik.http.middlewares.security-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.security-headers.headers.sslredirect=true"
+      - "traefik.http.middlewares.security-headers.headers.stsincludesubdomains=true"
+      - "traefik.http.middlewares.security-headers.headers.stspreload=true"
+      - "traefik.http.middlewares.security-headers.headers.stsseconds=31536000"
+      - "traefik.http.middlewares.security-headers.headers.contenttypenosniff=true"
+      - "traefik.http.middlewares.security-headers.headers.browserxssfilter=true"
+      - "traefik.http.middlewares.security-headers.headers.referrerpolicy=strict-origin-when-cross-origin"
+      
+      # Rate Limiting Inteligente
+      - "traefik.http.middlewares.rate-limit-smart.ratelimit.average=200"
+      - "traefik.http.middlewares.rate-limit-smart.ratelimit.burst=400"
+      - "traefik.http.middlewares.rate-limit-smart.ratelimit.period=1m"
+      
+      # Compresión
+      - "traefik.http.middlewares.compression.compress=true"
+    
+    # Health check avanzado
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Volúmenes para persistencia
+    volumes:
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+      - ./cache:/app/.next/cache
+      - /etc/localtime:/etc/localtime:ro
+    
+    # Dependencias
+    depends_on:
+      - arca-tierra-api
+      - llama-chat
+
+  # 🔧 API BACKEND: Flask Enterprise
+  arca-tierra-api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.enterprise
+    container_name: arca-tierra-api
+    restart: unless-stopped
+    
+    environment:
+      # Configuración Flask
+      - FLASK_ENV=production
+      - FLASK_DEBUG=false
+      - API_VERSION=v1
+      - WORKERS=4
+      
+      # Base de datos
+      - DATABASE_URL=postgresql://arca_user:HD8,UO0j\H-+ZHH05R&9@arca-postgres:5432/arca_tierra_db
+      - POSTGRES_HOST=arca-postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=arca_tierra_db
+      - POSTGRES_USER=arca_user
+      - POSTGRES_PASSWORD=HD8,UO0j\H-+ZHH05R&9
+      
+      # Redis para caché
+      - REDIS_URL=redis://n8n-redis:6379/2
+      - REDIS_HOST=n8n-redis
+      - REDIS_PORT=6379
+      - REDIS_DB=2
+      
+      # Servicios de IA
+      - MXBAI_EMBED_URL=http://mxbai-embed-large:11434
+      - LLAMA_CHAT_URL=http://llama-chat:11434
+      - EMBEDDING_MODEL=mxbai-embed-large
+      - EMBEDDING_DIMENSION=1536
+      
+      # n8n Integration
+      - N8N_WEBHOOK_BASE_URL=http://n8n:5678/webhook/arca-tierra
+      - N8N_INTERNAL_URL=http://n8n:5678
+      - N8N_API_KEY=${N8N_API_KEY}
+      
+      # E-commerce
+      - GIGSTCK_API_KEY=${GIGSTCK_API_KEY}
+      - GIGSTCK_WEBHOOK_SECRET=${GIGSTCK_WEBHOOK_SECRET}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      
+      # Seguridad
+      - JWT_SECRET=${JWT_SECRET:-arca_tierra_jwt_secret_2024}
+      - API_KEY=${API_KEY:-arca_tierra_api_key_2024}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-arca_tierra_encryption_2024}
+      
+      # CORS
+      - CORS_ORIGINS=https://arcatierra.dabychos.com,https://crm.arcatierra.dabychos.com
+      
+      # Monitoreo
+      - PROMETHEUS_ENABLED=true
+      - PROMETHEUS_PORT=9090
+      
+    networks:
+      - vps-net
+    
+    # Labels Traefik para API
+    labels:
+      - "traefik.enable=true"
+      
+      # Router API
+      - "traefik.http.routers.arca-tierra-api.rule=Host(`arcatierra.dabychos.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.arca-tierra-api.entrypoints=websecure"
+      - "traefik.http.routers.arca-tierra-api.tls=true"
+      - "traefik.http.routers.arca-tierra-api.tls.certresolver=letsencrypt"
+      
+      # Servicio API
+      - "traefik.http.services.arca-tierra-api.loadbalancer.server.port=8000"
+      
+      # Middleware API
+      - "traefik.http.routers.arca-tierra-api.middlewares=api-headers,api-rate-limit,api-auth"
+      
+      # Headers específicos API
+      - "traefik.http.middlewares.api-headers.headers.customrequestheaders.X-API-Gateway=n8n"
+      - "traefik.http.middlewares.api-headers.headers.customrequestheaders.X-Service=arca-tierra-api"
+      - "traefik.http.middlewares.api-headers.headers.customrequestheaders.X-Version=v1"
+      
+      # Rate limiting API más estricto
+      - "traefik.http.middlewares.api-rate-limit.ratelimit.average=500"
+      - "traefik.http.middlewares.api-rate-limit.ratelimit.burst=1000"
+      - "traefik.http.middlewares.api-rate-limit.ratelimit.period=1m"
+    
+    # Health check API
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    
+    # Volúmenes
+    volumes:
+      - ./api/logs:/app/logs
+      - ./api/uploads:/app/uploads
+      - /etc/localtime:/etc/localtime:ro
+
+  # 🧠 IA: Llama 3.1 Chat Inteligente
+  llama-chat:
+    image: ollama/ollama:latest
+    container_name: llama-chat
+    restart: unless-stopped
+    
+    environment:
+      - OLLAMA_NUM_PARALLEL=4
+      - OLLAMA_MAX_LOADED_MODELS=2
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_PORT=11434
+      - OLLAMA_MODELS=llama3.1:8b
+      
+    volumes:
+      - llama_models:/root/.ollama
+      - ./llama/config:/etc/ollama
+    
+    networks:
+      - vps-net
+    
+    # GPU support (si está disponible)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 120s
+
+  # 💳 PAGOS: Gigstck Integration Service
+  gigstck-service:
+    build: ./services/gigstck
+    container_name: gigstck-service
+    restart: unless-stopped
+    
+    environment:
+      - GIGSTCK_API_KEY=${GIGSTCK_API_KEY}
+      - GIGSTCK_WEBHOOK_SECRET=${GIGSTCK_WEBHOOK_SECRET}
+      - GIGSTCK_ENVIRONMENT=production
+      - DATABASE_URL=postgresql://arca_user:HD8,UO0j\H-+ZHH05R&9@arca-postgres:5432/arca_tierra_db
+      - REDIS_URL=redis://n8n-redis:6379/3
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/arca-tierra/payment
+      
+    networks:
+      - vps-net
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    
+    volumes:
+      - ./services/gigstck/logs:/app/logs
+
+  # 📊 CRM: Baserow Enterprise
+  baserow:
+    image: baserow/baserow:1.24.2
+    container_name: baserow-crm
+    restart: unless-stopped
+    
+    environment:
+      - BASEROW_PUBLIC_URL=https://crm.arcatierra.dabychos.com
+      - DATABASE_URL=postgresql://baserow_user:${BASEROW_PASSWORD:-baserow_secure_2024}@arca-postgres:5432/baserow_db
+      - REDIS_URL=redis://n8n-redis:6379/4
+      - SECRET_KEY=${BASEROW_SECRET_KEY:-baserow_secret_key_2024}
+      - BASEROW_JWT_SIGNING_KEY=${BASEROW_JWT_KEY:-baserow_jwt_2024}
+      - BASEROW_BACKEND_DEBUG=false
+      - BASEROW_FRONTEND_DEBUG=false
+      
+    networks:
+      - vps-net
+    
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.baserow.rule=Host(`crm.arcatierra.dabychos.com`)"
+      - "traefik.http.routers.baserow.entrypoints=websecure"
+      - "traefik.http.routers.baserow.tls=true"
+      - "traefik.http.routers.baserow.tls.certresolver=letsencrypt"
+      - "traefik.http.services.baserow.loadbalancer.server.port=80"
+    
+    volumes:
+      - baserow_data:/baserow/data
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/api/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 📈 MONITOREO: Grafana Enterprise
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: grafana-monitoring
+    restart: unless-stopped
+    
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-grafana_admin_2024}
+      - GF_INSTALL_PLUGINS=redis-datasource,postgres-datasource,prometheus-datasource
+      - GF_SERVER_DOMAIN=grafana.arcatierra.dabychos.com
+      - GF_SERVER_ROOT_URL=https://grafana.arcatierra.dabychos.com
+      - GF_SECURITY_SECRET_KEY=${GRAFANA_SECRET_KEY:-grafana_secret_2024}
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+      
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/plugins:/var/lib/grafana/plugins
+    
+    networks:
+      - vps-net
+    
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.arcatierra.dabychos.com`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 🔍 BÚSQUEDA: SearchXNG Personalizado
+  searxng:
+    image: searxng/searxng:latest
+    container_name: searxng-search
+    restart: unless-stopped
+    
+    environment:
+      - SEARXNG_SECRET=${SEARXNG_SECRET:-searxng_secret_2024}
+      - SEARXNG_HOSTNAME=search.arcatierra.dabychos.com
+      - SEARXNG_BASE_URL=https://search.arcatierra.dabychos.com
+      
+    volumes:
+      - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
+      - ./searxng/uwsgi.ini:/etc/searxng/uwsgi.ini:ro
+    
+    networks:
+      - vps-net
+    
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.searxng.rule=Host(`search.arcatierra.dabychos.com`)"
+      - "traefik.http.routers.searxng.entrypoints=websecure"
+      - "traefik.http.routers.searxng.tls=true"
+      - "traefik.http.routers.searxng.tls.certresolver=letsencrypt"
+      - "traefik.http.services.searxng.loadbalancer.server.port=8080"
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 📊 MÉTRICAS: Node Exporter
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    
+    networks:
+      - vps-net
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9100/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 🔄 BACKUP: Automated Backup Service
+  backup-service:
+    build: ./services/backup
+    container_name: backup-service
+    restart: unless-stopped
+    
+    environment:
+      - POSTGRES_HOST=arca-postgres
+      - POSTGRES_USER=arca_user
+      - POSTGRES_PASSWORD=HD8,UO0j\H-+ZHH05R&9
+      - POSTGRES_DB=arca_tierra_db
+      - BACKUP_SCHEDULE=0 2 * * *  # Daily at 2 AM
+      - BACKUP_RETENTION_DAYS=30
+      - S3_BUCKET=${S3_BACKUP_BUCKET}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY}
+      - S3_SECRET_KEY=${S3_SECRET_KEY}
+      
+    volumes:
+      - backup_data:/backups
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    
+    networks:
+      - vps-net
+
+# Red externa existente
+networks:
+  vps-net:
+    external: true
+    # Esta red ya contiene:
+    # - traefik (reverse proxy con SSL)
+    # - n8n (API gateway con queue)
+    # - arca-postgres (base de datos principal)
+    # - n8n-redis (redis para queue y caché)
+    # - mxbai-embed-large (embeddings IA)
+    # - prometheus (métricas existente)
+
+# Volúmenes para persistencia
+volumes:
+  grafana_data:
+    driver: local
+  baserow_data:
+    driver: local
+  llama_models:
+    driver: local
+  backup_data:
+    driver: local
+
+# Configuración de recursos
+x-resources: &default-resources
+  limits:
+    memory: 512M
+  reservations:
+    memory: 256M
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
