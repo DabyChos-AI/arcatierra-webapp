@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import TransparentHeader from "@/components/layout/TransparentHeader";
-import Footer from "@/components/Layout/Footer";
+import Footer from "@/components/layout/Footer";
 import AuthProvider from '@/components/AuthProvider'
 import { NotificationProvider } from '@/components/NotificationSystem'
 import WhatsAppChat from '@/components/WhatsAppChat'
