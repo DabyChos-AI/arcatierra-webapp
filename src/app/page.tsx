@@ -162,7 +162,7 @@ export default function HomePage() {
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-                <Link href="/tienda">
+                <Link href="/suscripciones">
                   <Button size="lg" className="bg-terracota hover:bg-terracota-dark text-white px-8 py-6 text-lg font-semibold group">
                     <span>Explorar Canastas</span>
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -244,90 +244,141 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {productos.slice(0, 3).map((producto, index) => (
-                <Card key={producto.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all group">
+              {[
+                {
+                  id: 'individual',
+                  name: 'Canasta Individual',
+                  description: 'Perfecta para 1-2 personas',
+                  price: 350,
+                  items: '8-10 productos',
+                  weight: '3-4 kg',
+                  image: '/images/canastas/canasta-individual.jpg',
+                  features: ['5-6 verduras de temporada', '2-3 frutas frescas', 'Producto especial incluido'],
+                  popular: false
+                },
+                {
+                  id: 'familiar',
+                  name: 'Canasta Familiar',
+                  description: 'Ideal para familias de 3-4 personas',
+                  price: 550,
+                  items: '12-15 productos',
+                  weight: '5-6 kg',
+                  image: '/images/canastas/canasta-familiar.jpg',
+                  features: ['8-9 verduras de temporada', '3-4 frutas frescas', '2 productos especiales'],
+                  popular: true
+                },
+                {
+                  id: 'premium',
+                  name: 'Canasta Premium',
+                  description: 'La experiencia completa para familias grandes',
+                  price: 750,
+                  items: '18-20 productos',
+                  weight: '7-8 kg',
+                  image: '/images/canastas/canasta-premium.jpg',
+                  features: ['10-12 verduras de temporada', '4-5 frutas frescas', 'Productos exclusivos'],
+                  popular: false
+                }
+              ].map((canasta) => (
+                <Card key={canasta.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all group">
                   <div className="relative overflow-hidden pt-[56.25%]">
                     <div className="absolute inset-0 bg-gray-200">
-                      {producto.imagen && (
-                        <OptimizedImage 
-                          src={producto.imagen || '/products/placeholder.jpg'}
-                          alt={producto.nombre}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      )}
-                    </div>
-                    
-                    {/* Badges */}
-                    <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-                      {producto.badges && producto.badges.map((badge, i) => (
-                        <span key={i} className="bg-verde text-white px-3 py-1 rounded-full text-xs font-medium">
-                          {badge}
-                        </span>
-                      ))}
-                    </div>
-                    
-                    {/* Botón Favorito */}
-                    <button
-                      onClick={() => toggleFavorito(producto.id)}
-                      className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
-                    >
-                      <Heart 
-                        className={`w-5 h-5 ${favoritos.includes(producto.id) ? 'fill-terracota text-terracota' : 'text-gray-500'}`} 
+                      <OptimizedImage 
+                        src={canasta.image}
+                        alt={canasta.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                    </button>
+                    </div>
+                    
+                    {/* Badge Popular */}
+                    {canasta.popular && (
+                      <div className="absolute top-4 left-4">
+                        <span className="bg-terracota text-white px-3 py-1 rounded-full text-xs font-medium">
+                          Más Popular
+                        </span>
+                      </div>
+                    )}
+                    
+                    {/* Badge Orgánico */}
+                    <div className="absolute top-4 right-4">
+                      <span className="bg-verde text-white px-3 py-1 rounded-full text-xs font-medium">
+                        100% Orgánico
+                      </span>
+                    </div>
                   </div>
                   
                   <CardContent className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{producto.nombre}</h3>
-                    
-                    {/* Productor y ubicación */}
-                    <div className="flex items-center text-gray-500 text-sm mb-3">
-                      <Users className="w-4 h-4 mr-1" />
-                      <span className="mr-3">{producto.productor}</span>
-                      <MapPin className="w-4 h-4 mr-1" />
-                      <span>{producto.ubicacion}</span>
-                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">{canasta.name}</h3>
+                    <p className="text-gray-600 mb-4">{canasta.description}</p>
                     
                     {/* Precio */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <div className="text-2xl font-bold text-terracota">
-                          ${producto.precio.toFixed(2)} <span className="text-sm font-medium">/ {producto.unidad}</span>
-                        </div>
+                    <div className="text-center mb-4">
+                      <div className="text-3xl font-bold text-terracota mb-1">
+                        ${canasta.price}
                       </div>
+                      <p className="text-sm text-gray-500">por entrega</p>
                     </div>
                     
-                    {/* Métricas de impacto */}
-                    <div className="grid grid-cols-3 gap-2 mb-6 p-3 bg-green-50 rounded-lg">
-                      <div className="text-center">
-                        <div className="text-sm font-semibold text-verde">{producto.metricas?.co2 || "0.5kg CO₂"}</div>
-                        <div className="text-xs text-gray-600">CO₂ ahorrado</div>
+                    {/* Detalles */}
+                    <div className="space-y-2 mb-6">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Productos:</span>
+                        <span className="font-medium">{canasta.items}</span>
                       </div>
-                      <div className="text-center">
-                        <div className="text-sm font-semibold text-verde">{producto.metricas?.agua || "25L"}</div>
-                        <div className="text-xs text-gray-600">Agua</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-sm font-semibold text-verde">{producto.metricas?.plastico || "30g"}</div>
-                        <div className="text-xs text-gray-600">Plástico</div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Peso aprox:</span>
+                        <span className="font-medium">{canasta.weight}</span>
                       </div>
                     </div>
 
+                    {/* Características */}
+                    <ul className="space-y-1 mb-6">
+                      {canasta.features.map((feature, index) => (
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <div className="w-1.5 h-1.5 bg-verde rounded-full mt-2 flex-shrink-0"></div>
+                          <span className="text-gray-700">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
                     {/* Botones de acción */}
-                    <div className="flex space-x-3">
-                      <button 
-                        onClick={() => agregarAlCarrito(producto.id, producto.nombre, producto.precio, 'producto', 'suscripcion')}
-                        className="flex-1 bg-terracota hover:bg-terracota-oscuro text-white py-3 px-4 rounded-lg font-semibold transition-colors"
+                    <div className="flex flex-col space-y-3">
+                      <Link href="/suscripciones">
+                        <Button className="w-full bg-terracota hover:bg-terracota-dark text-white py-3 font-semibold transition-colors">
+                          Suscribirse Ahora
+                        </Button>
+                      </Link>
+                      <Button 
+                        onClick={() => {
+                          // Agregar canasta al carrito
+                          const carritoActual = JSON.parse(localStorage.getItem('carrito') || '[]');
+                          const nuevaCanasta = {
+                            id: `canasta-${canasta.id}`,
+                            nombre: canasta.name,
+                            precio: canasta.price,
+                            tipo: 'canasta',
+                            imagen: canasta.image,
+                            descripcion: canasta.description,
+                            cantidad: 1
+                          };
+                          
+                          // Verificar si ya existe en el carrito
+                          const existeIndex = carritoActual.findIndex((item: any) => item.id === nuevaCanasta.id);
+                          if (existeIndex >= 0) {
+                            carritoActual[existeIndex].cantidad += 1;
+                          } else {
+                            carritoActual.push(nuevaCanasta);
+                          }
+                          
+                          localStorage.setItem('carrito', JSON.stringify(carritoActual));
+                          // Disparar evento para actualizar el contador del carrito
+                          window.dispatchEvent(new Event('carritoActualizado'));
+                        }}
+                        variant="outline" 
+                        className="w-full border-terracota text-terracota hover:bg-terracota hover:text-white py-3 font-semibold transition-colors"
                       >
-                        Suscribirse
-                      </button>
-                      <button 
-                        onClick={() => agregarAlCarrito(producto.id, producto.nombre, producto.precio, 'producto', 'unico')}
-                        className="flex-1 border border-terracota text-terracota hover:bg-terracota hover:text-white py-3 px-4 rounded-lg font-semibold transition-colors"
-                      >
-                        Compra única
-                      </button>
+                        Agregar al Carrito
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -335,9 +386,9 @@ export default function HomePage() {
             </div>
             
             <div className="text-center mt-10">
-              <Link href="/tienda">
+              <Link href="/suscripciones">
                 <Button variant="outline" className="border-terracota text-terracota hover:bg-terracota hover:text-white px-6 py-3">
-                  Ver todos los productos
+                  Ver todas las canastas
                 </Button>
               </Link>
             </div>

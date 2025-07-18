@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useSession } from 'next-auth/react'
+// import { useSession } from 'next-auth/react' // Temporalmente desactivado
 import { Calendar, Package, Leaf, Users, Star, CheckCircle, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -61,14 +61,14 @@ const SUBSCRIPTION_PLANS = [
 ]
 
 const DELIVERY_FREQUENCIES = [
-  { id: 'weekly', name: 'Semanal', description: 'Cada semana', discount: 0 },
-  { id: 'biweekly', name: 'Quincenal', description: 'Cada 2 semanas', discount: 5 },
-  { id: 'monthly', name: 'Mensual', description: 'Una vez al mes', discount: 10 }
+  { id: 'weekly', name: 'Semanal', description: 'Cada semana' },
+  { id: 'biweekly', name: 'Quincenal', description: 'Cada 2 semanas' }
 ]
 
 export default function SuscripcionesPage() {
-  const sessionResult = useSession()
-  const { data: session } = sessionResult || { data: null }
+  // const sessionResult = useSession() // Temporalmente desactivado
+  // const { data: session } = sessionResult || { data: null }
+  const session = null // Temporalmente sin autenticación
   const [selectedPlan, setSelectedPlan] = useState('familiar')
   const [selectedFrequency, setSelectedFrequency] = useState('weekly')
   const [isSubscribing, setIsSubscribing] = useState(false)
@@ -76,14 +76,14 @@ export default function SuscripcionesPage() {
   const currentPlan = SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan)
   const currentFrequency = DELIVERY_FREQUENCIES.find(freq => freq.id === selectedFrequency)
   
-  const finalPrice = currentPlan ? 
-    currentPlan.price * (1 - (currentFrequency?.discount || 0) / 100) : 0
+  const finalPrice = currentPlan ? currentPlan.price : 0
 
   const handleSubscribe = async () => {
-    if (!session) {
-      window.location.href = '/auth/signin?callbackUrl=/suscripciones'
-      return
-    }
+    // Temporalmente sin autenticación - permitir suscripción sin login
+    // if (!session) {
+    //   window.location.href = '/auth/signin?callbackUrl=/suscripciones'
+    //   return
+    // }
 
     setIsSubscribing(true)
     
@@ -93,7 +93,7 @@ export default function SuscripcionesPage() {
         plan_id: selectedPlan,
         frequency: selectedFrequency,
         price: finalPrice,
-        user_email: session.user?.email
+        user_email: 'usuario@temporal.com' // Email temporal mientras no hay autenticación
       }
 
       // Simular llamada a API
@@ -116,7 +116,7 @@ export default function SuscripcionesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <Package className="w-16 h-16 mx-auto mb-4 text-[#CCBB9A]" />
-            <h1 className="text-4xl font-bold mb-4">Canastas de Temporada</h1>
+            <h1 className="text-4xl font-bold mb-4 text-white">Canastas Agroecológicas de Temporada</h1>
             <p className="text-xl text-[#CCBB9A] max-w-2xl mx-auto">
               Recibe productos frescos y orgánicos directamente de nuestras chinampas cada semana
             </p>
@@ -224,7 +224,7 @@ export default function SuscripcionesPage() {
             Frecuencia de Entrega
           </h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mx-auto">
             {DELIVERY_FREQUENCIES.map((frequency) => (
               <div
                 key={frequency.id}
@@ -238,11 +238,6 @@ export default function SuscripcionesPage() {
                 <div className="text-center">
                   <h4 className="font-semibold text-[#33503E] mb-1">{frequency.name}</h4>
                   <p className="text-sm text-gray-600 mb-2">{frequency.description}</p>
-                  {frequency.discount > 0 && (
-                    <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                      {frequency.discount}% descuento
-                    </span>
-                  )}
                 </div>
               </div>
             ))}
@@ -269,12 +264,6 @@ export default function SuscripcionesPage() {
                   <span className="text-gray-600">Precio base:</span>
                   <span className="font-medium">${currentPlan?.price}</span>
                 </div>
-                {currentFrequency && currentFrequency.discount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Descuento ({currentFrequency.discount}%):</span>
-                    <span>-${((currentPlan?.price || 0) * currentFrequency.discount / 100).toFixed(0)}</span>
-                  </div>
-                )}
                 <div className="border-t pt-3 flex justify-between text-lg font-bold">
                   <span className="text-[#33503E]">Total por entrega:</span>
                   <span className="text-[#B15543]">${finalPrice.toFixed(0)}</span>
@@ -292,16 +281,169 @@ export default function SuscripcionesPage() {
               </div>
             </div>
 
-            {/* Botón de Suscripción */}
+            {/* Formulario de Suscripción */}
             <div className="flex flex-col justify-center">
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold text-[#33503E] mb-2">
-                  ¡Comienza tu Suscripción!
+                  ¡Completa tu Suscripción!
                 </h3>
                 <p className="text-gray-600">
                   Tu primera canasta llegará la próxima semana
                 </p>
               </div>
+
+              {/* Formulario */}
+              <form className="space-y-4 mb-6">
+                {/* Información Personal */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nombre completo *
+                    </label>
+                    <input 
+                      type="text" 
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#B15543] focus:border-transparent"
+                      placeholder="Tu nombre completo"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Teléfono *
+                    </label>
+                    <input 
+                      type="tel" 
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#B15543] focus:border-transparent"
+                      placeholder="(55) 1234-5678"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Correo electrónico *
+                  </label>
+                  <input 
+                    type="email" 
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#B15543] focus:border-transparent"
+                    placeholder="tu@email.com"
+                  />
+                </div>
+
+                {/* Dirección de Entrega */}
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold text-gray-800 mb-3">Dirección de Entrega</h4>
+                  
+                  {/* Aviso de cobertura */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs">ℹ</span>
+                      </div>
+                      <p className="text-sm text-blue-800">
+                        <strong>Cobertura actual:</strong> Solo realizamos entregas en Ciudad de México (CDMX)
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Dirección completa *
+                    </label>
+                    <input 
+                      type="text" 
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#B15543] focus:border-transparent"
+                      placeholder="Calle, número, colonia, alcaldía"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Alcaldía *
+                      </label>
+                      <select 
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#B15543] focus:border-transparent"
+                      >
+                        <option value="">Selecciona tu alcaldía</option>
+                        <option value="alvaro-obregon">Álvaro Obregón</option>
+                        <option value="azcapotzalco">Azcapotzalco</option>
+                        <option value="benito-juarez">Benito Juárez</option>
+                        <option value="coyoacan">Coyoacán</option>
+                        <option value="cuajimalpa">Cuajimalpa</option>
+                        <option value="cuauhtemoc">Cuauhtémoc</option>
+                        <option value="gustavo-a-madero">Gustavo A. Madero</option>
+                        <option value="iztacalco">Iztacalco</option>
+                        <option value="iztapalapa">Iztapalapa</option>
+                        <option value="la-magdalena-contreras">La Magdalena Contreras</option>
+                        <option value="miguel-hidalgo">Miguel Hidalgo</option>
+                        <option value="milpa-alta">Milpa Alta</option>
+                        <option value="tlahuac">Tláhuac</option>
+                        <option value="tlalpan">Tlalpan</option>
+                        <option value="venustiano-carranza">Venustiano Carranza</option>
+                        <option value="xochimilco">Xochimilco</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Código Postal *
+                      </label>
+                      <input 
+                        type="text" 
+                        required
+                        pattern="[0-9]{5}"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#B15543] focus:border-transparent"
+                        placeholder="Ej: 06700"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Referencias de entrega
+                    </label>
+                    <textarea 
+                      rows={2}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#B15543] focus:border-transparent"
+                      placeholder="Ej: Casa azul, portón negro, entre calles..."
+                    />
+                  </div>
+                </div>
+
+                {/* Preferencias */}
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold text-gray-800 mb-3">Preferencias</h4>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Día preferido de entrega
+                    </label>
+                    <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#B15543] focus:border-transparent">
+                      <option value="">Sin preferencia</option>
+                      <option value="lunes">Lunes</option>
+                      <option value="martes">Martes</option>
+                      <option value="miercoles">Miércoles</option>
+                      <option value="jueves">Jueves</option>
+                      <option value="viernes">Viernes</option>
+                    </select>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Alergias o restricciones alimentarias
+                    </label>
+                    <textarea 
+                      rows={2}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#B15543] focus:border-transparent"
+                      placeholder="Ej: alérgico a frutos secos, vegetariano, etc."
+                    />
+                  </div>
+                </div>
+              </form>
 
               <Button
                 onClick={handleSubscribe}
@@ -314,20 +456,16 @@ export default function SuscripcionesPage() {
                     Procesando...
                   </div>
                 ) : (
-                  `Suscribirme por $${finalPrice.toFixed(0)}`
+                  `Confirmar Suscripción - $${finalPrice.toFixed(0)}`
                 )}
               </Button>
-
-              {!session && (
-                <p className="text-sm text-gray-500 text-center mt-3">
-                  Se te pedirá iniciar sesión para continuar
-                </p>
-              )}
 
               <div className="mt-6 text-center">
                 <p className="text-xs text-gray-500">
                   Al suscribirte aceptas nuestros términos y condiciones.
-                  Puedes cancelar en cualquier momento.
+                  Puedes cancelar en cualquier momento. 
+                  <br />
+                  🔒 Tus datos están protegidos y no se compartirán con terceros.
                 </p>
               </div>
             </div>
