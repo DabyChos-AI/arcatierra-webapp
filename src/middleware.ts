@@ -32,7 +32,7 @@ export const config = {
     '/dashboard/:path*',
     '/ordenes/:path*',
     '/perfil/:path*',
-    '/admin/:path*',
-    '/suscripciones/:path*'
+    '/admin/:path*'
+    // '/suscripciones/:path*' // Temporalmente desactivado mientras auth está deshabilitado
   ]
 }
