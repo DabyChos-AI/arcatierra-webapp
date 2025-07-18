@@ -44,7 +44,8 @@ const CateringAbout = () => {
         >
           {/* Image */}
           <div className="relative">
-            <OptimizedImage               src="/images/catering/about-catering.jpg"
+            <OptimizedImage
+              src="/images/catering/about-catering.jpg"
               alt="Catering consciente Arca Tierra"
               width={600}
               height={400}

@@ -56,7 +56,8 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
 
       {/* Hero de la experiencia */}
       <section className="relative h-96 md:h-[500px] overflow-hidden">
-        <OptimizedImage           src={experiencia.imagen}
+        <OptimizedImage
+          src={experiencia.imagen}
           alt={experiencia.nombre}
           fill
           className="object-cover" />
@@ -215,7 +216,8 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                 >
                   <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
                     <div className="relative h-48">
-                      <OptimizedImage                         src={exp.imagen}
+                      <OptimizedImage
+                        src={exp.imagen}
                         alt={exp.nombre}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"

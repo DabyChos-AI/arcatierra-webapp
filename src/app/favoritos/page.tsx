@@ -153,7 +153,8 @@ export default function FavoritosPage() {
                 <div className="relative">
                   <Link href={`/producto/${producto.id}`}>
                     <div className="aspect-square overflow-hidden">
-                      <OptimizedImage                         src={producto.imagen || '/placeholder-product.jpg'}
+                      <OptimizedImage
+                        src={producto.imagen || '/placeholder-product.jpg'}
                         alt={producto.nombre}
                         width={400}
                         height={400}

@@ -89,10 +89,12 @@ const HeroParallax: React.FC<HeroParallaxProps> = ({
           }}
           className="w-full h-full"
         >
-          <OptimizedImage             src={img.src}
+          <OptimizedImage
+            src={img.src}
             alt={img.alt}
             fill
-            style={{ objectFit: 'cover' }} ={index === 0} />
+            style={{ objectFit: 'cover' }}
+          />
         </motion.div>
       ))}
       

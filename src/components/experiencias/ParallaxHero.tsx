@@ -28,7 +28,8 @@ const ParallaxHero: FC<ParallaxHeroProps> = ({
         className="absolute inset-0 w-full h-full"
         style={{ y, scale }}
       >
-        <OptimizedImage           src={imageSrc}
+        <OptimizedImage
+          src={imageSrc}
           alt={title}
           fill className="object-cover"
         />

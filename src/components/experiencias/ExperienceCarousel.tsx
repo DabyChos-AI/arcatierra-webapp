@@ -57,7 +57,8 @@ const ExperienceCarousel = ({ experiences, onReserve }: ExperienceCarouselProps)
               <div className="flex flex-col md:flex-row">
                 {/* Imagen */}
                 <div className="relative w-full md:w-2/5 h-64 md:h-auto">
-                  <OptimizedImage                     src={experience.image}
+                  <OptimizedImage
+                    src={experience.image}
                     alt={experience.title}
                     fill style={{ objectFit: 'cover' }}
                     className="transition-transform duration-500 hover:scale-105"

@@ -91,7 +91,8 @@ const ExperienceCardPro: React.FC<ExperienceCardProProps> = ({
     >
       {/* Imagen con overlay de color suave */}
       <div className="relative h-48 sm:h-56 w-full overflow-hidden">
-        <OptimizedImage           src={experience.image}
+        <OptimizedImage
+          src={experience.image}
           alt={experience.title}
           fill className="object-cover transition-transform duration-500 hover:scale-105" />
         <div 

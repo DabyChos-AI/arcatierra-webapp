@@ -10,7 +10,8 @@ const Footer: React.FC = () => {
         {/* Sección de empresa con Schema.org */}
         <div className="footer-section" itemScope itemType="https://schema.org/Organization">
           <div style={{ position: 'relative', width: '180px', height: '54px' }} className="mb-4">
-            <OptimizedImage               src="/images/logos/logo_arcatierra_horizontal.png"
+            <OptimizedImage
+              src="/images/logos/logo_arcatierra_horizontal.png"
               alt="ArcaTierra"
               width={180}
               height={54}

@@ -143,7 +143,8 @@ export default function CateringClients() {
             >
               {client.hasLogo && client.logo ? (
                 <div className="h-16 flex items-center justify-center mb-4">
-                  <OptimizedImage                     src={client.logo}
+                  <OptimizedImage
+                    src={client.logo}
                     alt={`${client.name} logo`}
                     width={120}
                     height={60}

@@ -13,6 +13,9 @@ interface OptimizedImageProps {
   style?: React.CSSProperties;
   onClick?: () => void;
   onLoad?: () => void;
+  itemProp?: string;
+  loading?: 'lazy' | 'eager';
+  decoding?: 'async' | 'sync' | 'auto';
   onError?: () => void;
 }
 
@@ -31,6 +34,9 @@ export default function OptimizedImage({
   onClick,
   onLoad,
   onError,
+  itemProp,
+  loading = 'lazy',
+  decoding = 'async',
   ...props
 }: OptimizedImageProps) {
   // Si es fill, usar estilos de posicionamiento absoluto
@@ -57,6 +63,9 @@ export default function OptimizedImage({
       height={height}
       className={className}
       style={combinedStyles}
+      itemProp={itemProp}
+      loading={loading}
+      decoding={decoding}
       onClick={onClick}
       onLoad={onLoad}
       onError={onError}

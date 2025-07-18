@@ -204,7 +204,8 @@ export default function BaldioMainContent() {
               <div className="relative">
                 <div className="absolute -top-4 -left-4 w-64 h-64 bg-[#E3DBCB]/50 rounded-full -z-10"></div>
                 <div className="relative rounded-2xl overflow-hidden shadow-xl cursor-pointer transition-transform hover:scale-105" onClick={openModal}>
-                  <OptimizedImage                     src="/images/baldio/experienciabaldio.png"
+                  <OptimizedImage
+                    src="/images/baldio/experienciabaldio.png"
                     alt="Experiencia Baldío - Más que una comida, una experiencia sensorial completa"
                     width={600}
                     height={800}
@@ -238,7 +239,8 @@ export default function BaldioMainContent() {
               <X className="w-6 h-6 text-gray-800" />
             </button>
             <div className="bg-white rounded-lg overflow-hidden shadow-2xl">
-              <OptimizedImage                 src="/images/baldio/experienciabaldio.png"
+              <OptimizedImage
+                src="/images/baldio/experienciabaldio.png"
                 alt="Experiencia Baldío - Más que una comida, una experiencia sensorial completa"
                 width={1200}
                 height={800}

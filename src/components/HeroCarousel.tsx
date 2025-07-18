@@ -111,7 +111,8 @@ export default function HeroCarousel() {
     <div className="relative h-[80vh] min-h-[600px] overflow-hidden rounded-3xl shadow-2xl mx-4 md:mx-8 mb-12 mt-20">
       {/* Imagen principal */}
       <div className="absolute inset-0">
-        <OptimizedImage           src={carouselImages[currentIndex].src}
+        <OptimizedImage
+          src={carouselImages[currentIndex].src}
           alt={carouselImages[currentIndex].alt}
           fill
           className={`object-cover transition-opacity duration-1000 ${
@@ -130,7 +131,8 @@ export default function HeroCarousel() {
           {/* Logo Arca Tierra */}
           <div className="mb-8">
             <div className="relative w-48 h-20 mx-auto">
-              <OptimizedImage                 src="/images/experiencias/logo_arcatierra_blanco.png"
+              <OptimizedImage
+                src="/images/experiencias/logo_arcatierra_blanco.png"
                 alt="Arca Tierra"
                 fill
                 className="object-contain opacity-90" />

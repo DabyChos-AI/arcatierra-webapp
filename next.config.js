@@ -59,7 +59,7 @@ const nextConfig = {
     
     // Manejar módulos que pueden faltar durante el build
     config.externals.push({
-      './webpack-generate-html-favicon-urls': 'commonjs ./webpack-generate-html-favicon-urls.js'
+      './webpack-generate-html-favicon-urls': 'commonjs ' + path.resolve(__dirname, 'webpack-generate-html-favicon-urls.js')
     })
     
     // Configurar fallbacks para módulos que pueden faltar

@@ -12,7 +12,8 @@ const InstagramEmbed = () => {
         className="block w-full hover:opacity-90 transition-opacity"
       >
         <div className="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden">
-          <OptimizedImage             src="/images/baldio-instagram-post.jpg"
+          <OptimizedImage
+            src="/images/baldio-instagram-post.jpg"
             alt="Baldío Restaurante - Taquiza de cerdo con mole"
             fill
             className="object-cover" />
