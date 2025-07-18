@@ -48,6 +48,28 @@ const nextConfig = {
       ...config.resolve.modules
     ]
     
+    // Configurar externals para manejar módulos faltantes
+    if (!config.externals) {
+      config.externals = []
+    }
+    
+    // Agregar el archivo de favicon URLs como externo si no se encuentra
+    const originalExternals = config.externals
+    config.externals = [...(Array.isArray(originalExternals) ? originalExternals : [originalExternals])]
+    
+    // Manejar módulos que pueden faltar durante el build
+    config.externals.push({
+      './webpack-generate-html-favicon-urls': 'commonjs ./webpack-generate-html-favicon-urls.js'
+    })
+    
+    // Configurar fallbacks para módulos que pueden faltar
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      path: false,
+      os: false,
+    }
+    
     return config
   },
 }
