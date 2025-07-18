@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef, useEffect } from 'react'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import { motion, useInView, useAnimation } from 'framer-motion'
 import { ChevronRight, Calendar, Clock, Users, MapPin, Star } from 'lucide-react'
 import { Swiper, SwiperSlide } from 'swiper/react'
@@ -231,7 +231,7 @@ const PublicExperiences = () => {
               <SwiperSlide key={index} style={{ width: '350px', height: '600px' }} className="my-8 mx-2">
                 <div className="bg-white rounded-xl overflow-hidden shadow-lg h-full transition-all duration-300 hover:shadow-2xl">
                   <div className="relative h-64">
-                    <Image 
+                    <OptimizedImage 
                       src={exp.image} 
                       alt={exp.title}
                       fill

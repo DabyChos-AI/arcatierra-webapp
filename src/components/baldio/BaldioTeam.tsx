@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { useInView } from 'framer-motion'
 import { useRef } from 'react'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import { Instagram, Twitter, Linkedin } from 'lucide-react'
 
 interface TeamMember {
@@ -151,7 +151,7 @@ export default function BaldioTeam() {
             </motion.div>
             <motion.div variants={itemVariants} className="order-1 md:order-2">
               <div className="relative h-96 overflow-hidden rounded-lg">
-                <Image 
+                <OptimizedImage 
                   src="/images/baldio/equipo_trabajando.jpg" 
                   alt="Equipo de Baldío trabajando" 
                   fill 
@@ -178,7 +178,7 @@ export default function BaldioTeam() {
                   className="bg-[#E3DBCB]/10 rounded-lg overflow-hidden"
                 >
                   <div className="relative h-80 w-full">
-                    <Image 
+                    <OptimizedImage 
                       src={member.image} 
                       alt={member.name} 
                       fill 

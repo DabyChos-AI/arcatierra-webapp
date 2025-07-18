@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { fadeIn } from '@/lib/animations';
@@ -11,12 +11,10 @@ export default function HeroBanner() {
     <div className="relative w-full h-[85vh] overflow-hidden">
       {/* Imagen de fondo con efecto parallax */}
       <div className="absolute inset-0 z-0">
-        <Image 
+        <OptimizedImage 
           src="/catering/evento-corporativo.jpg" 
           alt="Catering consciente para eventos únicos en CDMX" 
-          fill 
-          priority
-          className="object-cover object-center"
+          fill className="object-cover object-center"
           style={{ 
             transform: "scale(1.05)",
             filter: "brightness(0.7)"

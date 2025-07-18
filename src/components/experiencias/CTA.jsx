@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef, useEffect } from 'react'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import Link from 'next/link'
 import { motion, useInView, useAnimation } from 'framer-motion'
 import { ChevronRight } from 'lucide-react'
@@ -51,7 +51,7 @@ const CTA = () => {
           variants={itemVariants}
         >
           <div className="absolute inset-0 overflow-hidden opacity-20">
-            <Image 
+            <OptimizedImage 
               src="/images/experiencias/experiencias_arca_tierra.jpg" 
               alt="Patrón de chinampas"
               fill
@@ -87,7 +87,7 @@ const CTA = () => {
             </div>
             
             <div className="relative h-[300px] md:h-[400px] rounded-xl overflow-hidden shadow-xl transform -rotate-2 hover:rotate-0 transition-all duration-500">
-              <Image 
+              <OptimizedImage 
                 src="/images/experiencias/turismo_rural_xochimilco.jpg" 
                 alt="Vista aérea de las chinampas de Xochimilco"
                 fill

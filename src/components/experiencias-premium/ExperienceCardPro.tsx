@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import { Clock, Users, MapPin, Star, ChevronRight } from 'lucide-react';
 
 interface ExperienceCardProProps {
@@ -91,14 +91,9 @@ const ExperienceCardPro: React.FC<ExperienceCardProProps> = ({
     >
       {/* Imagen con overlay de color suave */}
       <div className="relative h-48 sm:h-56 w-full overflow-hidden">
-        <Image
-          src={experience.image}
+        <OptimizedImage           src={experience.image}
           alt={experience.title}
-          fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="object-cover transition-transform duration-500 hover:scale-105"
-          priority
-        />
+          fill className="object-cover transition-transform duration-500 hover:scale-105" />
         <div 
           className="absolute inset-0 opacity-30"
           style={{ 

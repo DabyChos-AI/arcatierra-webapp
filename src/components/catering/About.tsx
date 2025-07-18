@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef } from 'react';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 
 const CateringAbout = () => {
   const ref = useRef(null);
@@ -44,8 +44,7 @@ const CateringAbout = () => {
         >
           {/* Image */}
           <div className="relative">
-            <Image
-              src="/images/catering/about-catering.jpg"
+            <OptimizedImage               src="/images/catering/about-catering.jpg"
               alt="Catering consciente Arca Tierra"
               width={600}
               height={400}

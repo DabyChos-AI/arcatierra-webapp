@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import { signIn, useSession } from 'next-auth/react';
 import { Menu, X, ShoppingCart, User, Phone, Heart } from 'lucide-react';
 import LogoutButton from '../auth/LogoutButton';
@@ -136,12 +136,11 @@ const Header: React.FC = () => {
               {/* Logo Container */}
               <div className="logo-container flex-shrink-0">
                 <Link href="/" aria-label="ArcaTierra - Página de inicio" className="flex items-center">
-                  <Image
+                  <OptimizedImage
                     src="/logo-arcatierra.png"
                     alt="ArcaTierra - Productos orgánicos de esta"
                     width={140}
                     height={40}
-                    priority
                     className="h-8 w-auto"
                   />
                 </Link>

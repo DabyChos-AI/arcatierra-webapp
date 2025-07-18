@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import Link from 'next/link';
 import { Calendar, Clock, Users, Star, MessageCircle } from 'lucide-react';
 import { Experiencia } from '@/data/experiencias';
@@ -21,13 +21,9 @@ export default function ExperienceCard({ experiencia, index }: ExperienceCardPro
     >
       {/* Imagen */}
       <div className="relative overflow-hidden h-64">
-        <Image
-          src={experiencia.imagen}
+        <OptimizedImage           src={experiencia.imagen}
           alt={experiencia.nombre}
-          fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="object-cover group-hover:scale-110 transition-transform duration-700"
-          priority={index < 3}
+          fill className="object-cover group-hover:scale-110 transition-transform duration-700" ={index < 3}
         />
         
         {/* Overlay gradiente */}

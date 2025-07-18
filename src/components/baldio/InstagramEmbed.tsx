@@ -1,6 +1,6 @@
 'use client'
 
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 
 const InstagramEmbed = () => {
   return (
@@ -12,13 +12,10 @@ const InstagramEmbed = () => {
         className="block w-full hover:opacity-90 transition-opacity"
       >
         <div className="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden">
-          <Image
-            src="/images/baldio-instagram-post.jpg"
+          <OptimizedImage             src="/images/baldio-instagram-post.jpg"
             alt="Baldío Restaurante - Taquiza de cerdo con mole"
             fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
+            className="object-cover" />
         </div>
       </a>
     </div>

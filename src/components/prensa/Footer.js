@@ -1,6 +1,6 @@
 'use client'
 
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import Link from 'next/link'
 import { Mail, Phone, MapPin, Facebook, Instagram, Twitter, Youtube } from 'lucide-react'
 
@@ -13,8 +13,7 @@ export default function Footer() {
           {/* Logo y descripción */}
           <div className="lg:col-span-2">
             <div className="mb-6">
-              <Image
-                src="/logo_arcatierra_blanco.png"
+              <OptimizedImage                 src="/logo_arcatierra_blanco.png"
                 alt="Arca Tierra"
                 width={150}
                 height={50}
@@ -135,9 +134,7 @@ export default function Footer() {
             <div>
               <form className="flex flex-wrap sm:flex-nowrap gap-4">
                 <input
-                  type="email"
-                  placeholder="Tu correo electrónico"
-                  className="w-full sm:flex-grow px-4 py-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-terracota"
+                  type="email" className="w-full sm:flex-grow px-4 py-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-terracota"
                   required
                 />
                 <button

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 
@@ -111,16 +111,12 @@ export default function HeroCarousel() {
     <div className="relative h-[80vh] min-h-[600px] overflow-hidden rounded-3xl shadow-2xl mx-4 md:mx-8 mb-12 mt-20">
       {/* Imagen principal */}
       <div className="absolute inset-0">
-        <Image
-          src={carouselImages[currentIndex].src}
+        <OptimizedImage           src={carouselImages[currentIndex].src}
           alt={carouselImages[currentIndex].alt}
           fill
           className={`object-cover transition-opacity duration-1000 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
-          priority
-          sizes="100vw"
-          onLoad={() => setImageLoaded(true)}
+          }`} onLoad={() => setImageLoaded(true)}
         />
         
         {/* Overlay gradient mejorado */}
@@ -134,13 +130,10 @@ export default function HeroCarousel() {
           {/* Logo Arca Tierra */}
           <div className="mb-8">
             <div className="relative w-48 h-20 mx-auto">
-              <Image
-                src="/images/experiencias/logo_arcatierra_blanco.png"
+              <OptimizedImage                 src="/images/experiencias/logo_arcatierra_blanco.png"
                 alt="Arca Tierra"
                 fill
-                className="object-contain opacity-90"
-                sizes="200px"
-              />
+                className="object-contain opacity-90" />
             </div>
           </div>
 

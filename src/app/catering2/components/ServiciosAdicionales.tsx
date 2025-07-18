@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import { motion } from 'framer-motion';
 import { fadeIn } from '@/lib/animations';
 import { Card } from '@/components/ui/card';
@@ -94,7 +94,7 @@ export default function ServiciosAdicionales() {
               <Card className="overflow-hidden h-full border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
                 {/* Imagen del servicio */}
                 <div className="relative h-48 w-full overflow-hidden">
-                  <Image 
+                  <OptimizedImage 
                     src={servicio.image} 
                     alt={servicio.name} 
                     fill

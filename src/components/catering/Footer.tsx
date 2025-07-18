@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import { Instagram, Mail, Phone, MapPin } from 'lucide-react';
 
 const CateringFooter = () => {
@@ -10,8 +10,7 @@ const CateringFooter = () => {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Logo y descripción */}
           <div className="md:col-span-1">
-            <Image
-              src="/images/logos/logo_arcatierra_blanco.png"
+            <OptimizedImage               src="/images/logos/logo_arcatierra_blanco.png"
               alt="Arca Tierra Catering"
               width={150}
               height={50}

@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 
 interface HeroParallaxProps {
   title: string;
@@ -89,14 +89,10 @@ const HeroParallax: React.FC<HeroParallaxProps> = ({
           }}
           className="w-full h-full"
         >
-          <Image
-            src={img.src}
+          <OptimizedImage             src={img.src}
             alt={img.alt}
             fill
-            style={{ objectFit: 'cover' }}
-            priority={index === 0}
-            sizes="100vw"
-          />
+            style={{ objectFit: 'cover' }} ={index === 0} />
         </motion.div>
       ))}
       

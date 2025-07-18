@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
 import { Star, Building, Users, TrendingUp } from 'lucide-react';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import CorporateRequestModal from './CorporateRequestModal';
 
 export default function CateringClients() {
@@ -143,8 +143,7 @@ export default function CateringClients() {
             >
               {client.hasLogo && client.logo ? (
                 <div className="h-16 flex items-center justify-center mb-4">
-                  <Image
-                    src={client.logo}
+                  <OptimizedImage                     src={client.logo}
                     alt={`${client.name} logo`}
                     width={120}
                     height={60}

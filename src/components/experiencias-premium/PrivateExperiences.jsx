@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef, useEffect } from 'react'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import Link from 'next/link'
 import { motion, useInView, useAnimation } from 'framer-motion'
 import { ChevronRight, Clock, Users, MapPin, Star, CheckCircle } from 'lucide-react'
@@ -127,7 +127,7 @@ const PrivateExperiences = () => {
             >
               <div className="bg-white rounded-xl overflow-hidden shadow-xl h-full transition-all duration-300 hover:shadow-2xl border border-neutro-crema">
                 <div className="relative h-64 overflow-hidden">
-                  <Image 
+                  <OptimizedImage 
                     src={exp.image} 
                     alt={exp.title}
                     fill

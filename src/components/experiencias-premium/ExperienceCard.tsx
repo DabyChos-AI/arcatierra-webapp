@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import { Clock, Users, MapPin, Star } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -35,13 +35,10 @@ const ExperienceCard = ({ experience, onReserve, index = 0 }: ExperienceCardProp
     >
       <div className="relative h-64 overflow-hidden">
         <div className="w-full h-full transition-transform duration-500">
-          <Image 
+          <OptimizedImage 
             src={experience.image || '/images/experiencias/placeholder.jpg'} 
             alt={experience.title}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-            className={`object-cover transition-transform duration-500 ease-out ${isHovered ? 'scale-110' : 'scale-100'}`}
-            priority={index < 3}
+            fill className={`object-cover transition-transform duration-500 ease-out ${isHovered ? 'scale-110' : 'scale-100'}`} ={index < 3}
           />
         </div>
         

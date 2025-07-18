@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef, useEffect } from 'react'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import { motion, useInView, useAnimation } from 'framer-motion'
 
 const TurismoRural = () => {
@@ -63,12 +63,10 @@ const TurismoRural = () => {
             className="relative rounded-2xl overflow-hidden shadow-xl h-[400px] lg:h-[500px]"
             variants={itemVariants}
           >
-            <Image 
+            <OptimizedImage 
               src="/images/experiencias/turismo_regenerativo.jpg" 
               alt="Turismo regenerativo en Xochimilco"
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              style={{ objectFit: 'cover' }}
+              fill style={{ objectFit: 'cover' }}
               className="hover:scale-105 transition-transform duration-700"
             />
           </motion.div>
@@ -114,12 +112,10 @@ const TurismoRural = () => {
               whileHover={{ y: -10 }}
               transition={{ duration: 0.3 }}
             >
-              <Image 
+              <OptimizedImage 
                 src={image.src} 
                 alt={image.alt}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 25vw"
-                style={{ objectFit: 'cover' }}
+                fill style={{ objectFit: 'cover' }}
                 className="group-hover:scale-110 transition-transform duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-verde-principal/80 to-transparent flex items-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">

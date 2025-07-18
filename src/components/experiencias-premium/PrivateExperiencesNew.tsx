@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState } from 'react'
 import { motion, useInView, useAnimation } from 'framer-motion'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import { Check, Calendar, Clock, Users } from 'lucide-react'
 import ExperienceCard from '@/components/experiencias-premium/ExperienceCard'
 import { toast } from 'react-hot-toast'
@@ -148,7 +148,7 @@ const PrivateExperiencesNew = () => {
           
           <motion.div className="md:w-1/2 relative" variants={itemVariants}>
             <div className="aspect-[4/3] rounded-lg overflow-hidden relative">
-              <Image 
+              <OptimizedImage 
                 src="/images/experiencias/experiencias_de_turismo_gastronomico.tif" 
                 alt="Experiencia privada en Chinampa" 
                 fill
@@ -247,28 +247,18 @@ const PrivateExperiencesNew = () => {
           
           <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={(e) => { e.preventDefault(); handleRequestInfo(); }}>
             <input 
-              type="text" 
-              placeholder="Nombre completo" 
-              className="p-3 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-verde-principal"
+              type="text" className="p-3 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-verde-principal"
             />
             <input 
-              type="email" 
-              placeholder="Correo electrónico" 
-              className="p-3 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-verde-principal"
+              type="email" className="p-3 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-verde-principal"
             />
             <input 
-              type="tel" 
-              placeholder="Teléfono (opcional)" 
-              className="p-3 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-verde-principal"
+              type="tel" className="p-3 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-verde-principal"
             />
             <input 
-              type="text" 
-              placeholder="Número de personas" 
-              className="p-3 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-verde-principal"
+              type="text" className="p-3 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-verde-principal"
             />
-            <textarea 
-              placeholder="Cuéntanos qué tipo de experiencia te gustaría" 
-              className="p-3 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-verde-principal md:col-span-2 h-32"
+            <textarea className="p-3 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-verde-principal md:col-span-2 h-32"
             ></textarea>
             
             <div className="md:col-span-2 flex justify-end">

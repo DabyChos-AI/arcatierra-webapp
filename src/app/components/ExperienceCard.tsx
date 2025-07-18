@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import { motion } from 'framer-motion';
 
 interface ExperienceCardProps {
@@ -49,12 +49,10 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
         }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        <Image 
+        <OptimizedImage 
           src={imageSrc} 
           alt={title} 
-          fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          style={{ 
+          fill style={{ 
             objectFit: 'cover',
             transition: 'transform 0.8s ease-out',
             transform: isHovered ? 'scale(1.1)' : 'scale(1)'

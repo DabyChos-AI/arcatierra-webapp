@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import Link from 'next/link';
 import { CheckCircle, Users, Leaf, Heart, ShoppingCart, Calendar, Phone, MapPin, ArrowRight, Droplets } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -249,7 +249,7 @@ export default function HomePage() {
                   <div className="relative overflow-hidden pt-[56.25%]">
                     <div className="absolute inset-0 bg-gray-200">
                       {producto.imagen && (
-                        <Image 
+                        <OptimizedImage 
                           src={producto.imagen || '/products/placeholder.jpg'}
                           alt={producto.nombre}
                           fill

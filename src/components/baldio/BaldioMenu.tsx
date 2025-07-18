@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { useInView } from 'framer-motion'
 import { useRef, useState } from 'react'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 
 interface MenuItem {
   name: string;
@@ -461,7 +461,7 @@ export default function BaldioMenu() {
             variants={itemVariants}
             className="relative h-64 w-full mb-16 overflow-hidden rounded-lg"
           >
-            <Image 
+            <OptimizedImage 
               src="/images/baldio/menu_header.jpg" 
               alt="Platillos de Baldío" 
               fill 

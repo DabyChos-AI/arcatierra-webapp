@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef, useEffect } from 'react'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import { motion, useInView, useAnimation } from 'framer-motion'
 import { ArrowRight, Award, Leaf, Heart } from 'lucide-react'
 
@@ -121,7 +121,7 @@ const RuralTourism = () => {
           >
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10"></div>
             
-            <Image 
+            <OptimizedImage 
               src="/images/experiencias/turismo_rural.JPG" 
               alt="Turismo rural en chinampas de Xochimilco"
               fill

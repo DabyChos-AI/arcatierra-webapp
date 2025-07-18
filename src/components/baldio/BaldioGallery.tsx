@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { useInView } from 'framer-motion'
 import { useRef } from 'react'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 
 export default function BaldioGallery() {
   const ref = useRef(null)
@@ -99,7 +99,7 @@ export default function BaldioGallery() {
                   className="block transition-transform hover:scale-105 duration-300"
                 >
                   <div className="relative h-64 w-full">
-                    <Image 
+                    <OptimizedImage 
                       src={image.src} 
                       alt={image.alt} 
                       fill 

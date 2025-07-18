@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import Link from 'next/link';
 import React from 'react';
 
@@ -42,9 +42,7 @@ export default function ContactoPage() {
                       type="text"
                       id="nombre"
                       name="nombre"
-                      className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-arcatierra-terracota-principal"
-                      placeholder="Tu nombre"
-                      required
+                      className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-arcatierra-terracota-principal" required
                     />
                   </div>
                   <div>
@@ -53,9 +51,7 @@ export default function ContactoPage() {
                       type="email"
                       id="email"
                       name="email"
-                      className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-arcatierra-terracota-principal"
-                      placeholder="tu@email.com"
-                      required
+                      className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-arcatierra-terracota-principal" required
                     />
                   </div>
                 </div>
@@ -66,9 +62,7 @@ export default function ContactoPage() {
                     type="text"
                     id="asunto"
                     name="asunto"
-                    className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-arcatierra-terracota-principal"
-                    placeholder="¿Sobre qué nos escribes?"
-                    required
+                    className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-arcatierra-terracota-principal" required
                   />
                 </div>
 
@@ -78,9 +72,7 @@ export default function ContactoPage() {
                     id="mensaje"
                     name="mensaje"
                     rows={5}
-                    className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-arcatierra-terracota-principal"
-                    placeholder="Escribe tu mensaje aquí..."
-                    required
+                    className="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-arcatierra-terracota-principal" required
                   ></textarea>
                 </div>
 

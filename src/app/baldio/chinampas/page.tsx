@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import BaldioChinampasJourney from '@/components/baldio/BaldioChinampasJourney'
 import BaldioCallToAction from '@/components/baldio/BaldioCallToAction'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import { motion } from 'framer-motion'
 
 export const metadata: Metadata = {
@@ -50,7 +50,7 @@ export default function BaldioChinampas() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-12">
               <div>
                 <div className="rounded-xl overflow-hidden shadow-lg">
-                  <Image 
+                  <OptimizedImage 
                     src="/images/baldio/chinampas_panoramica.jpg"
                     alt="Panorámica de chinampas" 
                     width={600} 
@@ -119,7 +119,7 @@ export default function BaldioChinampas() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[1, 2, 3, 4].map((num) => (
                 <div key={num} className="rounded-lg overflow-hidden">
-                  <Image 
+                  <OptimizedImage 
                     src={`/images/baldio/chinampa_producto_${num}.jpg`}
                     alt={`Producto de chinampa ${num}`} 
                     width={300} 

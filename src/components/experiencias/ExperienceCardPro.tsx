@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 
@@ -44,12 +44,10 @@ const ExperienceCardPro = ({ experience, onReserve }: ExperienceCardProProps) =>
       <div className="flex flex-col md:flex-row h-full">
         {/* Imagen */}
         <div className="w-full md:w-2/5 relative h-64 md:h-auto overflow-hidden">
-          <Image 
+          <OptimizedImage 
             src={experience.image} 
             alt={experience.title}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            style={{ objectFit: 'cover' }}
+            fill style={{ objectFit: 'cover' }}
             className={`transition-transform duration-700 ${isHovered ? 'scale-110' : 'scale-100'}`}
           />
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-verde-principal/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

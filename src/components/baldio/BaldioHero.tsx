@@ -2,7 +2,7 @@
 
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import Link from 'next/link'
 import { Star, Award, Leaf, Sprout, MapPin } from 'lucide-react'
 
@@ -24,15 +24,11 @@ export default function BaldioHero() {
         className="absolute inset-0 z-0"
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70 z-10"></div>
-        <Image 
+        <OptimizedImage 
           src="/images/baldio/exterior_logo_baldio.jpg" 
           alt="Baldío Restaurante" 
           fill 
-          className="object-cover object-[70%_40%]"
-          sizes="100vw"
-          quality={100}
-          priority
-        />
+          className="object-cover object-[70%_40%]" quality={100} />
       </motion.div>
 
       {/* Contenido superpuesto */}

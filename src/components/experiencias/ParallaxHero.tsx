@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import { FC } from 'react';
 
 interface ParallaxHeroProps {
@@ -28,12 +28,9 @@ const ParallaxHero: FC<ParallaxHeroProps> = ({
         className="absolute inset-0 w-full h-full"
         style={{ y, scale }}
       >
-        <Image
-          src={imageSrc}
+        <OptimizedImage           src={imageSrc}
           alt={title}
-          fill
-          priority
-          className="object-cover"
+          fill className="object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-negro/70 to-transparent" />
       </motion.div>

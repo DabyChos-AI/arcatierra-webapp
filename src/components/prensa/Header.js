@@ -1,6 +1,6 @@
 'use client'
 
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import Link from 'next/link'
 
 export default function Header() {
@@ -11,14 +11,11 @@ export default function Header() {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center">
-              <Image
-                src="/logo_arcatierra_horizontal.png"
+              <OptimizedImage                 src="/logo_arcatierra_horizontal.png"
                 alt="Arca Tierra"
                 width={120}
                 height={40}
-                className="h-10 w-auto"
-                priority
-              />
+                className="h-10 w-auto" />
             </Link>
           </div>
 

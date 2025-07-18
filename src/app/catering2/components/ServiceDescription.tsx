@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import { motion } from 'framer-motion';
 import { fadeIn, staggerContainer } from '@/lib/animations';
 
@@ -55,8 +55,7 @@ export default function ServiceDescription() {
             variants={fadeIn('left', 0.3)}
             className="relative h-[500px] rounded-lg overflow-hidden"
           >
-            <Image
-              src="/catering/chef-preparando.jpg"
+            <OptimizedImage               src="/catering/chef-preparando.jpg"
               alt="Chef preparando platillos con ingredientes orgánicos"
               fill
               className="object-cover rounded-lg"

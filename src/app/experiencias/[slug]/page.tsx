@@ -3,7 +3,7 @@
 import { use, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { notFound } from 'next/navigation';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import Link from 'next/link';
 import { X } from 'lucide-react';
 import { experiencias } from '@/data/experiencias';
@@ -56,13 +56,10 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
 
       {/* Hero de la experiencia */}
       <section className="relative h-96 md:h-[500px] overflow-hidden">
-        <Image
-          src={experiencia.imagen}
+        <OptimizedImage           src={experiencia.imagen}
           alt={experiencia.nombre}
           fill
-          className="object-cover"
-          priority
-        />
+          className="object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         
         {/* Badges */}
@@ -218,8 +215,7 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                 >
                   <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
                     <div className="relative h-48">
-                      <Image
-                        src={exp.imagen}
+                      <OptimizedImage                         src={exp.imagen}
                         alt={exp.nombre}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -277,9 +273,7 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
                   <input
-                    type="text"
-                    placeholder="Tu nombre completo"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
+                    type="text" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
                     required
                   />
                 </div>
@@ -287,9 +281,7 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                   <input
-                    type="email"
-                    placeholder="tu@email.com"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
+                    type="email" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
                     required
                   />
                 </div>
@@ -297,9 +289,7 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
                   <input
-                    type="tel"
-                    placeholder="+52 55 1234 5678"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
+                    type="tel" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
                     required
                   />
                 </div>
@@ -330,9 +320,7 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Número de personas</label>
                   <input
                     type="number"
-                    min="1"
-                    placeholder="Ingresa el número de personas"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
+                    min="1" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
                     required
                   />
                   <p className="mt-1 text-xs text-gray-500">Mínimo 10 personas para experiencias privadas</p>
@@ -340,9 +328,7 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Comentarios y requerimientos especiales</label>
-                  <textarea
-                    placeholder="Describe tus necesidades específicas para esta experiencia privada: tipo de evento, requerimientos especiales, etc."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota min-h-[100px]"
+                  <textarea className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota min-h-[100px]"
                   />
                 </div>
               </div>
@@ -352,9 +338,7 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
                   <input
-                    type="text"
-                    placeholder="Tu nombre completo"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
+                    type="text" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
                     required
                   />
                 </div>
@@ -362,9 +346,7 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                   <input
-                    type="email"
-                    placeholder="tu@email.com"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
+                    type="email" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
                     required
                   />
                 </div>
@@ -372,18 +354,14 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
                   <input
-                    type="tel"
-                    placeholder="+52 55 1234 5678"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
+                    type="tel" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
                     required
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Comentarios especiales</label>
-                  <textarea
-                    placeholder="¿Tienes alguna solicitud especial? Por ejemplo: alergias alimentarias, necesidades de accesibilidad, celebración especial, etc."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota min-h-[100px]"
+                  <textarea className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota min-h-[100px]"
                   />
                   <p className="mt-1 text-xs text-gray-500 flex items-center">
                     <span className="mr-1">💡</span>

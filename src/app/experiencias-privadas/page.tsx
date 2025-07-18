@@ -16,7 +16,7 @@ import {
   Gift,
   Sparkles
 } from 'lucide-react'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 
 const experienciasPrivadas = [
   {
@@ -319,27 +319,21 @@ export default function ExperienciasPrivadasPage() {
                   <label className="block text-sm font-medium text-[#3A4741] mb-2">Nombre completo</label>
                   <input
                     type="text"
-                    className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors"
-                    placeholder="Tu nombre completo"
-                  />
+                    className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors" />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-[#3A4741] mb-2">Email</label>
                   <input
                     type="email"
-                    className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors"
-                    placeholder="tu@email.com"
-                  />
+                    className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors" />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-[#3A4741] mb-2">Teléfono</label>
                   <input
                     type="tel"
-                    className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors"
-                    placeholder="+52 55 1234 5678"
-                  />
+                    className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors" />
                 </div>
 
                 <div>
@@ -354,18 +348,14 @@ export default function ExperienciasPrivadasPage() {
                   <label className="block text-sm font-medium text-[#3A4741] mb-2">Número de personas</label>
                   <input
                     type="number"
-                    className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors"
-                    placeholder="Ej: 10"
-                  />
+                    className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors" />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-[#3A4741] mb-2">Detalles adicionales</label>
                   <textarea
                     rows={4}
-                    className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors resize-none"
-                    placeholder="Cuéntanos más sobre tu evento especial, preferencias alimentarias, decoración específica, etc."
-                  />
+                    className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors resize-none" />
                 </div>
               </div>
 

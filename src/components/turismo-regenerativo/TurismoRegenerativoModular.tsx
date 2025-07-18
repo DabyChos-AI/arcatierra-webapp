@@ -1,5 +1,5 @@
 import React from 'react';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 
 // Componente para el encabezado
 interface HeaderProps {
@@ -40,7 +40,7 @@ interface MainImageProps {
 const MainImage: React.FC<MainImageProps> = ({ src, alt }) => {
   return (
     <div className="rounded-lg overflow-hidden shadow-lg mb-12">
-      <Image 
+      <OptimizedImage 
         src={src} 
         alt={alt} 
         width={800} 
@@ -122,7 +122,7 @@ interface ImageCardProps {
 const ImageCard: React.FC<ImageCardProps> = ({ src, alt, title, subtitle }) => {
   return (
     <div className="relative rounded-lg overflow-hidden shadow-md h-64">
-      <Image 
+      <OptimizedImage 
         src={src} 
         alt={alt} 
         fill 

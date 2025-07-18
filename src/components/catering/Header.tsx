@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 
@@ -35,13 +35,12 @@ export default function CateringHeader() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Image
+            <OptimizedImage
               src="/images/logos/logo_arcatierra_horizontal.png"
               alt="Arca Tierra Logo"
               width={180}
               height={60}
               className="h-12 w-auto"
-              priority
             />
           </div>
 

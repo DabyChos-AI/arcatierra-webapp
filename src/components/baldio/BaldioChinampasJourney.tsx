@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import Link from 'next/link'
 
 export default function BaldioChinampasJourney() {
@@ -36,8 +36,7 @@ export default function BaldioChinampasJourney() {
             className="bg-white rounded-xl overflow-hidden shadow-lg"
           >
             <div className="relative h-64">
-              <Image
-                src="/images/baldio/cultivo_en_chinampas.png"
+              <OptimizedImage                 src="/images/baldio/cultivo_en_chinampas.png"
                 alt="Cultivo en Chinampas"
                 fill
                 className="object-cover"
@@ -70,8 +69,7 @@ export default function BaldioChinampasJourney() {
             className="bg-white rounded-xl overflow-hidden shadow-lg"
           >
             <div className="relative h-64">
-              <Image
-                src="/images/baldio/seleccion_de_ingredientes.png"
+              <OptimizedImage                 src="/images/baldio/seleccion_de_ingredientes.png"
                 alt="Selección de Ingredientes"
                 fill
                 className="object-cover"
@@ -104,8 +102,7 @@ export default function BaldioChinampasJourney() {
             className="bg-white rounded-xl overflow-hidden shadow-lg"
           >
             <div className="relative h-64">
-              <Image
-                src="/images/baldio/cocina_de_baldio.png"
+              <OptimizedImage                 src="/images/baldio/cocina_de_baldio.png"
                 alt="Cocina de Baldío"
                 fill
                 className="object-cover"

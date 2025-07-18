@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import Link from 'next/link'
 import { Heart, ShoppingCart, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -153,8 +153,7 @@ export default function FavoritosPage() {
                 <div className="relative">
                   <Link href={`/producto/${producto.id}`}>
                     <div className="aspect-square overflow-hidden">
-                      <Image
-                        src={producto.imagen || '/placeholder-product.jpg'}
+                      <OptimizedImage                         src={producto.imagen || '/placeholder-product.jpg'}
                         alt={producto.nombre}
                         width={400}
                         height={400}

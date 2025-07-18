@@ -1,7 +1,7 @@
 'use client'
 
 import { Calendar, ExternalLink, Share2, Star } from 'lucide-react'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 
 export default function ArticleCard({ article }) {
   const formatDate = (dateString) => {
@@ -106,7 +106,7 @@ export default function ArticleCard({ article }) {
         <div className="mb-4 relative group">
           {article.publicationLogo ? (
             <div className="w-full h-16 md:h-20 overflow-hidden bg-white flex items-center justify-start border border-gray-200 rounded-sm p-2 relative">
-              <Image 
+              <OptimizedImage 
                 src={article.publicationLogo} 
                 alt={article.publication}
                 width={120}
@@ -192,13 +192,10 @@ export function FeaturedArticleCard({ article }) {
     <article className="bg-gradient-to-br from-gray-700 to-gray-900 text-black rounded-lg card-shadow overflow-hidden group hover:scale-[1.02] transition-all duration-300">
       {/* Imagen del artículo con overlay */}
       <div className="relative h-56 overflow-hidden">
-        <Image
-          src={article.image || '/chinampas-default.jpg'}
+        <OptimizedImage           src={article.image || '/chinampas-default.jpg'}
           alt={`Imagen del artículo: ${article.title}`}
           fill
-          className="object-cover opacity-40 group-hover:scale-105 transition-transform duration-300"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
+          className="object-cover opacity-40 group-hover:scale-105 transition-transform duration-300" />
         
         {/* Badge destacado */}
         <div className="absolute top-4 left-4">
@@ -230,7 +227,7 @@ export function FeaturedArticleCard({ article }) {
         <div className="mb-4 relative group">
           {article.publicationLogo ? (
             <div className="relative w-full h-20 overflow-hidden bg-white rounded-sm">
-              <Image 
+              <OptimizedImage 
                 src={article.publicationLogo} 
                 alt={article.publication}
                 fill

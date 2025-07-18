@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import { Calendar, MapPin, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeIn } from '@/lib/animations';
@@ -61,12 +61,10 @@ const TestimonialCard = ({ testimonial }: { testimonial: typeof TESTIMONIOS[0] }
       whileHover={{ y: -8 }}
     >
       <div className="relative h-56 overflow-hidden">
-        <Image 
+        <OptimizedImage 
           src={testimonial.imagen || '/catering/testimonial-default.jpg'} 
           alt={testimonial.nombre}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-          className={`object-cover transition-transform duration-700 ease-in-out ${isHovered ? 'scale-110' : 'scale-100'}`}
+          fill className={`object-cover transition-transform duration-700 ease-in-out ${isHovered ? 'scale-110' : 'scale-100'}`}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-60"></div>
         <div className="absolute bottom-4 left-4 right-4">

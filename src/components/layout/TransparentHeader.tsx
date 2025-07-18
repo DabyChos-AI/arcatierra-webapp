@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 // import { signIn, signOut, useSession } from 'next-auth/react'; // Temporalmente desactivado
 import { motion, AnimatePresence } from 'framer-motion';
 import { shouldHaveTransparentHeader } from './HeaderDetector';
@@ -496,17 +496,14 @@ const TransparentHeader: React.FC = () => {
                   width: '180px',
                   height: '54px'
                 }}>
-                  <Image 
+                  <OptimizedImage 
                     src={"/images/logos/logo_arcatierra_horizontal.png"}
                     alt="Arca Tierra" 
                     width={180}
                     height={54}
                     style={{ 
                       opacity: 1
-                    }}
-                    sizes="180px"
-                    priority
-                  />
+                    }} />
                 </div>
                 
                 {/* Logo para móvil - Solo visible después del montaje en cliente */}
@@ -516,31 +513,26 @@ const TransparentHeader: React.FC = () => {
                   width: '50px',
                   height: '50px'
                 }}>
-                  <Image 
+                  <OptimizedImage 
                     src={"/images/logos/logo_arcatierra_sin_texto.png"}
                     alt="Arca Tierra" 
                     fill
                     style={{ 
                       objectFit: 'contain',
                       opacity: 1
-                    }}
-                    sizes="50px"
-                    priority
-                  />
+                    }} />
                 </div>
               </>
             ) : (
               /* Fallback para SSR que se reemplazará en el cliente */
-              <Image 
+              <OptimizedImage 
                 src={"/images/logos/logo_arcatierra_horizontal.png"}
                 alt="Arca Tierra" 
                 width={180}
                 height={54}
                 style={{ 
                   opacity: 1
-                }}
-                priority
-              />
+                }} />
             )}
           </div>
         </Link>

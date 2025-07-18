@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import { useEffect, useState } from 'react'
 
 // Declaración de tipo para Instagram embed

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import Link from 'next/link'
 
 type Experience = {
@@ -57,12 +57,9 @@ const ExperienceCarousel = ({ experiences, onReserve }: ExperienceCarouselProps)
               <div className="flex flex-col md:flex-row">
                 {/* Imagen */}
                 <div className="relative w-full md:w-2/5 h-64 md:h-auto">
-                  <Image
-                    src={experience.image}
+                  <OptimizedImage                     src={experience.image}
                     alt={experience.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    style={{ objectFit: 'cover' }}
+                    fill style={{ objectFit: 'cover' }}
                     className="transition-transform duration-500 hover:scale-105"
                   />
                   <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />

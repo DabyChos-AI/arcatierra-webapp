@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import Link from 'next/link';
 import { FC } from 'react';
 
@@ -32,11 +32,10 @@ const ExperienceCard: FC<ExperienceCardProps> = ({
       <div className="aspect-[16/9] w-full overflow-hidden rounded-t-2xl">
         <div className="relative h-full w-full transform transition-transform duration-700 group-hover:scale-105">
           {imageSrc ? (
-            <Image 
+            <OptimizedImage 
               src={imageSrc} 
               alt={title}
               fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover"
             />
           ) : (

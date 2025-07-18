@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import ExperienceCard from '@/components/experiencias/ExperienceCard'
 
 // Tipos
@@ -164,7 +164,7 @@ const ExperienciasPrivadas = () => {
           </div>
           <div className="lg:col-span-3 relative rounded-2xl overflow-hidden">
             <div className="aspect-w-16 aspect-h-9 lg:h-full relative">
-              <Image 
+              <OptimizedImage 
                 src="/images/experiencias/privada-destacada.jpg" 
                 alt="Experiencia privada en las chinampas" 
                 fill

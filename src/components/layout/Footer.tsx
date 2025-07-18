@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import { Facebook, Instagram, Mail, Phone, MapPin } from 'lucide-react';
 
 const Footer: React.FC = () => {
@@ -10,8 +10,7 @@ const Footer: React.FC = () => {
         {/* Sección de empresa con Schema.org */}
         <div className="footer-section" itemScope itemType="https://schema.org/Organization">
           <div style={{ position: 'relative', width: '180px', height: '54px' }} className="mb-4">
-            <Image
-              src="/images/logos/logo_arcatierra_horizontal.png"
+            <OptimizedImage               src="/images/logos/logo_arcatierra_horizontal.png"
               alt="ArcaTierra"
               width={180}
               height={54}
@@ -22,9 +21,7 @@ const Footer: React.FC = () => {
                 height: '54px',
                 maxWidth: '100%'
                 // height: 'auto' - Eliminado para evitar contradicción con height: '54px'
-              }}
-              sizes="180px"
-            />
+              }} />
           </div>
           <p className="text-white/90 mb-4" itemProp="description">
             Conectando las chinampas de Xochimilco con tu mesa. 
@@ -149,9 +146,7 @@ const Footer: React.FC = () => {
             <h4 className="text-white font-semibold mb-3">Newsletter</h4>
             <form className="flex flex-col sm:flex-row gap-2">
               <input
-                type="email"
-                placeholder="Tu email"
-                className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                type="email" className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
                 required
               />
               <button
