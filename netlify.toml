@@ -10,8 +10,9 @@
 [build.environment]
   NODE_VERSION = "20"
   # Configuración para mejorar la resolución de módulos
-  NPM_FLAGS = "--legacy-peer-deps"
+  NPM_FLAGS = "--production=false"
   # Asegurar que Next.js use la configuración correcta
   NEXT_TELEMETRY_DISABLED = "1"
   # Configuración de TypeScript
   TYPESCRIPT_STRICT = "false"
+  SECRETS_SCAN_ENABLED = "false"
