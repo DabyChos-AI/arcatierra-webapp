@@ -6,6 +6,7 @@ const nextConfig = {
     ignoreDuringBuilds: true, // Ignorar ESLint durante el build
   },
   images: {
+    unoptimized: true, // Deshabilitar optimización para Netlify
     remotePatterns: [
       {
         protocol: 'https',
