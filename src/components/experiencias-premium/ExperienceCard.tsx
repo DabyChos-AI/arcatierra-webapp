@@ -38,7 +38,9 @@ const ExperienceCard = ({ experience, onReserve, index = 0 }: ExperienceCardProp
           <OptimizedImage 
             src={experience.image || '/images/experiencias/placeholder.jpg'} 
             alt={experience.title}
-            fill className={`object-cover transition-transform duration-500 ease-out ${isHovered ? 'scale-110' : 'scale-100'}`} ={index < 3}
+            fill
+            className={`object-cover transition-transform duration-500 ease-out ${isHovered ? 'scale-110' : 'scale-100'}`}
+            priority={index < 3}
           />
         </div>
         

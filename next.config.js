@@ -70,6 +70,26 @@ const nextConfig = {
       os: false,
     }
     
+    // Optimizar framer-motion para producción
+    if (!dev && !isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          ...config.optimization.splitChunks,
+          cacheGroups: {
+            ...config.optimization.splitChunks?.cacheGroups,
+            framerMotion: {
+              name: 'framer-motion',
+              chunks: 'all',
+              test: /[\/]node_modules[\/]framer-motion[\/]/,
+              priority: 30,
+              reuseExistingChunk: true,
+            },
+          },
+        },
+      }
+    }
+    
     return config
   },
 }
