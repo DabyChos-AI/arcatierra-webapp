@@ -502,34 +502,66 @@ const TransparentHeader: React.FC = () => {
             <>
               {/* Logo para escritorio - Controlado por CSS media queries */}
               <div className="header-logo-desktop" style={{ 
-                position: 'relative',
-                width: '180px',
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                gap: '8px',
                 height: '54px'
               }}>
-                <OptimizedImage 
-                  src="/images/logos/logo_arcatierra_horizontal.png"
-                  alt="Arca Tierra" 
-                  width={180}
-                  height={54}
-                  style={{ 
-                    opacity: 1
-                  }} />
+                {/* Logo sin texto */}
+                <div style={{ position: 'relative', width: '54px', height: '54px' }}>
+                  <OptimizedImage 
+                    src="/images/logos/logo_arcatierra_sin_texto.png"
+                    alt="Arca Tierra" 
+                    width={54}
+                    height={54}
+                    style={{ objectFit: 'contain' }}
+                  />
+                </div>
+                
+                {/* Logo solo letras */}
+                <div style={{ position: 'relative', height: '32px' }}>
+                  <OptimizedImage 
+                    src="/images/logos/logo_arcatiera_solo_texto.png"
+                    alt="Arca Tierra" 
+                    width={120}
+                    height={32}
+                    style={{ objectFit: 'contain' }}
+                  />
+                </div>
               </div>
               
               {/* Logo para móvil - Controlado por CSS media queries */}
               <div className="header-logo-mobile" style={{ 
-                position: 'relative',
-                width: '50px',
-                height: '50px'
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                gap: '6px',
+                height: '40px'
               }}>
-                <OptimizedImage 
-                  src="/images/logos/logo_arcatierra_sin_texto.png"
-                  alt="Arca Tierra" 
-                  fill
-                  style={{ 
-                    objectFit: 'contain',
-                    opacity: 1
-                  }} />
+                {/* Logo sin texto */}
+                <div style={{ position: 'relative', width: '40px', height: '40px' }}>
+                  <OptimizedImage 
+                    src="/images/logos/logo_arcatierra_sin_texto.png"
+                    alt="Arca Tierra" 
+                    width={40}
+                    height={40}
+                    style={{ objectFit: 'contain' }}
+                  />
+                </div>
+                
+                {/* Logo solo letras */}
+                <div style={{ position: 'relative', height: '20px' }}>
+                  <OptimizedImage 
+                    src="/images/logos/logo_arcatiera_solo_texto.png"
+                    alt="Arca Tierra" 
+                    width={70}
+                    height={20}
+                    style={{ objectFit: 'contain' }}
+                  />
+                </div>
               </div>
             </>
           </div>
@@ -716,7 +748,21 @@ const TransparentHeader: React.FC = () => {
             style={styles.mobileMenuButton(isTransparent, isScrolled)}
             className="header-mobile-button"
           >
-            <i className="fas fa-bars" aria-hidden="true"></i>
+            {/* Hamburger icon usando SVG para garantizar visibilidad */}
+            <svg 
+              width="24" 
+              height="24" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
           </button>
         </div>
       </div>
@@ -752,15 +798,29 @@ const TransparentHeader: React.FC = () => {
               transition={{ duration: 0.3 }}
             >
               <div style={styles.mobileMenuHeader}>
-                {/* Logo en el menú móvil */}
-                <div style={{ position: 'relative', width: '40px', height: '40px' }}>
-                  <OptimizedImage 
-                    src="/images/logos/logo_arcatierra_sin_texto.png"
-                    alt="Arca Tierra" 
-                    width={40}
-                    height={40}
-                    style={{ objectFit: 'contain' }}
-                  />
+                {/* Logos en el menú móvil - Logo sin texto + Logo solo texto */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {/* Logo sin texto */}
+                  <div style={{ position: 'relative', width: '40px', height: '40px' }}>
+                    <OptimizedImage 
+                      src="/images/logos/logo_arcatierra_sin_texto.png"
+                      alt="Arca Tierra" 
+                      width={40}
+                      height={40}
+                      style={{ objectFit: 'contain' }}
+                    />
+                  </div>
+                  
+                  {/* Logo solo letras */}
+                  <div style={{ position: 'relative', height: '25px' }}>
+                    <OptimizedImage 
+                      src="/images/logos/logo_arcatiera_solo_texto.png"
+                      alt="Arca Tierra" 
+                      width={80}
+                      height={25}
+                      style={{ objectFit: 'contain' }}
+                    />
+                  </div>
                 </div>
                 
                 <button 
