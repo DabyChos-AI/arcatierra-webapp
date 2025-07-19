@@ -196,8 +196,9 @@ const styles = {
     flexDirection: 'column' as const,
     overflowY: 'auto' as const,
     width: '100%',
-    maxWidth: '400px',
-    boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)',
+    maxWidth: '420px',
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)',
+    backdropFilter: 'blur(10px)',
   },
   // Este mobileMenuHeader se reemplaza con el de abajo
   mobileMenuHeaderOld: {
@@ -207,25 +208,40 @@ const styles = {
     marginBottom: '2rem',
   },
   mobileMenuItem: {
-    padding: '1rem 0',
+    padding: '1.2rem 0',
     borderBottom: '1px solid var(--arcatierra-crema-principal)',
     textDecoration: 'none',
     color: 'var(--arcatierra-verde-tipografia)',
-    fontSize: '1.25rem',
+    fontSize: '1.1rem',
     cursor: 'pointer',
+    fontWeight: 500,
+    transition: 'all 0.2s ease',
+    display: 'block',
+    borderRadius: '8px',
+    marginBottom: '0.25rem',
   },
   mobileMenuHeader: {
     display: 'flex',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: '1rem 1.5rem',
     borderBottom: '1px solid var(--arcatierra-crema-principal)',
+    backgroundColor: 'var(--arcatierra-crema-principal)',
   },
   mobileMenuCloseButton: {
-    background: 'none',
+    background: 'var(--arcatierra-terracota-principal)',
     border: 'none',
-    color: 'var(--arcatierra-verde-tipografia)',
-    fontSize: '1.5rem',
+    color: 'white',
+    fontSize: '1.2rem',
     cursor: 'pointer',
+    padding: '0.5rem',
+    borderRadius: '50%',
+    width: '40px',
+    height: '40px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s ease',
   },
   mobileMenuContent: {
     padding: '1.5rem',
@@ -491,7 +507,7 @@ const TransparentHeader: React.FC = () => {
               <>
                 {/* Logo para escritorio - Solo visible después del montaje en cliente */}
                 <div style={{ 
-                  display: windowSize.width && windowSize.width > 768 ? 'block' : 'none',
+                  display: windowSize.width && windowSize.width > 1200 ? 'block' : 'none',
                   position: 'relative',
                   width: '180px',
                   height: '54px'
@@ -508,7 +524,7 @@ const TransparentHeader: React.FC = () => {
                 
                 {/* Logo para móvil - Solo visible después del montaje en cliente */}
                 <div style={{ 
-                  display: windowSize.width && windowSize.width <= 768 ? 'block' : 'none',
+                  display: windowSize.width && windowSize.width <= 1200 ? 'block' : 'none',
                   position: 'relative',
                   width: '50px',
                   height: '50px'
@@ -538,7 +554,7 @@ const TransparentHeader: React.FC = () => {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav style={styles.nav} className="hidden md:flex">
+        <nav style={styles.nav} className="hidden xl:flex">
           {mainNav.map((item) => (
             <div key={item.name} style={{ position: 'relative' }}>
               {item.hasSubmenu ? (
@@ -716,7 +732,7 @@ const TransparentHeader: React.FC = () => {
           <button 
             onClick={toggleMobileMenu} 
             style={styles.mobileMenuButton(isTransparent, isScrolled)}
-            className="md:hidden"
+            className="xl:hidden"
           >
             <i className="fas fa-bars" aria-hidden="true"></i>
           </button>
@@ -726,21 +742,52 @@ const TransparentHeader: React.FC = () => {
       {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            style={styles.mobileMenu}
-            initial={{ x: '-100%' }}
-            animate={{ x: '0' }}
-            exit={{ x: '-100%' }}
-            transition={{ duration: 0.3 }}
-          >
-            <div style={styles.mobileMenuHeader}>
-              <button 
-                onClick={toggleMobileMenu}
-                style={styles.mobileMenuCloseButton}
-              >
-                <i className="fas fa-times" aria-hidden="true"></i>
-              </button>
-            </div>
+          <>
+            {/* Overlay backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 1999,
+              }}
+              onClick={toggleMobileMenu}
+            />
+            
+            {/* Mobile Menu Panel */}
+            <motion.div
+              style={styles.mobileMenu}
+              initial={{ x: '-100%' }}
+              animate={{ x: '0' }}
+              exit={{ x: '-100%' }}
+              transition={{ duration: 0.3 }}
+            >
+              <div style={styles.mobileMenuHeader}>
+                {/* Logo en el menú móvil */}
+                <div style={{ position: 'relative', width: '40px', height: '40px' }}>
+                  <OptimizedImage 
+                    src="/images/logos/logo_arcatierra_sin_texto.png"
+                    alt="Arca Tierra" 
+                    width={40}
+                    height={40}
+                    style={{ objectFit: 'contain' }}
+                  />
+                </div>
+                
+                <button 
+                  onClick={toggleMobileMenu}
+                  style={styles.mobileMenuCloseButton}
+                >
+                  <i className="fas fa-times" aria-hidden="true"></i>
+                </button>
+              </div>
             <div style={styles.mobileMenuContent}>
               {/* Menú principal móvil */}
               {mainNav.map((item) => (
@@ -851,6 +898,7 @@ const TransparentHeader: React.FC = () => {
               )}
             </div>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
 
