@@ -502,66 +502,34 @@ const TransparentHeader: React.FC = () => {
             <>
               {/* Logo para escritorio - Controlado por CSS media queries */}
               <div className="header-logo-desktop" style={{ 
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-                gap: '8px',
+                position: 'relative',
+                width: '180px',
                 height: '54px'
               }}>
-                {/* Logo sin texto */}
-                <div style={{ position: 'relative', width: '54px', height: '54px' }}>
-                  <OptimizedImage 
-                    src="/images/logos/logo_arcatierra_sin_texto.png"
-                    alt="Arca Tierra" 
-                    width={54}
-                    height={54}
-                    style={{ objectFit: 'contain' }}
-                  />
-                </div>
-                
-                {/* Logo solo letras */}
-                <div style={{ position: 'relative', height: '32px' }}>
-                  <OptimizedImage 
-                    src="/images/logos/logo_arcatiera_solo_texto.png"
-                    alt="Arca Tierra" 
-                    width={120}
-                    height={32}
-                    style={{ objectFit: 'contain' }}
-                  />
-                </div>
+                <OptimizedImage 
+                  src="/images/logos/logo_arcatierra_horizontal.png"
+                  alt="Arca Tierra" 
+                  width={180}
+                  height={54}
+                  style={{ 
+                    opacity: 1
+                  }} />
               </div>
               
               {/* Logo para móvil - Controlado por CSS media queries */}
               <div className="header-logo-mobile" style={{ 
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-                gap: '6px',
-                height: '40px'
+                position: 'relative',
+                width: '50px',
+                height: '50px'
               }}>
-                {/* Logo sin texto */}
-                <div style={{ position: 'relative', width: '40px', height: '40px' }}>
-                  <OptimizedImage 
-                    src="/images/logos/logo_arcatierra_sin_texto.png"
-                    alt="Arca Tierra" 
-                    width={40}
-                    height={40}
-                    style={{ objectFit: 'contain' }}
-                  />
-                </div>
-                
-                {/* Logo solo letras */}
-                <div style={{ position: 'relative', height: '20px' }}>
-                  <OptimizedImage 
-                    src="/images/logos/logo_arcatiera_solo_texto.png"
-                    alt="Arca Tierra" 
-                    width={70}
-                    height={20}
-                    style={{ objectFit: 'contain' }}
-                  />
-                </div>
+                <OptimizedImage 
+                  src="/images/logos/logo_arcatierra_sin_texto.png"
+                  alt="Arca Tierra" 
+                  fill
+                  style={{ 
+                    objectFit: 'contain',
+                    opacity: 1
+                  }} />
               </div>
             </>
           </div>
@@ -745,8 +713,21 @@ const TransparentHeader: React.FC = () => {
           {/* Mobile Menu Button */}
           <button 
             onClick={toggleMobileMenu} 
-            style={styles.mobileMenuButton(isTransparent, isScrolled)}
             className="header-mobile-button"
+            style={{
+              display: 'none', // Controlado por CSS media queries
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '0.5rem',
+              color: isTransparent && !isScrolled ? 'white' : 'var(--arcatierra-verde-tipografia)',
+              fontSize: '1.2rem',
+              zIndex: 1001,
+              minWidth: '40px',
+              minHeight: '40px'
+            }}
           >
             {/* Hamburger icon usando SVG para garantizar visibilidad */}
             <svg 
@@ -833,51 +814,14 @@ const TransparentHeader: React.FC = () => {
             <div style={styles.mobileMenuContent}>
               {/* Menú principal móvil */}
               {mainNav.map((item) => (
-                <div key={item.name}>
-                  {item.hasSubmenu ? (
-                    <>
-                      <div 
-                        style={{
-                          ...styles.mobileMenuItem,
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center'
-                        }}
-                        onClick={(e) => toggleSubmenu(e, item.name)}
-                      >
-                        {item.name}
-                        <i className={`fas fa-chevron-${activeSubmenu === item.name ? 'up' : 'down'}`}></i>
-                      </div>
-                      
-                      {activeSubmenu === item.name && (
-                        <div style={{ paddingLeft: '1rem' }}>
-                          {item.submenuItems?.map((subItem) => (
-                            <Link 
-                              key={subItem.name} 
-                              href={subItem.href} 
-                              style={{
-                                ...styles.mobileMenuItem,
-                                fontSize: '1rem',
-                                borderBottom: '1px solid rgba(0,0,0,0.05)'
-                              }}
-                              onClick={toggleMobileMenu}
-                            >
-                              {subItem.name}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <Link 
-                      href={item.href} 
-                      style={styles.mobileMenuItem}
-                      onClick={toggleMobileMenu}
-                    >
-                      {item.name}
-                    </Link>
-                  )}
-                </div>
+                <Link 
+                  key={item.name}
+                  href={item.href} 
+                  style={styles.mobileMenuItem}
+                  onClick={toggleMobileMenu}
+                >
+                  {item.name}
+                </Link>
               ))}
               
               {/* Iconos de navegación móvil */}
