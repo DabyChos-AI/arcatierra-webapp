@@ -175,14 +175,10 @@ const styles = {
     textDecoration: 'none',
   }),
   mobileMenuButton: (isTransparent: boolean, isScrolled: boolean) => ({
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
     color: isTransparent && !isScrolled 
       ? 'white' 
       : 'var(--arcatierra-verde-tipografia)',
-    fontSize: '1.5rem',
-    display: 'block'
+    fontSize: '1.5rem'
   }),
   mobileMenu: {
     position: 'fixed' as const,

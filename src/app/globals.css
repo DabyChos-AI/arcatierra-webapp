@@ -506,6 +506,20 @@ a.animated-link:hover::after {
   }
 }
 
+/* MOBILE BUTTON - Estado por defecto (oculto en desktop) */
+.header-mobile-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: var(--arcatierra-verde-tipografia);
+  font-size: 1.2rem;
+  z-index: 1001;
+}
+
 /* HEADER RESPONSIVE - FORZAR COMPORTAMIENTO MÓVIL */
 @media (max-width: 1200px) {
   /* Ocultar navegación desktop */
@@ -516,6 +530,17 @@ a.animated-link:hover::after {
   /* Mostrar botón hamburguesa */
   .header-mobile-button {
     display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 0.5rem !important;
+    color: var(--arcatierra-verde-tipografia) !important;
+    font-size: 1.2rem !important;
+    z-index: 1001 !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
   }
   
   /* Logo desktop - ocultar */
