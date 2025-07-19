@@ -6,56 +6,203 @@ import { Calendar, Package, Leaf, Users, Star, CheckCircle, XCircle } from 'luci
 import { Button } from '@/components/ui/button'
 
 const SUBSCRIPTION_PLANS = [
+  // CANASTAS REGULARES
   {
     id: 'individual',
+    codigo: 'INDIVIDUAL',
     name: 'Canasta Individual',
-    description: 'Perfecta para 1-2 personas',
-    price: 350,
-    items: '8-10 productos',
-    weight: '3-4 kg',
+    description: 'Perfecta para personas solteras o parejas',
+    price: 290,
+    weight: '3.5 kg',
+    ideal: '1-2 personas',
+    tipo: 'regular',
+    categoria: 'Canastas Regulares',
+    emoji: '🥬',
     features: [
-      '5-6 verduras de temporada',
-      '2-3 frutas frescas',
-      '1 producto especial (hierbas, chiles, etc.)',
-      'Recetas incluidas',
-      'Origen de cada producto'
+      'Perfecta para personas solteras o parejas',
+      'Variedad balanceada de nutrientes',
+      'Fácil de consumir en una semana',
+      'Incluye fruta y verduras de temporada'
     ],
-    popular: false
-  },
-  {
-    id: 'familiar',
-    name: 'Canasta Familiar',
-    description: 'Ideal para familias de 3-4 personas',
-    price: 550,
-    items: '12-15 productos',
-    weight: '5-6 kg',
-    features: [
-      '8-9 verduras de temporada',
-      '3-4 frutas frescas',
-      '2 productos especiales',
-      'Recetas familiares incluidas',
-      'Origen de cada producto',
-      'Descuento en productos adicionales'
-    ],
+    precioKg: 82.86,
     popular: true
   },
   {
-    id: 'premium',
-    name: 'Canasta Premium',
-    description: 'La experiencia completa para familias grandes',
-    price: 750,
-    items: '18-20 productos',
-    weight: '7-8 kg',
+    id: 'media',
+    codigo: 'MEDIA',
+    name: 'Canasta Media',
+    description: 'Equilibrio perfecto entre variedad y cantidad',
+    price: 350,
+    weight: '5 kg',
+    ideal: '2-3 personas',
+    tipo: 'regular',
+    categoria: 'Canastas Regulares',
+    emoji: '🌱',
     features: [
-      '10-12 verduras de temporada',
-      '4-5 frutas frescas',
-      '3-4 productos especiales',
-      'Productos exclusivos de temporada',
-      'Recetas de chef incluidas',
-      'Origen y historia de cada producto',
-      'Acceso prioritario a experiencias',
-      'Envío gratis'
+      'Equilibrio perfecto entre variedad y cantidad',
+      'Incluye frutas y verduras de temporada',
+      'Ideal para familias pequeñas',
+      'Excelente relación calidad-precio'
     ],
+    precioKg: 70.00,
+    popular: true
+  },
+  {
+    id: 'completa',
+    codigo: 'COMPLETA',
+    name: 'Canasta Completa',
+    description: 'Variedad amplia con productos especiales',
+    price: 510,
+    weight: '7.5 kg',
+    ideal: '3-4 personas',
+    tipo: 'regular',
+    categoria: 'Canastas Regulares',
+    emoji: '🥕',
+    features: [
+      'Variedad amplia de productos',
+      'Incluye fruta y verduras de temporada',
+      'Perfecta para familias medianas',
+      'Mayor diversidad nutricional'
+    ],
+    precioKg: 68.00,
+    popular: false
+  },
+  // CANASTAS BÁSICAS (CON EXTRAS)
+  {
+    id: 'basica-individual',
+    codigo: 'BASICA_INDIVIDUAL',
+    name: 'Canasta Básica Individual',
+    description: 'Con productos básicos esenciales y artesanales',
+    price: 471,
+    weight: '4.5 kg',
+    ideal: '1-2 personas (productos básicos)',
+    tipo: 'basica',
+    categoria: 'Canastas Básicas',
+    emoji: '🌿',
+    features: [
+      'Productos básicos esenciales',
+      'Queso artesanal',
+      'Tortillas de maíz nativo',
+      'Huevos de gallinas de libre pastoreo',
+      'Perfecto para cocinar en casa'
+    ],
+    contenidoDetallado: [
+      '3.5 kg de frutas y verduras de temporada',
+      '250 g de queso Oaxaca artesanal',
+      '12 tortillas de maíz nativo',
+      '12 huevos de gallinas de libre pastoreo en las chinampas',
+      'Todo proveniente de productores locales'
+    ],
+    precioKg: 104.67,
+    popular: false
+  },
+  {
+    id: 'basica-media',
+    codigo: 'BASICA_MEDIA',
+    name: 'Canasta Básica Media',
+    description: 'Combo completo para alimentación variada',
+    price: 1023,
+    weight: '8 kg',
+    ideal: '2-4 personas (productos básicos)',
+    tipo: 'basica',
+    categoria: 'Canastas Básicas',
+    emoji: '🥔',
+    features: [
+      'Combo completo para alimentación variada',
+      'Incluye proteínas de origen regenerativo',
+      'Queso artesanal',
+      'Ideal para parejas o familias pequeñas',
+      'Directamente del campo a tu mesa'
+    ],
+    contenidoDetallado: [
+      '5 kg de frutas y verduras de temporada',
+      '500 g de queso Oaxaca artesanal',
+      '24 tortillas de maíz nativo',
+      '18 huevos frescos de gallinas de libre pastoreo en las chinampas',
+      '500 g de milanesas de pollo de origen regenerativo',
+      '500 g de bistec de res de origen regenerativo'
+    ],
+    precioKg: 127.88,
+    popular: false
+  },
+  {
+    id: 'basica-familiar',
+    codigo: 'BASICA_FAMILIAR',
+    name: 'Canasta Básica Familiar',
+    description: 'El combo más completo para familias',
+    price: 1488,
+    weight: '13 kg',
+    ideal: '4-6 personas (productos básicos)',
+    tipo: 'basica',
+    categoria: 'Canastas Básicas',
+    emoji: '🌽',
+    features: [
+      'El combo más completo para familias',
+      'Doble variedad de quesos artesanales',
+      'Proteínas de origen regenerativo',
+      'Todo lo necesario para comidas balanceadas',
+      'Apoya a productores locales',
+      'Frescura del campo mexicano'
+    ],
+    contenidoDetallado: [
+      '10 kg de frutas y verduras de temporada',
+      '500 g de queso Oaxaca artesanal',
+      '250 g de queso Manchego artesanal',
+      '24 tortillas de maíz nativo',
+      '18 huevos frescos de gallinas de libre pastoreo de las chinampas',
+      '600 g de pechuga de pollo (con hueso)'
+    ],
+    opciones: {
+      carne: {
+        requerida: true,
+        opciones: [
+          '500 g de carne molida de res de origen regenerativo',
+          '500 g de carne deshebrada de res de origen regenerativo'
+        ]
+      }
+    },
+    precioKg: 114.46,
+    popular: false
+  },
+  // CANASTAS ESPECIALES
+  {
+    id: 'familiar',
+    codigo: 'FAMILIAR',
+    name: 'Canasta Familiar',
+    description: 'La opción más popular para familias grandes',
+    price: 670,
+    weight: '10 kg',
+    ideal: '4-6 personas',
+    tipo: 'regular',
+    categoria: 'Canastas Regulares',
+    emoji: '🍅',
+    features: [
+      'La opción más popular para familias grandes',
+      'Abundante variedad de alimentos agroecológicos',
+      'Incluye fruta y verduras de temporada',
+      'Máximo aprovechamiento familiar'
+    ],
+    precioKg: 67.00,
+    popular: true
+  },
+  {
+    id: 'retornable',
+    codigo: 'RETORNABLE',
+    name: 'Canasta Retornable',
+    description: 'Opción ecológica con contenedor reutilizable',
+    price: 310,
+    weight: 'Variable',
+    ideal: 'Consumo sustentable',
+    tipo: 'especial',
+    categoria: 'Eco-Friendly',
+    emoji: '♻️',
+    features: [
+      'NO INCLUYE FRUTAS NI VERDURAS',
+      'Sistema de economía circular',
+      'Contenedor reutilizable',
+      'Compromiso con el medio ambiente'
+    ],
+    precioKg: 0,
     popular: false
   }
 ]
@@ -69,28 +216,43 @@ export default function SuscripcionesPage() {
   // const sessionResult = useSession() // Temporalmente desactivado
   // const { data: session } = sessionResult || { data: null }
   const session = null // Temporalmente sin autenticación
-  const [selectedPlan, setSelectedPlan] = useState('familiar')
+  const [selectedCanastas, setSelectedCanastas] = useState<string[]>([])
   const [selectedFrequency, setSelectedFrequency] = useState('weekly')
   const [isSubscribing, setIsSubscribing] = useState(false)
+  const [carneSelections, setCarneSelections] = useState<Record<string, string>>({})
 
-  const currentPlan = SUBSCRIPTION_PLANS.find(plan => plan.id === selectedPlan)
   const currentFrequency = DELIVERY_FREQUENCIES.find(freq => freq.id === selectedFrequency)
+  const selectedPlans = SUBSCRIPTION_PLANS.filter(plan => selectedCanastas.includes(plan.id))
   
-  const finalPrice = currentPlan ? currentPlan.price : 0
+  const finalPrice = selectedPlans.reduce((total, plan) => total + plan.price, 0)
+
+  const addToSubscription = (canastaId: string) => {
+    if (selectedCanastas.includes(canastaId)) {
+      setSelectedCanastas(prev => prev.filter(id => id !== canastaId))
+    } else {
+      setSelectedCanastas(prev => [...prev, canastaId])
+    }
+  }
 
   const handleSubscribe = async () => {
-    // Temporalmente sin autenticación - permitir suscripción sin login
-    // if (!session) {
-    //   window.location.href = '/auth/signin?callbackUrl=/suscripciones'
-    //   return
-    // }
+    if (selectedCanastas.length === 0) {
+      alert('Selecciona al menos una canasta para continuar')
+      return
+    }
+
+    // Validar selecciones de carne para Canasta Básica Familiar
+    const basicaFamiliarSelected = selectedCanastas.includes('basica-familiar')
+    if (basicaFamiliarSelected && !carneSelections['basica-familiar']) {
+      alert('Debes seleccionar una opción de carne para la Canasta Básica Familiar')
+      return
+    }
 
     setIsSubscribing(true)
     
     try {
       // Aquí se enviaría la suscripción a la API
       const subscriptionData = {
-        plan_id: selectedPlan,
+        canasta_ids: selectedCanastas,
         frequency: selectedFrequency,
         price: finalPrice,
         user_email: 'usuario@temporal.com' // Email temporal mientras no hay autenticación
@@ -99,7 +261,7 @@ export default function SuscripcionesPage() {
       // Simular llamada a API
       await new Promise(resolve => setTimeout(resolve, 2000))
       
-      alert('¡Suscripción creada exitosamente! Recibirás tu primera canasta la próxima semana.')
+      alert(`¡Suscripción creada exitosamente! Recibirás ${selectedCanastas.length} canasta${selectedCanastas.length > 1 ? 's' : ''} según la frecuencia elegida.`)
       
     } catch (error) {
       console.error('Error creating subscription:', error)
@@ -159,18 +321,22 @@ export default function SuscripcionesPage() {
             {SUBSCRIPTION_PLANS.map((plan) => (
               <div
                 key={plan.id}
-                className={`relative bg-white rounded-lg shadow-lg p-8 cursor-pointer transition-all duration-200 ${
-                  selectedPlan === plan.id 
-                    ? 'ring-2 ring-[#B15543] transform scale-105' 
-                    : 'hover:shadow-xl'
+                className={`relative bg-white rounded-lg shadow-lg p-8 transition-all duration-200 hover:shadow-xl ${
+                  selectedCanastas.includes(plan.id) 
+                    ? 'ring-2 ring-green-500' 
+                    : ''
                 } ${plan.popular ? 'border-2 border-[#B15543]' : ''}`}
-                onClick={() => setSelectedPlan(plan.id)}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-[#B15543] text-white px-4 py-1 rounded-full text-sm font-medium">
-                      Más Popular
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 flex items-center gap-2">
+                    <span className="bg-[#B15543] text-white px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap">
+                      {plan.id === 'familiar' ? '⭐ Más Popular' : 'Popular'}
                     </span>
+                    {plan.id === 'familiar' && (
+                      <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap">
+                        💰 Más barata ${plan.precioKg}/kg
+                      </span>
+                    )}
                   </div>
                 )}
 
@@ -185,13 +351,23 @@ export default function SuscripcionesPage() {
 
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Productos:</span>
-                    <span className="font-medium">{plan.items}</span>
+                    <span className="text-gray-600">Ideal para:</span>
+                    <span className="font-medium">{plan.ideal}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Peso aprox:</span>
+                    <span className="text-gray-600">Peso:</span>
                     <span className="font-medium">{plan.weight}</span>
                   </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Categoría:</span>
+                    <span className="font-medium">{plan.categoria}</span>
+                  </div>
+                  {plan.precioKg > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Precio/kg:</span>
+                      <span className="font-medium text-green-600">${plan.precioKg.toFixed(2)}</span>
+                    </div>
+                  )}
                 </div>
 
                 <ul className="space-y-2 mb-6">
@@ -203,15 +379,67 @@ export default function SuscripcionesPage() {
                   ))}
                 </ul>
 
+                {/* Contenido Detallado para Canastas Básicas */}
+                {(plan as any).contenidoDetallado && (
+                  <div className="bg-green-50 p-4 rounded-lg mb-4">
+                    <h4 className="font-medium text-green-800 mb-3 flex items-center">
+                      <Leaf className="w-4 h-4 mr-2" />
+                      Contenido Detallado Incluido
+                    </h4>
+                    <ul className="space-y-1 text-sm text-gray-700">
+                      {(plan as any).contenidoDetallado.map((item: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <CheckCircle className="w-3 h-3 text-green-500 mt-1 flex-shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    
+                    {/* Opciones de carne para Canasta Básica Familiar */}
+                    {(plan as any).opciones?.carne && (
+                      <div className="mt-4 pt-3 border-t border-green-200">
+                        <h5 className="font-medium text-green-800 mb-2">Elige tu opción de carne:</h5>
+                        <div className="space-y-2">
+                          {(plan as any).opciones.carne.opciones.map((opcion: string, idx: number) => (
+                            <label key={idx} className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                name={`carne-${plan.id}`}
+                                value={opcion}
+                                checked={carneSelections[plan.id] === opcion}
+                                onChange={(e) => setCarneSelections(prev => ({...prev, [plan.id]: e.target.value}))}
+                                className="text-green-600"
+                              />
+                              <span className="text-sm text-gray-700">{opcion}</span>
+                            </label>
+                          ))}
+                        </div>
+                        {selectedCanastas.includes(plan.id) && !carneSelections[plan.id] && (
+                          <p className="text-red-600 text-xs mt-2">⚠️ Debes seleccionar una opción de carne</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="text-center">
-                  {selectedPlan === plan.id ? (
-                    <div className="flex items-center justify-center gap-2 text-[#B15543] font-medium">
-                      <CheckCircle className="w-5 h-5" />
-                      Seleccionado
-                    </div>
-                  ) : (
-                    <span className="text-gray-500">Click para seleccionar</span>
-                  )}
+                  <Button
+                    onClick={() => addToSubscription(plan.id)}
+                    className={`w-full ${
+                      selectedCanastas.includes(plan.id)
+                        ? 'bg-green-600 hover:bg-green-700 text-white'
+                        : 'bg-[#B15543] hover:bg-[#9a4a3a] text-white'
+                    }`}
+                  >
+                    {selectedCanastas.includes(plan.id) ? (
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4" />
+                        Agregada a suscripción
+                      </div>
+                    ) : (
+                      'Añadir a suscripción'
+                    )}
+                  </Button>
                 </div>
               </div>
             ))}
@@ -253,16 +481,25 @@ export default function SuscripcionesPage() {
               
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Plan seleccionado:</span>
-                  <span className="font-medium">{currentPlan?.name}</span>
+                  <span className="text-gray-600">Canastas seleccionadas:</span>
+                  <span className="font-medium">{selectedCanastas.length} canasta{selectedCanastas.length !== 1 ? 's' : ''}</span>
                 </div>
+                {selectedPlans.length > 0 && (
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Detalle de canastas:</h4>
+                    <ul className="space-y-1">
+                      {selectedPlans.map((plan) => (
+                        <li key={plan.id} className="flex justify-between text-sm">
+                          <span className="text-gray-600">{plan.name}</span>
+                          <span className="font-medium">${plan.price}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-600">Frecuencia:</span>
                   <span className="font-medium">{currentFrequency?.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Precio base:</span>
-                  <span className="font-medium">${currentPlan?.price}</span>
                 </div>
                 <div className="border-t pt-3 flex justify-between text-lg font-bold">
                   <span className="text-[#33503E]">Total por entrega:</span>
@@ -274,7 +511,7 @@ export default function SuscripcionesPage() {
                 <h4 className="font-semibold text-green-800 mb-2">¿Cómo funciona?</h4>
                 <ul className="text-sm text-green-700 space-y-1">
                   <li>• Puedes pausar o cancelar en cualquier momento</li>
-                  <li>• Cambios hasta 3 días antes de la entrega</li>
+                  <li>• Cambios hasta 3 días hábiles antes de la entrega</li>
                   <li>• Notificación 24h antes de cada entrega</li>
                   <li>• Primer cargo al confirmar la suscripción</li>
                 </ul>
