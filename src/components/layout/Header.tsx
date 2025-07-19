@@ -298,43 +298,60 @@ const Header: React.FC = () => {
                 )}
               </div>
 
-                {/* Mobile menu button - Optimizado para ahorrar espacio */}
-                <div className="min-[2000px]:hidden flex items-center space-x-1">
-                  {/* Cart Icon for Mobile - Reducido espaciado */}
-                  <button 
-                    onClick={handleCartClick}
-                    className="relative p-1 text-verde-tipografia hover:text-terracota focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-terracota rounded-md" 
-                    aria-label="Carrito de compras"
-                  >
-                    <ShoppingCart className="h-5 w-5" />
-                    {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 flex items-center justify-center h-4 w-4 rounded-full bg-terracota text-white text-xs font-medium">
-                        {cartCount > 99 ? '99+' : cartCount}
-                      </span>
-                    )}
-                  </button>
+              {/* Mobile menu button - Solo elementos esenciales */}
+              <div className="min-[2000px]:hidden flex items-center gap-1.5">
+                {/* Cart Icon for Mobile - Ultra minimalista */}
+                <button 
+                  onClick={handleCartClick}
+                  className="relative p-1.5 text-verde-tipografia hover:text-terracota rounded-md" 
+                  aria-label="Carrito"
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex items-center justify-center h-4 w-4 rounded-full bg-terracota text-white text-xs font-medium">
+                      {cartCount > 9 ? '9+' : cartCount}
+                    </span>
+                  )}
+                </button>
 
-                  {/* Hamburger Menu Button - Reducido espaciado */}
-                  <button
-                    type="button"
-                    onClick={toggleMenu}
-                    className="p-1 rounded-md text-verde-tipografia hover:text-terracota focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-terracota transition-colors duration-200"
-                    aria-controls="mobile-menu"
-                    aria-expanded={isMenuOpen}
-                  >
-                    <span className="sr-only">{isMenuOpen ? 'Cerrar menú' : 'Abrir menú principal'}</span>
-                    <div className="relative w-6 h-6">
-                      <span className={`absolute block h-0.5 w-6 bg-current transform transition duration-300 ease-in-out ${
-                        isMenuOpen ? 'rotate-45 translate-y-2' : 'translate-y-0'
-                      }`} />
-                      <span className={`absolute block h-0.5 w-6 bg-current transform transition duration-300 ease-in-out translate-y-2 ${
-                        isMenuOpen ? 'opacity-0' : 'opacity-100'
-                      }`} />
-                      <span className={`absolute block h-0.5 w-6 bg-current transform transition duration-300 ease-in-out translate-y-4 ${
-                        isMenuOpen ? '-rotate-45 -translate-y-2' : 'translate-y-0'
-                      }`} />
-                    </div>
+                {/* User Button for Mobile - Minimalista */}
+                {currentUser ? (
+                  <button className="p-1.5 text-verde-tipografia hover:text-terracota rounded-md">
+                    <span className="h-5 w-5 rounded-full bg-verde-oscuro text-white flex items-center justify-center text-xs font-medium">
+                      {getInitials(currentUser.name)}
+                    </span>
                   </button>
+                ) : (
+                  <button 
+                    onClick={() => signIn()}
+                    className="p-1.5 text-verde-tipografia hover:text-terracota rounded-md"
+                    aria-label="Login"
+                  >
+                    <User className="h-5 w-5" />
+                  </button>
+                )}
+
+                {/* Hamburger Menu Button - Máxima visibilidad */}
+                <button
+                  type="button"
+                  onClick={toggleMenu}
+                  className="p-2 rounded-md text-verde-tipografia hover:text-terracota transition-colors duration-200"
+                  aria-controls="mobile-menu"
+                  aria-expanded={isMenuOpen}
+                >
+                  <span className="sr-only">{isMenuOpen ? 'Cerrar menú' : 'Abrir menú principal'}</span>
+                  <div className="relative w-6 h-6">
+                    <span className={`absolute block h-0.5 w-6 bg-current transform transition duration-300 ease-in-out ${
+                      isMenuOpen ? 'rotate-45 translate-y-2.5' : 'translate-y-0'
+                    }`} />
+                    <span className={`absolute block h-0.5 w-6 bg-current transform transition duration-300 ease-in-out translate-y-2.5 ${
+                      isMenuOpen ? 'opacity-0' : 'opacity-100'
+                    }`} />
+                    <span className={`absolute block h-0.5 w-6 bg-current transform transition duration-300 ease-in-out translate-y-5 ${
+                      isMenuOpen ? '-rotate-45 -translate-y-2.5' : 'translate-y-0'
+                    }`} />
+                  </div>
+                </button>
                 </div>
             </div>
           </div>

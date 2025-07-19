@@ -602,10 +602,10 @@ const TransparentHeader: React.FC = () => {
           {/* Los iconos de navegación se han trasladado a la cuadrícula 2x2 */}
         </nav>
 
-        {/* User Section - Iconos en línea horizontal con botón de usuario a la derecha */}
+        {/* User Section - Adaptativo: completo en desktop, esencial en móvil */}
         <div style={{...styles.userSection, display: 'flex', alignItems: 'center', gap: '0.7rem'}}>
-          {/* Contenedor de iconos en fila */}
-          <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+          {/* Iconos solo visibles en desktop */}
+          <div className="hidden min-[2000px]:flex" style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
             {/* Impacto ambiental */}
             <a 
               href="javascript:void(0)" 
@@ -637,35 +637,78 @@ const TransparentHeader: React.FC = () => {
               </svg>
               <span className="sr-only">Contacto</span>
             </Link>
-            
-            {/* Shopping Cart */}
+          </div>
+          
+          {/* Elementos esenciales para móvil y desktop */}
+          <div style={{display: 'flex', alignItems: 'center', gap: '0.4rem'}}>
+            {/* Shopping Cart - Siempre visible */}
             <button 
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 window.dispatchEvent(new Event('toggleCartSidebar'));
               }} 
-              style={{...styles.iconButton(isTransparent, isScrolled), background: 'none', border: 'none', cursor: 'pointer', position: 'relative' as const}}
-              aria-label="Ver carrito de compras"
+              style={{
+                ...styles.iconButton(isTransparent, isScrolled), 
+                background: 'none', 
+                border: 'none', 
+                cursor: 'pointer', 
+                position: 'relative' as const,
+                padding: windowSize.width && windowSize.width < 2000 ? '0.4rem' : '0.5rem'
+              }}
+              aria-label="Carrito"
             >
               <div style={{...styles.cartIcon(isTransparent, isScrolled), display: 'flex', alignItems: 'center'}}>
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                   <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
                 </svg>
                 {cartCount > 0 && (
-                  <span style={styles.cartBadge}>{cartCount}</span>
+                  <span style={{
+                    ...styles.cartBadge,
+                    fontSize: windowSize.width && windowSize.width < 2000 ? '0.65rem' : '0.7rem',
+                    width: windowSize.width && windowSize.width < 2000 ? '16px' : '18px',
+                    height: windowSize.width && windowSize.width < 2000 ? '16px' : '18px'
+                  }}>{cartCount > 9 ? '9+' : cartCount}</span>
                 )}
               </div>
             </button>
-          </div>
-
-          {/* User Profile / Login */}
-          {session ? (
-            <div style={{ position: 'relative' }}>
-              <button onClick={toggleDropdown} style={styles.userButton}>
-                <span>{session.user?.name?.split(' ')[0] || 'Usuario'}</span>
-                <i className="fas fa-chevron-down" aria-hidden="true"></i>
-              </button>
+            
+            {/* User Button - Minimalista en móvil, completo en desktop */}
+            {session ? (
+              <div style={{ position: 'relative' }}>
+                {/* Botón de usuario adaptativo */}
+                <button 
+                  onClick={toggleDropdown} 
+                  style={{
+                    ...styles.userButton,
+                    padding: windowSize.width && windowSize.width < 2000 ? '0.4rem' : '0.5rem 1rem',
+                    minWidth: windowSize.width && windowSize.width < 2000 ? '32px' : 'auto',
+                    justifyContent: 'center'
+                  }}
+                >
+                  {/* En móvil: solo iniciales, en desktop: nombre completo */}
+                  {windowSize.width && windowSize.width < 2000 ? (
+                    <span style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      backgroundColor: 'var(--arcatierra-verde-oscuro)',
+                      color: 'white',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.7rem',
+                      fontWeight: 600
+                    }}>
+                      {session.user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                    </span>
+                  ) : (
+                    <>
+                      <span>{session.user?.name?.split(' ')[0] || 'Usuario'}</span>
+                      <i className="fas fa-chevron-down" aria-hidden="true"></i>
+                    </>
+                  )}
+                </button>
               
               <AnimatePresence>
                 {dropdownOpen && (
@@ -699,28 +742,36 @@ const TransparentHeader: React.FC = () => {
               </AnimatePresence>
             </div>
           ) : (
-            <Link href="/auth/signin" style={styles.loginButton} prefetch={true}>
-              Iniciar Sesión
-            </Link>
+            <button 
+              onClick={() => window.location.href = '/auth/signin'} 
+              style={{
+                ...styles.loginButton,
+                padding: windowSize.width && windowSize.width < 2000 ? '0.4rem' : '0.5rem 1.5rem',
+                fontSize: windowSize.width && windowSize.width < 2000 ? '0.8rem' : '1rem',
+                minWidth: windowSize.width && windowSize.width < 2000 ? '70px' : 'auto'
+              }}
+            >
+              {windowSize.width && windowSize.width < 2000 ? 'Login' : 'Iniciar Sesión'}
+            </button>
           )}
 
-          {/* Mobile Menu Button - Optimizado para móviles */}
+          {/* Mobile Menu Button - Máxima visibilidad en móvil */}
           <button 
             onClick={toggleMobileMenu} 
             className="header-mobile-button"
             style={{
-              display: 'none', // Controlado por CSS media queries
+              display: windowSize.width && windowSize.width < 2000 ? 'flex' : 'none',
               alignItems: 'center',
               justifyContent: 'center',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              padding: '0.25rem', // Padding reducido para ahorrar espacio
+              padding: '0.5rem',
               color: isTransparent && !isScrolled ? 'white' : 'var(--arcatierra-verde-tipografia)',
-              fontSize: '1.2rem',
+              fontSize: '1.3rem',
               zIndex: 1001,
-              minWidth: '32px', // Tamaño reducido
-              minHeight: '32px' // Tamaño reducido
+              minWidth: '36px',
+              minHeight: '36px'
             }}
           >
             {/* Hamburger icon usando SVG para garantizar visibilidad */}
@@ -730,7 +781,7 @@ const TransparentHeader: React.FC = () => {
               viewBox="0 0 24 24" 
               fill="none" 
               stroke="currentColor" 
-              strokeWidth="2" 
+              strokeWidth="2.5" 
               strokeLinecap="round" 
               strokeLinejoin="round"
             >
@@ -739,6 +790,7 @@ const TransparentHeader: React.FC = () => {
               <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
           </button>
+        </div>
         </div>
       </div>
 
