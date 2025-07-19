@@ -135,15 +135,24 @@ const Header: React.FC = () => {
           <div className="flex items-center justify-center w-full">
             <div className="w-full max-w-6xl relative">
               <div className="flex items-center justify-between h-16">
-                {/* Logo Container */}
+                {/* Logo Container - Alineación horizontal */}
                 <div className="logo-container flex-shrink-0">
-                  <Link href="/" aria-label="ArcaTierra - Página de inicio" className="flex items-center">
+                  <Link href="/" aria-label="ArcaTierra - Página de inicio" className="flex items-center space-x-2">
+                    {/* Logo principal (ícono) */}
                     <OptimizedImage
                       src="/logo-arcatierra.png"
-                      alt="ArcaTierra - Productos orgánicos de esta"
-                      width={140}
+                      alt="ArcaTierra - Ícono"
+                      width={40}
                       height={40}
-                      className="h-8 w-auto sm:h-10"
+                      className="h-8 w-auto sm:h-9"
+                    />
+                    {/* Logo de texto */}
+                    <OptimizedImage
+                      src="/logo-text.png"
+                      alt="ArcaTierra - Texto"
+                      width={100}
+                      height={30}
+                      className="h-5 w-auto sm:h-6 hidden xs:block"
                     />
                   </Link>
                 </div>
@@ -289,21 +298,12 @@ const Header: React.FC = () => {
                 )}
               </div>
 
-                {/* Mobile menu button */}
-                <div className="min-[2000px]:hidden flex items-center space-x-2">
-                  {/* Contact Button for Mobile */}
-                  <a 
-                    href="tel:+527225471091" 
-                    aria-label="Llámanos" 
-                    className="p-2 text-verde-tipografia hover:text-terracota focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-terracota rounded-md"
-                  >
-                    <Phone className="h-5 w-5" />
-                  </a>
-
-                  {/* Cart Icon for Mobile */}
+                {/* Mobile menu button - Optimizado para ahorrar espacio */}
+                <div className="min-[2000px]:hidden flex items-center space-x-1">
+                  {/* Cart Icon for Mobile - Reducido espaciado */}
                   <button 
                     onClick={handleCartClick}
-                    className="relative p-2 text-verde-tipografia hover:text-terracota focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-terracota rounded-md" 
+                    className="relative p-1 text-verde-tipografia hover:text-terracota focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-terracota rounded-md" 
                     aria-label="Carrito de compras"
                   >
                     <ShoppingCart className="h-5 w-5" />
@@ -314,11 +314,11 @@ const Header: React.FC = () => {
                     )}
                   </button>
 
-                  {/* Hamburger Menu Button */}
+                  {/* Hamburger Menu Button - Reducido espaciado */}
                   <button
                     type="button"
                     onClick={toggleMenu}
-                    className="p-2 rounded-md text-verde-tipografia hover:text-terracota focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-terracota transition-colors duration-200"
+                    className="p-1 rounded-md text-verde-tipografia hover:text-terracota focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-terracota transition-colors duration-200"
                     aria-controls="mobile-menu"
                     aria-expanded={isMenuOpen}
                   >
@@ -355,56 +355,56 @@ const Header: React.FC = () => {
               className="block mx-4 px-4 py-3 rounded-lg text-base font-medium text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors duration-200 border-b border-gray-100 last:border-b-0"
               onClick={() => setIsMenuOpen(false)}
             >
-              🏠 Inicio
+              Inicio
             </Link>
             <Link
               href="/tienda"
               className="block mx-4 px-4 py-3 rounded-lg text-base font-medium text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors duration-200 border-b border-gray-100 last:border-b-0"
               onClick={() => setIsMenuOpen(false)}
             >
-              🛒 Tienda
+              Tienda
             </Link>
             <Link
               href="/experiencias-premium"
               className="block mx-4 px-4 py-3 rounded-lg text-base font-medium text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors duration-200 border-b border-gray-100 last:border-b-0"
               onClick={() => setIsMenuOpen(false)}
             >
-              ✨ Experiencias
+              Experiencias
             </Link>
             <Link
               href="/catering2"
               className="block mx-4 px-4 py-3 rounded-lg text-base font-medium text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors duration-200 border-b border-gray-100 last:border-b-0"
               onClick={() => setIsMenuOpen(false)}
             >
-              🍽️ Catering
+              Catering
             </Link>
             <Link
               href="/baldio"
               className="block mx-4 px-4 py-3 rounded-lg text-base font-medium text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors duration-200 border-b border-gray-100 last:border-b-0"
               onClick={() => setIsMenuOpen(false)}
             >
-              🏛️ Baldío Restaurante
+              Baldío Restaurante
             </Link>
             <Link
               href="/nosotros"
               className="block mx-4 px-4 py-3 rounded-lg text-base font-medium text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors duration-200 border-b border-gray-100 last:border-b-0"
               onClick={() => setIsMenuOpen(false)}
             >
-              👥 Nosotros
+              Nosotros
             </Link>
             <Link
               href="/contacto"
               className="block mx-4 px-4 py-3 rounded-lg text-base font-medium text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors duration-200 border-b border-gray-100 last:border-b-0"
               onClick={() => setIsMenuOpen(false)}
             >
-              📞 Contacto
+              Contacto
             </Link>
             <Link
               href="/entregas"
               className="block mx-4 px-4 py-3 rounded-lg text-base font-medium text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors duration-200 border-b border-gray-100 last:border-b-0"
               onClick={() => setIsMenuOpen(false)}
             >
-              🚚 Entregas
+              Entregas
             </Link>
 
             <div className="pt-6 pb-4 mt-4 border-t border-gray-200">

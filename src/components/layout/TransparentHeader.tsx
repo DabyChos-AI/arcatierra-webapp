@@ -196,25 +196,9 @@ const styles = {
     boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)',
     backdropFilter: 'blur(10px)',
   },
-  // Este mobileMenuHeader se reemplaza con el de abajo
   mobileMenuHeaderOld: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '2rem',
-  },
-  mobileMenuItem: {
-    padding: '1.2rem 0',
-    borderBottom: '1px solid var(--arcatierra-crema-principal)',
-    textDecoration: 'none',
-    color: 'var(--arcatierra-verde-tipografia)',
-    fontSize: '1.1rem',
-    cursor: 'pointer',
-    fontWeight: 500,
-    transition: 'all 0.2s ease',
-    display: 'block',
-    borderRadius: '8px',
-    marginBottom: '0.25rem',
   },
   mobileMenuHeader: {
     display: 'flex',
@@ -223,6 +207,16 @@ const styles = {
     padding: '1rem 1.5rem',
     borderBottom: '1px solid var(--arcatierra-crema-principal)',
     backgroundColor: 'var(--arcatierra-crema-principal)',
+  },
+  mobileMenuLink: {
+    display: 'flex',
+    alignItems: 'center',
+    color: 'var(--arcatierra-verde-tipografia)', // Verde oscuro para texto
+    padding: '0.6rem 1rem', // Padding reducido para ahorrar espacio vertical y horizontal
+    fontSize: '1rem', // Tamaño de fuente ligeramente reducido
+    fontWeight: '500' as any,
+    borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
+    textDecoration: 'none',
   },
   mobileMenuCloseButton: {
     background: 'var(--arcatierra-terracota-principal)',
@@ -710,7 +704,7 @@ const TransparentHeader: React.FC = () => {
             </Link>
           )}
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Button - Optimizado para móviles */}
           <button 
             onClick={toggleMobileMenu} 
             className="header-mobile-button"
@@ -721,12 +715,12 @@ const TransparentHeader: React.FC = () => {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              padding: '0.5rem',
+              padding: '0.25rem', // Padding reducido para ahorrar espacio
               color: isTransparent && !isScrolled ? 'white' : 'var(--arcatierra-verde-tipografia)',
               fontSize: '1.2rem',
               zIndex: 1001,
-              minWidth: '40px',
-              minHeight: '40px'
+              minWidth: '32px', // Tamaño reducido
+              minHeight: '32px' // Tamaño reducido
             }}
           >
             {/* Hamburger icon usando SVG para garantizar visibilidad */}
@@ -811,79 +805,113 @@ const TransparentHeader: React.FC = () => {
                   <i className="fas fa-times" aria-hidden="true"></i>
                 </button>
               </div>
-            <div style={styles.mobileMenuContent}>
-              {/* Menú principal móvil */}
-              {mainNav.map((item) => (
-                <Link 
-                  key={item.name}
-                  href={item.href} 
-                  style={styles.mobileMenuItem}
-                  onClick={toggleMobileMenu}
-                >
-                  {item.name}
-                </Link>
-              ))}
-              
-              {/* Iconos de navegación móvil */}
-              <div style={{ marginTop: '1rem' }}>
-                {iconNav.map((item) => (
-                  <Link 
-                    key={item.name} 
-                    href={item.href} 
-                    style={{
-                      ...styles.mobileMenuItem,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem'
-                    }}
+              <div style={styles.mobileMenuContent}>
+                {/* Menú principal móvil */}
+                {mainNav.map((item) => (
+                  <motion.a
+                    key={item.name}
+                    href={item.href}
+                    style={styles.mobileMenuLink}
                     onClick={toggleMobileMenu}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <i className={item.icon} style={{ width: '20px', textAlign: 'center' }}></i>
                     {item.name}
-                  </Link>
+                  </motion.a>
                 ))}
-              </div>
-
-              <div style={styles.mobileMenuDivider}></div>
-
-              {session ? (
-                <>
-                  <span style={styles.mobileGreeting}>
-                    Hola, {session.user?.name?.split(' ')[0]}
-                  </span>
-                  {userDropdownLinks.map((item) => (
-                    <Link 
-                      key={item.name} 
-                      href={item.href} 
-                      style={styles.mobileMenuItem}
+                
+                {/* Iconos de navegación móvil */}
+                <div style={{ marginTop: '1rem' }}>
+                  {iconNav.map((item) => (
+                    <motion.a
+                      key={item.name}
+                      href={item.href}
+                      style={styles.mobileMenuLink}
                       onClick={toggleMobileMenu}
+                      whileTap={{ scale: 0.95 }}
                     >
                       {item.name}
-                    </Link>
+                    </motion.a>
                   ))}
-                  <button
-                    onClick={(e) => {
-                      handleSignOut(e);
-                      toggleMobileMenu();
-                    }}
-                    style={styles.mobileSignOutButton}
-                  >
-                    Cerrar Sesión
-                  </button>
-                </>
-              ) : (
-                <Link 
-                  href="/auth/signin" 
-                  prefetch={true}
-                  onClick={() => toggleMobileMenu()}
-                  style={{...styles.mobileSignInButton, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center'}}
-                >
-                  <i className="fas fa-user" style={{ marginRight: '0.5rem' }}></i>
-                  Iniciar Sesión
-                </Link>
-              )}
-            </div>
-          </motion.div>
+                </div>
+                
+                {/* Usuario */}
+                <div style={{ marginTop: '1.5rem' }}>
+                  {session ? (
+                    <>
+                      <span style={{ 
+                        fontSize: '1.1rem',
+                        fontWeight: 600,
+                        color: 'var(--arcatierra-verde-tipografia)',
+                        marginBottom: '1rem',
+                        display: 'block'
+                      }}>
+                        Hola, {session.user?.name?.split(' ')[0]}
+                      </span>
+                      
+                      {userDropdownLinks.map((item) => (
+                        <Link 
+                          key={item.name} 
+                          href={item.href} 
+                          style={styles.mobileMenuLink}
+                          onClick={toggleMobileMenu}
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                      
+                      <button
+                        onClick={(e) => {
+                          handleSignOut(e);
+                          toggleMobileMenu();
+                        }}
+                        style={{
+                          marginTop: '1rem',
+                          padding: '0.75rem 1rem',
+                          backgroundColor: 'var(--arcatierra-terracota-principal)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '1rem',
+                          fontWeight: 500,
+                          width: '100%',
+                          textAlign: 'center' as const
+                        }}
+                      >
+                        Cerrar Sesión
+                      </button>
+                    </>
+                  ) : (
+                    <Link 
+                      href="/auth/signin" 
+                      prefetch={true}
+                      onClick={() => toggleMobileMenu()}
+                      style={{
+                        marginTop: '1rem',
+                        padding: '0.75rem 1rem',
+                        backgroundColor: 'var(--arcatierra-terracota-principal)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        fontWeight: 500,
+                        width: '100%',
+                        textAlign: 'center' as const,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textDecoration: 'none',
+                        gap: '0.5rem'
+                      }}
+                    >
+                      <i className="fas fa-user"></i>
+                      Iniciar Sesión
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </motion.div>
           </>
         )}
       </AnimatePresence>
