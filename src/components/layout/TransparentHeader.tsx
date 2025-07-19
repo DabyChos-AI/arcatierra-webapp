@@ -502,59 +502,45 @@ const TransparentHeader: React.FC = () => {
         {/* Logo - Siempre visible y enlace a inicio */}
         <Link href="/" style={{ textDecoration: 'none' }}>
           <div style={styles.logo}>
-            {/* Renderizamos ambos logos pero solo mostramos el adecuado con CSS */}
-            {windowSize.isMounted ? (
-              <>
-                {/* Logo para escritorio - Solo visible después del montaje en cliente */}
-                <div style={{ 
-                  display: windowSize.width && windowSize.width > 1200 ? 'block' : 'none',
-                  position: 'relative',
-                  width: '180px',
-                  height: '54px'
-                }}>
-                  <OptimizedImage 
-                    src={"/images/logos/logo_arcatierra_horizontal.png"}
-                    alt="Arca Tierra" 
-                    width={180}
-                    height={54}
-                    style={{ 
-                      opacity: 1
-                    }} />
-                </div>
-                
-                {/* Logo para móvil - Solo visible después del montaje en cliente */}
-                <div style={{ 
-                  display: windowSize.width && windowSize.width <= 1200 ? 'block' : 'none',
-                  position: 'relative',
-                  width: '50px',
-                  height: '50px'
-                }}>
-                  <OptimizedImage 
-                    src={"/images/logos/logo_arcatierra_sin_texto.png"}
-                    alt="Arca Tierra" 
-                    fill
-                    style={{ 
-                      objectFit: 'contain',
-                      opacity: 1
-                    }} />
-                </div>
-              </>
-            ) : (
-              /* Fallback para SSR que se reemplazará en el cliente */
-              <OptimizedImage 
-                src={"/images/logos/logo_arcatierra_horizontal.png"}
-                alt="Arca Tierra" 
-                width={180}
-                height={54}
-                style={{ 
-                  opacity: 1
-                }} />
-            )}
+            {/* Renderizamos ambos logos con clases CSS para responsividad confiable */}
+            <>
+              {/* Logo para escritorio - Controlado por CSS media queries */}
+              <div className="header-logo-desktop" style={{ 
+                position: 'relative',
+                width: '180px',
+                height: '54px'
+              }}>
+                <OptimizedImage 
+                  src="/images/logos/logo_arcatierra_horizontal.png"
+                  alt="Arca Tierra" 
+                  width={180}
+                  height={54}
+                  style={{ 
+                    opacity: 1
+                  }} />
+              </div>
+              
+              {/* Logo para móvil - Controlado por CSS media queries */}
+              <div className="header-logo-mobile" style={{ 
+                position: 'relative',
+                width: '50px',
+                height: '50px'
+              }}>
+                <OptimizedImage 
+                  src="/images/logos/logo_arcatierra_sin_texto.png"
+                  alt="Arca Tierra" 
+                  fill
+                  style={{ 
+                    objectFit: 'contain',
+                    opacity: 1
+                  }} />
+              </div>
+            </>
           </div>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav style={styles.nav} className="hidden xl:flex">
+        <nav style={styles.nav} className="header-desktop-nav">
           {mainNav.map((item) => (
             <div key={item.name} style={{ position: 'relative' }}>
               {item.hasSubmenu ? (
@@ -732,7 +718,7 @@ const TransparentHeader: React.FC = () => {
           <button 
             onClick={toggleMobileMenu} 
             style={styles.mobileMenuButton(isTransparent, isScrolled)}
-            className="xl:hidden"
+            className="header-mobile-button"
           >
             <i className="fas fa-bars" aria-hidden="true"></i>
           </button>

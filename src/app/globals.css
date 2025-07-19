@@ -484,6 +484,73 @@ a.animated-link:hover::after {
   }
 }
 
+/* AJUSTES MÓVILES Y RESPONSIVE */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .hero h1 {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+  
+  .hero p {
+    font-size: 1rem;
+  }
+  
+  .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* HEADER RESPONSIVE - FORZAR COMPORTAMIENTO MÓVIL */
+@media (max-width: 1200px) {
+  /* Ocultar navegación desktop */
+  .header-desktop-nav {
+    display: none !important;
+  }
+  
+  /* Mostrar botón hamburguesa */
+  .header-mobile-button {
+    display: flex !important;
+  }
+  
+  /* Logo desktop - ocultar */
+  .header-logo-desktop {
+    display: none !important;
+  }
+  
+  /* Logo móvil - mostrar */
+  .header-logo-mobile {
+    display: block !important;
+  }
+}
+
+@media (min-width: 1201px) {
+  /* Mostrar navegación desktop */
+  .header-desktop-nav {
+    display: flex !important;
+  }
+  
+  /* Ocultar botón hamburguesa */
+  .header-mobile-button {
+    display: none !important;
+  }
+  
+  /* Logo desktop - mostrar */
+  .header-logo-desktop {
+    display: block !important;
+  }
+  
+  /* Logo móvil - ocultar */
+  .header-logo-mobile {
+    display: none !important;
+  }
+}
+
 /* ANIMACIONES SUAVES */
 @keyframes fadeInUp {
   from {
