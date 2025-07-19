@@ -602,42 +602,44 @@ const TransparentHeader: React.FC = () => {
           {/* Los iconos de navegación se han trasladado a la cuadrícula 2x2 */}
         </nav>
 
-        {/* User Section - Adaptativo: completo en desktop, esencial en móvil */}
-        <div style={{...styles.userSection, display: 'flex', alignItems: 'center', gap: '0.7rem'}}>
-          {/* Iconos solo visibles en desktop */}
-          <div className="hidden min-[2000px]:flex" style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-            {/* Impacto ambiental */}
-            <a 
-              href="javascript:void(0)" 
-              style={{...styles.iconButton(isTransparent, isScrolled)}}
-              onClick={() => window.location.href = '/impacto'}
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-              </svg>
-              <span className="sr-only">Impacto Ambiental</span>
-            </a>
-            
-            {/* Favoritos */}
-            <a 
-              href="javascript:void(0)" 
-              style={{...styles.iconButton(isTransparent, isScrolled)}}
-              onClick={() => window.location.href = '/favoritos'}
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-              </svg>
-              <span className="sr-only">Favoritos</span>
-            </a>
-            
-            {/* Contacto */}
-            <Link href="/contacto" style={{...styles.iconButton(isTransparent, isScrolled)}}>
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-              </svg>
-              <span className="sr-only">Contacto</span>
-            </Link>
-          </div>
+        {/* User Section - Solo elementos esenciales en móvil */}
+        <div style={{...styles.userSection, display: 'flex', alignItems: 'center', gap: windowSize.width && windowSize.width < 2000 ? '0.3rem' : '0.7rem'}}>
+          {/* Iconos solo en desktop - Ocultos completamente en móvil */}
+          {windowSize.width && windowSize.width >= 2000 && (
+            <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+              {/* Impacto ambiental */}
+              <a 
+                href="javascript:void(0)" 
+                style={{...styles.iconButton(isTransparent, isScrolled)}}
+                onClick={() => window.location.href = '/impacto'}
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                </svg>
+                <span className="sr-only">Impacto Ambiental</span>
+              </a>
+              
+              {/* Favoritos */}
+              <a 
+                href="javascript:void(0)" 
+                style={{...styles.iconButton(isTransparent, isScrolled)}}
+                onClick={() => window.location.href = '/favoritos'}
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                </svg>
+                <span className="sr-only">Favoritos</span>
+              </a>
+              
+              {/* Contacto */}
+              <Link href="/contacto" style={{...styles.iconButton(isTransparent, isScrolled)}}>
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                </svg>
+                <span className="sr-only">Contacto</span>
+              </Link>
+            </div>
+          )}
           
           {/* Elementos esenciales para móvil y desktop */}
           <div style={{display: 'flex', alignItems: 'center', gap: '0.4rem'}}>
@@ -692,13 +694,21 @@ const TransparentHeader: React.FC = () => {
                       width: '20px',
                       height: '20px',
                       borderRadius: '50%',
-                      backgroundColor: 'var(--arcatierra-verde-oscuro)',
+                      backgroundColor: isTransparent && !isScrolled 
+                        ? 'var(--arcatierra-verde-oscuro)' 
+                        : 'var(--arcatierra-terracota-principal)',
                       color: 'white',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontSize: '0.7rem',
-                      fontWeight: 600
+                      fontWeight: 600,
+                      border: isTransparent && !isScrolled 
+                        ? 'none' 
+                        : '1px solid var(--arcatierra-verde-tipografia)',
+                      boxShadow: isTransparent && !isScrolled 
+                        ? 'none' 
+                        : '0 1px 3px rgba(0,0,0,0.2)'
                     }}>
                       {session.user?.name?.charAt(0)?.toUpperCase() || 'U'}
                     </span>
