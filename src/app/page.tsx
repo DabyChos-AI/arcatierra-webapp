@@ -124,7 +124,7 @@ export default function HomePage() {
               {/* Main Heading */}
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-white mb-6 leading-tight">
                 Arca Tierra,{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">
+                <span className="text-amber-200">
                   alimentos mexicanos naturales
                 </span>{' '}
                 a tu mesa
@@ -486,7 +486,7 @@ export default function HomePage() {
         {/* CTA FINAL */}
         <section className="py-20 bg-verde text-white text-center">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-4xl font-bold mb-6">
+            <h2 className="text-4xl font-bold mb-6 text-amber-200">
               Únete a nuestra comunidad
             </h2>
             <p className="text-xl mb-10 max-w-2xl mx-auto">
