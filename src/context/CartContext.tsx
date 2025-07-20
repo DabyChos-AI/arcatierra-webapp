@@ -41,22 +41,35 @@ export const CartProvider: React.FC<{children: React.ReactNode}> = ({ children }
 
   // Efecto para calcular el total de items en el carrito
   useEffect(() => {
+    // Verificar que estamos en el cliente antes de usar APIs del navegador
+    if (typeof window === 'undefined') return;
+    
     const updateCartCount = () => {
-      const savedCart = localStorage.getItem('arcaTierraCart');
-      if (savedCart) {
-        const parsedCart = JSON.parse(savedCart);
-        setCartCount(parsedCart.reduce((sum: number, item: any) => sum + item.quantity, 0));
-      } else {
+      try {
+        const savedCart = localStorage.getItem('arcaTierraCart');
+        if (savedCart) {
+          const parsedCart = JSON.parse(savedCart);
+          setCartCount(parsedCart.reduce((sum: number, item: any) => sum + item.quantity, 0));
+        } else {
+          setCartCount(0);
+        }
+      } catch (error) {
+        console.error('Error al leer el carrito:', error);
         setCartCount(0);
       }
     };
 
     // Actualizar contador al montar y cuando cambie el carrito
     updateCartCount();
-    window.addEventListener('cartUpdated', updateCartCount);
+    
+    // También escuchar por el evento 'carritoActualizado' usado en page.tsx
+    const handleCartUpdate = () => updateCartCount();
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    window.addEventListener('carritoActualizado', handleCartUpdate);
     
     return () => {
-      window.removeEventListener('cartUpdated', updateCartCount);
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+      window.removeEventListener('carritoActualizado', handleCartUpdate);
     };
   }, []);
 

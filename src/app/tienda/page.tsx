@@ -166,7 +166,7 @@ export default function TiendaPage() {
   const [precioMax, setPrecioMax] = useState('')
   const [selectedProductores, setSelectedProductores] = useState<string[]>([])
   const [selectedCertificaciones, setSelectedCertificaciones] = useState<string[]>([])
-  const [viewMode, setViewMode] = useState<'2' | '3'>('3')
+  const [viewMode, setViewMode] = useState<'1' | '2' | '3'>('2')
   const [favorites, setFavorites] = useState<string[]>([])
   const [cartItems, setCartItems] = useState<any[]>([])
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
@@ -174,6 +174,7 @@ export default function TiendaPage() {
   const toast = useToast()
   const [sortBy, setSortBy] = useState('mas-recientes')
   const [showFavorites, setShowFavorites] = useState(false)
+  const [showMobileFilters, setShowMobileFilters] = useState(false)
 
   // Cargar favoritos y carrito desde localStorage al iniciar
   useEffect(() => {
@@ -396,32 +397,32 @@ export default function TiendaPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex gap-8">
-          {/* Sidebar de filtros */}
-          <div className="w-80 bg-[#33503E] rounded-2xl p-6 h-fit sticky top-6 shadow-lg">
-            <div className="space-y-6">
+        <div className="flex gap-2 sm:gap-4 lg:gap-8 max-w-7xl mx-auto">
+          {/* Sidebar de filtros - Siempre visible, lateral en móvil */}
+          <div className="w-44 sm:w-52 lg:w-80 bg-[#33503E] rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-6 h-fit max-h-[calc(100vh-8rem)] lg:max-h-none overflow-y-auto lg:sticky lg:top-6 shadow-lg flex-shrink-0">
+            <div className="space-y-3 sm:space-y-4 lg:space-y-6">
               {/* Título */}
               <div className="text-center">
-                <h2 className="text-xl font-bold text-white mb-2">Filtros</h2>
-                <p className="text-white/70 text-sm">Encuentra productos perfectos</p>
+                <h2 className="text-sm sm:text-lg lg:text-xl font-bold text-white mb-1 lg:mb-2">Filtros</h2>
+                <p className="text-white/70 text-xs sm:text-sm hidden sm:block">Encuentra productos perfectos</p>
               </div>
 
               {/* Categorías */}
               <div>
-                <h3 className="text-white font-semibold mb-3">Categorías</h3>
-                <div className="space-y-2">
+                <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Categorías</h3>
+                <div className="space-y-1 sm:space-y-2">
                   {categories.map((category) => (
                     <button
                       key={category.id}
                       onClick={() => setSelectedCategory(category.id)}
-                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-all ${
+                      className={`w-full flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-left transition-all ${
                         selectedCategory === category.id
                           ? 'bg-[#B15543] text-white'
                           : 'text-white/90 hover:bg-white/10'
                       }`}
                     >
-                      <span>{category.emoji}</span>
-                      <span className="text-sm">{category.name}</span>
+                      <span className="text-xs sm:text-sm">{category.emoji}</span>
+                      <span className="text-xs sm:text-sm lg:text-sm truncate">{category.name}</span>
                     </button>
                   ))}
                 </div>
@@ -429,29 +430,29 @@ export default function TiendaPage() {
 
               {/* Rango de precios */}
               <div>
-                <h3 className="text-white font-semibold mb-3">Rango de Precio</h3>
-                <div className="space-y-3">
-                  <input
+                <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Rango de Precio</h3>
+                <div className="space-y-2 sm:space-y-3">
+                  <Input
                     type="number"
                     placeholder="Precio mínimo"
                     value={precioMin}
                     onChange={(e) => setPrecioMin(e.target.value)}
-                    className="w-full px-3 py-2 bg-white rounded-lg text-gray-900 placeholder-gray-500"
+                    className="bg-white/10 border-white/20 text-white placeholder-white/60 text-xs sm:text-sm h-8 sm:h-10"
                   />
-                  <input
+                  <Input
                     type="number"
                     placeholder="Precio máximo"
                     value={precioMax}
                     onChange={(e) => setPrecioMax(e.target.value)}
-                    className="w-full px-3 py-2 bg-white rounded-lg text-gray-900 placeholder-gray-500"
+                    className="bg-white/10 border-white/20 text-white placeholder-white/60 text-xs sm:text-sm h-8 sm:h-10"
                   />
                 </div>
               </div>
 
               {/* Productores */}
               <div>
-                <h3 className="text-white font-semibold mb-3">Productores</h3>
-                <div className="space-y-2">
+                <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Productores</h3>
+                <div className="space-y-1 sm:space-y-2 max-h-32 sm:max-h-40 overflow-y-auto">
                   {productores.map((productor) => (
                     <label key={productor} className="flex items-center space-x-2 text-white/90 hover:text-white cursor-pointer">
                       <Checkbox
@@ -465,7 +466,7 @@ export default function TiendaPage() {
                         }}
                         className="border-white/30 data-[state=checked]:bg-[#B15543] data-[state=checked]:border-[#B15543]"
                       />
-                      <span className="text-sm">{productor}</span>
+                      <span className="text-xs sm:text-sm text-white/90 truncate">{productor}</span>
                     </label>
                   ))}
                 </div>
@@ -473,8 +474,8 @@ export default function TiendaPage() {
 
               {/* Certificaciones */}
               <div>
-                <h3 className="text-white font-semibold mb-3">Certificaciones</h3>
-                <div className="space-y-2">
+                <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Certificaciones</h3>
+                <div className="space-y-1 sm:space-y-2 max-h-32 sm:max-h-40 overflow-y-auto">
                   {certificaciones.map((cert) => (
                     <label key={cert} className="flex items-center space-x-2 text-white/90 hover:text-white cursor-pointer">
                       <Checkbox
@@ -488,7 +489,7 @@ export default function TiendaPage() {
                         }}
                         className="border-white/30 data-[state=checked]:bg-[#B15543] data-[state=checked]:border-[#B15543]"
                       />
-                      <span className="text-sm">{cert}</span>
+                      <span className="text-xs sm:text-sm text-white/90 truncate">{cert}</span>
                     </label>
                   ))}
                 </div>
@@ -499,65 +500,74 @@ export default function TiendaPage() {
           {/* Contenido principal */}
           <div className="flex-1">
             {/* Header de resultados */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
               {/* Tabs para alternar entre Tienda y Favoritos */}
-              <div className="flex space-x-4">
+              <div className="flex flex-wrap gap-2 sm:gap-4 order-2 lg:order-1">
                 <button 
-                  className={`px-4 py-2 rounded-md ${!showFavorites ? 'bg-[#33503E] text-white' : 'text-gray-700 hover:bg-gray-200'}`}
+                  className={`px-3 sm:px-4 py-2 rounded-md text-sm sm:text-base ${!showFavorites ? 'bg-[#33503E] text-white' : 'text-gray-700 hover:bg-gray-200'}`}
                   onClick={() => setShowFavorites(false)}
                 >
                   Tienda
                 </button>
                 <button 
-                  className={`px-4 py-2 rounded-md flex items-center space-x-1 ${showFavorites ? 'bg-[#B15543] text-white' : 'text-gray-700 hover:bg-gray-200'}`}
+                  className={`px-3 sm:px-4 py-2 rounded-md flex items-center space-x-1 text-sm sm:text-base ${showFavorites ? 'bg-[#B15543] text-white' : 'text-gray-700 hover:bg-gray-200'}`}
                   onClick={() => setShowFavorites(true)}
                 >
-                  <Heart size={18} className={showFavorites ? 'fill-white' : ''} />
-                  <span>Favoritos {favorites.length > 0 && `(${favorites.length})`}</span>
+                  <Heart size={16} className={`sm:w-[18px] sm:h-[18px] ${showFavorites ? 'fill-white' : ''}`} />
+                  <span className="hidden sm:inline">Favoritos {favorites.length > 0 && `(${favorites.length})`}</span>
+                  <span className="sm:hidden">❤️ {favorites.length > 0 && `(${favorites.length})`}</span>
                 </button>
               </div>
               
-              <div>
-                <h2 className="text-2xl font-bold text-[#33503E] mb-1">
-                  {showFavorites ? 'Mis Productos Favoritos' : activeCategory?.name || 'Productos'}
+              <div className="text-center lg:text-left order-1 lg:order-2">
+                <h2 className="text-xl sm:text-2xl font-bold text-[#33503E] mb-1">
+                  {showFavorites ? 'Mis Favoritos' : activeCategory?.name || 'Productos'}
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-sm sm:text-base text-gray-600">
                   {sortedProducts.length} productos encontrados
                 </p>
               </div>
               
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 order-3">
                 {/* Filtros de ordenamiento */}
-                <div className="relative">
+                <div className="relative w-full sm:w-auto">
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-[#B15543]"
+                    className="w-full sm:w-auto appearance-none bg-white border border-gray-300 rounded-lg px-3 sm:px-4 py-2 pr-8 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#B15543]"
                   >
                     <option value="mas-recientes">Más recientes</option>
                     <option value="precio-menor">Precio: menor a mayor</option>
                     <option value="precio-mayor">Precio: mayor a menor</option>
                     <option value="nombre-az">Nombre A-Z</option>
                   </select>
-                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-gray-400 pointer-events-none" />
                 </div>
                 
-                <div className="flex items-center gap-2 bg-white rounded-lg p-1 shadow-sm">
+                <div className="flex items-center gap-1 sm:gap-2 bg-white rounded-lg p-1 shadow-sm w-full sm:w-auto justify-center">
+                  <Button
+                    variant={viewMode === '1' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('1')}
+                    className={`${viewMode === '1' ? 'bg-[#B15543] text-white' : 'text-gray-600'} px-2 sm:px-3`}
+                  >
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 border border-current rounded" />
+                  </Button>
                   <Button
                     variant={viewMode === '2' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('2')}
-                    className={viewMode === '2' ? 'bg-[#B15543] text-white' : 'text-gray-600'}
+                    className={`${viewMode === '2' ? 'bg-[#B15543] text-white' : 'text-gray-600'} px-2 sm:px-3`}
                   >
-                    <Grid3X3 className="w-4 h-4" />
+                    <LayoutGrid className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
                   <Button
                     variant={viewMode === '3' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('3')}
-                    className={viewMode === '3' ? 'bg-[#B15543] text-white' : 'text-gray-600'}
+                    className={`${viewMode === '3' ? 'bg-[#B15543] text-white' : 'text-gray-600'} px-2 sm:px-3`}
                   >
-                    <LayoutGrid className="w-4 h-4" />
+                    <Grid3X3 className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
                 </div>
               </div>
@@ -582,7 +592,13 @@ export default function TiendaPage() {
             
             {/* Grid de productos */}
             {(!showFavorites || (showFavorites && sortedProducts.length > 0)) && (
-              <div className={`grid gap-6 ${viewMode === '2' ? 'grid-cols-2' : 'grid-cols-3'}`}>
+              <div className={`grid gap-4 sm:gap-6 ${
+                viewMode === '1' 
+                  ? 'grid-cols-1 sm:grid-cols-1 lg:grid-cols-1' 
+                  : viewMode === '2'
+                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2'
+                  : 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3'
+              }`}>
               {sortedProducts.map((product) => (
                 <div
                   key={product.id}

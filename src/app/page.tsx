@@ -7,8 +7,10 @@ import { CheckCircle, Users, Leaf, Heart, ShoppingCart, Calendar, Phone, MapPin,
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
-// Importamos productos desde el módulo de datos
+// Importamos productos y experiencias desde los módulos de datos
 import { productos } from '@/data/productos';
+import { experiencias } from '@/data/experiencias';
+import ExperienceCard from '@/components/ExperienceCard';
 
 // Datos de métricas de ejemplo
 const metricas = {
@@ -18,36 +20,10 @@ const metricas = {
   productoresRed: 25
 };
 
-// Experiencias destacadas como datos de ejemplo
-const experienciasDestacadas = [
-  {
-    id: 'taller-cocina',
-    titulo: 'Taller de Cocina Tradicional',
-    imagen: '/images/experiencias/experiencias_arca_tierra.jpg',
-    fecha: '15 de Julio, 2025',
-    ubicacion: 'Xochimilco, CDMX',
-    precio: 450,
-    cupo: 12
-  },
-  {
-    id: 'visita-chinampas',
-    titulo: 'Visita Guiada a Chinampas',
-    imagen: '/images/experiencias/experiencias_chinampa_del_sol.jpg',
-    fecha: '22 de Julio, 2025',
-    ubicacion: 'Xochimilco, CDMX',
-    precio: 380,
-    cupo: 20
-  },
-  {
-    id: 'cata-mezcal',
-    titulo: 'Cata de Mezcal Artesanal',
-    imagen: '/images/experiencias/turismo_rural_xochimilco.jpg',
-    fecha: '5 de Agosto, 2025',
-    ubicacion: 'Centro Histórico, CDMX',
-    precio: 650,
-    cupo: 15
-  }
-];
+// Obtener las 4 primeras experiencias públicas de los datos actualizados
+const experienciasDestacadas = experiencias
+  .filter(exp => exp.tipo === 'publica')
+  .slice(0, 4);
 
 // Página de inicio
 export default function HomePage() {
@@ -243,40 +219,54 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {[
                 {
                   id: 'individual',
                   name: 'Canasta Individual',
-                  description: 'Perfecta para 1-2 personas',
-                  price: 350,
-                  items: '8-10 productos',
-                  weight: '3-4 kg',
+                  description: 'Perfecta para personas solteras o parejas',
+                  price: 290,
+                  items: '1-2 personas',
+                  weight: '3.5 kg',
                   image: '/images/canastas/canasta-individual.jpg',
-                  features: ['5-6 verduras de temporada', '2-3 frutas frescas', 'Producto especial incluido'],
+                  features: ['Variedad balanceada de nutrientes', 'Fácil de consumir en una semana', 'Incluye fruta y verduras de temporada'],
+                  popular: true
+                },
+                {
+                  id: 'media',
+                  name: 'Canasta Media',
+                  description: 'Equilibrio perfecto entre variedad y cantidad',
+                  price: 350,
+                  items: '2-3 personas',
+                  weight: '5 kg',
+                  image: '/images/canastas/canasta-familiar.jpg',
+                  features: ['Incluye frutas y verduras de temporada', 'Ideal para familias pequeñas', 'Excelente relación calidad-precio'],
+                  popular: true
+                },
+                {
+                  id: 'completa',
+                  name: 'Canasta Completa',
+                  description: 'Variedad amplia con productos especiales',
+                  price: 510,
+                  items: '3-4 personas',
+                  weight: '7.5 kg',
+                  image: '/images/canastas/canasta-premium.jpg',
+                  features: ['Variedad amplia de productos', 'Perfecta para familias medianas', 'Mayor diversidad nutricional'],
                   popular: false
                 },
                 {
                   id: 'familiar',
                   name: 'Canasta Familiar',
-                  description: 'Ideal para familias de 3-4 personas',
-                  price: 550,
-                  items: '12-15 productos',
-                  weight: '5-6 kg',
+                  description: 'La opción más popular para familias grandes',
+                  price: 670,
+                  items: '4-6 personas',
+                  weight: '10 kg',
                   image: '/images/canastas/canasta-familiar.jpg',
-                  features: ['8-9 verduras de temporada', '3-4 frutas frescas', '2 productos especiales'],
-                  popular: true
-                },
-                {
-                  id: 'premium',
-                  name: 'Canasta Premium',
-                  description: 'La experiencia completa para familias grandes',
-                  price: 750,
-                  items: '18-20 productos',
-                  weight: '7-8 kg',
-                  image: '/images/canastas/canasta-premium.jpg',
-                  features: ['10-12 verduras de temporada', '4-5 frutas frescas', 'Productos exclusivos'],
-                  popular: false
+                  features: ['La opción más popular para familias grandes', 'Abundante variedad de alimentos agroecológicos', 'Mejor relación precio-calidad por kilogramo'],
+                  popular: true,
+                  masPopular: true,
+                  masBarata: true,
+                  precioKg: 67
                 }
               ].map((canasta) => (
                 <Card key={canasta.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all group">
@@ -290,24 +280,32 @@ export default function HomePage() {
                       />
                     </div>
                     
-                    {/* Badge Popular */}
-                    {canasta.popular && (
-                      <div className="absolute top-4 left-4">
-                        <span className="bg-terracota text-white px-3 py-1 rounded-full text-xs font-medium">
-                          Más Popular
-                        </span>
-                      </div>
-                    )}
-                    
-                    {/* Badge Orgánico */}
-                    <div className="absolute top-4 right-4">
-                      <span className="bg-verde text-white px-3 py-1 rounded-full text-xs font-medium">
-                        100% Orgánico
-                      </span>
-                    </div>
+                    {/* Sin badges en la imagen - todos se moverán al contenido de la tarjeta */}
                   </div>
                   
                   <CardContent className="p-6">
+                    {/* Badges movidos desde la imagen hacia el contenido de la tarjeta */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {canasta.masPopular && (
+                        <span className="bg-terracota text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                          ⭐ Más Popular
+                        </span>
+                      )}
+                      {canasta.popular && !canasta.masPopular && (
+                        <span className="bg-terracota text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                          🔥 Popular
+                        </span>
+                      )}
+                      {canasta.masBarata && (
+                        <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                          💚 Más barata ${canasta.precioKg}/kg
+                        </span>
+                      )}
+                      <span className="bg-verde text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                        🌱 Alimentos Agroecológicos
+                      </span>
+                    </div>
+                    
                     <h3 className="text-xl font-bold text-gray-900 mb-2">{canasta.name}</h3>
                     <p className="text-gray-600 mb-4">{canasta.description}</p>
                     
@@ -345,34 +343,44 @@ export default function HomePage() {
                     <div className="flex flex-col space-y-3">
                       <Link href="/suscripciones">
                         <Button className="w-full bg-terracota hover:bg-terracota-dark text-white py-3 font-semibold transition-colors">
-                          Suscribirse Ahora
+                          Suscripción Semanal
                         </Button>
                       </Link>
                       <Button 
                         onClick={() => {
-                          // Agregar canasta al carrito
-                          const carritoActual = JSON.parse(localStorage.getItem('carrito') || '[]');
-                          const nuevaCanasta = {
-                            id: `canasta-${canasta.id}`,
-                            nombre: canasta.name,
-                            precio: canasta.price,
-                            tipo: 'canasta',
-                            imagen: canasta.image,
-                            descripcion: canasta.description,
-                            cantidad: 1
-                          };
+                          // Verificar que estamos en el cliente antes de usar localStorage/window
+                          if (typeof window === 'undefined') return;
                           
-                          // Verificar si ya existe en el carrito
-                          const existeIndex = carritoActual.findIndex((item: any) => item.id === nuevaCanasta.id);
-                          if (existeIndex >= 0) {
-                            carritoActual[existeIndex].cantidad += 1;
-                          } else {
-                            carritoActual.push(nuevaCanasta);
+                          try {
+                            // Agregar canasta al carrito
+                            const carritoActual = JSON.parse(localStorage.getItem('arcaTierraCart') || '[]');
+                            const nuevaCanasta = {
+                              id: `canasta-${canasta.id}`,
+                              name: canasta.name,
+                              price: canasta.price,
+                              unit: 'compra única',
+                              tipo: 'canasta',
+                              image: canasta.image,
+                              description: canasta.description,
+                              quantity: 1
+                            };
+                            
+                            // Verificar si ya existe en el carrito
+                            const existeIndex = carritoActual.findIndex((item: any) => item.id === nuevaCanasta.id);
+                            if (existeIndex >= 0) {
+                              carritoActual[existeIndex].quantity += 1;
+                            } else {
+                              carritoActual.push(nuevaCanasta);
+                            }
+                            
+                            localStorage.setItem('arcaTierraCart', JSON.stringify(carritoActual));
+                            // Disparar evento para actualizar el contador del carrito
+                            window.dispatchEvent(new Event('cartUpdated'));
+                            
+                            console.log('Canasta agregada al carrito:', nuevaCanasta.name);
+                          } catch (error) {
+                            console.error('Error al agregar al carrito:', error);
                           }
-                          
-                          localStorage.setItem('carrito', JSON.stringify(carritoActual));
-                          // Disparar evento para actualizar el contador del carrito
-                          window.dispatchEvent(new Event('carritoActualizado'));
                         }}
                         variant="outline" 
                         className="w-full border-terracota text-terracota hover:bg-terracota hover:text-white py-3 font-semibold transition-colors"
@@ -409,50 +417,8 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {experienciasDestacadas.map(exp => (
-                <Card key={exp.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all group">
-                  <div className="relative overflow-hidden pt-[75%]">
-                    <div className="absolute inset-0 bg-gray-200">
-                      <div className="w-full h-full bg-[url('/images/experiencia1.jpg')] bg-cover bg-center"></div>
-                    </div>
-                    
-                    {/* Botón Favorito */}
-                    <button
-                      onClick={() => toggleFavorito(exp.id)}
-                      className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
-                    >
-                      <Heart 
-                        className={`w-5 h-5 ${favoritos.includes(exp.id) ? 'fill-terracota text-terracota' : 'text-gray-500'}`} 
-                      />
-                    </button>
-                  </div>
-                  
-                  <CardContent className="p-6">
-                    <div className="text-terracota font-semibold mb-2">{exp.fecha}</div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">{exp.titulo}</h3>
-                    
-                    <div className="flex items-center text-gray-500 text-sm mb-4">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      <span>{exp.ubicacion}</span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="text-xl font-bold text-terracota">
-                        ${exp.precio.toFixed(2)}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        Cupo: {exp.cupo} personas
-                      </div>
-                    </div>
-                    
-                    <button
-                      onClick={() => agregarAlCarrito(exp.id, exp.titulo, exp.precio, 'experiencia')}
-                      className="w-full bg-terracota hover:bg-terracota-oscuro text-white py-3 rounded-lg font-semibold transition-colors"
-                    >
-                      Reservar lugar
-                    </button>
-                  </CardContent>
-                </Card>
+              {experienciasDestacadas.map((exp, index) => (
+                <ExperienceCard key={exp.id} experiencia={exp} index={index} />
               ))}
             </div>
             

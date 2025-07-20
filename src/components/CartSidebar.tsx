@@ -37,7 +37,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
       const parsedCart = JSON.parse(savedCart);
       setCartItems(parsedCart)
       // Calcular el total de items para el botón flotante
-      setItemCount(parsedCart.reduce((sum: number, item: any) => sum + item.quantity, 0))
+      setItemCount(parsedCart.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0))
     }
   }, [isOpen])
   
@@ -47,7 +47,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
       const savedCart = localStorage.getItem('arcaTierraCart')
       if (savedCart) {
         const parsedCart = JSON.parse(savedCart);
-        setItemCount(parsedCart.reduce((sum: number, item: any) => sum + item.quantity, 0))
+        setItemCount(parsedCart.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0))
       } else {
         setItemCount(0);
       }
@@ -162,7 +162,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     });
   }
 
-  const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  const total = cartItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0)
 
   return (
     <>
@@ -228,7 +228,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       />
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-white text-sm line-clamp-2">{item.name}</h3>
-                        <p className="text-white/70 text-xs">${item.price.toFixed(2)} / {item.unit}</p>
+                        <p className="text-white/70 text-xs">${(item.price || 0).toFixed(2)} / {item.unit}</p>
                         
                         <div className="flex items-center justify-between mt-3">
                           <div className="flex items-center gap-2">
@@ -256,7 +256,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                         
                         <div className="mt-2 text-right">
                           <span className="text-white font-semibold">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            ${((item.price || 0) * (item.quantity || 0)).toFixed(2)}
                           </span>
                         </div>
                       </div>

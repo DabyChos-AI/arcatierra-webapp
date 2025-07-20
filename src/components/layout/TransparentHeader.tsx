@@ -7,7 +7,7 @@ import OptimizedImage from '@/components/ui/OptimizedImage';
 // import { signIn, signOut, useSession } from 'next-auth/react'; // Temporalmente desactivado
 import { motion, AnimatePresence } from 'framer-motion';
 import { shouldHaveTransparentHeader } from './HeaderDetector';
-import { useCart } from '@/context/CartContext'; // Importar el hook de contexto
+// import { useCart } from '@/context/CartContext'; // Revertido a lógica original
 
 // Hook para detectar el tamaño de la ventana con seguridad SSR/CSR
 function useWindowSize() {
@@ -368,8 +368,54 @@ const TransparentHeader: React.FC = () => {
   const isTransparent = shouldHaveTransparentHeader(pathname);
   const windowSize = useWindowSize();
   
-  // Usar el contexto del carrito para acceder al estado y funciones
-  const { cartCount, isCartOpen, toggleCart, closeCart } = useCart();
+  // Estado del carrito (lógica original que funcionaba)
+  const [cartCount, setCartCount] = useState(0);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  
+  // Función para cerrar el carrito
+  const closeCart = () => setIsCartOpen(false);
+  
+  // Función para alternar el carrito
+  const toggleCart = () => setIsCartOpen(!isCartOpen);
+  
+  // Actualizar contador del carrito desde localStorage
+  useEffect(() => {
+    const updateCartCount = () => {
+      if (typeof window !== 'undefined') {
+        try {
+          const savedCart = localStorage.getItem('arcaTierraCart');
+          if (savedCart) {
+            const cartItems = JSON.parse(savedCart);
+            const count = cartItems.reduce((sum: number, item: any) => {
+              const quantity = typeof item.quantity === 'number' && !isNaN(item.quantity) ? item.quantity : 0;
+              return sum + quantity;
+            }, 0);
+            setCartCount(count);
+          } else {
+            setCartCount(0);
+          }
+        } catch (error) {
+          console.error('Error reading cart from localStorage:', error);
+          setCartCount(0);
+        }
+      }
+    };
+    
+    // Actualizar al cargar
+    updateCartCount();
+    
+    // Escuchar eventos de actualización del carrito
+    window.addEventListener('cartUpdated', updateCartCount);
+    
+    // Escuchar eventos para abrir/cerrar el carrito lateral
+    const handleToggleCartSidebar = () => setIsCartOpen(prev => !prev);
+    window.addEventListener('toggleCartSidebar', handleToggleCartSidebar);
+    
+    return () => {
+      window.removeEventListener('cartUpdated', updateCartCount);
+      window.removeEventListener('toggleCartSidebar', handleToggleCartSidebar);
+    };
+  }, []);
 
   // Efecto para detectar el scroll
   useEffect(() => {
@@ -978,84 +1024,7 @@ const TransparentHeader: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Carrito Lateral */}
-      <div style={{
-        ...styles.cartSidebar,
-        ...(isCartOpen ? styles.cartSidebarOpen : {}),
-      }}>
-        <div style={styles.cartHeader}>
-          <h3 style={{ margin: 0, color: 'var(--arcatierra-verde-tipografia)' }}>Tu Carrito</h3>
-          <button onClick={closeCart} style={styles.cartCloseButton}>
-            <i className="fas fa-times" aria-hidden="true"></i>
-          </button>
-        </div>
-        
-        <div style={styles.cartItems}>
-          {cartCount > 0 ? (
-            <p>Contenido del carrito...</p>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
-              <i className="fas fa-shopping-basket" style={{ fontSize: '3rem', color: 'var(--arcatierra-verde-suave)', marginBottom: '1rem' }}></i>
-              <p>Tu carrito está vacío</p>
-              <Link 
-                href="/tienda" 
-                style={{
-                  display: 'inline-block',
-                  marginTop: '1rem',
-                  padding: '0.5rem 1rem',
-                  backgroundColor: 'var(--arcatierra-terracota-principal)',
-                  color: 'white',
-                  textDecoration: 'none',
-                  borderRadius: '4px'
-                }}
-                onClick={closeCart}
-              >
-                Explorar productos
-              </Link>
-            </div>
-          )}
-        </div>
-        
-        {cartCount > 0 && (
-          <div style={styles.cartFooter}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <span>Total:</span>
-              <span style={{ fontWeight: 'bold' }}>$0.00</span>
-            </div>
-            <Link 
-              href="/carrito" 
-              style={{
-                display: 'block',
-                padding: '0.75rem',
-                backgroundColor: 'var(--arcatierra-terracota-principal)',
-                color: 'white',
-                textAlign: 'center',
-                textDecoration: 'none',
-                borderRadius: '4px'
-              }}
-              onClick={closeCart}
-            >
-              Ver carrito
-            </Link>
-          </div>
-        )}
-      </div>
-
-      {/* Overlay para el carrito */}
-      {isCartOpen && (
-        <div 
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            zIndex: 1999
-          }}
-          onClick={closeCart}
-        />
-      )}
+      {/* Carrito lateral manejado por CartSidebar.tsx - No duplicar aquí */}
     </header>
   );
 };
