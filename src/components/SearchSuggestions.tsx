@@ -84,7 +84,7 @@ export default function SearchSuggestions({
     <div ref={searchRef} className="relative w-full">
       {/* Panel de sugerencias */}
       {currentSearchTerm && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl z-[840] max-h-96 overflow-y-auto">
           {/* Productos encontrados */}
           {filteredProducts.length > 0 && (
             <div className="p-3 border-b border-gray-100">

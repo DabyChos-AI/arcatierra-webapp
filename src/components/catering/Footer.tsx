@@ -58,8 +58,8 @@ const CateringFooter = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <Phone size={16} className="text-terracota-light" />
-                <a href="tel:+5219982270070" className="text-neutral-light hover:text-white transition-colors text-sm">
-                  +52 1 998 227 0070
+                <a href="tel:+525639851733" className="text-neutral-light hover:text-white transition-colors text-sm">
+                  +52 56 3985 1733
                 </a>
               </div>
               <div className="flex items-center space-x-2">

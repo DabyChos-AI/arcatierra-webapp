@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { X, Plus, Minus, ShoppingCart, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/Toast'
@@ -12,6 +13,8 @@ interface CartSidebarProps {
 }
 
 export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
+  const router = useRouter()
+  
   // Función para alternar la apertura/cierre del carrito
   const onToggle = () => {
     // Disparamos el evento que será capturado por cualquier componente padre que necesite reaccionar
@@ -278,6 +281,10 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
             
             <div className="space-y-3">
               <Button
+                onClick={() => {
+                  router.push('/checkout')
+                  onClose()
+                }}
                 className="w-full bg-[#B15543] hover:bg-[#9d4a39] text-white py-3 text-lg font-semibold"
                 size="lg"
               >

@@ -16,7 +16,7 @@ export default function CateringHeader() {
   };
 
   const openWhatsApp = () => {
-    const phoneNumber = '5219982270070';
+    const phoneNumber = '525639851733';
     const message = encodeURIComponent('Hola, me interesa cotizar un evento con Arca Tierra Catering');
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
   };

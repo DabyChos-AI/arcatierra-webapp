@@ -53,7 +53,7 @@ export default function WhatsAppChat() {
   return (
     <>
       {/* Botón flotante */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-6 right-6 z-[750]">
         {!isOpen && (
           <button
             onClick={() => setIsOpen(true)}

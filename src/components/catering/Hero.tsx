@@ -12,13 +12,13 @@ export default function CateringHero() {
   };
 
   const openWhatsApp = () => {
-    const phoneNumber = '5219982270070';
+    const phoneNumber = '525639851733';
     const message = encodeURIComponent('Hola, me interesa cotizar un evento con Arca Tierra Catering');
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Imagen de fondo */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"

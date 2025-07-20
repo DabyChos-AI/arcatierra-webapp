@@ -24,6 +24,11 @@ const nextConfig = {
   experimental: {
     esmExternals: 'loose',
   },
+  // Configuración para suprimir warnings de hidratación causados por extensiones del navegador
+  reactStrictMode: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
   // Configuración de webpack mejorada
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
     // Configurar alias de path

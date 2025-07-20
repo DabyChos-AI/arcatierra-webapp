@@ -130,7 +130,7 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <header className="main-header bg-white shadow-sm border-b border-gray-100 w-full sticky top-0 z-50" role="banner">
+      <header className="main-header bg-white shadow-sm border-b border-gray-100 w-full sticky top-0 z-[1050]" role="banner">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center w-full">
             <div className="w-full max-w-6xl relative">

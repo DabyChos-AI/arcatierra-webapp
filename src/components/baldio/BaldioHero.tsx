@@ -17,7 +17,7 @@ export default function BaldioHero() {
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
 
   return (
-    <section ref={ref} className="relative h-screen overflow-hidden">
+    <section ref={ref} className="relative h-screen overflow-hidden pt-20">
       {/* Imagen de fondo con parallax */}
       <motion.div 
         style={{ y }}

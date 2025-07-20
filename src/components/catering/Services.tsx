@@ -20,7 +20,7 @@ export default function CateringServices() {
   };
 
   const openWhatsApp = () => {
-    const phoneNumber = '5219982270070';
+    const phoneNumber = '525639851733';
     const message = encodeURIComponent('Hola, me interesa conocer más sobre sus servicios de catering');
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
   };
@@ -60,7 +60,7 @@ export default function CateringServices() {
       title: "Menús de temporada",
       description: "Diseñamos menús de temporada con ingredientes frescos y locales, garantizando sabores deliciosos y responsables. Trabajamos de la mano de nuestros chefs para ofrecer platillos inspirados en la temporada.",
       icon: <Leaf className="w-8 h-8" />,
-      image: "/images/catering/temporada.jpg"
+      image: "/images/catering/menu-temporada.jpg"
     }
   ];
 

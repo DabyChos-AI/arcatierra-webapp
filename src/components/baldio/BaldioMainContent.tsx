@@ -80,6 +80,28 @@ export default function BaldioMainContent() {
             </motion.p>
           </div>
 
+          {/* Sección Reconocimiento Michelin */}
+          <motion.div
+            variants={itemVariants}
+            className="bg-gradient-to-r from-[#E3DBCB]/50 to-[#B15543]/10 rounded-2xl p-8 md:p-12 text-center"
+          >
+            <div className="flex justify-center mb-6">
+              <div className="bg-[#B15543] rounded-full p-4">
+                <Award className="h-12 w-12 text-white" />
+              </div>
+            </div>
+            <h3 className="text-3xl md:text-4xl font-bold text-[#B15543] mb-4">
+              RECONOCIMIENTO MICHELIN
+            </h3>
+            <h4 className="text-xl md:text-2xl font-semibold text-[#3A4741] mb-6">
+              Primera Estrella Verde Michelin en CDMX
+            </h4>
+            <p className="text-lg text-[#3A4741]/80 max-w-3xl mx-auto">
+              Un hito para la gastronomía mexicana y un reconocimiento a nuestro compromiso con prácticas 
+              sostenibles y responsables en cada aspecto de nuestra operación.
+            </p>
+          </motion.div>
+
           {/* Pilares */}
           <motion.div
             variants={containerVariants}
@@ -228,7 +250,7 @@ export default function BaldioMainContent() {
       {/* Modal para imagen ampliada */}
       {isModalOpen && (
         <div 
-          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/80 z-40 flex items-center justify-center p-4"
           onClick={handleOverlayClick}
         >
           <div className="relative max-w-6xl max-h-[90vh] w-full">

@@ -48,13 +48,13 @@ export default function CateringContact() {
       name: "Sofia Santiago",
       role: "Coordinadora de Eventos",
       email: "sofia@arcatierra.com",
-      phone: "+52 1 998 227 0070"
+      phone: "+52 56 3985 1733"
     },
     {
       name: "Sofia Ortega", 
       role: "Ejecutiva en Catering",
       email: "sofortega@arcatierra.com",
-      phone: "+52 1 899 318 9646"
+      phone: "+52 56 1057 3296"
     }
   ];
 

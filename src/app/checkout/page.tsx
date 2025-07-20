@@ -21,13 +21,7 @@ export default function CheckoutPage() {
     }
   }, [])
 
-  useEffect(() => {
-    // Redirigir si no hay sesión
-    if (status === 'loading') return
-    if (!session) {
-      router.push('/auth/signin?callbackUrl=/checkout')
-    }
-  }, [session, status, router])
+  // Ya no redirigimos si no hay sesión - permitimos guest checkout
 
   const handleOrderComplete = (orderId: string) => {
     // Limpiar carrito
@@ -47,10 +41,6 @@ export default function CheckoutPage() {
         </div>
       </div>
     )
-  }
-
-  if (!session) {
-    return null // El useEffect se encargará de la redirección
   }
 
   if (cartItems.length === 0) {

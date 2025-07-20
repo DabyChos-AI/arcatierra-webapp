@@ -21,7 +21,7 @@ export default function ToastNotification({ mensaje, onClose }: ToastNotificatio
   }
 
   return (
-    <div className={`fixed top-4 right-4 z-50 transition-all duration-300 transform ${
+    <div className={`fixed top-4 right-4 z-[650] transition-all duration-300 transform ${
       isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
     }`}>
       <div className="bg-[#33503E] text-white p-4 rounded-lg shadow-lg flex items-center gap-3 min-w-80">

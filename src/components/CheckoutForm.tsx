@@ -32,6 +32,7 @@ export default function CheckoutForm({ cartItems, onOrderComplete }: CheckoutFor
   })
 
   const [paymentMethod, setPaymentMethod] = useState('mercado_pago')
+  const [createAccount, setCreateAccount] = useState(false)
 
   // Calcular totales
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
@@ -39,8 +40,10 @@ export default function CheckoutForm({ cartItems, onOrderComplete }: CheckoutFor
   const total = subtotal + shipping
 
   const handleSubmitOrder = async () => {
-    if (!session?.user?.email) {
-      alert('Debes iniciar sesión para realizar una compra')
+    // Validar que tenemos un email (de sesión o guest)
+    const email = session?.user?.email || customerData.email
+    if (!email) {
+      alert('Por favor proporciona un email válido')
       return
     }
 
@@ -57,6 +60,7 @@ export default function CheckoutForm({ cartItems, onOrderComplete }: CheckoutFor
           total,
         },
         payment_method: paymentMethod,
+        create_account: createAccount && !session?.user?.email,
       }
 
       const response = await fetch('/api/orders', {
@@ -154,13 +158,22 @@ export default function CheckoutForm({ cartItems, onOrderComplete }: CheckoutFor
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
+              Email *
             </label>
             <Input
               value={customerData.email}
-              disabled
-              className="bg-gray-100"
+              onChange={(e) => setCustomerData({...customerData, email: e.target.value})}
+              placeholder="tu@email.com"
+              type="email"
+              required
+              disabled={!!session?.user?.email}
+              className={session?.user?.email ? "bg-gray-100" : ""}
             />
+            {session?.user?.email && (
+              <p className="text-xs text-gray-500 mt-1">
+                Email de tu cuenta iniciada
+              </p>
+            )}
           </div>
 
           <div>
@@ -300,6 +313,33 @@ export default function CheckoutForm({ cartItems, onOrderComplete }: CheckoutFor
               </label>
             </div>
           </div>
+
+          {/* Opción de crear cuenta - solo para guests */}
+          {!session?.user?.email && (
+            <div className="border border-green-200 bg-green-50 rounded-lg p-4">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={createAccount}
+                  onChange={(e) => setCreateAccount(e.target.checked)}
+                  className="mt-1 text-[#B15543] focus:ring-[#B15543]"
+                />
+                <div>
+                  <div className="font-medium text-green-800">
+                    Crear cuenta con mis datos
+                  </div>
+                  <div className="text-sm text-green-700 mt-1">
+                    Te enviaremos un email para crear tu contraseña y acceder a:
+                  </div>
+                  <ul className="text-xs text-green-600 mt-2 space-y-1">
+                    <li>• Historial de pedidos</li>
+                    <li>• Checkout más rápido en futuras compras</li>
+                    <li>• Ofertas y descuentos exclusivos</li>
+                  </ul>
+                </div>
+              </label>
+            </div>
+          )}
 
           {/* Resumen de la orden */}
           <div className="bg-gray-50 rounded-lg p-4 mt-6">

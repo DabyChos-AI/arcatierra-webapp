@@ -1,10 +1,10 @@
 /**
- * AUTENTICACIÓN TEMPORALMENTE DESACTIVADA
- * Componente AuthProvider comentado para evitar errores de NextAuth
+ * AuthProvider - Proveedor de sesión para NextAuth
+ * Envuelve la aplicación para permitir el uso de useSession
  */
 'use client'
 
-// import { SessionProvider } from 'next-auth/react'
+import { SessionProvider } from 'next-auth/react'
 import { ReactNode } from 'react'
 
 interface AuthProviderProps {
@@ -12,8 +12,7 @@ interface AuthProviderProps {
 }
 
 export default function AuthProvider({ children }: AuthProviderProps) {
-  // Versión simplificada sin NextAuth
-  return <>{children}</>
-  // Versión original: return <SessionProvider>{children}</SessionProvider>
+  // Proveedor de sesión activo para NextAuth
+  return <SessionProvider>{children}</SessionProvider>
 }
 

@@ -4,14 +4,6 @@ import { getServerSession } from 'next-auth'
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession()
-    
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Usuario no autenticado' },
-        { status: 401 }
-      )
-    }
-
     const orderData = await request.json()
     
     // Validar datos requeridos
@@ -25,6 +17,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Validar que tenemos un email (de sesión o guest)
+    const customerEmail = session?.user?.email || orderData.customer?.email
+    if (!customerEmail) {
+      return NextResponse.json(
+        { error: 'Email requerido para procesar la orden' },
+        { status: 400 }
+      )
+    }
+
     // Generar ID único para la orden
     const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     
@@ -34,9 +35,10 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
       customer: {
         name: orderData.customer.name,
-        email: session.user.email,
+        email: customerEmail,
         phone: orderData.customer.phone,
         rfc: orderData.customer.rfc || null,
+        is_guest: !session?.user?.email,
       },
       items: orderData.items.map((item: any) => ({
         product_id: item.id,
@@ -87,12 +89,44 @@ export async function POST(request: NextRequest) {
 
     const n8nResult = await n8nResponse.json()
 
+    // Si el guest quiere crear cuenta, generar token y enviar email
+    let accountCreationToken = null
+    if (orderData.create_account && !session?.user?.email) {
+      accountCreationToken = `ACC-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      
+      // Preparar datos para email de creación de cuenta
+      const accountCreationData = {
+        type: 'account_creation',
+        email: customerEmail,
+        name: orderData.customer.name,
+        token: accountCreationToken,
+        order_id: orderId,
+        customer_data: orderData.customer,
+        delivery_data: orderData.delivery
+      }
+
+      // Enviar a n8n para procesamiento de email
+      try {
+        await fetch(n8nUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(accountCreationData),
+        })
+      } catch (error) {
+        console.error('Error enviando email de creación de cuenta:', error)
+        // No fallar la orden por esto
+      }
+    }
+
     // Responder con éxito
     return NextResponse.json({
       success: true,
       order_id: orderId,
       payment_url: n8nResult.payment_url,
       message: 'Orden enviada correctamente',
+      account_creation_requested: !!accountCreationToken,
     })
 
   } catch (error) {
