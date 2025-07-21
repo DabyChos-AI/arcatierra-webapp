@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import OptimizedImage from '@/components/ui/OptimizedImage';
-import { signIn, useSession } from 'next-auth/react';
+import { signIn, signOut, useSession } from 'next-auth/react';
 import { Menu, X, ShoppingCart, User, Phone, Heart } from 'lucide-react';
 import LogoutButton from '../auth/LogoutButton';
 
@@ -23,34 +23,16 @@ interface CartItem {
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { data: session } = useSession();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
-    if (session?.user) {
-      const userData = {
-        name: session.user.name || 'Usuario',
-        email: session.user.email || ''
-      };
-      setCurrentUser(userData);
-      
-      // Guardar en localStorage para persistencia
-      localStorage.setItem('arcaTierraCurrentUser', JSON.stringify(userData));
-    } else {
-      // Verificar si hay datos en localStorage antes de establecer como null
-      checkAuthStatus();
-    }
-    
     // Cargar carrito desde localStorage
     loadCartFromStorage();
     
-
-    // Escuchar cambios en localStorage (otras pestañas)
+    // Escuchar cambios en localStorage para carrito únicamente
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'arcaTierraCurrentUser') {
-        checkAuthStatus();
-      } else if (e.key === 'arcaTierraCart') {
+      if (e.key === 'arcaTierraCart') {
         loadCartFromStorage();
       }
     };
@@ -60,23 +42,9 @@ const Header: React.FC = () => {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [session]);
+  }, []);
 
-  const checkAuthStatus = () => {
-    const storedUserData = localStorage.getItem('arcaTierraCurrentUser');
-    if (storedUserData) {
-      try {
-        const parsedUserData = JSON.parse(storedUserData);
-        setCurrentUser(parsedUserData);
-      } catch (e) {
-        // Si hay error al parsear, eliminar el dato corrupto
-        localStorage.removeItem('arcaTierraCurrentUser');
-        setCurrentUser(null);
-      }
-    } else {
-      setCurrentUser(null);
-    }
-  };
+
 
   const loadCartFromStorage = () => {
     const storedCart = localStorage.getItem('arcaTierraCart');
@@ -99,15 +67,8 @@ const Header: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('arcaTierraCurrentUser');
-    setCurrentUser(null);
-    // Evento personalizado para notificar cambios
-    window.dispatchEvent(new CustomEvent('authStateChanged', { 
-      detail: { isAuthenticated: false } 
-    }));
-    // Redirigir a inicio
-    window.location.href = '/';
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/' });
   };
 
   const getInitials = (name: string) => {
@@ -270,14 +231,14 @@ const Header: React.FC = () => {
                 </button>
 
                 {/* User Button or Login */}
-                {currentUser ? (
+                {session?.user ? (
                   <div className="relative">
                     <button className="flex items-center space-x-1 ml-2 lg:ml-4 text-verde-tipografia hover:text-terracota group p-1.5 lg:p-2">
                       <span className="text-xs lg:text-sm font-medium hidden lg:block">
-                        {currentUser.name}
+                        {session.user.name || 'Usuario'}
                       </span>
                       <span className="h-5 w-5 lg:h-6 lg:w-6 rounded-full bg-verde-oscuro text-white flex items-center justify-center text-xs">
-                        {getInitials(currentUser.name)}
+                        {getInitials(session.user.name || 'Usuario')}
                       </span>
                     </button>
                     <div className="absolute right-0 z-10 mt-1 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden group-hover:block">
@@ -315,10 +276,10 @@ const Header: React.FC = () => {
                 </button>
 
                 {/* User Button for Mobile - Minimalista */}
-                {currentUser ? (
+                {session?.user ? (
                   <button className="p-1.5 text-verde-tipografia hover:text-terracota rounded-md">
                     <span className="h-5 w-5 rounded-full bg-verde-oscuro text-white flex items-center justify-center text-xs font-medium">
-                      {getInitials(currentUser.name)}
+                      {getInitials(session.user.name || 'Usuario')}
                     </span>
                   </button>
                 ) : (
@@ -426,17 +387,17 @@ const Header: React.FC = () => {
 
             <div className="pt-6 pb-4 mt-4 border-t border-gray-200">
               <div className="px-4">
-                {currentUser ? (
+                {session?.user ? (
                   <div className="bg-gray-50 rounded-xl p-4">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
                         <div className="h-12 w-12 rounded-full bg-verde-oscuro text-white flex items-center justify-center text-lg font-semibold">
-                          {getInitials(currentUser.name)}
+                          {getInitials(session.user.name || 'Usuario')}
                         </div>
                       </div>
                       <div className="ml-4 flex-1">
-                        <div className="text-lg font-semibold text-verde-tipografia">{currentUser.name}</div>
-                        <div className="text-sm text-gray-600">{currentUser.email}</div>
+                        <div className="text-lg font-semibold text-verde-tipografia">{session.user.name || 'Usuario'}</div>
+                        <div className="text-sm text-gray-600">{session.user.email || ''}</div>
                       </div>
                     </div>
                     <div className="mt-4 space-y-2">

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-// import { useSession } from 'next-auth/react' // Temporalmente desactivado
+import { useSession } from 'next-auth/react'
 import { Calendar, Package, Leaf, Users, Star, CheckCircle, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -213,9 +213,7 @@ const DELIVERY_FREQUENCIES = [
 ]
 
 export default function SuscripcionesPage() {
-  // const sessionResult = useSession() // Temporalmente desactivado
-  // const { data: session } = sessionResult || { data: null }
-  const session = null // Temporalmente sin autenticación
+  const { data: session } = useSession()
   const [selectedCanastas, setSelectedCanastas] = useState<string[]>([])
   const [selectedFrequency, setSelectedFrequency] = useState('weekly')
   const [isSubscribing, setIsSubscribing] = useState(false)

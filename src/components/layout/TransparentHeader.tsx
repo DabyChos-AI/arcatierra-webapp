@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import OptimizedImage from '@/components/ui/OptimizedImage';
-// import { signIn, signOut, useSession } from 'next-auth/react'; // Temporalmente desactivado
+import { signIn, signOut, useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { shouldHaveTransparentHeader } from './HeaderDetector';
 // import { useCart } from '@/context/CartContext'; // Revertido a lógica original
@@ -350,15 +350,8 @@ const styles = {
 };
 
 const TransparentHeader: React.FC = () => {
-  // Sesión simulada mientras NextAuth está desactivado
-  const session = {
-    user: {
-      name: 'Usuario Simulado',
-      email: 'usuario@ejemplo.com',
-      image: null,
-      role: 'user'
-    }
-  };
+  // NextAuth sesión real
+  const { data: session, status } = useSession();
   const [isScrolled, setIsScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -501,14 +494,16 @@ const TransparentHeader: React.FC = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
-  // Función de cierre de sesión simulada mientras NextAuth está desactivado
-  const handleSignOut = (e: React.MouseEvent) => {
+  // Función de cierre de sesión real con NextAuth
+  const handleSignOut = async (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log('Cerrar sesión simulado - NextAuth temporalmente desactivado');
-    // Redirigir a la página principal como alternativa temporal
-    window.location.href = '/';
+    await signOut({ callbackUrl: '/' });
   };
-  
+
+  const handleSignIn = () => {
+    signIn();
+  };
+
   const toggleSubmenu = (e: React.MouseEvent, name: string) => {
     // No prevenimos el comportamiento predeterminado para permitir navegación
     // Sólo detenemos la propagación para evitar conflictos de eventos

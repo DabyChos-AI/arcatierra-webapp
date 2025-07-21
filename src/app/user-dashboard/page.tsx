@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react'
-// import { useSession } from 'next-auth/react' - Temporalmente desactivado
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { 
@@ -18,16 +18,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function UserDashboardPage() {
-  // Sesión simulada mientras NextAuth está desactivado
-  const session = {
-    user: {
-      name: 'Usuario Simulado',
-      email: 'usuario@ejemplo.com',
-      image: null,
-      role: 'user'
-    }
-  }
-  const status = 'authenticated' // Simulamos que siempre está autenticado
+  // NextAuth sesión real
+  const { data: session, status } = useSession()
   
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('overview')

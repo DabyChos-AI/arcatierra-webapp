@@ -4,10 +4,18 @@ import { signIn, getSession } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 
 export default function SignIn() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const [isSignUp, setIsSignUp] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  })
 
   useEffect(() => {
     const checkSession = async () => {
@@ -33,18 +41,160 @@ export default function SignIn() {
     }
   }
 
+  const handleFacebookClick = () => {
+    alert('🚧 ¡Próximamente! 🔥\n\nFacebook Login está en desarrollo.\nPor ahora usa Google para continuar 🚀')
+  }
+
+  const handleInstagramClick = () => {
+    alert('✨ ¡Muy pronto! 🎨\n\nInstagram Login está en desarrollo.\nUsa Google mientras tanto 🌟')
+  }
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (formData.password !== formData.confirmPassword) {
+      alert('Las contraseñas no coinciden')
+      return
+    }
+    setLoading(true)
+    // Simular registro
+    setTimeout(() => {
+      alert('🎉 ¡Cuenta creada! Ahora puedes iniciar sesión')
+      setIsSignUp(false)
+      setLoading(false)
+    }, 1000)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#E3DBCB] to-[#CCBB9A] flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-[#33503E] rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-2xl font-bold">AT</span>
+          <div className="relative w-24 h-24 mx-auto mb-4">
+            <div className="w-24 h-24 bg-gradient-to-br from-[#33503E] to-[#2D4536] rounded-full flex items-center justify-center shadow-lg">
+              <div className="text-center">
+                <span className="text-white text-2xl font-bold tracking-wider">AT</span>
+                <div className="w-6 h-0.5 bg-[#B15543] mx-auto mt-1 rounded"></div>
+              </div>
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#B15543] rounded-full flex items-center justify-center">
+              <span className="text-white text-xs font-bold">🌱</span>
+            </div>
           </div>
           <h1 className="text-3xl font-bold text-[#33503E] mb-2">Arca Tierra</h1>
-          <p className="text-gray-600">Inicia sesión para continuar</p>
+          <p className="text-gray-600">
+            {isSignUp ? 'Crea tu cuenta para comenzar' : 'Inicia sesión para continuar'}
+          </p>
+        </div>
+
+        {/* Toggle entre Login y Signup */}
+        <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
+          <button
+            onClick={() => setIsSignUp(false)}
+            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+              !isSignUp 
+                ? 'bg-white text-[#33503E] shadow-sm' 
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            Iniciar Sesión
+          </button>
+          <button
+            onClick={() => setIsSignUp(true)}
+            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+              isSignUp 
+                ? 'bg-white text-[#33503E] shadow-sm' 
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            Crear Cuenta
+          </button>
         </div>
 
         <div className="space-y-4">
+          {/* Formulario Manual - Solo en modo Signup */}
+          {isSignUp && (
+            <form onSubmit={handleSignUp} className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre completo
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#33503E] focus:border-transparent"
+                  placeholder="Tu nombre completo"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#33503E] focus:border-transparent"
+                  placeholder="tu@email.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Contraseña
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#33503E] focus:border-transparent"
+                  placeholder="Mínimo 6 caracteres"
+                  minLength={6}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Confirmar contraseña
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#33503E] focus:border-transparent"
+                  placeholder="Confirma tu contraseña"
+                  minLength={6}
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#33503E] text-white hover:bg-[#2D4536] transition-all duration-200 py-3 px-4 rounded-lg flex items-center justify-center gap-3"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    🌱 Crear Cuenta
+                  </>
+                )}
+              </Button>
+            </form>
+          )}
+
+          {/* Separador - Solo mostrar si hay formulario manual */}
+          {isSignUp && (
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">o continúa con</span>
+              </div>
+            </div>
+          )}
+
           <Button
             onClick={handleGoogleSignIn}
             disabled={loading}
@@ -66,7 +216,7 @@ export default function SignIn() {
           </Button>
 
           <Button
-            onClick={() => signIn('facebook', { callbackUrl: '/dashboard', redirect: true })}
+            onClick={handleFacebookClick}
             disabled={loading}
             className="w-full bg-[#1877F2] text-white hover:bg-[#166FE5] transition-all duration-200 py-3 px-4 rounded-lg flex items-center justify-center gap-3"
           >
@@ -83,7 +233,7 @@ export default function SignIn() {
           </Button>
 
           <Button
-            onClick={() => signIn('instagram', { callbackUrl: '/dashboard', redirect: true })}
+            onClick={handleInstagramClick}
             disabled={loading}
             className="w-full bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#FCAF45] text-white hover:opacity-90 transition-all duration-200 py-3 px-4 rounded-lg flex items-center justify-center gap-3"
           >
@@ -113,10 +263,27 @@ export default function SignIn() {
 
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-600">
-            ¿Eres nuevo en Arca Tierra?{' '}
-            <span className="text-[#B15543] font-medium">
-              Tu cuenta se creará automáticamente
-            </span>
+            {isSignUp ? (
+              <>
+                ¿Ya tienes cuenta?{' '}
+                <button 
+                  onClick={() => setIsSignUp(false)}
+                  className="text-[#B15543] font-medium hover:underline"
+                >
+                  Inicia sesión aquí
+                </button>
+              </>
+            ) : (
+              <>
+                ¿Eres nuevo en Arca Tierra?{' '}
+                <button 
+                  onClick={() => setIsSignUp(true)}
+                  className="text-[#B15543] font-medium hover:underline"
+                >
+                  Crea tu cuenta
+                </button>
+              </>
+            )}
           </p>
         </div>
       </div>
