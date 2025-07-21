@@ -6,7 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Eye, EyeOff, CheckCircle, XCircle, User, Mail, Lock } from 'lucide-react'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
+
+// Forzar rendering dinámico para evitar prerendering
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default function CreateAccountPage() {
   const router = useRouter()
