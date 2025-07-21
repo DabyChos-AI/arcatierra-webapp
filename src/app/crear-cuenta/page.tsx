@@ -6,12 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Eye, EyeOff, CheckCircle, XCircle, User, Mail, Lock } from 'lucide-react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 
 export default function CreateAccountPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const token = searchParams.get('token')
-  const email = searchParams.get('email')
+  const [mounted, setMounted] = useState(false)
+  const [token, setToken] = useState<string | null>(null)
+  const [email, setEmail] = useState<string | null>(null)
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -32,11 +34,32 @@ export default function CreateAccountPage() {
   const isPasswordValid = Object.values(passwordRequirements).every(Boolean)
   const passwordsMatch = password === confirmPassword
 
+  // Manejo client-side para evitar prerendering errors
   useEffect(() => {
-    if (!token || !email) {
+    setMounted(true)
+    const urlToken = searchParams.get('token')
+    const urlEmail = searchParams.get('email')
+    setToken(urlToken)
+    setEmail(urlEmail)
+  }, [searchParams])
+
+  useEffect(() => {
+    if (mounted && (!token || !email)) {
       router.push('/')
     }
-  }, [token, email, router])
+  }, [token, email, router, mounted])
+
+  // Loading state para evitar flash de contenido
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B15543] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    )
+  }
 
   const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault()
