@@ -9,7 +9,6 @@ import Link from 'next/link'
 
 // Forzar rendering dinámico para evitar prerendering
 export const dynamic = 'force-dynamic'
-export const revalidate = 0
 
 export default function CreateAccountPage() {
   const router = useRouter()
