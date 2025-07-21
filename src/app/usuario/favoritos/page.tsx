@@ -37,45 +37,68 @@ export default function FavoritosPage() {
     if (session?.user) {
       // Simular carga de favoritos
       setTimeout(() => {
-        setFavorites([
-          {
-            id: 'fav-001',
-            type: 'experiencia',
-            title: 'Tour Premium por las Chinampas',
-            description: 'Descubre la agricultura ancestral de Xochimilco en una experiencia única',
-            image: '/images/experiencias/chinampas-tour.jpg',
-            location: 'Xochimilco, CDMX',
-            duration: '4 horas',
-            capacity: 8,
-            rating: 4.9,
-            price: '$2,500',
-            href: '/experiencias/chinampas-premium',
-            addedDate: '2025-07-15'
-          },
-          {
-            id: 'fav-002',
-            type: 'restaurante',
-            title: 'Baldío Restaurante',
-            description: 'Cocina mexicana contemporánea con ingredientes de temporada',
-            image: '/images/restaurantes/baldio-exterior.jpg',
-            location: 'Roma Norte, CDMX',
-            rating: 4.8,
-            price: '$$$',
-            href: '/baldio',
-            addedDate: '2025-07-10'
-          },
-          {
-            id: 'fav-003',
-            type: 'producto',
-            title: 'Canasta de Verduras Orgánicas',
-            description: 'Selección semanal de verduras frescas directo del productor',
-            image: '/images/productos/canasta-verduras.jpg',
-            rating: 4.7,
-            price: '$450',
-            href: '/tienda/canasta-verduras',
-            addedDate: '2025-07-08'
-          }
-        ])
+        // Detectar si es usuario demo
+        const isDemoUser = session.user.email === 'prueba@prueba.com' || session.user.name === 'Usuario Prueba'
+        
+        if (isDemoUser) {
+          // Mock data para usuario demo
+          setFavorites([
+            {
+              id: 'fav-001',
+              type: 'experiencia',
+              title: 'Tour Premium por las Chinampas',
+              description: 'Descubre la agricultura ancestral de Xochimilco en una experiencia única',
+              image: '/images/experiencias/chinampas-tour.jpg',
+              location: 'Xochimilco, CDMX',
+              duration: '4 horas',
+              capacity: 8,
+              rating: 4.9,
+              price: '$2,500',
+              href: '/experiencias/chinampas-premium',
+              addedDate: '2025-07-15'
+            },
+            {
+              id: 'fav-002',
+              type: 'restaurante',
+              title: 'Baldío Restaurante',
+              description: 'Cocina mexicana contemporánea con ingredientes de temporada',
+              image: '/images/restaurantes/baldio-exterior.jpg',
+              location: 'Roma Norte, CDMX',
+              rating: 4.8,
+              price: '$$$',
+              href: '/baldio',
+              addedDate: '2025-07-10'
+            },
+            {
+              id: 'fav-003',
+              type: 'producto',
+              title: 'Canasta de Verduras Orgánicas',
+              description: 'Selección semanal de verduras frescas directo del productor',
+              image: '/images/productos/canasta-verduras.jpg',
+              rating: 4.7,
+              price: '$450',
+              href: '/tienda/canasta-verduras',
+              addedDate: '2025-07-08'
+            },
+            {
+              id: 'fav-004',
+              type: 'experiencia',
+              title: 'Taller de Cosmética Natural',
+              description: 'Aprende a crear productos de belleza con ingredientes naturales',
+              image: '/images/experiencias/cosmetica-natural.jpg',
+              location: 'Roma Norte, CDMX',
+              duration: '3 horas',
+              capacity: 12,
+              rating: 4.6,
+              price: '$750',
+              href: '/experiencias/cosmetica-natural',
+              addedDate: '2025-07-05'
+            }
+          ])
+        } else {
+          // Usuario real - sin favoritos hasta que agregue favoritos reales
+          setFavorites([])
+        }
         setLoading(false)
       }, 1000)
     }

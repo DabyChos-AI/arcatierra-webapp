@@ -32,12 +32,15 @@ export default function UserDashboardPage() {
   //   }
   // }, [status, router])
 
-  // Data de ejemplo para el dashboard
-  const upcomingReservations = [
+  // Detectar si es usuario demo
+  const isDemoUser = session?.user?.email === 'prueba@prueba.com' || session?.user?.name === 'Usuario Prueba'
+
+  // Mock data para usuario demo
+  const mockReservations = [
     { 
       id: 'res-001', 
       experience: 'Tour por las Chinampas', 
-      date: '2025-07-12', 
+      date: '2025-08-12', 
       time: '10:00', 
       participants: 2, 
       status: 'confirmed',
@@ -46,7 +49,7 @@ export default function UserDashboardPage() {
     { 
       id: 'res-002', 
       experience: 'Taller de Cocina Sustentable', 
-      date: '2025-07-18', 
+      date: '2025-08-18', 
       time: '16:00', 
       participants: 1, 
       status: 'pending',
@@ -54,7 +57,7 @@ export default function UserDashboardPage() {
     }
   ]
 
-  const recentFavorites = [
+  const mockFavorites = [
     { 
       id: 'exp-003', 
       name: 'Tour por las Chinampas', 
@@ -68,17 +71,10 @@ export default function UserDashboardPage() {
       location: 'Coyoacán, CDMX', 
       price: 450,
       image: '/images/experiences/huerto-urbano.jpg'
-    },
-    { 
-      id: 'exp-012', 
-      name: 'Visita a Granja Sustentable', 
-      location: 'Ajusco, CDMX', 
-      price: 550,
-      image: '/images/experiences/granja-sustentable.jpg'
     }
   ]
 
-  const recommendations = [
+  const mockRecommendations = [
     { 
       id: 'exp-008', 
       name: 'Taller de Cosmética Natural', 
@@ -96,6 +92,11 @@ export default function UserDashboardPage() {
       match: '95%'
     }
   ]
+
+  // Datos según tipo de usuario
+  const upcomingReservations = isDemoUser ? mockReservations : []
+  const recentFavorites = isDemoUser ? mockFavorites : []
+  const recommendations = isDemoUser ? mockRecommendations : []
 
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = { 

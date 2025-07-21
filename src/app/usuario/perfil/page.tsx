@@ -39,23 +39,42 @@ export default function PerfilPage() {
     if (session?.user) {
       // Simular carga del perfil
       setTimeout(() => {
-        const mockProfile: UserProfile = {
-          name: session.user.name || 'Usuario',
-          email: session.user.email || '',
+        // Detectar si es usuario demo
+        const isDemoUser = session.user.email === 'prueba@prueba.com' || session.user.name === 'Usuario Prueba'
+        
+        const userProfile: UserProfile = isDemoUser ? {
+          // Usuario demo con datos completos
+          name: 'Usuario Prueba',
+          email: 'prueba@prueba.com',
           phone: '+52 55 1234 5678',
-          address: 'Roma Norte, Ciudad de México',
+          address: 'Roma Norte, Ciudad de México, CP 06700',
           birthDate: '1990-05-15',
           preferences: {
             newsletter: true,
             notifications: true,
-            dietary: ['vegetariano']
+            dietary: ['vegetariano', 'orgánico']
           },
           memberSince: '2024-01-15',
           totalOrders: 12,
           favoriteExperience: 'Tour Premium por las Chinampas'
+        } : {
+          // Usuario real con campos editables
+          name: session.user.name || 'Usuario',
+          email: session.user.email || '',
+          phone: '',  // Campo vacío para que el usuario lo llene
+          address: '',  // Campo vacío para que el usuario lo llene
+          birthDate: '',  // Campo vacío para que el usuario lo llene
+          preferences: {
+            newsletter: false,
+            notifications: false,
+            dietary: []
+          },
+          memberSince: new Date().toISOString().split('T')[0], // Fecha actual
+          totalOrders: 0,  // Se actualizará con datos reales
+          favoriteExperience: undefined
         }
-        setProfile(mockProfile)
-        setEditedProfile(mockProfile)
+        setProfile(userProfile)
+        setEditedProfile(userProfile)
         setLoading(false)
       }, 1000)
     }

@@ -37,37 +37,61 @@ export default function ReservasPage() {
     if (session?.user) {
       // Simular carga de reservas
       setTimeout(() => {
-        setReservations([
-          {
-            id: 'res-001',
-            type: 'baldio',
-            title: 'Cena en Baldío Restaurante',
-            date: '2025-08-15',
-            time: '20:00',
-            location: 'Baldío Restaurante, Roma Norte',
-            status: 'confirmada',
-            participants: 2,
-            contact: {
-              phone: '+52 55 1234 5678',
-              email: 'reservas@baldio.mx'
+        // Detectar si es usuario demo
+        const isDemoUser = session.user.email === 'prueba@prueba.com' || session.user.name === 'Usuario Prueba'
+        
+        if (isDemoUser) {
+          // Mock data para usuario demo
+          setReservations([
+            {
+              id: 'res-001',
+              type: 'baldio',
+              title: 'Cena en Baldío Restaurante',
+              date: '2025-08-15',
+              time: '20:00',
+              location: 'Baldío Restaurante, Roma Norte',
+              status: 'confirmada',
+              participants: 2,
+              contact: {
+                phone: '+52 55 1234 5678',
+                email: 'reservas@baldio.mx'
+              },
+              notes: 'Mesa para 2 personas, menú degustación'
             },
-            notes: 'Mesa para 2 personas, menú degustación'
-          },
-          {
-            id: 'res-002', 
-            type: 'experiencia',
-            title: 'Tour Chinampas Premium',
-            date: '2025-08-20',
-            time: '09:00',
-            location: 'Xochimilco, CDMX',
-            status: 'pendiente',
-            participants: 4,
-            contact: {
-              phone: '+52 55 9876 5432',
-              email: 'experiencias@arcatierra.com'
+            {
+              id: 'res-002', 
+              type: 'experiencia',
+              title: 'Tour Chinampas Premium',
+              date: '2025-08-20',
+              time: '09:00',
+              location: 'Xochimilco, CDMX',
+              status: 'pendiente',
+              participants: 4,
+              contact: {
+                phone: '+52 55 9876 5432',
+                email: 'experiencias@arcatierra.com'
+              }
+            },
+            {
+              id: 'res-003',
+              type: 'experiencia',
+              title: 'Taller de Cocina Sustentable',
+              date: '2025-09-05',
+              time: '15:00',
+              location: 'Centro de Sustentabilidad, Coyoacán',
+              status: 'cancelada',
+              participants: 1,
+              contact: {
+                phone: '+52 55 5555 1234',
+                email: 'talleres@sustentable.mx'
+              },
+              notes: 'Cancelada por el usuario'
             }
-          }
-        ])
+          ])
+        } else {
+          // Usuario real - sin reservas hasta que haga reservas reales
+          setReservations([])
+        }
         setLoading(false)
       }, 1000)
     }
