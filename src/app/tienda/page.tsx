@@ -130,12 +130,22 @@ const categories = [
   { id: 'all', name: 'Todas las categorías', emoji: '🌱', active: false },
   { id: 'verduras', name: 'Verduras', emoji: '🥬', active: true },
   { id: 'frutas', name: 'Frutas', emoji: '🍎', active: false },
-  { id: 'despensa', name: 'Despensa', emoji: '🌾', active: false },
-  { id: 'lacteos', name: 'Lácteos', emoji: '🧀', active: false },
-  { id: 'proteinas', name: 'Proteínas', emoji: '🥩', active: false },
-  { id: 'bebidas', name: 'Bebidas', emoji: '🥤', active: false },
-  { id: 'dulces', name: 'Dulces', emoji: '🍯', active: false },
-  { id: 'otros', name: 'Otros', emoji: '📦', active: false }
+  { id: 'canastas', name: 'Canastas de Temporada', emoji: '🧺', active: false },
+  { id: 'aceites', name: 'Aceites Naturales', emoji: '🫒', active: false },
+  { id: 'granos', name: 'Granos y Cereales', emoji: '🌾', active: false },
+  { id: 'cafe', name: 'Café y Cacao', emoji: '☕', active: false },
+  { id: 'endulzantes', name: 'Endulzantes Naturales', emoji: '🍯', active: false },
+  { id: 'especias', name: 'Especias y Condimentos', emoji: '🌶️', active: false },
+  { id: 'proteinas', name: 'Proteínas Regenerativas', emoji: '🥩', active: false },
+  { id: 'lacteos', name: 'Lácteos Artesanales', emoji: '🧀', active: false },
+  { id: 'harinas', name: 'Harinas y Pan', emoji: '🥖', active: false },
+  { id: 'infusiones', name: 'Infusiones y Tés', emoji: '🍵', active: false },
+  { id: 'mermeladas', name: 'Mermeladas y Untables', emoji: '🍓', active: false },
+  { id: 'condimentos', name: 'Condimentos Artesanales', emoji: '🧂', active: false },
+  { id: 'tortillas', name: 'Tortillas y Maíz', emoji: '🌽', active: false },
+  { id: 'despensa', name: 'Despensa General', emoji: '📦', active: false },
+  { id: 'bebidas', name: 'Bebidas Naturales', emoji: '🥤', active: false },
+  { id: 'otros', name: 'Otros Productos', emoji: '🌿', active: false }
 ]
 
 const productores = [
@@ -157,7 +167,133 @@ const certificaciones = [
 
 // Los productos se cargan desde el layout de servidor
 
+// Schema.org JSON-LD para rich snippets
+const storeStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "Store",
+  "name": "Arca Tierra",
+  "alternateName": "Tienda Arca Tierra",
+  "description": "Tienda de alimentos agroecológicos 100% mexicanos con trazabilidad completa. Productos directos de agricultores de Xochimilco, Huasca de Ocampo y Amanalco.",
+  "url": "https://arcatierra.com/tienda",
+  "logo": {
+    "@type": "ImageObject",
+    "url": "https://arcatierra.com/images/logo-arca-tierra.png",
+    "width": 400,
+    "height": 400
+  },
+  "image": [
+    "https://arcatierra.com/images/tienda-portada.jpg",
+    "https://arcatierra.com/images/productores-xochimilco.jpg",
+    "https://arcatierra.com/images/canastas-frescas.jpg"
+  ],
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Ciudad de México",
+    "addressRegion": "CDMX",
+    "addressCountry": "MX",
+    "postalCode": "03100"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 19.432608,
+    "longitude": -99.133209
+  },
+  "telephone": "+52 55 1234 5678",
+  "email": "hola@arcatierra.com",
+  "openingHours": "Mo-Fr 07:00-18:00",
+  "paymentAccepted": "Cash, Credit Card, Debit Card, Bank Transfer",
+  "currenciesAccepted": "MXN",
+  "priceRange": "$$",
+  "sameAs": [
+    "https://www.instagram.com/arcatierra",
+    "https://www.facebook.com/arcatierra",
+    "https://twitter.com/arcatierra"
+  ],
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Catálogo de Productos Agroecológicos",
+    "itemListElement": [
+      {
+        "@type": "OfferCatalog",
+        "name": "Canastas de Temporada",
+        "description": "Canastas de frutas y verduras agroecológicas de productores locales"
+      },
+      {
+        "@type": "OfferCatalog", 
+        "name": "Productos a Granel",
+        "description": "Granos, aceites, especias y productos orgánicos al peso"
+      }
+    ]
+  },
+  "makesOffer": {
+    "@type": "Offer",
+    "name": "Entrega a domicilio CDMX",
+    "description": "Entrega gratuita en Ciudad de México de lunes a viernes",
+    "areaServed": "Ciudad de México, México",
+    "availableDeliveryMethod": "OnSitePickup"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.8",
+    "bestRating": "5",
+    "ratingCount": "127"
+  },
+  "review": [
+    {
+      "@type": "Review",
+      "author": {
+        "@type": "Person",
+        "name": "María González"
+      },
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": "5",
+        "bestRating": "5"
+      },
+      "reviewBody": "La calidad es impresionante. Realmente puedes notar la diferencia en sabor y frescura. Saber que viene directamente del agricultor me da mucha confianza."
+    }
+  ]
+};
+
+// Schema.org para organización y red de productores
+const organizationStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Red Arca Tierra",
+  "alternateName": "Arca Tierra",
+  "description": "Red de agricultura regenerativa que conecta a más de 60 familias campesinas con consumidores conscientes en Ciudad de México.",
+  "url": "https://arcatierra.com",
+  "logo": "https://arcatierra.com/images/logo-arca-tierra.png",
+  "foundingDate": "2019",
+  "founders": {
+    "@type": "Person",
+    "name": "Equipo Arca Tierra"
+  },
+  "numberOfEmployees": "10-50",
+  "knowsAbout": [
+    "Agricultura Agroecológica",
+    "Comercio Justo",
+    "Sustentabilidad Alimentaria",
+    "Hiperlocalidad",
+    "Trazabilidad de Alimentos"
+  ],
+  "memberOf": {
+    "@type": "Organization",
+    "name": "Red de Agricultura Regenerativa de México"
+  },
+  "serviceArea": {
+    "@type": "GeoCircle",
+    "geoMidpoint": {
+      "@type": "GeoCoordinates",
+      "latitude": 19.432608,
+      "longitude": -99.133209
+    },
+    "geoRadius": "500000"
+  }
+};
+
 export default function TiendaPage() {
+  const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('verduras')
@@ -346,14 +482,27 @@ export default function TiendaPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F2E8] pt-20">
+      {/* JSON-LD Structured Data para SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(storeStructuredData),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(organizationStructuredData),
+        }}
+      />
       {/* Header responsivo y centrado - con fondo sólido forzado (sin transparencia) */}
       <div className="w-full !bg-[#33503E] text-white shadow-md relative z-10" style={{backgroundColor: '#33503E', opacity: 1}}>
         <div className="container mx-auto px-4 py-8">
 
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-white mb-4">Tienda de Productos Orgánicos</h1>
+            <h1 className="text-4xl font-bold text-white mb-4">Tienda de alimentos</h1>
             <p className="text-white text-lg mb-8 max-w-3xl mx-auto">
-              Directo de las chinampas a tu mesa. Productos 100% orgánicos cultivados con amor y respeto por la tierra.
+              Alimentos agroecológicos 100% mexicanos — compra directa o por suscripción
             </p>
             
             {/* CTA para Canastas Agroecológicas */}
@@ -782,6 +931,451 @@ export default function TiendaPage() {
       )}
 
       {/* Los toasts ahora se muestran a través del sistema global */}
+
+      {/* SECCIONES CRÍTICAS - Contenido del dueño + Trazabilidad */}
+      
+      {/* 1. DESTACADOS DE LA SEMANA */}
+      <section className="py-16 bg-gradient-to-br from-[#F5F2E8] to-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#33503E] mb-4">
+              Destacados de la semana
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Productos frescos seleccionados por nuestros agricultores de Huasca de Ocampo, Amanalco y Xochimilco
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300">
+              <div className="w-16 h-16 bg-[#B15543]/10 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl">🌱</span>
+              </div>
+              <h3 className="font-bold text-lg mb-2 text-[#33503E]">Apio fresco</h3>
+              <p className="text-gray-600 text-sm mb-3">
+                Cultivado por Juan Pérez en Huasca de Ocampo, Hidalgo
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-[#B15543] font-bold">$25/kg</span>
+                <button className="bg-[#B15543] text-white px-4 py-2 rounded-lg hover:bg-[#9d4a39] transition-colors">
+                  Ver producto
+                </button>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300">
+              <div className="w-16 h-16 bg-[#B15543]/10 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl">🥕</span>
+              </div>
+              <h3 className="font-bold text-lg mb-2 text-[#33503E]">Zanahoria de colores</h3>
+              <p className="text-gray-600 text-sm mb-3">
+                Directa de las chinampas de Xochimilco
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-[#B15543] font-bold">$30/kg</span>
+                <button className="bg-[#B15543] text-white px-4 py-2 rounded-lg hover:bg-[#9d4a39] transition-colors">
+                  Ver producto
+                </button>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300">
+              <div className="w-16 h-16 bg-[#B15543]/10 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl">🍅</span>
+              </div>
+              <h3 className="font-bold text-lg mb-2 text-[#33503E]">Tomate verde</h3>
+              <p className="text-gray-600 text-sm mb-3">
+                Cosechado en Amanalco, Estado de México
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-[#B15543] font-bold">$35/kg</span>
+                <button className="bg-[#B15543] text-white px-4 py-2 rounded-lg hover:bg-[#9d4a39] transition-colors">
+                  Ver producto
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. ¿POR QUÉ COMPRAR EN ARCATIERRA.COM? */}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#33503E] mb-4">
+              ¿Por qué comprar en arcatierra.com?
+            </h2>
+            <p className="text-gray-600 max-w-3xl mx-auto">
+              Conectamos directamente con agricultores de México para llevarte la mejor calidad a tu mesa
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-[#B15543] to-[#9d4a39] rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl text-white">🌱</span>
+              </div>
+              <h3 className="text-xl font-bold text-[#33503E] mb-4">Frescura que se nota</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Nuestras hortalizas llegan desde Xochimilco en menos de 24 horas. 
+                Frutas y vegetales 100% agroecológicas que se cosechan cada semana directamente en el campo mexicano.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-[#B15543] to-[#9d4a39] rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl text-white">📋</span>
+              </div>
+              <h3 className="text-xl font-bold text-[#33503E] mb-4">Curaduría pensada para ti</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Elegimos alimentos de temporada, nutritivos y versátiles,
+                para que cocinar en casa sea más fácil y disfrutable.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-[#B15543] to-[#9d4a39] rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl text-white">💰</span>
+              </div>
+              <h3 className="text-xl font-bold text-[#33503E] mb-4">Ahorro inteligente</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Invertir en calidad desde el origen te rinde más:
+                mejores ingredientes, menos desperdicio, más sabor.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-[#B15543] to-[#9d4a39] rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl text-white">🌿</span>
+              </div>
+              <h3 className="text-xl font-bold text-[#33503E] mb-4">Salud que se cultiva</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Alimentos agroecológicos, diversos y llenos de vida.
+                Variedad, colores y texturas que nutren tu cuerpo cada semana.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-[#B15543] to-[#9d4a39] rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl text-white">🚚</span>
+              </div>
+              <h3 className="text-xl font-bold text-[#33503E] mb-4">Logística responsable, impacto real</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Nuestros viajes suman menos de 500 km semanales
+                y conectan directamente con productores de Amanalco, Puebla, Huasca y Xochimilco.
+                Hablamos de hiperlocalidad regenerativa.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-[#B15543] to-[#9d4a39] rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl text-white">🌱</span>
+              </div>
+              <h3 className="text-xl font-bold text-[#33503E] mb-4">Cada compra siembra futuro</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Con tu compra apoyas a más de 60 familias campesinas
+                y formas parte de una red que cuida la tierra y el alimento desde la raíz.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. INFORMACIÓN DE ENTREGA / LOGÍSTICA */}
+      <section className="py-16 bg-[#F5F2E8]">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#33503E] mb-4">
+              Información de entrega
+            </h2>
+            <p className="text-gray-600">
+              Conectamos directamente con nuestras regiones productoras
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="bg-white rounded-xl p-8 shadow-lg">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-[#B15543] rounded-lg flex items-center justify-center mr-4">
+                  <span className="text-white text-xl">📅</span>
+                </div>
+                <h3 className="text-xl font-bold text-[#33503E]">Entregas de lunes a viernes</h3>
+              </div>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                Nuestro horario de entrega es de 7:00 am a 6:00 pm.
+                No contamos con hora exacta, por lo que te pedimos que haya alguien disponible para recibir el pedido.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl p-8 shadow-lg">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-[#B15543] rounded-lg flex items-center justify-center mr-4">
+                  <span className="text-white text-xl">⏰</span>
+                </div>
+                <h3 className="text-xl font-bold text-[#33503E]">¿Cuándo me llega mi pedido?</h3>
+              </div>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                Si haces tu pedido antes de la 1:00 pm, podemos entregarlo al día siguiente hábil.
+              </p>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                Pedidos realizados después de la 1:00 pm, pasan al siguiente ciclo de entrega.
+              </p>
+              <div className="bg-[#F5F2E8] p-4 rounded-lg">
+                <p className="text-sm font-medium text-[#33503E] mb-2">Ejemplo:</p>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• Pides el miércoles, tu entrega será el viernes</li>
+                  <li>• Pides el viernes antes de las 12:00 pm, tu entrega será el lunes</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="md:col-span-2 bg-white rounded-xl p-8 shadow-lg">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-[#B15543] rounded-lg flex items-center justify-center mr-4">
+                  <span className="text-white text-xl">📦</span>
+                </div>
+                <h3 className="text-xl font-bold text-[#33503E]">¿Tienes suscripción y quieres agregar algo?</h3>
+              </div>
+              <p className="text-gray-600 leading-relaxed">
+                Si recibes tu canasta entre lunes y miércoles, puedes agregar alimentos extra el jueves y viernes previos para que lleguen con tu siguiente entrega.
+              </p>
+            </div>
+          </div>
+
+          {/* Regiones de origen */}
+          <div className="mt-12 bg-white rounded-xl p-8 shadow-lg">
+            <h3 className="text-xl font-bold text-[#33503E] mb-6 text-center">
+              Nuestras regiones productoras
+            </h3>
+            <div className="grid md:grid-cols-4 gap-6">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl">🌾</span>
+                </div>
+                <h4 className="font-semibold text-[#33503E] mb-1">Huasca de Ocampo</h4>
+                <p className="text-sm text-gray-600">Hidalgo - Verduras</p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl">🥬</span>
+                </div>
+                <h4 className="font-semibold text-[#33503E] mb-1">Xochimilco</h4>
+                <p className="text-sm text-gray-600">CDMX - Hortalizas</p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl">🍎</span>
+                </div>
+                <h4 className="font-semibold text-[#33503E] mb-1">Amanalco</h4>
+                <p className="text-sm text-gray-600">Edo. Méx. - Frutas</p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl">☕</span>
+                </div>
+                <h4 className="font-semibold text-[#33503E] mb-1">Puebla</h4>
+                <p className="text-sm text-gray-600">Café y Cacao</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. CTA SUSCRIPCIÓN */}
+      <section className="py-20 bg-gradient-to-br from-[#B15543] to-[#9d4a39] text-white">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Suscríbete y simplifica tu alimentación
+          </h2>
+          <p className="text-xl mb-8 opacity-90">
+            Ahorra tiempo y dinero con una suscripción a tu canasta:
+          </p>
+          
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+              <div className="text-3xl mb-4">💰</div>
+              <h3 className="text-xl font-bold mb-2">5% de descuento siempre</h3>
+              <p className="opacity-90">Precio preferencial en todas tus canastas</p>
+            </div>
+            
+            <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+              <div className="text-3xl mb-4">📅</div>
+              <h3 className="text-xl font-bold mb-2">Recibe automáticamente</h3>
+              <p className="opacity-90">Cada semana o quincena, sin preocuparte por pedir</p>
+            </div>
+            
+            <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+              <div className="text-3xl mb-4">➕</div>
+              <h3 className="text-xl font-bold mb-2">Agrega fácilmente</h3>
+              <p className="opacity-90">Productos adicionales desde la tienda</p>
+            </div>
+            
+            <div className="bg-white/10 backdrop-blur rounded-xl p-6">
+              <div className="text-3xl mb-4">❤️</div>
+              <h3 className="text-xl font-bold mb-2">Dona si sales</h3>
+              <p className="opacity-90">¿Vacaciones? Dona tu canasta a Gastromotiva</p>
+            </div>
+          </div>
+          
+          <p className="text-lg mb-8 opacity-90">
+            Tus alimentos llegan sin que tengas que pensar demasiado —y con mucho sentido.
+          </p>
+          
+          <button className="bg-white text-[#B15543] px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors shadow-lg">
+            Comenzar suscripción
+          </button>
+        </div>
+      </section>
+
+      {/* 5. TESTIMONIOS */}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#33503E] mb-4">
+              Lo que dicen nuestros clientes
+            </h2>
+            <p className="text-gray-600">
+              Experiencias reales de familias que forman parte de nuestra red
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-[#F5F2E8] rounded-xl p-8">
+              <div className="flex mb-4">
+                <div className="text-[#B15543]">★★★★★</div>
+              </div>
+              <p className="text-gray-700 leading-relaxed mb-6 italic">
+                "La calidad es impresionante. Realmente puedes notar la diferencia en sabor y frescura. Saber que viene directamente del agricultor me da mucha confianza."
+              </p>
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-[#B15543] rounded-full flex items-center justify-center text-white font-bold mr-4">
+                  M
+                </div>
+                <div>
+                  <h4 className="font-bold text-[#33503E]">María González</h4>
+                  <p className="text-sm text-gray-600">Cliente desde hace 2 años</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-[#F5F2E8] rounded-xl p-8">
+              <div className="flex mb-4">
+                <div className="text-[#B15543]">★★★★★</div>
+              </div>
+              <p className="text-gray-700 leading-relaxed mb-6 italic">
+                "Mi familia ha cambiado completamente su manera de comer. Los niños ahora piden más verduras. El servicio de suscripción es súper conveniente."
+              </p>
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-[#B15543] rounded-full flex items-center justify-center text-white font-bold mr-4">
+                  C
+                </div>
+                <div>
+                  <h4 className="font-bold text-[#33503E]">Carlos Ramírez</h4>
+                  <p className="text-sm text-gray-600">Suscriptor familiar</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-[#F5F2E8] rounded-xl p-8">
+              <div className="flex mb-4">
+                <div className="text-[#B15543]">★★★★★</div>
+              </div>
+              <p className="text-gray-700 leading-relaxed mb-6 italic">
+                "Como chef, puedo decir que la calidad de estos productos es excepcional. La trazabilidad y el respeto por los productores hace toda la diferencia."
+              </p>
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-[#B15543] rounded-full flex items-center justify-center text-white font-bold mr-4">
+                  A
+                </div>
+                <div>
+                  <h4 className="font-bold text-[#33503E]">Ana Morales</h4>
+                  <p className="text-sm text-gray-600">Chef profesional</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. FAQs ESPECÍFICOS */}
+      <section className="py-16 bg-[#F5F2E8]">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#33503E] mb-4">
+              Preguntas frecuentes
+            </h2>
+            <p className="text-gray-600">
+              Resolvemos las dudas más comunes sobre nuestros productos y servicio
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-lg">
+              <button className="w-full p-6 text-left hover:bg-gray-50 rounded-xl transition-colors">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-lg text-[#33503E]">
+                    ¿Qué incluye cada canasta?
+                  </h3>
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                </div>
+              </button>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg">
+              <button className="w-full p-6 text-left hover:bg-gray-50 rounded-xl transition-colors">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-lg text-[#33503E]">
+                    ¿Los productos son realmente orgánicos?
+                  </h3>
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                </div>
+              </button>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg">
+              <button className="w-full p-6 text-left hover:bg-gray-50 rounded-xl transition-colors">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-lg text-[#33503E]">
+                    ¿Puedo cambiar mi suscripción?
+                  </h3>
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                </div>
+              </button>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg">
+              <button className="w-full p-6 text-left hover:bg-gray-50 rounded-xl transition-colors">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-lg text-[#33503E]">
+                    ¿Entregan en toda la Ciudad de México?
+                  </h3>
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                </div>
+              </button>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-lg">
+              <button className="w-full p-6 text-left hover:bg-gray-50 rounded-xl transition-colors">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-lg text-[#33503E]">
+                    ¿Cómo funciona la trazabilidad de productos?
+                  </h3>
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-gray-600 mb-4">
+              ¿No encuentras la respuesta que buscas?
+            </p>
+            <button className="bg-[#B15543] text-white px-8 py-3 rounded-lg hover:bg-[#9d4a39] transition-colors">
+              Contactar soporte
+            </button>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }

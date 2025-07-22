@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { X, Star, ShoppingCart, Heart, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import ProductTraceability from '@/components/ProductTraceability'
 
 interface ProductQuickViewProps {
   isOpen: boolean
@@ -111,13 +112,21 @@ export default function ProductQuickView({
                 {product.descripcion}
               </p>
               
-              {/* Storytelling */}
+              {/* Storytelling del productor */}
               <div className="bg-green-50 p-4 rounded-lg mb-6">
                 <p className="text-[#33503E] italic text-sm">
                   "{product.storytelling}"
                 </p>
                 <p className="text-gray-500 text-xs mt-1">- {product.productor}</p>
               </div>
+              
+              {/* Trazabilidad (FASE 3) - Solo si el producto tiene datos de trazabilidad */}
+              {product.trazabilidad && (
+                <div className="mb-6">
+                  <h3 className="font-semibold text-gray-900 mb-3">Trazabilidad:</h3>
+                  <ProductTraceability product={product} compact={true} />
+                </div>
+              )}
               
               {/* Características */}
               <div className="mb-6">

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { productos, Product } from '@/data/productos'
 import { useToast } from '@/components/ui/Toast'
+import ProductTraceability from '@/components/ProductTraceability'
 
 type ClientProductoPageProps = {
   id: string;
@@ -76,41 +77,46 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
   const addToCart = () => {
     if (!producto) return
 
-    const item = {
+    const cartItem = {
       id: producto.id,
       name: producto.nombre,
       price: producto.precio,
+      quantity: cantidad,
       image: producto.imagen,
-      quantity: cantidad
+      unit: producto.unidad
     }
 
-    // Verificar si ya existe en el carrito
-    const existingItemIndex = carrito.findIndex(i => i.id === item.id)
-    let newCarrito
+    // Usar la misma clave de localStorage que la página principal
+    const existingCart = JSON.parse(localStorage.getItem('arcaTierraCart') || '[]')
+    const existingItemIndex = existingCart.findIndex((item: any) => item.id === cartItem.id)
 
     if (existingItemIndex >= 0) {
       // Actualizar cantidad si ya existe
-      newCarrito = [...carrito]
-      newCarrito[existingItemIndex].quantity += cantidad
+      existingCart[existingItemIndex].quantity += cantidad
     } else {
       // Agregar nuevo item
-      newCarrito = [...carrito, item]
+      existingCart.push(cartItem)
     }
 
-    setCarrito(newCarrito)
-
-    // Guardar en localStorage
+    // Guardar en localStorage con la clave correcta
     try {
-      localStorage.setItem('carrito', JSON.stringify(newCarrito))
+      localStorage.setItem('arcaTierraCart', JSON.stringify(existingCart))
+      setCarrito(existingCart)
+
+      // Disparar evento para notificar al header que actualice el contador
+      window.dispatchEvent(new Event('cartUpdated'))
+
+      // Usar el sistema global de toast igual que la página principal
+      toast.cart(`${cantidad} x ${producto.nombre} agregado al carrito`, {
+        title: '¡Excelente elección!',
+        action: {
+          label: 'Ver carrito',
+          onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
+        }
+      })
     } catch (error) {
       console.error('Error al guardar carrito:', error)
     }
-
-    toast.show({
-      title: 'Producto añadido al carrito',
-      message: `${cantidad} x ${producto.nombre}`,
-      type: 'cart',
-    })
   }
 
   // Si no hay producto, mostrar cargando o redireccionar
@@ -124,13 +130,13 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
 
   return (
     <div className="container mx-auto px-4 py-6 min-h-screen">
-      {/* Navegación superior y botón volver */}
-      <div className="mb-6">
+      {/* Navegación superior y botón volver - CORREGIDO PARA EVITAR CONFLICTO CON HEADER */}
+      <div className="mb-6 pt-20 relative z-[1001]">
         <button
           onClick={() => router.back()}
-          className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-900"
+          className="flex items-center px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200 text-sm font-medium text-gray-700 hover:text-[#B15543] hover:border-[#B15543] transition-all duration-200 relative z-[1002]"
         >
-          <ChevronLeft className="h-4 w-4 mr-1" />
+          <ChevronLeft className="h-4 w-4 mr-2" />
           Volver
         </button>
       </div>
@@ -199,6 +205,14 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
             <h2 className="font-medium mb-2">Descripción</h2>
             <p className="text-gray-600">{producto.descripcion}</p>
           </div>
+
+          {/* Trazabilidad (FASE 3) - Solo si el producto tiene datos de trazabilidad */}
+          {producto.trazabilidad && (
+            <div>
+              <h2 className="font-medium mb-4">Trazabilidad del Producto</h2>
+              <ProductTraceability product={producto} compact={false} />
+            </div>
+          )}
 
           {/* Características destacadas */}
           <div>
