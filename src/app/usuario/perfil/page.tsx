@@ -42,6 +42,20 @@ export default function PerfilPage() {
         // Detectar si es usuario demo
         const isDemoUser = session.user.email === 'prueba@prueba.com' || session.user.name === 'Usuario Prueba'
         
+        // Intentar cargar datos guardados en localStorage
+        const userKey = `user_profile_${session.user.email || 'unknown'}`
+        const savedProfile = localStorage.getItem(userKey)
+        let parsedSavedProfile = null
+        
+        if (savedProfile) {
+          try {
+            parsedSavedProfile = JSON.parse(savedProfile)
+          } catch (error) {
+            console.error('Error parsing saved profile:', error)
+            localStorage.removeItem(userKey) // Limpiar dato corrupto
+          }
+        }
+        
         const userProfile: UserProfile = isDemoUser ? {
           // Usuario demo con datos completos
           name: 'Usuario Prueba',
@@ -57,8 +71,8 @@ export default function PerfilPage() {
           memberSince: '2024-01-15',
           totalOrders: 12,
           favoriteExperience: 'Tour Premium por las Chinampas'
-        } : {
-          // Usuario real con campos editables
+        } : parsedSavedProfile || {
+          // Usuario real - usar datos guardados o campos vacíos por defecto
           name: session.user.name || 'Usuario',
           email: session.user.email || '',
           phone: '',  // Campo vacío para que el usuario lo llene
@@ -84,11 +98,25 @@ export default function PerfilPage() {
     setEditing(true)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editedProfile) {
-      setProfile(editedProfile)
-      setEditing(false)
-      // Aquí iría la lógica para guardar en el servidor
+      try {
+        // Guardar cambios en localStorage como persistencia temporal
+        const userKey = `user_profile_${session?.user?.email || 'unknown'}`
+        localStorage.setItem(userKey, JSON.stringify(editedProfile))
+        
+        setProfile(editedProfile)
+        setEditing(false)
+        
+        // TODO: Implementar llamada real a API cuando esté lista
+        // await fetch('/api/user/profile', { method: 'PUT', body: JSON.stringify(editedProfile) })
+        
+        console.log('Perfil guardado exitosamente en localStorage')
+      } catch (error) {
+        console.error('Error guardando perfil:', error)
+        // En caso de error, mantener en modo edición
+        alert('Error guardando los cambios. Inténtalo de nuevo.')
+      }
     }
   }
 
