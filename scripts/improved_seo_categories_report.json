@@ -1,0 +1,261 @@
+{
+  "timestamp": "2025-07-24T04:07:10.799Z",
+  "totalProducts": 405,
+  "updatedProducts": 45,
+  "categoriesBefore": {
+    "frutas-verduras-granel": 404,
+    "proteinas-regenerativas": 1
+  },
+  "categoriesAfter": {
+    "frutas-verduras-granel": 361,
+    "productos-arca-tierra": 44
+  },
+  "availableSeoCategories": [
+    "frutas-verduras-granel",
+    "granos-cereales-integrales",
+    "especias-condimentos",
+    "aceites-naturales",
+    "cafe-cacao-chocolate",
+    "endulzantes-naturales",
+    "mermeladas-untables",
+    "huevo-lacteos",
+    "tes-infusiones",
+    "harinas-pastas",
+    "pan-galletas",
+    "proteinas-regenerativas",
+    "canastas-frutas-verduras",
+    "productos-arca-tierra"
+  ],
+  "usedSeoCategories": [
+    "frutas-verduras-granel",
+    "productos-arca-tierra"
+  ],
+  "categoryChanges": [
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "Arca tierra",
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    {
+      "product": "VICTOR SANTANA",
+      "from": "proteinas-regenerativas",
+      "to": "frutas-verduras-granel"
+    }
+  ],
+  "backupFile": "productos.ts.backup-improved-seo.1753330030801"
+}

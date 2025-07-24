@@ -1,0 +1,298 @@
+{
+  "timestamp": "2025-07-24T04:18:33.988Z",
+  "csvProductsFound": 148,
+  "categoriesInCSV": [
+    "Aceites naturales",
+    "Granos y cereales integrales",
+    "Prote�nas Regenerativas",
+    "ENDULZANTES",
+    "PROTEINA ANIMAL",
+    "\"GRANOS",
+    "\"CAFE",
+    "ESPECIAS",
+    "ABARROTES",
+    "MERMELADAS Y UNTABLES",
+    "PASTAS",
+    "INFUSIONES Y TE",
+    "\"GALLETAS",
+    "TASCALATE",
+    "CACAO Y PATLAXTLE 100 G\"",
+    "HUEVO Y L�CTEOS",
+    "ACEITES Y GRASAS",
+    "CONDIMENTOS",
+    "CACAO Y CHOCOLATE",
+    "TE Y HIERBAS MEDICINALES",
+    "HUEVO Y LACTEOS",
+    "MAIZ",
+    "Frutas y Verduras a Granel"
+  ],
+  "totalProducts": 400,
+  "updatedProducts": 121,
+  "categoriesBefore": {
+    "frutas-verduras-granel": 361,
+    "productos-arca-tierra": 44
+  },
+  "categoriesAfter": {
+    "Frutas y Verduras a Granel": 241,
+    "frutas-verduras-granel": 117,
+    "Granos y cereales integrales": 2,
+    "productos-arca-tierra": 26,
+    "MERMELADAS Y UNTABLES": 4,
+    "ESPECIAS": 6,
+    "CONDIMENTOS": 3,
+    "INFUSIONES Y TE": 1
+  },
+  "categoryChanges": [
+    {
+      "product": "Lechuga amaranto",
+      "from": "frutas-verduras-granel",
+      "to": "Granos y cereales integrales"
+    },
+    {
+      "product": "Lechuga punta de flecha amaranto",
+      "from": "productos-arca-tierra",
+      "to": "Granos y cereales integrales"
+    },
+    {
+      "product": "Coliflor blanca",
+      "from": "frutas-verduras-granel",
+      "to": "INFUSIONES Y TE"
+    },
+    {
+      "product": "Coliflor cheddar",
+      "from": "frutas-verduras-granel",
+      "to": "INFUSIONES Y TE"
+    },
+    {
+      "product": "Coliflor morada",
+      "from": "frutas-verduras-granel",
+      "to": "INFUSIONES Y TE"
+    },
+    {
+      "product": "Coliflor romanesco",
+      "from": "frutas-verduras-granel",
+      "to": "INFUSIONES Y TE"
+    },
+    {
+      "product": "Coliflor verde",
+      "from": "frutas-verduras-granel",
+      "to": "INFUSIONES Y TE"
+    },
+    {
+      "product": "Flor de cepasuchitl",
+      "from": "frutas-verduras-granel",
+      "to": "INFUSIONES Y TE"
+    },
+    {
+      "product": "Cilantro común con flor y/o semilla fresca",
+      "from": "frutas-verduras-granel",
+      "to": "INFUSIONES Y TE"
+    },
+    {
+      "product": "Frijol",
+      "from": "frutas-verduras-granel",
+      "to": "\"GRANOS"
+    },
+    {
+      "product": "Frijol",
+      "from": "frutas-verduras-granel",
+      "to": "\"GRANOS"
+    },
+    {
+      "product": "Levistico hoja",
+      "from": "productos-arca-tierra",
+      "to": "ESPECIAS"
+    },
+    {
+      "product": "Hoja santa",
+      "from": "frutas-verduras-granel",
+      "to": "ESPECIAS"
+    },
+    {
+      "product": "Lechuga mantequilla jaspeada  chicas",
+      "from": "productos-arca-tierra",
+      "to": "MERMELADAS Y UNTABLES"
+    },
+    {
+      "product": "Lechuga francesa o mantequilla",
+      "from": "frutas-verduras-granel",
+      "to": "MERMELADAS Y UNTABLES"
+    },
+    {
+      "product": "Lechuga mantequilla o francesa",
+      "from": "frutas-verduras-granel",
+      "to": "MERMELADAS Y UNTABLES"
+    },
+    {
+      "product": "Mezcla Baldío",
+      "from": "productos-arca-tierra",
+      "to": "INFUSIONES Y TE"
+    },
+    {
+      "product": "Mezcla de hierbas",
+      "from": "productos-arca-tierra",
+      "to": "INFUSIONES Y TE"
+    },
+    {
+      "product": "Mezcla de lechugas",
+      "from": "productos-arca-tierra",
+      "to": "INFUSIONES Y TE"
+    },
+    {
+      "product": "Mezcla especial",
+      "from": "productos-arca-tierra",
+      "to": "INFUSIONES Y TE"
+    },
+    {
+      "product": "Mezcla especial restaurantes",
+      "from": "productos-arca-tierra",
+      "to": "INFUSIONES Y TE"
+    },
+    {
+      "product": "Mezcla especial",
+      "from": "frutas-verduras-granel",
+      "to": "INFUSIONES Y TE"
+    },
+    {
+      "product": "Mostaza frills mediana",
+      "from": "productos-arca-tierra",
+      "to": "CONDIMENTOS"
+    },
+    {
+      "product": "Mostaza scarlet grande",
+      "from": "productos-arca-tierra",
+      "to": "CONDIMENTOS"
+    },
+    {
+      "product": "Mostaza Scarlett baby",
+      "from": "productos-arca-tierra",
+      "to": "CONDIMENTOS"
+    },
+    {
+      "product": "Oregano",
+      "from": "frutas-verduras-granel",
+      "to": "ESPECIAS"
+    },
+    {
+      "product": "Perejil chino",
+      "from": "productos-arca-tierra",
+      "to": "ESPECIAS"
+    },
+    {
+      "product": "Perejil común",
+      "from": "productos-arca-tierra",
+      "to": "ESPECIAS"
+    },
+    {
+      "product": "Perejil",
+      "from": "frutas-verduras-granel",
+      "to": "ESPECIAS"
+    },
+    {
+      "product": "Perejil común",
+      "from": "frutas-verduras-granel",
+      "to": "ESPECIAS"
+    },
+    {
+      "product": "jitomate saladet",
+      "from": "frutas-verduras-granel",
+      "to": "CONDIMENTOS"
+    },
+    {
+      "product": "Jitomate saladet",
+      "from": "frutas-verduras-granel",
+      "to": "CONDIMENTOS"
+    },
+    {
+      "product": "Cilantro común con flor y/o semilla fresca",
+      "from": "INFUSIONES Y TE",
+      "to": "\"GRANOS"
+    },
+    {
+      "product": "Cilantro común con flor y/o semilla fresca",
+      "from": "INFUSIONES Y TE",
+      "to": "\"GRANOS"
+    },
+    {
+      "product": "Cilantro común con flor y/o semilla fresca",
+      "from": "INFUSIONES Y TE",
+      "to": "\"GRANOS"
+    },
+    {
+      "product": "Acelga Arcoiris",
+      "from": "frutas-verduras-granel",
+      "to": "Frutas y Verduras a Granel"
+    },
+    {
+      "product": "Acelga verde",
+      "from": "frutas-verduras-granel",
+      "to": "Frutas y Verduras a Granel"
+    },
+    {
+      "product": "Aguacate criollo",
+      "from": "frutas-verduras-granel",
+      "to": "Frutas y Verduras a Granel"
+    },
+    {
+      "product": "Aguacate hass",
+      "from": "frutas-verduras-granel",
+      "to": "Frutas y Verduras a Granel"
+    },
+    {
+      "product": "Ajo poro",
+      "from": "frutas-verduras-granel",
+      "to": "Frutas y Verduras a Granel"
+    },
+    {
+      "product": "Apio (.250-0.4kg)",
+      "from": "productos-arca-tierra",
+      "to": "Frutas y Verduras a Granel"
+    },
+    {
+      "product": "Apio",
+      "from": "frutas-verduras-granel",
+      "to": "Frutas y Verduras a Granel"
+    },
+    {
+      "product": "Apionabo",
+      "from": "frutas-verduras-granel",
+      "to": "Frutas y Verduras a Granel"
+    },
+    {
+      "product": "Apio medianos",
+      "from": "frutas-verduras-granel",
+      "to": "Frutas y Verduras a Granel"
+    },
+    {
+      "product": "Betabel blanco",
+      "from": "frutas-verduras-granel",
+      "to": "Frutas y Verduras a Granel"
+    },
+    {
+      "product": "Betabel chioggia",
+      "from": "frutas-verduras-granel",
+      "to": "Frutas y Verduras a Granel"
+    },
+    {
+      "product": "Betabel merlin",
+      "from": "frutas-verduras-granel",
+      "to": "Frutas y Verduras a Granel"
+    },
+    {
+      "product": "Betabel sangre de toro",
+      "from": "frutas-verduras-granel",
+      "to": "Frutas y Verduras a Granel"
+    },
+    {
+      "product": "Betabel golden",
+      "from": "frutas-verduras-granel",
+      "to": "Frutas y Verduras a Granel"
+    },
+    {
+      "product": "Betabel mixto",
+      "from": "frutas-verduras-granel",
+      "to": "Frutas y Verduras a Granel"
+    }
+  ],
+  "backupFile": "productos.ts.backup-csv-categories.1753330713859"
+}

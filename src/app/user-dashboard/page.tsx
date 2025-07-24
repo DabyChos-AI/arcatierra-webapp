@@ -143,7 +143,7 @@ export default function UserDashboardPage() {
             </Button>
             <div className="hidden md:flex items-center gap-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={session?.user?.image || ""} />
+                <AvatarImage src={session?.user?.image || "/default-avatar.png"} />
                 <AvatarFallback className="bg-verde-dark text-white">
                   {session?.user?.name?.substring(0, 2).toUpperCase() || "AT"}
                 </AvatarFallback>
@@ -162,7 +162,7 @@ export default function UserDashboardPage() {
             <div className="pb-6 border-b border-gray-100">
               <div className="flex flex-col items-center">
                 <Avatar className="h-20 w-20">
-                  <AvatarImage src={session?.user?.image || ""} />
+                  <AvatarImage src={session?.user?.image || "/default-avatar.png"} />
                   <AvatarFallback className="bg-verde-dark text-white text-2xl">
                     {session?.user?.name?.substring(0, 2).toUpperCase() || "AT"}
                   </AvatarFallback>

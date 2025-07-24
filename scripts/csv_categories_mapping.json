@@ -1,0 +1,1026 @@
+{
+  "categorias": [
+    {
+      "id": "abarrotes",
+      "name": "ABARROTES",
+      "emoji": "🍵",
+      "original": "ABARROTES"
+    },
+    {
+      "id": "aceites-y-grasas",
+      "name": "ACEITES Y GRASAS",
+      "emoji": "🫒",
+      "original": "ACEITES Y GRASAS"
+    },
+    {
+      "id": "aceites-naturales",
+      "name": "Aceites naturales",
+      "emoji": "🫒",
+      "original": "Aceites naturales"
+    },
+    {
+      "id": "cacao-y-chocolate",
+      "name": "CACAO Y CHOCOLATE",
+      "emoji": "🍫",
+      "original": "CACAO Y CHOCOLATE"
+    },
+    {
+      "id": "cafe-cacao-y-chocolate",
+      "name": "CAFE, CACAO Y CHOCOLATE",
+      "emoji": "☕",
+      "original": "CAFE, CACAO Y CHOCOLATE"
+    },
+    {
+      "id": "condimentos",
+      "name": "CONDIMENTOS",
+      "emoji": "🧂",
+      "original": "CONDIMENTOS"
+    },
+    {
+      "id": "canastas-de-frutas-y-verduras-agroecolgicas",
+      "name": "Canastas de frutas y verduras agroecol�gicas",
+      "emoji": "🧺",
+      "original": "Canastas de frutas y verduras agroecol�gicas"
+    },
+    {
+      "id": "endulzantes",
+      "name": "ENDULZANTES",
+      "emoji": "🍯",
+      "original": "ENDULZANTES"
+    },
+    {
+      "id": "especias",
+      "name": "ESPECIAS",
+      "emoji": "🌿",
+      "original": "ESPECIAS"
+    },
+    {
+      "id": "frutas-y-verduras-a-granel",
+      "name": "Frutas y Verduras a Granel",
+      "emoji": "🍎",
+      "original": "Frutas y Verduras a Granel"
+    },
+    {
+      "id": "galletas-harinas-y-pan",
+      "name": "GALLETAS, HARINAS Y PAN",
+      "emoji": "🥖",
+      "original": "GALLETAS, HARINAS Y PAN"
+    },
+    {
+      "id": "granos-semillas-y-cereales",
+      "name": "GRANOS, SEMILLAS Y CEREALES",
+      "emoji": "🌾",
+      "original": "GRANOS, SEMILLAS Y CEREALES"
+    },
+    {
+      "id": "granos-y-cereales-integrales",
+      "name": "Granos y cereales integrales",
+      "emoji": "🌾",
+      "original": "Granos y cereales integrales"
+    },
+    {
+      "id": "huevo-y-lacteos",
+      "name": "HUEVO Y LACTEOS",
+      "emoji": "🥚",
+      "original": "HUEVO Y LACTEOS"
+    },
+    {
+      "id": "huevo-y-lcteos",
+      "name": "HUEVO Y L�CTEOS",
+      "emoji": "🥚",
+      "original": "HUEVO Y L�CTEOS"
+    },
+    {
+      "id": "infusiones-y-te",
+      "name": "INFUSIONES Y TE",
+      "emoji": "🍵",
+      "original": "INFUSIONES Y TE"
+    },
+    {
+      "id": "maiz",
+      "name": "MAIZ",
+      "emoji": "🌿",
+      "original": "MAIZ"
+    },
+    {
+      "id": "mermeladas-y-untables",
+      "name": "MERMELADAS Y UNTABLES",
+      "emoji": "🍓",
+      "original": "MERMELADAS Y UNTABLES"
+    },
+    {
+      "id": "pastas",
+      "name": "PASTAS",
+      "emoji": "🍝",
+      "original": "PASTAS"
+    },
+    {
+      "id": "proteina-animal",
+      "name": "PROTEINA ANIMAL",
+      "emoji": "🥩",
+      "original": "PROTEINA ANIMAL"
+    },
+    {
+      "id": "protenas-regenerativas",
+      "name": "Prote�nas Regenerativas",
+      "emoji": "🌿",
+      "original": "Prote�nas Regenerativas"
+    },
+    {
+      "id": "te-y-hierbas-medicinales",
+      "name": "TE Y HIERBAS MEDICINALES",
+      "emoji": "🌿",
+      "original": "TE Y HIERBAS MEDICINALES"
+    },
+    {
+      "id": "currys",
+      "name": "currys",
+      "emoji": "🌿",
+      "original": "currys"
+    },
+    {
+      "id": "desparasitantes",
+      "name": "desparasitantes",
+      "emoji": "🍵",
+      "original": "desparasitantes"
+    },
+    {
+      "id": "guisos-o-para-perfumar-tu-cocina-con-lo-que-el-campo-sabe-dar",
+      "name": "guisos o para perfumar tu cocina con lo que el campo sabe dar.",
+      "emoji": "🌿",
+      "original": "guisos o para perfumar tu cocina con lo que el campo sabe dar."
+    },
+    {
+      "id": "mezcla-con-una-cuchara-y-esta-listo",
+      "name": "mezcla con una cuchara y esta listo.",
+      "emoji": "🌿",
+      "original": "mezcla con una cuchara y esta listo."
+    },
+    {
+      "id": "no-hidrogenado-ideal-para-cocinar",
+      "name": "no hidrogenado. Ideal para cocinar",
+      "emoji": "🌿",
+      "original": "no hidrogenado. Ideal para cocinar"
+    },
+    {
+      "id": "que-aporta-un-sabor-ligero-a-cebolla",
+      "name": "que aporta un sabor ligero a cebolla.,,",
+      "emoji": "🌿",
+      "original": "que aporta un sabor ligero a cebolla.,,"
+    },
+    {
+      "id": "sin-hormonas",
+      "name": "sin Hormonas",
+      "emoji": "🌿",
+      "original": "sin Hormonas"
+    }
+  ],
+  "productosConCategoria": [
+    {
+      "sku": "1885",
+      "producto": "CANASTA INDIVIDUAL SUSCRIPCI�N",
+      "categoria": "Canastas de frutas y verduras agroecol�gicas"
+    },
+    {
+      "sku": "1886",
+      "producto": "CANASTA MEDIA SUSCRIPCION",
+      "categoria": "Canastas de frutas y verduras agroecol�gicas"
+    },
+    {
+      "sku": "1887",
+      "producto": "CANASTA COMPLETA SUSCRIPCION",
+      "categoria": "Canastas de frutas y verduras agroecol�gicas"
+    },
+    {
+      "sku": "1888",
+      "producto": "CANASTA FAMILIAR SUSCRIPCION",
+      "categoria": "Canastas de frutas y verduras agroecol�gicas"
+    },
+    {
+      "sku": "1889",
+      "producto": "CANASTA B�SICA INDIVIDUAL SUSCRIPCION",
+      "categoria": "Canastas de frutas y verduras agroecol�gicas"
+    },
+    {
+      "sku": "1890",
+      "producto": "CANASTA BASICA MEDIA SUSCRIPCION",
+      "categoria": "Canastas de frutas y verduras agroecol�gicas"
+    },
+    {
+      "sku": "1891",
+      "producto": "CANASTA BASICA FAMILIAR SUSCRIPCION",
+      "categoria": "Canastas de frutas y verduras agroecol�gicas"
+    },
+    {
+      "sku": "P-WEB-ACE-005",
+      "producto": "ACEITE DE AJONJOLI REFINADO",
+      "categoria": "Aceites naturales"
+    },
+    {
+      "sku": "P-WEB-ACE-004",
+      "producto": "ACEITE DE AJONJOLI TOSTADO",
+      "categoria": "Aceites naturales"
+    },
+    {
+      "sku": "MAZ-TOR-BLA-12P",
+      "producto": "ACEITE DE AGUACATE",
+      "categoria": "Aceites naturales"
+    },
+    {
+      "sku": "P-WEB-ACE-002",
+      "producto": "ACEITE DE COCO 450 ML",
+      "categoria": "Aceites naturales"
+    },
+    {
+      "sku": ",Aceite de Coco Natural y Extra Virgen 425 g I Arca Tierra,Aceite de coco extra virgen",
+      "producto": "100% natural y sin olor. Prensado en fr�o",
+      "categoria": "no hidrogenado. Ideal para cocinar"
+    },
+    {
+      "sku": "P-WEB-ACE-003",
+      "producto": "ACEITE DE OLIVA 750 ML",
+      "categoria": "Aceites naturales"
+    },
+    {
+      "sku": "P-WEB-SEC-001",
+      "producto": "AJONJOLI 100 G",
+      "categoria": "Granos y cereales integrales"
+    },
+    {
+      "sku": "P-WEB-SEC-002",
+      "producto": "AMARANTO 250 G",
+      "categoria": "Granos y cereales integrales"
+    },
+    {
+      "sku": "P-WEB-SEC-074",
+      "producto": "AMARANTO REVENTADO",
+      "categoria": "Granos y cereales integrales"
+    },
+    {
+      "sku": "P-WEB-PRO-001",
+      "producto": "ARRACHERA  500 G",
+      "categoria": "Prote�nas Regenerativas"
+    },
+    {
+      "sku": "P-WEB-SEC-003",
+      "producto": "ARROZ BLANCO 500 G",
+      "categoria": "Granos y cereales integrales"
+    },
+    {
+      "sku": "P-WEB-SEC-004",
+      "producto": "ARROZ INTEGRAL 500 G",
+      "categoria": "Granos y cereales integrales"
+    },
+    {
+      "sku": "P-WEB-SEC-005",
+      "producto": "AVENA 500 G",
+      "categoria": "Granos y cereales integrales"
+    },
+    {
+      "sku": "P-WEB-SEC-079",
+      "producto": "AZUCAR ORGANICA ZULKA 500 G",
+      "categoria": "ENDULZANTES"
+    },
+    {
+      "sku": "P-WEB-PRO-002",
+      "producto": "BISTEC DE RES 500 G",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-SEC-006",
+      "producto": "CACAHUATE 100 G",
+      "categoria": "GRANOS, SEMILLAS Y CEREALES"
+    },
+    {
+      "sku": "P-WEB-SEC-007",
+      "producto": "CACAO EN POLVO 250 G",
+      "categoria": "CAFE, CACAO Y CHOCOLATE"
+    },
+    {
+      "sku": "P-WEB-SEC-008",
+      "producto": "CACAO EN POLVO 500 G",
+      "categoria": "CAFE, CACAO Y CHOCOLATE"
+    },
+    {
+      "sku": "P-WEB-SEC-009",
+      "producto": "CAFE DE GRANO 500 G",
+      "categoria": "CAFE, CACAO Y CHOCOLATE"
+    },
+    {
+      "sku": "P-WEB-SEC-011",
+      "producto": "CAFE MOLIDO 500 G",
+      "categoria": "CAFE, CACAO Y CHOCOLATE"
+    },
+    {
+      "sku": "P-WEB-SEC-085",
+      "producto": "CALDO DE HUESO 9 G",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "Sin Conservadores",
+      "producto": "sin Saborizantes",
+      "categoria": "sin Hormonas"
+    },
+    {
+      "sku": "Para consumir",
+      "producto": "s�lo vierte el contenido del sobre en una taza (240ml) de agua bien caliente",
+      "categoria": "mezcla con una cuchara y esta listo."
+    },
+    {
+      "sku": "P-WEB-PRO-021",
+      "producto": "CALDO DE HUESO DE RES 700 ML",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-SEC-012",
+      "producto": "CANELA 50 G",
+      "categoria": "ESPECIAS"
+    },
+    {
+      "sku": "Perfecta para infusiones",
+      "producto": "postres",
+      "categoria": "guisos o para perfumar tu cocina con lo que el campo sabe dar."
+    },
+    {
+      "sku": "P-WEB-SEC-013",
+      "producto": "CARDAMOMO 20 G",
+      "categoria": "ESPECIAS"
+    },
+    {
+      "sku": "Con un aroma intenso y especiado",
+      "producto": "es ideal para infusiones",
+      "categoria": "currys"
+    },
+    {
+      "sku": "P-WEB-PRO-003",
+      "producto": "CARNE DE PAVO PARA HAMBURGUESA 500 G",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-PRO-004",
+      "producto": "CARNE DE RES DESHEBRADA 500 G",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-PRO-005",
+      "producto": "CARNE DE RES MOLIDA 500 G",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-PRO-006",
+      "producto": "CARNE DE RES PARA HAMBURGUESA DE ORIGEN REGENERATIVO 400 G",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-PRO-022",
+      "producto": "CARNITAS EN MANTECA MADRE CON TORTILLAS",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-SEC-014",
+      "producto": "CEBOLLINO DESHIDRATADO 20 G",
+      "categoria": "ESPECIAS"
+    },
+    {
+      "sku": "Es un gran sazonador de alimentos",
+      "producto": "con versatilidad en sus aplicaciones",
+      "categoria": "que aporta un sabor ligero a cebolla.,,"
+    },
+    {
+      "sku": "P-WEB-SEC-015",
+      "producto": "CHIA 100 G",
+      "categoria": "GRANOS, SEMILLAS Y CEREALES"
+    },
+    {
+      "sku": "P-WEB-SEC-020",
+      "producto": "CLAVO DE OLOR 50 G",
+      "categoria": "ESPECIAS"
+    },
+    {
+      "sku": "P-WEB-SEC-081",
+      "producto": "COMINO",
+      "categoria": "ESPECIAS"
+    },
+    {
+      "sku": "P-WEB-PRO-007",
+      "producto": "COSTILLA DE RES 1.5 KG",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-SEC-022",
+      "producto": "CURCUMA 55 G",
+      "categoria": "ESPECIAS"
+    },
+    {
+      "sku": "P-WEB-SEC-023",
+      "producto": "CURRY 55 G",
+      "categoria": "ESPECIAS"
+    },
+    {
+      "sku": "P-WEB-ABA-002",
+      "producto": "DESINFECTANTE FRUTAS Y VERDURAS 15 ML",
+      "categoria": "ABARROTES"
+    },
+    {
+      "sku": "P-WEB-ABA-003",
+      "producto": "DESINFECTANTE FRUTAS Y VERDURAS 240 ML",
+      "categoria": "ABARROTES"
+    },
+    {
+      "sku": "P-WEB-SEC-021",
+      "producto": "DULCE DE LECHE DE OVEJA 330 G",
+      "categoria": "MERMELADAS Y UNTABLES"
+    },
+    {
+      "sku": "P-WEB-SEC-024",
+      "producto": "FETTUCCINI INTEGRAL ORGANICO 380 G",
+      "categoria": "PASTAS"
+    },
+    {
+      "sku": "P-WEB-PRO-008",
+      "producto": "FILETE DE RES 1 KG",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-SEC-036",
+      "producto": "FLOR DE JAMAICA 500 G",
+      "categoria": "INFUSIONES Y TE"
+    },
+    {
+      "sku": "P-WEB-SEC-025",
+      "producto": "FRIJOL NEGRO 500 G",
+      "categoria": "GRANOS, SEMILLAS Y CEREALES"
+    },
+    {
+      "sku": "P-WEB-SEC-026",
+      "producto": "FRIJOL PINTO SALTILLO 500 G",
+      "categoria": "GRANOS, SEMILLAS Y CEREALES"
+    },
+    {
+      "sku": "P-WEB-SEC-084",
+      "producto": "GALLETA DE MAIZ Y ANIS 50G",
+      "categoria": "GALLETAS, HARINAS Y PAN"
+    },
+    {
+      "sku": "P-WEB-SEC-075",
+      "producto": "GALLETAS DE MAIZ  Y JENGIBRE 50 G",
+      "categoria": "GALLETAS, HARINAS Y PAN"
+    },
+    {
+      "sku": "P-WEB-SEC-076",
+      "producto": "GALLETAS DE MAIZ  Y NARANJA 50 G",
+      "categoria": "GALLETAS, HARINAS Y PAN"
+    },
+    {
+      "sku": "P-WEB-SEC-078",
+      "producto": "GALLETAS DE MAIZ , TASCALATE, JENGIBRE Y ANIS 200 G",
+      "categoria": "GALLETAS, HARINAS Y PAN"
+    },
+    {
+      "sku": "P-WEB-SEC-077",
+      "producto": "GALLETAS DE MAIZ, CACAO Y PATLAXTLE 100 G",
+      "categoria": "GALLETAS, HARINAS Y PAN"
+    },
+    {
+      "sku": "P-WEB-SEC-028",
+      "producto": "GARBANZO 500 G",
+      "categoria": "GRANOS, SEMILLAS Y CEREALES"
+    },
+    {
+      "sku": "P-WEB-SEC-029",
+      "producto": "GRANOLA ARTESANAL 900 G",
+      "categoria": "GRANOS, SEMILLAS Y CEREALES"
+    },
+    {
+      "sku": "P-WEB-SEC-030",
+      "producto": "HARINA DE TRIGO INTEGRAL 500 G",
+      "categoria": "GALLETAS, HARINAS Y PAN"
+    },
+    {
+      "sku": "P-WEB-SEC-031",
+      "producto": "HARINA INTEGRAL DE SORGO 500 G",
+      "categoria": "GALLETAS, HARINAS Y PAN"
+    },
+    {
+      "sku": "P-WEB-SEC-032",
+      "producto": "HARINA PARA HOT CAKES CON TRIGO Y MACADAMIA 500 G",
+      "categoria": "GALLETAS, HARINAS Y PAN"
+    },
+    {
+      "sku": "P-WEB-ABA-007",
+      "producto": "HOGAZA CAMPESINA",
+      "categoria": "GALLETAS, HARINAS Y PAN"
+    },
+    {
+      "sku": "P-WEB-SEC-083",
+      "producto": "HOJA DE LAUREL 60 G",
+      "categoria": "ESPECIAS"
+    },
+    {
+      "sku": "P-WEB-SEC-034",
+      "producto": "HOJUELAS DE CHILE 50 G",
+      "categoria": "ESPECIAS"
+    },
+    {
+      "sku": "P-WEB-PRO-009",
+      "producto": "HUEVO ORGANICO DE LIBRE PASTOREO",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-SEC-035",
+      "producto": "JALEA DE ROSAS 255 G",
+      "categoria": "MERMELADAS Y UNTABLES"
+    },
+    {
+      "sku": "P-WEB-PRO-023",
+      "producto": "JAM�N DE PECHUGA DE PAVO 250 G",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-SEC-037",
+      "producto": "JENGIBRE 50 G",
+      "categoria": "ESPECIAS"
+    },
+    {
+      "sku": "P-WEB-LAC-005",
+      "producto": "LECHE ENTERA DE VACA 1 L",
+      "categoria": "HUEVO Y L�CTEOS"
+    },
+    {
+      "sku": "P-WEB-LAC-006",
+      "producto": "LECHE SEMIDESCREMADA DE VACA 1 L",
+      "categoria": "HUEVO Y L�CTEOS"
+    },
+    {
+      "sku": "P-WEB-SEC-038",
+      "producto": "LENTEJA 500 G",
+      "categoria": "GRANOS, SEMILLAS Y CEREALES"
+    },
+    {
+      "sku": "P-WEB-PRO-018",
+      "producto": "LOMO DE CERDO 1 KG",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-SEC-039",
+      "producto": "MACADAMIA 100 G",
+      "categoria": "GRANOS, SEMILLAS Y CEREALES"
+    },
+    {
+      "sku": "P-WEB-PRO-019",
+      "producto": "MANTECA DE CERDO",
+      "categoria": "ACEITES Y GRASAS"
+    },
+    {
+      "sku": "P-WEB-SEC-041",
+      "producto": "MANTEQUILLA DE CACAHUATE CACAO 272 ML",
+      "categoria": "MERMELADAS Y UNTABLES"
+    },
+    {
+      "sku": "P-WEB-SEC-042",
+      "producto": "MANTEQUILLA DE CACAHUATE CRUNCHY 272 ML",
+      "categoria": "MERMELADAS Y UNTABLES"
+    },
+    {
+      "sku": "P-WEB-SEC-043",
+      "producto": "MELISA PARA TE 50 G",
+      "categoria": "INFUSIONES Y TE"
+    },
+    {
+      "sku": "P-WEB-SEC-044",
+      "producto": "MENTAS PARA TE 50 G",
+      "categoria": "INFUSIONES Y TE"
+    },
+    {
+      "sku": "P-WEB-SEC-045",
+      "producto": "MERMELADA DE HIGO 300 G",
+      "categoria": "MERMELADAS Y UNTABLES"
+    },
+    {
+      "sku": "P-WEB-SEC-046",
+      "producto": "MERMELADA DE JAMAICA 300 G",
+      "categoria": "MERMELADAS Y UNTABLES"
+    },
+    {
+      "sku": "P-WEB-SEC-047",
+      "producto": "MERMELADA DE NARANJA 300 G",
+      "categoria": "MERMELADAS Y UNTABLES"
+    },
+    {
+      "sku": "P-WEB-SEC-048",
+      "producto": "MERMELADA GUAYABAMIEL 300 G",
+      "categoria": "MERMELADAS Y UNTABLES"
+    },
+    {
+      "sku": "P-WEB-SEC-049",
+      "producto": "MEZCLA DE FLORES DE AZAHAR Y HIERBAS 50 G",
+      "categoria": "INFUSIONES Y TE"
+    },
+    {
+      "sku": "P-WEB-SEC-050",
+      "producto": "MEZCLA DE MENTAS Y JENGIBRE DESHIDRATADOS 50 G",
+      "categoria": "INFUSIONES Y TE"
+    },
+    {
+      "sku": "P-WEB-SEC-051",
+      "producto": "MIEL DE LAS CHINAMPAS 250 G",
+      "categoria": "ENDULZANTES"
+    },
+    {
+      "sku": "P-WEB-PRO-017",
+      "producto": "MILANESA DE CERDO",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-PRO-010",
+      "producto": "MILANESA DE POLLO 500 G",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-SEC-052",
+      "producto": "MOSTAZA DE ESTRAGON 150 ML",
+      "categoria": "CONDIMENTOS"
+    },
+    {
+      "sku": "P-WEB-SEC-053",
+      "producto": "MOSTAZA DIJON 255 ML",
+      "categoria": "CONDIMENTOS"
+    },
+    {
+      "sku": "P-WEB-SEC-054",
+      "producto": "NIBS DE CACAO 100 G",
+      "categoria": "CACAO Y CHOCOLATE"
+    },
+    {
+      "sku": "P-WEB-SEC-055",
+      "producto": "NUEZ PECANA 100 G",
+      "categoria": "GRANOS, SEMILLAS Y CEREALES"
+    },
+    {
+      "sku": "P-WEB-SEC-056",
+      "producto": "OREGANO 50 G",
+      "categoria": "ESPECIAS"
+    },
+    {
+      "sku": "P-WEB-PRO-011",
+      "producto": "OSSOBUCO DE RES 1 KG",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-PRO-012",
+      "producto": "PECHUGA DE POLLO ENTERA CON HUESO 650 G",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-SEC-058",
+      "producto": "PEPITA DE CALABAZA 100 G",
+      "categoria": "GRANOS, SEMILLAS Y CEREALES"
+    },
+    {
+      "sku": "P-WEB-SEC-033",
+      "producto": "PEREJIL DESHIDRATADO 20 G",
+      "categoria": "ESPECIAS"
+    },
+    {
+      "sku": "P-WEB-PRO-013",
+      "producto": "PICA�A DE RES 1.5 KG",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-SEC-059",
+      "producto": "PILONCILLO GRANULADO 250 G",
+      "categoria": "ENDULZANTES"
+    },
+    {
+      "sku": "P-WEB-SEC-060",
+      "producto": "PIMIENTA CAYENA 50 G",
+      "categoria": "ESPECIAS"
+    },
+    {
+      "sku": "P-WEB-SEC-061",
+      "producto": "PIMIENTA GORDA 50 G",
+      "categoria": "ESPECIAS"
+    },
+    {
+      "sku": "P-WEB-SEC-082",
+      "producto": "PIMIENTA NEGRA MOLIDA",
+      "categoria": "ESPECIAS"
+    },
+    {
+      "sku": "P-WEB-SEC-062",
+      "producto": "POLEN 40 ML",
+      "categoria": "TE Y HIERBAS MEDICINALES"
+    },
+    {
+      "sku": "P-WEB-SEC-063",
+      "producto": "PROPOLEO 70 G",
+      "categoria": "TE Y HIERBAS MEDICINALES"
+    },
+    {
+      "sku": "P-WEB-LAC-007",
+      "producto": "QUESO MANCHEGO 1 KG",
+      "categoria": "HUEVO Y LACTEOS"
+    },
+    {
+      "sku": "P-WEB-LAC-009",
+      "producto": "QUESO MANCHEGO 250 G",
+      "categoria": "HUEVO Y LACTEOS"
+    },
+    {
+      "sku": "P-WEB-LAC-008",
+      "producto": "QUESO MANCHEGO 500 G",
+      "categoria": "HUEVO Y LACTEOS"
+    },
+    {
+      "sku": "P-WEB-LAC-010",
+      "producto": "QUESO OAXACA 1 KG",
+      "categoria": "HUEVO Y LACTEOS"
+    },
+    {
+      "sku": "P-WEB-LAC-011",
+      "producto": "QUESO OAXACA 250 G",
+      "categoria": "HUEVO Y LACTEOS"
+    },
+    {
+      "sku": "P-WEB-LAC-012",
+      "producto": "QUESO OAXACA 500 G",
+      "categoria": "HUEVO Y LACTEOS"
+    },
+    {
+      "sku": "P-WEB-SEC-065",
+      "producto": "SAL DE CHAUTENGO 500 G",
+      "categoria": "CONDIMENTOS"
+    },
+    {
+      "sku": "P-WEB-SEC-086",
+      "producto": "SAL DE MANANTIAL 100G",
+      "categoria": "CONDIMENTOS"
+    },
+    {
+      "sku": "P-WEB-PRO-024",
+      "producto": "SALCHICHA DE PECHUGA DE PAVO 250 G",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-PRO-015",
+      "producto": "SALCHICHAS BRATWURST",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-PRO-016",
+      "producto": "SALCHICHAS DE HIERBAS FINAS",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-SEC-067",
+      "producto": "SALSA CATRINA 235 ML",
+      "categoria": "CONDIMENTOS"
+    },
+    {
+      "sku": "P-WEB-SEC-073",
+      "producto": "SEMILLA DE AMARANTO",
+      "categoria": "GRANOS, SEMILLAS Y CEREALES"
+    },
+    {
+      "sku": "P-WEB-SEC-068",
+      "producto": "SEMILLA DE CARDAMOMO 50 G",
+      "categoria": "GRANOS, SEMILLAS Y CEREALES"
+    },
+    {
+      "sku": "P-WEB-SEC-069",
+      "producto": "SEMILLA DE GIRASOL 100 G",
+      "categoria": "GRANOS, SEMILLAS Y CEREALES"
+    },
+    {
+      "sku": "P-WEB-PRO-014",
+      "producto": "TOCINO AHUMADO 350 G",
+      "categoria": "PROTEINA ANIMAL"
+    },
+    {
+      "sku": "P-WEB-MAI-003",
+      "producto": "TORTILLA AZUL 600 G",
+      "categoria": "MAIZ"
+    },
+    {
+      "sku": "P-WEB-MAI-004",
+      "producto": "TORTILLA BLANCA 600 G",
+      "categoria": "MAIZ"
+    },
+    {
+      "sku": "P-WEB-SEC-070",
+      "producto": "VINAGRE DE MANZANA 250 ML",
+      "categoria": "CONDIMENTOS"
+    },
+    {
+      "sku": "P-WEB-SEC-071",
+      "producto": "VINAGRE DE MUCILAGO DE CACAO 250 ML",
+      "categoria": "CONDIMENTOS"
+    },
+    {
+      "sku": "P-WEB-LAC-013",
+      "producto": "YOGURT DE VACA 480 G",
+      "categoria": "HUEVO Y LACTEOS"
+    },
+    {
+      "sku": "P-WEB-LAC-014",
+      "producto": "YOGURT GRIEGO DE VACA 480 G",
+      "categoria": "HUEVO Y LACTEOS"
+    },
+    {
+      "sku": "P-WEB-SEC-072",
+      "producto": "ZACATE LIMON DESHIDRATADO PARA TE 50 G",
+      "categoria": "TE Y HIERBAS MEDICINALES"
+    },
+    {
+      "sku": "P-WEB-VEG-001",
+      "producto": "ACELGA COMUN 200 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-002",
+      "producto": "AGUACATE CRIOLLO 500 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-003",
+      "producto": "AJO 100 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-004",
+      "producto": "APIO 1PZA",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "-No se usan hormonas",
+      "producto": "antigarrapaticidas",
+      "categoria": "desparasitantes"
+    },
+    {
+      "sku": "P-WEB-VEG-005",
+      "producto": "BETABEL MERLIN 500 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-006",
+      "producto": "BLUEBERRY 250 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-008",
+      "producto": "CALABAZA ESPAGUETI 1 PZA",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-009",
+      "producto": "CALABAZA ITALIANA 500 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-010",
+      "producto": "CAMOTE 1 KG",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-011",
+      "producto": "CEBOLLA BLANCA 500 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-012",
+      "producto": "CHICHARO COMUN 500 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-013",
+      "producto": "CIRUELA 500 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-014",
+      "producto": "COL DE BRUSELAS 500 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-016",
+      "producto": "COL VERDE 1 PZA",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-017",
+      "producto": "EJOTE AMARILLO 250 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-018",
+      "producto": "ELOTE 1 PZA",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-019",
+      "producto": "ESPARRAGO 500 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-021",
+      "producto": "JITOMATE HEIRLOOM MIXTO 500 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-022",
+      "producto": "JITOMATE SALADET 500 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-024",
+      "producto": "LIMON AMARILLO 500 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-025",
+      "producto": "MANDARINA 500 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-026",
+      "producto": "MANGO PETACON 500 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-027",
+      "producto": "MANZANA CRIOLLA 500 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-028",
+      "producto": "MEZCLA DE ENSALADAS 300 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-029",
+      "producto": "NARANJA 1 KG",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-031",
+      "producto": "PEPINO COMUN 500 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-032",
+      "producto": "PLATANO MORADO 1 KG",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-033",
+      "producto": "PORO 1 PZA",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-035",
+      "producto": "ROMERITOS TIERNOS 500 G",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-037",
+      "producto": "VERDOLAGA 500 GRS",
+      "categoria": "Frutas y Verduras a Granel"
+    },
+    {
+      "sku": "P-WEB-VEG-039",
+      "producto": "ZANAHORIA DE COLORES 250 G",
+      "categoria": "Frutas y Verduras a Granel"
+    }
+  ],
+  "categoriasOriginales": [
+    "ABARROTES",
+    "ACEITES Y GRASAS",
+    "Aceites naturales",
+    "CACAO Y CHOCOLATE",
+    "CAFE, CACAO Y CHOCOLATE",
+    "CONDIMENTOS",
+    "Canastas de frutas y verduras agroecol�gicas",
+    "ENDULZANTES",
+    "ESPECIAS",
+    "Frutas y Verduras a Granel",
+    "GALLETAS, HARINAS Y PAN",
+    "GRANOS, SEMILLAS Y CEREALES",
+    "Granos y cereales integrales",
+    "HUEVO Y LACTEOS",
+    "HUEVO Y L�CTEOS",
+    "INFUSIONES Y TE",
+    "MAIZ",
+    "MERMELADAS Y UNTABLES",
+    "PASTAS",
+    "PROTEINA ANIMAL",
+    "Prote�nas Regenerativas",
+    "TE Y HIERBAS MEDICINALES",
+    "currys",
+    "desparasitantes",
+    "guisos o para perfumar tu cocina con lo que el campo sabe dar.",
+    "mezcla con una cuchara y esta listo.",
+    "no hidrogenado. Ideal para cocinar",
+    "que aporta un sabor ligero a cebolla.,,",
+    "sin Hormonas"
+  ]
+}

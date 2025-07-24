@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-07-24T04:05:17.266Z",
+  "totalProducts": 405,
+  "updatedProducts": 6,
+  "categoriesBefore": {
+    "granos-cereales-integrales": 6,
+    "frutas-verduras-granel": 398,
+    "proteinas-regenerativas": 1
+  },
+  "categoriesAfter": {
+    "frutas-verduras-granel": 404,
+    "proteinas-regenerativas": 1
+  },
+  "newCategoriesList": [
+    "frutas-verduras-granel",
+    "proteinas-regenerativas"
+  ],
+  "backupFile": "productos.ts.backup-seo-categories.1753329917266"
+}

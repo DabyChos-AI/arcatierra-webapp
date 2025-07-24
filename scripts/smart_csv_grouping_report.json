@@ -1,0 +1,227 @@
+{
+  "timestamp": "2025-07-24T04:46:07.120Z",
+  "method": "smart_csv_category_grouping",
+  "updatedProducts": 377,
+  "categoryDistribution": {
+    "frutas-verduras-granel": 405
+  },
+  "csvCategoriesUsed": [
+    "Frutas y Verduras a Granel",
+    "ESPECIAS",
+    "INFUSIONES Y TE",
+    "GRANOS, SEMILLAS Y CEREALES",
+    "ENDULZANTES",
+    "MERMELADAS Y UNTABLES",
+    "CONDIMENTOS",
+    "CACAO Y CHOCOLATE",
+    "PROTEINA ANIMAL",
+    "HUEVO Y LACTEOS",
+    "GALLETAS, HARINAS Y PAN",
+    "ACEITES Y GRASAS",
+    "ABARROTES",
+    "Canastas de frutas y verduras agroecológicas"
+  ],
+  "frontendCoverage": "7.1",
+  "mappingChanges": {
+    "Betabel blanco": {
+      "from": "aceites-naturales",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 10,
+      "keywords": [
+        "betabel"
+      ]
+    },
+    "ANGEL GALICIA": {
+      "from": "aceites-naturales",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "Arca tierra": {
+      "from": "canastas-frutas-verduras",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "ARMANDO MAYORAL": {
+      "from": "granos-cereales-integrales",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "CIRILO LIRA RUBIALES": {
+      "from": "proteinas-regenerativas",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "CUTBERTO BERMUDEZ": {
+      "from": "cafe-cacao-chocolate",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "ENRIQUE HERNANDEZ": {
+      "from": "endulzantes-naturales",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "LUIS ENRIQUE MORONES": {
+      "from": "endulzantes-naturales",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "ERICK MANDUJANO": {
+      "from": "endulzantes-naturales",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "FELIPE": {
+      "from": "endulzantes-naturales",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "GEOVANNI SANTANA": {
+      "from": "especias-condimentos",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "GUSTAVO MAYORAL": {
+      "from": "pan-galletas",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "HECTOR GÓMEZ": {
+      "from": "pan-galletas",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "HERMILO FERNANDEZ": {
+      "from": "mermeladas-untables",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "HUGO MUNGUIA": {
+      "from": "huevo-lacteos",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "FELIX HERNANDEZ": {
+      "from": "tes-infusiones",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "JOSE RODRIGUEZ JIMENEZ": {
+      "from": "tes-infusiones",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "JOSEFINA ISLAS SOSA": {
+      "from": "pan-galletas",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "JULIO RENDEROS": {
+      "from": "pan-galletas",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "Kolijke": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "LUCIO DE LA CRUZ": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "MARCO DEL VALLE": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "ORLANDO REYES": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "PEDRO JIMÉNEZ": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "RICARDO GONZÁLEZ": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    },
+    "VICTORIA SÁNCHEZ LOZADA": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "csvCategory": "Frutas y Verduras a Granel",
+      "score": 0,
+      "keywords": []
+    }
+  },
+  "csvToFrontendMapping": {
+    "Frutas y Verduras a Granel": "frutas-verduras-granel",
+    "ESPECIAS": "especias-condimentos",
+    "INFUSIONES Y TE": "tes-infusiones",
+    "GRANOS, SEMILLAS Y CEREALES": "granos-cereales-integrales",
+    "ENDULZANTES": "endulzantes-naturales",
+    "MERMELADAS Y UNTABLES": "mermeladas-untables",
+    "CONDIMENTOS": "especias-condimentos",
+    "CACAO Y CHOCOLATE": "cafe-cacao-chocolate",
+    "PROTEINA ANIMAL": "proteinas-regenerativas",
+    "HUEVO Y LACTEOS": "huevo-lacteos",
+    "GALLETAS, HARINAS Y PAN": "harinas-pastas",
+    "ACEITES Y GRASAS": "aceites-naturales",
+    "ABARROTES": "productos-arca-tierra",
+    "Canastas de frutas y verduras agroecológicas": "canastas-frutas-verduras"
+  }
+}

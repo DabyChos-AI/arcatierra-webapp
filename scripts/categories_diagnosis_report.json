@@ -1,0 +1,42 @@
+{
+  "timestamp": "2025-07-24T04:27:27.302Z",
+  "categoriesInProducts": {
+    "frutas-verduras-granel": 361,
+    "productos-arca-tierra": 44
+  },
+  "frontendCategoryIds": [
+    "canastas-frutas-verduras",
+    "aceites-naturales",
+    "granos-cereales-integrales",
+    "proteinas-regenerativas",
+    "cafe-cacao-chocolate",
+    "endulzantes-naturales",
+    "especias-condimentos",
+    "frutas-verduras-granel",
+    "mermeladas-untables",
+    "huevo-lacteos",
+    "tes-infusiones",
+    "productos-arca-tierra",
+    "harinas-pastas",
+    "pan-galletas"
+  ],
+  "suggestedMapping": {
+    "canastas-frutas-verduras": "frutas-verduras-granel",
+    "frutas-verduras-granel": "frutas-verduras-granel",
+    "productos-arca-tierra": "productos-arca-tierra"
+  },
+  "totalProductsWithCategories": 405,
+  "unmappedFrontendCategories": [
+    "aceites-naturales",
+    "granos-cereales-integrales",
+    "proteinas-regenerativas",
+    "cafe-cacao-chocolate",
+    "endulzantes-naturales",
+    "especias-condimentos",
+    "mermeladas-untables",
+    "huevo-lacteos",
+    "tes-infusiones",
+    "harinas-pastas",
+    "pan-galletas"
+  ]
+}

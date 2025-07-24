@@ -1,8 +1,8 @@
-import { cargarProductosDesdeCSV } from '@/data/productos';
+import type { Metadata } from 'next';
 
 // Esta función se ejecuta en el servidor
 export async function generateMetadata() {
-  await cargarProductosDesdeCSV();
+  // El catálogo ahora es estático y se carga automáticamente desde productos.ts
   return {
     title: 'Favoritos Arca Tierra - Tus productos preferidos',
     description: 'Guarda y administra tus productos favoritos de Arca Tierra para compras futuras.',

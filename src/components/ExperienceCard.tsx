@@ -22,7 +22,7 @@ export default function ExperienceCard({ experiencia, index }: ExperienceCardPro
       {/* Imagen */}
       <div className="relative overflow-hidden h-64">
         <OptimizedImage
-          src={experiencia.imagen}
+          src={experiencia.imagen || '/placeholder-experience.jpg'}
           alt={experiencia.nombre}
           fill
           className="object-cover group-hover:scale-110 transition-transform duration-700"

@@ -1,9 +1,8 @@
-import { cargarProductosDesdeCSV } from '@/data/productos';
 import type { Metadata } from 'next';
 
 // Esta función se ejecuta en el servidor
 export async function generateMetadata(): Promise<Metadata> {
-  await cargarProductosDesdeCSV();
+  // El catálogo ahora es estático y se carga automáticamente desde productos.ts
   
   const title = 'Tienda de Alimentos Agroecológicos 100% Mexicanos | Arca Tierra';
   const description = 'Alimentos agroecológicos directo del campo mexicano. Compra canastas frescas de Xochimilco, Huasca de Ocampo y Amanalco. Hiperlocalidad regenerativa que apoya a 60+ familias campesinas.';

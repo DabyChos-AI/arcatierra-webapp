@@ -48,7 +48,7 @@ export default function ProductQuickView({
             {/* Imagen del producto */}
             <div className="w-2/5 relative">
               <img 
-                src={product.imagen} 
+                src={product.imagen || '/placeholder-product.jpg'} 
                 alt={product.nombre}
                 className="w-full h-full object-cover"
               />

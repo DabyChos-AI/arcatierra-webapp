@@ -1,0 +1,279 @@
+{
+  "timestamp": "2025-07-24T04:30:21.640Z",
+  "method": "intelligent_keyword_mapping",
+  "updatedProducts": 361,
+  "categoryDistribution": {
+    "productos-arca-tierra": 405
+  },
+  "mappingChanges": {
+    "Betabel blanco": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "ANGEL GALICIA": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "ARMANDO MAYORAL": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "CIRILO LIRA RUBIALES": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "CUTBERTO BERMUDEZ": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "ENRIQUE HERNANDEZ": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "LUIS ENRIQUE MORONES": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "ERICK MANDUJANO": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "FELIPE": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "GEOVANNI SANTANA": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "GUSTAVO MAYORAL": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "HECTOR GÓMEZ": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "HECTOR RUTILO": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "HERMILO FERNANDEZ": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "HUGO MUNGUIA": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "FELIX HERNANDEZ": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "JOSE RODRIGUEZ JIMENEZ": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "JOSEFINA ISLAS SOSA": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "JULIO RENDEROS": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "Kolijke": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "LUCIO DE LA CRUZ": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "MARCO DEL VALLE": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "ORLANDO REYES": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "PEDRO JIMÉNEZ": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "RICARDO GONZÁLEZ": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "VICTOR SANTANA": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    },
+    "VICTORIA SÁNCHEZ LOZADA": {
+      "from": "frutas-verduras-granel",
+      "to": "productos-arca-tierra"
+    }
+  },
+  "categoryRules": {
+    "aceites-naturales": {
+      "keywords": [
+        "aceite",
+        "oil",
+        "oliva",
+        "coco",
+        "ajonjolí",
+        "girasol"
+      ],
+      "priority": 10
+    },
+    "granos-cereales-integrales": {
+      "keywords": [
+        "arroz",
+        "avena",
+        "quinoa",
+        "amaranto",
+        "trigo",
+        "cebada",
+        "centeno",
+        "mijo",
+        "sorgo",
+        "grano"
+      ],
+      "priority": 9
+    },
+    "proteinas-regenerativas": {
+      "keywords": [
+        "frijol",
+        "lenteja",
+        "garbanzo",
+        "haba",
+        "chícharo",
+        "leguminosa",
+        "proteina"
+      ],
+      "priority": 8
+    },
+    "cafe-cacao-chocolate": {
+      "keywords": [
+        "café",
+        "cacao",
+        "chocolate",
+        "cocoa"
+      ],
+      "priority": 10
+    },
+    "endulzantes-naturales": {
+      "keywords": [
+        "miel",
+        "azúcar",
+        "piloncillo",
+        "agave",
+        "maple",
+        "stevia",
+        "endulzante"
+      ],
+      "priority": 9
+    },
+    "especias-condimentos": {
+      "keywords": [
+        "sal",
+        "pimienta",
+        "comino",
+        "orégano",
+        "canela",
+        "clavo",
+        "laurel",
+        "tomillo",
+        "romero",
+        "especias",
+        "condimento"
+      ],
+      "priority": 8
+    },
+    "frutas-verduras-granel": {
+      "keywords": [
+        "tomate",
+        "cebolla",
+        "zanahoria",
+        "papa",
+        "chile",
+        "calabaza",
+        "brócoli",
+        "lechuga",
+        "espinaca",
+        "acelga",
+        "verdura",
+        "fruta",
+        "manzana",
+        "naranja",
+        "limón"
+      ],
+      "priority": 7
+    },
+    "mermeladas-untables": {
+      "keywords": [
+        "mermelada",
+        "untable",
+        "jalea",
+        "conserva",
+        "cajeta"
+      ],
+      "priority": 10
+    },
+    "huevo-lacteos": {
+      "keywords": [
+        "huevo",
+        "queso",
+        "yogurt",
+        "leche",
+        "crema",
+        "mantequilla",
+        "lácteo"
+      ],
+      "priority": 10
+    },
+    "tes-infusiones": {
+      "keywords": [
+        "té",
+        "infusión",
+        "tisana",
+        "hierba",
+        "manzanilla",
+        "hierbabuena",
+        "ruda"
+      ],
+      "priority": 9
+    },
+    "harinas-pastas": {
+      "keywords": [
+        "harina",
+        "pasta",
+        "macarrón",
+        "espagueti",
+        "fideo"
+      ],
+      "priority": 9
+    },
+    "pan-galletas": {
+      "keywords": [
+        "pan",
+        "galleta",
+        "bizcocho",
+        "cookie",
+        "tostada"
+      ],
+      "priority": 9
+    },
+    "canastas-frutas-verduras": {
+      "keywords": [
+        "canasta",
+        "kit",
+        "paquete",
+        "combo",
+        "surtido"
+      ],
+      "priority": 8
+    }
+  }
+}

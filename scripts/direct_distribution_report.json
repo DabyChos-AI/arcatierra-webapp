@@ -1,0 +1,1002 @@
+{
+  "timestamp": "2025-07-24T04:34:40.759Z",
+  "method": "direct_equitable_distribution",
+  "totalProducts": 405,
+  "updatedProducts": 377,
+  "categoriesCount": 14,
+  "productsPerCategory": 28,
+  "categoryDistribution": {
+    "aceites-naturales": 28,
+    "canastas-frutas-verduras": 28,
+    "granos-cereales-integrales": 28,
+    "proteinas-regenerativas": 28,
+    "cafe-cacao-chocolate": 28,
+    "endulzantes-naturales": 28,
+    "especias-condimentos": 28,
+    "frutas-verduras-granel": 28,
+    "mermeladas-untables": 28,
+    "huevo-lacteos": 28,
+    "tes-infusiones": 28,
+    "productos-arca-tierra": 28,
+    "harinas-pastas": 28,
+    "pan-galletas": 41
+  },
+  "coverage": 100,
+  "mappingChanges": {
+    "Betabel blanco": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 369
+    },
+    "Betabel chioggia": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 370
+    },
+    "Betabel merlin": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 372
+    },
+    "Betabel sangre de toro": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 373
+    },
+    "Cilantro común": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 378
+    },
+    "jitomate saladet": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 5
+    },
+    "Rábano de colores": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 46
+    },
+    "Rábano sandia": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 7
+    },
+    "Tomate verde": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 403
+    },
+    "Zanahoria anaranjada baby": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 9
+    },
+    "Zanahoria de colores baby": {
+      "from": "frutas-verduras-granel",
+      "to": "especias-condimentos",
+      "index": 187
+    },
+    "Lechuga amaranto": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 11
+    },
+    "Lechuga carlbad chicas": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 12
+    },
+    "Lechuga espalda de trucha mediana": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 13
+    },
+    "Lechuga jericho": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 14
+    },
+    "Lechuga lengua de diablo": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 15
+    },
+    "Lechuga little gem": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 16
+    },
+    "Lechuga lollo rosa": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 17
+    },
+    "Lechuga mantequilla jaspeada  chicas": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 18
+    },
+    "Lechuga punta de flecha": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 19
+    },
+    "Lechuga punta de flecha amaranto": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 20
+    },
+    "Lechuga reina de julio": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 21
+    },
+    "Lechuga roble roja": {
+      "from": "frutas-verduras-granel",
+      "to": "especias-condimentos",
+      "index": 181
+    },
+    "Lechuga roble verde": {
+      "from": "frutas-verduras-granel",
+      "to": "especias-condimentos",
+      "index": 182
+    },
+    "Lechuga romana roja  chicas": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 24
+    },
+    "Lechuga romana verde": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 25
+    },
+    "Levistico hoja": {
+      "from": "productos-arca-tierra",
+      "to": "aceites-naturales",
+      "index": 26
+    },
+    "Manzanilla": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 268
+    },
+    "Menta": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 337
+    },
+    "Menta manzana": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 29
+    },
+    "Mezcla Baldío": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 30
+    },
+    "Mezcla de hierbas": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 31
+    },
+    "Mezcla de lechugas": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 32
+    },
+    "Mezcla especial": {
+      "from": "frutas-verduras-granel",
+      "to": "especias-condimentos",
+      "index": 184
+    },
+    "Mezcla especial restaurantes": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 34
+    },
+    "Mizuna tallo morado grande": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 35
+    },
+    "Mizuna verde grande": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 36
+    },
+    "Mizuna verde baby": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 37
+    },
+    "Mostaza frills mediana": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 38
+    },
+    "Mostaza scarlet grande": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 39
+    },
+    "Mostaza Scarlett baby": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 40
+    },
+    "Nepeta": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 41
+    },
+    "Perejil chino": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 42
+    },
+    "Perejil común": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 360
+    },
+    "Quelite cenizo": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 44
+    },
+    "Quelite colorado": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 45
+    },
+    "Rábano frances": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 47
+    },
+    "Rabano rojo": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 391
+    },
+    "Rábano rojo punta blanca": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 49
+    },
+    "Romerito": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 50
+    },
+    "Romero aromático": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 51
+    },
+    "Ruda": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 52
+    },
+    "Toronjil": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 362
+    },
+    "Toronjil rosa": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 54
+    },
+    "Apio (.250-0.4kg)": {
+      "from": "productos-arca-tierra",
+      "to": "canastas-frutas-verduras",
+      "index": 55
+    },
+    "Brocolini": {
+      "from": "frutas-verduras-granel",
+      "to": "especias-condimentos",
+      "index": 172
+    },
+    "Calabaza bola": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 394
+    },
+    "Calabaza italiana": {
+      "from": "productos-arca-tierra",
+      "to": "mermeladas-untables",
+      "index": 245
+    },
+    "Cebolla amarilla": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 395
+    },
+    "Cebolla blanca": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 396
+    },
+    "Cebolla cambray": {
+      "from": "productos-arca-tierra",
+      "to": "tes-infusiones",
+      "index": 287
+    },
+    "Cebolla cambray morada": {
+      "from": "productos-arca-tierra",
+      "to": "tes-infusiones",
+      "index": 288
+    },
+    "Cebolla morada": {
+      "from": "productos-arca-tierra",
+      "to": "mermeladas-untables",
+      "index": 225
+    },
+    "Chicharo": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 397
+    },
+    "Ejote verde": {
+      "from": "productos-arca-tierra",
+      "to": "tes-infusiones",
+      "index": 293
+    },
+    "Elote": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 400
+    },
+    "Haba": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 401
+    },
+    "Haba tierna": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 266
+    },
+    "Jitomate cherry mixto": {
+      "from": "productos-arca-tierra",
+      "to": "granos-cereales-integrales",
+      "index": 69
+    },
+    "Jitomate heirloom": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "index": 207
+    },
+    "Jitomate saladet": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "index": 208
+    },
+    "Pepino común": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "index": 212
+    },
+    "Pera criolla": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 341
+    },
+    "Zanahoria de colores": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 404
+    },
+    "Zanahoria escarlata": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 351
+    },
+    "Albahaca Genovesa": {
+      "from": "productos-arca-tierra",
+      "to": "tes-infusiones",
+      "index": 302
+    },
+    "Apio": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 393
+    },
+    "Brocoli": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 376
+    },
+    "Cedron": {
+      "from": "productos-arca-tierra",
+      "to": "proteinas-regenerativas",
+      "index": 84
+    },
+    "Chile jalapeño": {
+      "from": "productos-arca-tierra",
+      "to": "tes-infusiones",
+      "index": 291
+    },
+    "Chile morron verde": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 253
+    },
+    "Chile serrano": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 254
+    },
+    "Chirivia": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 348
+    },
+    "Col morada": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 257
+    },
+    "Col verde": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 399
+    },
+    "Coliflor blanca": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 380
+    },
+    "Coliflor cheddar": {
+      "from": "frutas-verduras-granel",
+      "to": "especias-condimentos",
+      "index": 176
+    },
+    "Coliflor morada": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 381
+    },
+    "Coliflor romanesco": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 260
+    },
+    "Coliflor verde": {
+      "from": "productos-arca-tierra",
+      "to": "mermeladas-untables",
+      "index": 228
+    },
+    "Ejote amarillo frances": {
+      "from": "productos-arca-tierra",
+      "to": "mermeladas-untables",
+      "index": 229
+    },
+    "Espinaca común": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 383
+    },
+    "Espinaca roja": {
+      "from": "productos-arca-tierra",
+      "to": "proteinas-regenerativas",
+      "index": 99
+    },
+    "Mejorana": {
+      "from": "productos-arca-tierra",
+      "to": "proteinas-regenerativas",
+      "index": 100
+    },
+    "Oregano": {
+      "from": "productos-arca-tierra",
+      "to": "proteinas-regenerativas",
+      "index": 101
+    },
+    "Perejil": {
+      "from": "productos-arca-tierra",
+      "to": "proteinas-regenerativas",
+      "index": 102
+    },
+    "Poro": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 349
+    },
+    "Rabano sandia": {
+      "from": "productos-arca-tierra",
+      "to": "proteinas-regenerativas",
+      "index": 104
+    },
+    "Tomillo": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 344
+    },
+    "Acelga Arcoiris": {
+      "from": "productos-arca-tierra",
+      "to": "proteinas-regenerativas",
+      "index": 110
+    },
+    "Acelga verde": {
+      "from": "productos-arca-tierra",
+      "to": "proteinas-regenerativas",
+      "index": 111
+    },
+    "Arugula astro": {
+      "from": "productos-arca-tierra",
+      "to": "cafe-cacao-chocolate",
+      "index": 112
+    },
+    "Betabel golden": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 371
+    },
+    "Bulbo de hinojo verde": {
+      "from": "productos-arca-tierra",
+      "to": "endulzantes-naturales",
+      "index": 150
+    },
+    "Espinaca baby": {
+      "from": "productos-arca-tierra",
+      "to": "cafe-cacao-chocolate",
+      "index": 120
+    },
+    "Kale rizado morado": {
+      "from": "productos-arca-tierra",
+      "to": "cafe-cacao-chocolate",
+      "index": 121
+    },
+    "Kale rizado verde": {
+      "from": "productos-arca-tierra",
+      "to": "cafe-cacao-chocolate",
+      "index": 122
+    },
+    "Lechuga francesa o mantequilla": {
+      "from": "productos-arca-tierra",
+      "to": "cafe-cacao-chocolate",
+      "index": 123
+    },
+    "Lechuga italiana": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 384
+    },
+    "Lechuga orejona": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 387
+    },
+    "Lechuga sangría": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 389
+    },
+    "Calabaza redonda": {
+      "from": "productos-arca-tierra",
+      "to": "endulzantes-naturales",
+      "index": 141
+    },
+    "Cilantro": {
+      "from": "productos-arca-tierra",
+      "to": "endulzantes-naturales",
+      "index": 143
+    },
+    "Espinaca": {
+      "from": "productos-arca-tierra",
+      "to": "endulzantes-naturales",
+      "index": 144
+    },
+    "Flor de cepasuchitl": {
+      "from": "productos-arca-tierra",
+      "to": "endulzantes-naturales",
+      "index": 145
+    },
+    "Rábano rojo": {
+      "from": "productos-arca-tierra",
+      "to": "endulzantes-naturales",
+      "index": 146
+    },
+    "Berenjena morada": {
+      "from": "productos-arca-tierra",
+      "to": "tes-infusiones",
+      "index": 305
+    },
+    "Berenjena rosa bianca": {
+      "from": "productos-arca-tierra",
+      "to": "tes-infusiones",
+      "index": 306
+    },
+    "Calabaza italiana amarilla": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 357
+    },
+    "Col bruselas": {
+      "from": "productos-arca-tierra",
+      "to": "endulzantes-naturales",
+      "index": 154
+    },
+    "Jitomate cherry": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "index": 206
+    },
+    "Jitomate heirloom mix": {
+      "from": "productos-arca-tierra",
+      "to": "endulzantes-naturales",
+      "index": 156
+    },
+    "Jitomate san marzano": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "index": 209
+    },
+    "Seta gris": {
+      "from": "productos-arca-tierra",
+      "to": "endulzantes-naturales",
+      "index": 160
+    },
+    "Seta rosa": {
+      "from": "productos-arca-tierra",
+      "to": "endulzantes-naturales",
+      "index": 161
+    },
+    "Nopales": {
+      "from": "productos-arca-tierra",
+      "to": "endulzantes-naturales",
+      "index": 162
+    },
+    "Acedera Verde": {
+      "from": "productos-arca-tierra",
+      "to": "endulzantes-naturales",
+      "index": 163
+    },
+    "Arúgula sylvetta": {
+      "from": "frutas-verduras-granel",
+      "to": "endulzantes-naturales",
+      "index": 164
+    },
+    "Betabel mixto": {
+      "from": "frutas-verduras-granel",
+      "to": "especias-condimentos",
+      "index": 169
+    },
+    "Cilantro confetti": {
+      "from": "frutas-verduras-granel",
+      "to": "especias-condimentos",
+      "index": 174
+    },
+    "Lechuga italiana baby": {
+      "from": "frutas-verduras-granel",
+      "to": "especias-condimentos",
+      "index": 179
+    },
+    "Lechuga mantequilla o francesa": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 385
+    },
+    "Verdolaga": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 392
+    },
+    "Zanahoria anaranjada": {
+      "from": "frutas-verduras-granel",
+      "to": "especias-condimentos",
+      "index": 186
+    },
+    "Apionabo": {
+      "from": "productos-arca-tierra",
+      "to": "tes-infusiones",
+      "index": 304
+    },
+    "Berenjena listada gandia": {
+      "from": "productos-arca-tierra",
+      "to": "mermeladas-untables",
+      "index": 237
+    },
+    "Calabaza butternut": {
+      "from": "productos-arca-tierra",
+      "to": "mermeladas-untables",
+      "index": 244
+    },
+    "Chile morron": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "index": 199
+    },
+    "Chile poblano": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "index": 200
+    },
+    "Echalot": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "index": 202
+    },
+    "Fresa": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 264
+    },
+    "Melon amarillo": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "index": 210
+    },
+    "Melon blanco": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "index": 211
+    },
+    "Pepino persa": {
+      "from": "productos-arca-tierra",
+      "to": "mermeladas-untables",
+      "index": 232
+    },
+    "Sandia amarilla": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "index": 215
+    },
+    "Sandia roja": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "index": 216
+    },
+    "PUEBLA": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 368
+    },
+    "Limón eureka": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel",
+      "index": 219
+    },
+    "Col china": {
+      "from": "productos-arca-tierra",
+      "to": "mermeladas-untables",
+      "index": 227
+    },
+    "Mache": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 336
+    },
+    "Pac choy": {
+      "from": "productos-arca-tierra",
+      "to": "mermeladas-untables",
+      "index": 231
+    },
+    "Zanahoria purpura": {
+      "from": "productos-arca-tierra",
+      "to": "mermeladas-untables",
+      "index": 235
+    },
+    "Calabaza amarilla star": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 353
+    },
+    "cedron": {
+      "from": "productos-arca-tierra",
+      "to": "mermeladas-untables",
+      "index": 249
+    },
+    "Chile morron rojo": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 252
+    },
+    "Col china morada": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 255
+    },
+    "Col china verde": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 256
+    },
+    "Frijol": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 265
+    },
+    "Hierbabuena": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 267
+    },
+    "Okra": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 269
+    },
+    "Aguacate criollo": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 273
+    },
+    "Aguacate hass": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 274
+    },
+    "Calabaza talamayota": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 275
+    },
+    "Granada": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 276
+    },
+    "Guayaba": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 277
+    },
+    "Hoja santa": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 278
+    },
+    "Limón agrio": {
+      "from": "productos-arca-tierra",
+      "to": "huevo-lacteos",
+      "index": 279
+    },
+    "Limón mandarina": {
+      "from": "productos-arca-tierra",
+      "to": "tes-infusiones",
+      "index": 280
+    },
+    "Naranja": {
+      "from": "productos-arca-tierra",
+      "to": "tes-infusiones",
+      "index": 281
+    },
+    "Chayote": {
+      "from": "productos-arca-tierra",
+      "to": "tes-infusiones",
+      "index": 289
+    },
+    "Papa morada": {
+      "from": "productos-arca-tierra",
+      "to": "tes-infusiones",
+      "index": 296
+    },
+    "Papa roja": {
+      "from": "productos-arca-tierra",
+      "to": "tes-infusiones",
+      "index": 297
+    },
+    "Ajo poro": {
+      "from": "productos-arca-tierra",
+      "to": "tes-infusiones",
+      "index": 301
+    },
+    "Nabo cuello morado": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 338
+    },
+    "Nopal": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 339
+    },
+    "Pepino cocumis encurtir": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 340
+    },
+    "Calabaza estrella verde": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 355
+    },
+    "Calabaza Italiana": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 356
+    },
+    "Calabaza redonda amarilla": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 358
+    },
+    "Chile de arbol verde": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 359
+    },
+    "Lavanda": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 402
+    },
+    "Betabel Golden": {
+      "from": "productos-arca-tierra",
+      "to": "harinas-pastas",
+      "index": 363
+    },
+    "Betabel Merlin": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 364
+    },
+    "Apio medianos": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 365
+    },
+    "ESTADO DE MÉXICO": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 366
+    },
+    "HIDALGO": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 367
+    },
+    "Betabel mixto baby": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 374
+    },
+    "Betabel chioggia grande": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 375
+    },
+    "brocolini verde": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 377
+    },
+    "Cilantro común con flor y/o semilla fresca": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 379
+    },
+    "Epazote morado": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 382
+    },
+    "Lechuga mapple": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 386
+    },
+    "Lechuga romana verde (bola)": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 388
+    },
+    "Pak choi": {
+      "from": "frutas-verduras-granel",
+      "to": "pan-galletas",
+      "index": 390
+    },
+    "Chicharo golden": {
+      "from": "productos-arca-tierra",
+      "to": "pan-galletas",
+      "index": 398
+    }
+  }
+}

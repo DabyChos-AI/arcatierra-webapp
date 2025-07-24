@@ -1,0 +1,24 @@
+{
+  "timestamp": "2025-07-24T04:32:35.464Z",
+  "method": "improved_keyword_mapping",
+  "updatedProducts": 50,
+  "categoryDistribution": {
+    "frutas-verduras-granel": 50,
+    "productos-arca-tierra": 355
+  },
+  "mappingChanges": {
+    "Betabel blanco": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel"
+    },
+    "GEOVANNI SANTANA": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel"
+    },
+    "VICTOR SANTANA": {
+      "from": "productos-arca-tierra",
+      "to": "frutas-verduras-granel"
+    }
+  },
+  "totalCategories": 2
+}

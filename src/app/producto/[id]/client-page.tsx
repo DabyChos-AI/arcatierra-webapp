@@ -146,7 +146,7 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
         <div className="space-y-4">
           <div className="relative bg-gray-100 rounded-xl overflow-hidden aspect-square">
             <img
-              src={producto.imagen}
+              src={producto.imagen || '/placeholder-product.jpg'}
               alt={producto.nombre}
               className="w-full h-full object-cover"
             />
@@ -157,8 +157,8 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
             {[0, 1, 2].map((index: number) => (
               <div key={index} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-green-500" onClick={() => setImagenSeleccionada(index)}>
                 <img
-                  src={producto.imagen}
-                  alt={`${producto.nombre} - imagen ${index + 1}`}
+                  src={producto.imagen || '/placeholder-product.jpg'}
+                  alt={`${producto.nombre} ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -206,13 +206,11 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
             <p className="text-gray-600">{producto.descripcion}</p>
           </div>
 
-          {/* Trazabilidad (FASE 3) - Solo si el producto tiene datos de trazabilidad */}
-          {producto.trazabilidad && (
-            <div>
-              <h2 className="font-medium mb-4">Trazabilidad del Producto</h2>
-              <ProductTraceability product={producto} compact={false} />
-            </div>
-          )}
+          {/* Trazabilidad */}
+          <div>
+            <h2 className="font-medium mb-4">Trazabilidad del Producto</h2>
+            <ProductTraceability product={producto} compact={false} />
+          </div>
 
           {/* Características destacadas */}
           <div>

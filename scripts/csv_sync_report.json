@@ -1,0 +1,39 @@
+{
+  "timestamp": "2025-07-24T00:29:55.462Z",
+  "changes": {
+    "productsUpdated": 5,
+    "categoriesNormalized": 0,
+    "defaultAssignments": 0
+  },
+  "finalCategories": [
+    "condimentos",
+    "especias",
+    "frutas-y-verduras-a-granel",
+    "granos-semillas-y-cereales"
+  ],
+  "validCategories": [
+    "aceites-naturales",
+    "cafe-cacao-y-chocolate",
+    "canastas-de-frutas-y-verduras-agroecologicas",
+    "frutas-y-verduras-a-granel",
+    "galletas-harinas-y-pan",
+    "granos-semillas-y-cereales",
+    "granos-y-cereales-integrales",
+    "huevo-y-lacteos",
+    "huevo-y-lacteos-acentos",
+    "infusiones-y-te",
+    "mermeladas-y-untables",
+    "pan-y-galletas-artesanales",
+    "proteina-animal",
+    "proteinas-regenerativas",
+    "tortillas-y-maiz",
+    "abarrotes",
+    "aceites-y-grasas",
+    "cacao-y-chocolate",
+    "condimentos",
+    "endulzantes",
+    "especias",
+    "maiz"
+  ],
+  "invalidCategoriesFixed": []
+}

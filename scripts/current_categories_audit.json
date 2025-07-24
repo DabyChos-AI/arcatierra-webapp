@@ -1,0 +1,2476 @@
+{
+  "timestamp": "2025-07-24T00:32:56.765Z",
+  "totalProducts": 405,
+  "totalCategories": 4,
+  "productsByCategory": {
+    "frutas-y-verduras-a-granel": [
+      {
+        "id": "betabel-blanco-angel",
+        "nombre": "Betabel blanco",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-chioggia-angel",
+        "nombre": "Betabel chioggia",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-merlin-angel",
+        "nombre": "Betabel merlin",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-sangre-de-toro-angel",
+        "nombre": "Betabel sangre de toro",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cilantro-comn-angel",
+        "nombre": "Cilantro común",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "jitomate-saladet-angel",
+        "nombre": "jitomate saladet",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "rbano-de-colores-angel",
+        "nombre": "Rábano de colores",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "rbano-sandia-angel",
+        "nombre": "Rábano sandia",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "tomate-verde-angel",
+        "nombre": "Tomate verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-anaranjada-baby-angel",
+        "nombre": "Zanahoria anaranjada baby",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-de-colores-baby-angel",
+        "nombre": "Zanahoria de colores baby",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-amaranto-arca",
+        "nombre": "Lechuga amaranto",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-carlbad-chicas-arca",
+        "nombre": "Lechuga carlbad chicas",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-espalda-de-trucha-mediana-arca",
+        "nombre": "Lechuga espalda de trucha mediana",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-jericho-arca",
+        "nombre": "Lechuga jericho",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-lengua-de-diablo-arca",
+        "nombre": "Lechuga lengua de diablo",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-little-gem-arca",
+        "nombre": "Lechuga little gem",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-lollo-rosa-arca",
+        "nombre": "Lechuga lollo rosa",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-mantequilla-jaspeada-chicas-arca",
+        "nombre": "Lechuga mantequilla jaspeada  chicas",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-punta-de-flecha-arca",
+        "nombre": "Lechuga punta de flecha",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-punta-de-flecha-amaranto-arca",
+        "nombre": "Lechuga punta de flecha amaranto",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-reina-de-julio-arca",
+        "nombre": "Lechuga reina de julio",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-roble-roja-arca",
+        "nombre": "Lechuga roble roja",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-roble-verde-arca",
+        "nombre": "Lechuga roble verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-romana-roja-chicas-arca",
+        "nombre": "Lechuga romana roja  chicas",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-romana-verde-arca",
+        "nombre": "Lechuga romana verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "mezcla-de-lechugas-arca",
+        "nombre": "Mezcla de lechugas",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "quelite-colorado-arca",
+        "nombre": "Quelite colorado",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "rbano-de-colores-arca",
+        "nombre": "Rábano de colores",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "rbano-frances-arca",
+        "nombre": "Rábano frances",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "rabano-rojo-arca",
+        "nombre": "Rabano rojo",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "rbano-rojo-punta-blanca-arca",
+        "nombre": "Rábano rojo punta blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "apio-25004kg-armando",
+        "nombre": "Apio (.250-0.4kg)",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "brocolini-armando",
+        "nombre": "Brocolini",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-bola-armando",
+        "nombre": "Calabaza bola",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-italiana-armando",
+        "nombre": "Calabaza italiana",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-amarilla-armando",
+        "nombre": "Cebolla amarilla",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-blanca-armando",
+        "nombre": "Cebolla blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-cambray-armando",
+        "nombre": "Cebolla cambray",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-cambray-morada-armando",
+        "nombre": "Cebolla cambray morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-morada-armando",
+        "nombre": "Cebolla morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "ejote-verde-armando",
+        "nombre": "Ejote verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "jitomate-cherry-mixto-armando",
+        "nombre": "Jitomate cherry mixto",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "jitomate-heirloom-armando",
+        "nombre": "Jitomate heirloom",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "jitomate-saladet-armando",
+        "nombre": "Jitomate saladet",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "pera-criolla-armando",
+        "nombre": "Pera criolla",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "tomate-verde-armando",
+        "nombre": "Tomate verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-de-colores-armando",
+        "nombre": "Zanahoria de colores",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-escarlata-armando",
+        "nombre": "Zanahoria escarlata",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "apio-cirilo",
+        "nombre": "Apio",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-merlin-cirilo",
+        "nombre": "Betabel merlin",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "brocoli-cirilo",
+        "nombre": "Brocoli",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-bola-cirilo",
+        "nombre": "Calabaza bola",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-blanca-cirilo",
+        "nombre": "Cebolla blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-morada-cirilo",
+        "nombre": "Cebolla morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "chile-jalapeo-cirilo",
+        "nombre": "Chile jalapeño",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "chile-morron-verde-cirilo",
+        "nombre": "Chile morron verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "chile-serrano-cirilo",
+        "nombre": "Chile serrano",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "chirivia-cirilo",
+        "nombre": "Chirivia",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "col-morada-cirilo",
+        "nombre": "Col morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "col-verde-cirilo",
+        "nombre": "Col verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-blanca-cirilo",
+        "nombre": "Coliflor blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-cheddar-cirilo",
+        "nombre": "Coliflor cheddar",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-morada-cirilo",
+        "nombre": "Coliflor morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-romanesco-cirilo",
+        "nombre": "Coliflor romanesco",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-verde-cirilo",
+        "nombre": "Coliflor verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "ejote-amarillo-frances-cirilo",
+        "nombre": "Ejote amarillo frances",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "ejote-verde-cirilo",
+        "nombre": "Ejote verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "espinaca-comn-cirilo",
+        "nombre": "Espinaca común",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "espinaca-roja-cirilo",
+        "nombre": "Espinaca roja",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "poro-cirilo",
+        "nombre": "Poro",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "rabano-sandia-cirilo",
+        "nombre": "Rabano sandia",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "tomate-verde-cirilo",
+        "nombre": "Tomate verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-de-colores-cirilo",
+        "nombre": "Zanahoria de colores",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-escarlata-cirilo",
+        "nombre": "Zanahoria escarlata",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "acelga-arcoiris-cutberto",
+        "nombre": "Acelga Arcoiris",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "acelga-verde-cutberto",
+        "nombre": "Acelga verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-chioggia-cutberto",
+        "nombre": "Betabel chioggia",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-golden-cutberto",
+        "nombre": "Betabel golden",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-merlin-cutberto",
+        "nombre": "Betabel merlin",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "brocoli-cutberto",
+        "nombre": "Brocoli",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "col-morada-cutberto",
+        "nombre": "Col morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "col-verde-cutberto",
+        "nombre": "Col verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "espinaca-baby-cutberto",
+        "nombre": "Espinaca baby",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "kale-rizado-morado-cutberto",
+        "nombre": "Kale rizado morado",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "kale-rizado-verde-cutberto",
+        "nombre": "Kale rizado verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-francesa-o-mantequilla-cutberto",
+        "nombre": "Lechuga francesa o mantequilla",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-italiana-cutberto",
+        "nombre": "Lechuga italiana",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-orejona-cutberto",
+        "nombre": "Lechuga orejona",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-roble-roja-cutberto",
+        "nombre": "Lechuga roble roja",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-roble-verde-cutberto",
+        "nombre": "Lechuga roble verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-sangra-cutberto",
+        "nombre": "Lechuga sangría",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "apio-enrique",
+        "nombre": "Apio",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-blanca-enrique",
+        "nombre": "Cebolla blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-cambray-enrique",
+        "nombre": "Cebolla cambray",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-morada-enrique",
+        "nombre": "Cebolla morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "col-morada-enrique",
+        "nombre": "Col morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "col-verde-enrique",
+        "nombre": "Col verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "poro-enrique",
+        "nombre": "Poro",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "brocoli-luis",
+        "nombre": "Brocoli",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-redonda-luis",
+        "nombre": "Calabaza redonda",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-bola-luis",
+        "nombre": "Calabaza bola",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cilantro-luis",
+        "nombre": "Cilantro",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "espinaca-luis",
+        "nombre": "Espinaca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "rbano-rojo-luis",
+        "nombre": "Rábano rojo",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-italiana-erick",
+        "nombre": "Calabaza italiana",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-italiana-amarilla-erick",
+        "nombre": "Calabaza italiana amarilla",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-blanca-erick",
+        "nombre": "Cebolla blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "col-bruselas-erick",
+        "nombre": "Col bruselas",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "jitomate-cherry-erick",
+        "nombre": "Jitomate cherry",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "jitomate-heirloom-mix-erick",
+        "nombre": "Jitomate heirloom mix",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "jitomate-saladet-erick",
+        "nombre": "Jitomate saladet",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "jitomate-san-marzano-erick",
+        "nombre": "Jitomate san marzano",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-blanco-geovanni",
+        "nombre": "Betabel blanco",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-chioggia-geovanni",
+        "nombre": "Betabel chioggia",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-golden-geovanni",
+        "nombre": "Betabel golden",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-merlin-geovanni",
+        "nombre": "Betabel merlin",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-mixto-geovanni",
+        "nombre": "Betabel mixto",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-sangre-de-toro-geovanni",
+        "nombre": "Betabel sangre de toro",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "brocoli-geovanni",
+        "nombre": "Brocoli",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "brocolini-geovanni",
+        "nombre": "Brocolini",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cilantro-comn-geovanni",
+        "nombre": "Cilantro común",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cilantro-confetti-geovanni",
+        "nombre": "Cilantro confetti",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-blanca-geovanni",
+        "nombre": "Coliflor blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-cheddar-geovanni",
+        "nombre": "Coliflor cheddar",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-morada-geovanni",
+        "nombre": "Coliflor morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-verde-geovanni",
+        "nombre": "Coliflor verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-italiana-baby-geovanni",
+        "nombre": "Lechuga italiana baby",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-mantequilla-o-francesa-geovanni",
+        "nombre": "Lechuga mantequilla o francesa",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-roble-roja-geovanni",
+        "nombre": "Lechuga roble roja",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-roble-verde-geovanni",
+        "nombre": "Lechuga roble verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-sangra-geovanni",
+        "nombre": "Lechuga sangría",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-anaranjada-geovanni",
+        "nombre": "Zanahoria anaranjada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-de-colores-baby-geovanni",
+        "nombre": "Zanahoria de colores baby",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "apionabo-gustavo",
+        "nombre": "Apionabo",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-butternut-gustavo",
+        "nombre": "Calabaza butternut",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-italiana-gustavo",
+        "nombre": "Calabaza italiana",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-italiana-amarilla-gustavo",
+        "nombre": "Calabaza italiana amarilla",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-amarilla-gustavo",
+        "nombre": "Cebolla amarilla",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-blanca-gustavo",
+        "nombre": "Cebolla blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-morada-gustavo",
+        "nombre": "Cebolla morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "chile-jalapeo-gustavo",
+        "nombre": "Chile jalapeño",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "chile-morron-gustavo",
+        "nombre": "Chile morron",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "chile-poblano-gustavo",
+        "nombre": "Chile poblano",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "chile-serrano-gustavo",
+        "nombre": "Chile serrano",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "ejote-amarillo-frances-gustavo",
+        "nombre": "Ejote amarillo frances",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "ejote-verde-gustavo",
+        "nombre": "Ejote verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "fresa-gustavo",
+        "nombre": "Fresa",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "jitomate-cherry-gustavo",
+        "nombre": "Jitomate cherry",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "jitomate-heirloom-gustavo",
+        "nombre": "Jitomate heirloom",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "jitomate-saladet-gustavo",
+        "nombre": "Jitomate saladet",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "jitomate-san-marzano-gustavo",
+        "nombre": "Jitomate san marzano",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-de-colores-gustavo",
+        "nombre": "Zanahoria de colores",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "limn-eureka-hector",
+        "nombre": "Limón eureka",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "apionabo-hermilo",
+        "nombre": "Apionabo",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-chioggia-hermilo",
+        "nombre": "Betabel chioggia",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-golden-hermilo",
+        "nombre": "Betabel golden",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-italiana-hermilo",
+        "nombre": "Calabaza italiana",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-blanca-hermilo",
+        "nombre": "Cebolla blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-morada-hermilo",
+        "nombre": "Cebolla morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "chirivia-hermilo",
+        "nombre": "Chirivia",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "col-china-hermilo",
+        "nombre": "Col china",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-verde-hermilo",
+        "nombre": "Coliflor verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "ejote-amarillo-frances-hermilo",
+        "nombre": "Ejote amarillo frances",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-de-colores-hermilo",
+        "nombre": "Zanahoria de colores",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-escarlata-hermilo",
+        "nombre": "Zanahoria escarlata",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-purpura-hermilo",
+        "nombre": "Zanahoria purpura",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "apio-hugo",
+        "nombre": "Apio",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-chioggia-hugo",
+        "nombre": "Betabel chioggia",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-golden-hugo",
+        "nombre": "Betabel golden",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-merlin-hugo",
+        "nombre": "Betabel merlin",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "brocoli-hugo",
+        "nombre": "Brocoli",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-amarilla-star-hugo",
+        "nombre": "Calabaza amarilla star",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-bola-hugo",
+        "nombre": "Calabaza bola",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-butternut-hugo",
+        "nombre": "Calabaza butternut",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-italiana-hugo",
+        "nombre": "Calabaza italiana",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-amarilla-hugo",
+        "nombre": "Cebolla amarilla",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-blanca-hugo",
+        "nombre": "Cebolla blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-cambray-morada-hugo",
+        "nombre": "Cebolla cambray morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "chile-jalapeo-hugo",
+        "nombre": "Chile jalapeño",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "chile-morron-rojo-hugo",
+        "nombre": "Chile morron rojo",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "chile-morron-verde-hugo",
+        "nombre": "Chile morron verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "chile-serrano-hugo",
+        "nombre": "Chile serrano",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "col-china-morada-hugo",
+        "nombre": "Col china morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "col-china-verde-hugo",
+        "nombre": "Col china verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "col-morada-hugo",
+        "nombre": "Col morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "col-verde-hugo",
+        "nombre": "Col verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-blanca-hugo",
+        "nombre": "Coliflor blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-romanesco-hugo",
+        "nombre": "Coliflor romanesco",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "ejote-verde-hugo",
+        "nombre": "Ejote verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "espinaca-comn-hugo",
+        "nombre": "Espinaca común",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "fresa-hugo",
+        "nombre": "Fresa",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "poro-hugo",
+        "nombre": "Poro",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "tomate-verde-hugo",
+        "nombre": "Tomate verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "aguacate-criollo-felix",
+        "nombre": "Aguacate criollo",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "aguacate-hass-felix",
+        "nombre": "Aguacate hass",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-talamayota-felix",
+        "nombre": "Calabaza talamayota",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "limn-agrio-felix",
+        "nombre": "Limón agrio",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "limn-mandarina-felix",
+        "nombre": "Limón mandarina",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "naranja-felix",
+        "nombre": "Naranja",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "apio-jose",
+        "nombre": "Apio",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-merlin-jose",
+        "nombre": "Betabel merlin",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "brocoli-jose",
+        "nombre": "Brocoli",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-bola-jose",
+        "nombre": "Calabaza bola",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-blanca-jose",
+        "nombre": "Cebolla blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-cambray-jose",
+        "nombre": "Cebolla cambray",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-cambray-morada-jose",
+        "nombre": "Cebolla cambray morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "chile-jalapeo-jose",
+        "nombre": "Chile jalapeño",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-blanca-jose",
+        "nombre": "Coliflor blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "ejote-verde-jose",
+        "nombre": "Ejote verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "tomate-verde-jose",
+        "nombre": "Tomate verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-de-colores-jose",
+        "nombre": "Zanahoria de colores",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-escarlata-jose",
+        "nombre": "Zanahoria escarlata",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "ajo-poro-josefina",
+        "nombre": "Ajo poro",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "apio-josefina",
+        "nombre": "Apio",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "apionabo-josefina",
+        "nombre": "Apionabo",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-merlin-josefina",
+        "nombre": "Betabel merlin",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "brocoli-josefina",
+        "nombre": "Brocoli",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-bola-josefina",
+        "nombre": "Calabaza bola",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-castilla-josefina",
+        "nombre": "Calabaza castilla",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-estrella-verde-josefina",
+        "nombre": "Calabaza estrella verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-italiana-josefina",
+        "nombre": "Calabaza italiana",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-italiana-amarilla-josefina",
+        "nombre": "Calabaza italiana amarilla",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-blanca-josefina",
+        "nombre": "Cebolla blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-cambray-josefina",
+        "nombre": "Cebolla cambray",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "col-morada-josefina",
+        "nombre": "Col morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "col-verde-josefina",
+        "nombre": "Col verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-blanca-josefina",
+        "nombre": "Coliflor blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-cheddar-josefina",
+        "nombre": "Coliflor cheddar",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-morada-josefina",
+        "nombre": "Coliflor morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-verde-josefina",
+        "nombre": "Coliflor verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "ejote-amarillo-frances-josefina",
+        "nombre": "Ejote amarillo frances",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "ejote-spaguetti-josefina",
+        "nombre": "Ejote spaguetti",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "ejote-verde-josefina",
+        "nombre": "Ejote verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "espinaca-comn-josefina",
+        "nombre": "Espinaca común",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "jitomate-cherry-mixto-josefina",
+        "nombre": "Jitomate cherry mixto",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "jitomate-heirloom-josefina",
+        "nombre": "Jitomate heirloom",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "jitomate-san-marzano-josefina",
+        "nombre": "Jitomate san marzano",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "pera-criolla-josefina",
+        "nombre": "Pera criolla",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "poro-josefina",
+        "nombre": "Poro",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-de-colores-josefina",
+        "nombre": "Zanahoria de colores",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-escarlata-josefina",
+        "nombre": "Zanahoria escarlata",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "apio-julio",
+        "nombre": "Apio",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "chirivia-julio",
+        "nombre": "Chirivia",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "poro-julio",
+        "nombre": "Poro",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-de-colores-julio",
+        "nombre": "Zanahoria de colores",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-escarlata-julio",
+        "nombre": "Zanahoria escarlata",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-amarilla-star-lucio",
+        "nombre": "Calabaza amarilla star",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-bola-lucio",
+        "nombre": "Calabaza bola",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-estrella-verde-lucio",
+        "nombre": "Calabaza estrella verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-italiana-lucio",
+        "nombre": "Calabaza Italiana",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-italiana-amarilla-lucio",
+        "nombre": "Calabaza italiana amarilla",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-redonda-amarilla-lucio",
+        "nombre": "Calabaza redonda amarilla",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "chile-de-arbol-verde-lucio",
+        "nombre": "Chile de arbol verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-golden-marco",
+        "nombre": "Betabel Golden",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-merlin-marco",
+        "nombre": "Betabel Merlin",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "apio-medianos-marco",
+        "nombre": "Apio medianos",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-blanco-victor",
+        "nombre": "Betabel blanco",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-chioggia-victor",
+        "nombre": "Betabel chioggia",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-golden-victor",
+        "nombre": "Betabel golden",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-merlin-victor",
+        "nombre": "Betabel merlin",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-sangre-de-toro-victor",
+        "nombre": "Betabel sangre de toro",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-mixto-baby-victor",
+        "nombre": "Betabel mixto baby",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "betabel-chioggia-grande-victor",
+        "nombre": "Betabel chioggia grande",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "brocoli-victor",
+        "nombre": "Brocoli",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "brocolini-verde-victor",
+        "nombre": "brocolini verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cilantro-comn-victor",
+        "nombre": "Cilantro común",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cilantro-comn-con-flor-yo-semilla-fresca-victor",
+        "nombre": "Cilantro común con flor y/o semilla fresca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-blanca-victor",
+        "nombre": "Coliflor blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "coliflor-morada-victor",
+        "nombre": "Coliflor morada",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "espinaca-comn-victor",
+        "nombre": "Espinaca común",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-italiana-victor",
+        "nombre": "Lechuga italiana",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-mantequilla-o-francesa-victor",
+        "nombre": "Lechuga mantequilla o francesa",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-mapple-victor",
+        "nombre": "Lechuga mapple",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-orejona-victor",
+        "nombre": "Lechuga orejona",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-romana-verde-bola-victor",
+        "nombre": "Lechuga romana verde (bola)",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "lechuga-sangra-victor",
+        "nombre": "Lechuga sangría",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "rabano-rojo-victor",
+        "nombre": "Rabano rojo",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "apio-victoria",
+        "nombre": "Apio",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "calabaza-bola-victoria",
+        "nombre": "Calabaza bola",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-amarilla-victoria",
+        "nombre": "Cebolla amarilla",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "cebolla-blanca-victoria",
+        "nombre": "Cebolla blanca",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "col-verde-victoria",
+        "nombre": "Col verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "tomate-verde-victoria",
+        "nombre": "Tomate verde",
+        "categoria": "frutas-y-verduras-a-granel"
+      },
+      {
+        "id": "zanahoria-de-colores-victoria",
+        "nombre": "Zanahoria de colores",
+        "categoria": "frutas-y-verduras-a-granel"
+      }
+    ],
+    "especias": [
+      {
+        "id": "levistico-hoja-arca",
+        "nombre": "Levistico hoja",
+        "categoria": "especias"
+      },
+      {
+        "id": "manzanilla-arca",
+        "nombre": "Manzanilla",
+        "categoria": "especias"
+      },
+      {
+        "id": "mezcla-baldo-arca",
+        "nombre": "Mezcla Baldío",
+        "categoria": "especias"
+      },
+      {
+        "id": "mezcla-de-hierbas-arca",
+        "nombre": "Mezcla de hierbas",
+        "categoria": "especias"
+      },
+      {
+        "id": "mezcla-especial-arca",
+        "nombre": "Mezcla especial",
+        "categoria": "especias"
+      },
+      {
+        "id": "mezcla-especial-restaurantes-arca",
+        "nombre": "Mezcla especial restaurantes",
+        "categoria": "especias"
+      },
+      {
+        "id": "mizuna-tallo-morado-grande-arca",
+        "nombre": "Mizuna tallo morado grande",
+        "categoria": "especias"
+      },
+      {
+        "id": "mizuna-verde-grande-arca",
+        "nombre": "Mizuna verde grande",
+        "categoria": "especias"
+      },
+      {
+        "id": "mizuna-verde-baby-arca",
+        "nombre": "Mizuna verde baby",
+        "categoria": "especias"
+      },
+      {
+        "id": "mostaza-frills-mediana-arca",
+        "nombre": "Mostaza frills mediana",
+        "categoria": "especias"
+      },
+      {
+        "id": "mostaza-scarlet-grande-arca",
+        "nombre": "Mostaza scarlet grande",
+        "categoria": "especias"
+      },
+      {
+        "id": "mostaza-scarlett-baby-arca",
+        "nombre": "Mostaza Scarlett baby",
+        "categoria": "especias"
+      },
+      {
+        "id": "nepeta-arca",
+        "nombre": "Nepeta",
+        "categoria": "especias"
+      },
+      {
+        "id": "quelite-cenizo-arca",
+        "nombre": "Quelite cenizo",
+        "categoria": "especias"
+      },
+      {
+        "id": "romerito-arca",
+        "nombre": "Romerito",
+        "categoria": "especias"
+      },
+      {
+        "id": "romero-aromtico-arca",
+        "nombre": "Romero aromático",
+        "categoria": "especias"
+      },
+      {
+        "id": "ruda-arca",
+        "nombre": "Ruda",
+        "categoria": "especias"
+      },
+      {
+        "id": "chicharo-armando",
+        "nombre": "Chicharo",
+        "categoria": "especias"
+      },
+      {
+        "id": "elote-armando",
+        "nombre": "Elote",
+        "categoria": "especias"
+      },
+      {
+        "id": "haba-armando",
+        "nombre": "Haba",
+        "categoria": "especias"
+      },
+      {
+        "id": "haba-tierna-armando",
+        "nombre": "Haba tierna",
+        "categoria": "especias"
+      },
+      {
+        "id": "pepino-comn-armando",
+        "nombre": "Pepino común",
+        "categoria": "especias"
+      },
+      {
+        "id": "arugula-astro-cutberto",
+        "nombre": "Arugula astro",
+        "categoria": "especias"
+      },
+      {
+        "id": "bulbo-de-hinojo-verde-cutberto",
+        "nombre": "Bulbo de hinojo verde",
+        "categoria": "especias"
+      },
+      {
+        "id": "chicharo-enrique",
+        "nombre": "Chicharo",
+        "categoria": "especias"
+      },
+      {
+        "id": "elote-enrique",
+        "nombre": "Elote",
+        "categoria": "especias"
+      },
+      {
+        "id": "haba-tierna-enrique",
+        "nombre": "Haba tierna",
+        "categoria": "especias"
+      },
+      {
+        "id": "pepino-comn-enrique",
+        "nombre": "Pepino común",
+        "categoria": "especias"
+      },
+      {
+        "id": "flor-de-cepasuchitl-luis",
+        "nombre": "Flor de cepasuchitl",
+        "categoria": "especias"
+      },
+      {
+        "id": "berenjena-morada-erick",
+        "nombre": "Berenjena morada",
+        "categoria": "especias"
+      },
+      {
+        "id": "berenjena-rosa-bianca-erick",
+        "nombre": "Berenjena rosa bianca",
+        "categoria": "especias"
+      },
+      {
+        "id": "bulbo-de-hinojo-verde-erick",
+        "nombre": "Bulbo de hinojo verde",
+        "categoria": "especias"
+      },
+      {
+        "id": "pepino-comn-erick",
+        "nombre": "Pepino común",
+        "categoria": "especias"
+      },
+      {
+        "id": "seta-gris-erick",
+        "nombre": "Seta gris",
+        "categoria": "especias"
+      },
+      {
+        "id": "seta-rosa-erick",
+        "nombre": "Seta rosa",
+        "categoria": "especias"
+      },
+      {
+        "id": "nopales-felipe",
+        "nombre": "Nopales",
+        "categoria": "especias"
+      },
+      {
+        "id": "acedera-verde-geovanni",
+        "nombre": "Acedera Verde",
+        "categoria": "especias"
+      },
+      {
+        "id": "argula-sylvetta-geovanni",
+        "nombre": "Arúgula sylvetta",
+        "categoria": "especias"
+      },
+      {
+        "id": "mezcla-especial-geovanni",
+        "nombre": "Mezcla especial",
+        "categoria": "especias"
+      },
+      {
+        "id": "verdolaga-geovanni",
+        "nombre": "Verdolaga",
+        "categoria": "especias"
+      },
+      {
+        "id": "berenjena-listada-gandia-gustavo",
+        "nombre": "Berenjena listada gandia",
+        "categoria": "especias"
+      },
+      {
+        "id": "berenjena-morada-gustavo",
+        "nombre": "Berenjena morada",
+        "categoria": "especias"
+      },
+      {
+        "id": "berenjena-rosa-bianca-gustavo",
+        "nombre": "Berenjena rosa bianca",
+        "categoria": "especias"
+      },
+      {
+        "id": "echalot-gustavo",
+        "nombre": "Echalot",
+        "categoria": "especias"
+      },
+      {
+        "id": "melon-amarillo-gustavo",
+        "nombre": "Melon amarillo",
+        "categoria": "especias"
+      },
+      {
+        "id": "melon-blanco-gustavo",
+        "nombre": "Melon blanco",
+        "categoria": "especias"
+      },
+      {
+        "id": "pepino-comn-gustavo",
+        "nombre": "Pepino común",
+        "categoria": "especias"
+      },
+      {
+        "id": "pepino-persa-gustavo",
+        "nombre": "Pepino persa",
+        "categoria": "especias"
+      },
+      {
+        "id": "sandia-amarilla-gustavo",
+        "nombre": "Sandia amarilla",
+        "categoria": "especias"
+      },
+      {
+        "id": "sandia-roja-gustavo",
+        "nombre": "Sandia roja",
+        "categoria": "especias"
+      },
+      {
+        "id": "puebla-hector",
+        "nombre": "PUEBLA",
+        "categoria": "especias"
+      },
+      {
+        "id": "mache-hermilo",
+        "nombre": "Mache",
+        "categoria": "especias"
+      },
+      {
+        "id": "pac-choy-hermilo",
+        "nombre": "Pac choy",
+        "categoria": "especias"
+      },
+      {
+        "id": "pepino-persa-hermilo",
+        "nombre": "Pepino persa",
+        "categoria": "especias"
+      },
+      {
+        "id": "berenjena-listada-gandia-hugo",
+        "nombre": "Berenjena listada gandia",
+        "categoria": "especias"
+      },
+      {
+        "id": "chicharo-hugo",
+        "nombre": "Chicharo",
+        "categoria": "especias"
+      },
+      {
+        "id": "elote-hugo",
+        "nombre": "Elote",
+        "categoria": "especias"
+      },
+      {
+        "id": "haba-tierna-hugo",
+        "nombre": "Haba tierna",
+        "categoria": "especias"
+      },
+      {
+        "id": "manzanilla-hugo",
+        "nombre": "Manzanilla",
+        "categoria": "especias"
+      },
+      {
+        "id": "okra-hugo",
+        "nombre": "Okra",
+        "categoria": "especias"
+      },
+      {
+        "id": "granada-felix",
+        "nombre": "Granada",
+        "categoria": "especias"
+      },
+      {
+        "id": "guayaba-felix",
+        "nombre": "Guayaba",
+        "categoria": "especias"
+      },
+      {
+        "id": "hoja-santa-felix",
+        "nombre": "Hoja santa",
+        "categoria": "especias"
+      },
+      {
+        "id": "chayote-jose",
+        "nombre": "Chayote",
+        "categoria": "especias"
+      },
+      {
+        "id": "chicharo-jose",
+        "nombre": "Chicharo",
+        "categoria": "especias"
+      },
+      {
+        "id": "haba-jose",
+        "nombre": "Haba",
+        "categoria": "especias"
+      },
+      {
+        "id": "mache-jose",
+        "nombre": "Mache",
+        "categoria": "especias"
+      },
+      {
+        "id": "papa-morada-jose",
+        "nombre": "Papa morada",
+        "categoria": "especias"
+      },
+      {
+        "id": "papa-roja-jose",
+        "nombre": "Papa roja",
+        "categoria": "especias"
+      },
+      {
+        "id": "berenjena-morada-josefina",
+        "nombre": "Berenjena morada",
+        "categoria": "especias"
+      },
+      {
+        "id": "berenjena-rosa-bianca-josefina",
+        "nombre": "Berenjena rosa bianca",
+        "categoria": "especias"
+      },
+      {
+        "id": "chicharo-josefina",
+        "nombre": "Chicharo",
+        "categoria": "especias"
+      },
+      {
+        "id": "haba-tierna-josefina",
+        "nombre": "Haba tierna",
+        "categoria": "especias"
+      },
+      {
+        "id": "hoja-santa-josefina",
+        "nombre": "Hoja santa",
+        "categoria": "especias"
+      },
+      {
+        "id": "huauzontle-josefina",
+        "nombre": "Huauzontle",
+        "categoria": "especias"
+      },
+      {
+        "id": "lavanda-josefina",
+        "nombre": "Lavanda",
+        "categoria": "especias"
+      },
+      {
+        "id": "mache-josefina",
+        "nombre": "Mache",
+        "categoria": "especias"
+      },
+      {
+        "id": "nabo-cuello-morado-josefina",
+        "nombre": "Nabo cuello morado",
+        "categoria": "especias"
+      },
+      {
+        "id": "nopal-josefina",
+        "nombre": "Nopal",
+        "categoria": "especias"
+      },
+      {
+        "id": "pepino-cocumis-encurtir-josefina",
+        "nombre": "Pepino cocumis encurtir",
+        "categoria": "especias"
+      },
+      {
+        "id": "puebla-kolijke",
+        "nombre": "PUEBLA",
+        "categoria": "especias"
+      },
+      {
+        "id": "lavanda-lucio",
+        "nombre": "Lavanda",
+        "categoria": "especias"
+      },
+      {
+        "id": "estado-de-mxico-orlando",
+        "nombre": "ESTADO DE MÉXICO",
+        "categoria": "especias"
+      },
+      {
+        "id": "hidalgo-pedro",
+        "nombre": "HIDALGO",
+        "categoria": "especias"
+      },
+      {
+        "id": "puebla-ricardo",
+        "nombre": "PUEBLA",
+        "categoria": "especias"
+      },
+      {
+        "id": "epazote-morado-victor",
+        "nombre": "Epazote morado",
+        "categoria": "especias"
+      },
+      {
+        "id": "pak-choi-victor",
+        "nombre": "Pak choi",
+        "categoria": "especias"
+      },
+      {
+        "id": "verdolaga-victor",
+        "nombre": "Verdolaga",
+        "categoria": "especias"
+      },
+      {
+        "id": "chicharo-victoria",
+        "nombre": "Chicharo",
+        "categoria": "especias"
+      },
+      {
+        "id": "chicharo-golden-victoria",
+        "nombre": "Chicharo golden",
+        "categoria": "especias"
+      },
+      {
+        "id": "elote-victoria",
+        "nombre": "Elote",
+        "categoria": "especias"
+      },
+      {
+        "id": "haba-victoria",
+        "nombre": "Haba",
+        "categoria": "especias"
+      },
+      {
+        "id": "lavanda-victoria",
+        "nombre": "Lavanda",
+        "categoria": "especias"
+      }
+    ],
+    "condimentos": [
+      {
+        "id": "menta-arca",
+        "nombre": "Menta",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "menta-manzana-arca",
+        "nombre": "Menta manzana",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "perejil-chino-arca",
+        "nombre": "Perejil chino",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "perejil-comn-arca",
+        "nombre": "Perejil común",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "toronjil-arca",
+        "nombre": "Toronjil",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "toronjil-rosa-arca",
+        "nombre": "Toronjil rosa",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "albahaca-genovesa-cirilo",
+        "nombre": "Albahaca Genovesa",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "cedron-cirilo",
+        "nombre": "Cedron",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "mejorana-cirilo",
+        "nombre": "Mejorana",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "oregano-cirilo",
+        "nombre": "Oregano",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "perejil-cirilo",
+        "nombre": "Perejil",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "tomillo-cirilo",
+        "nombre": "Tomillo",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "toronjil-cirilo",
+        "nombre": "Toronjil",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "albahaca-genovesa-erick",
+        "nombre": "Albahaca Genovesa",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "perejil-comn-gustavo",
+        "nombre": "Perejil común",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "cedron-hugo",
+        "nombre": "cedron",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "hierbabuena-hugo",
+        "nombre": "Hierbabuena",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "perejil-comn-hugo",
+        "nombre": "Perejil común",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "albahaca-genovesa-josefina",
+        "nombre": "Albahaca Genovesa",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "cedron-josefina",
+        "nombre": "Cedron",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "hierbabuena-josefina",
+        "nombre": "Hierbabuena",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "menta-josefina",
+        "nombre": "Menta",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "perejil-comn-josefina",
+        "nombre": "Perejil común",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "tomillo-josefina",
+        "nombre": "Tomillo",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "perejil-comn-lucio",
+        "nombre": "Perejil común",
+        "categoria": "condimentos"
+      },
+      {
+        "id": "toronjil-lucio",
+        "nombre": "Toronjil",
+        "categoria": "condimentos"
+      }
+    ],
+    "granos-semillas-y-cereales": [
+      {
+        "id": "frijol-hugo",
+        "nombre": "Frijol",
+        "categoria": "granos-semillas-y-cereales"
+      }
+    ]
+  },
+  "emptyCategorias": [],
+  "lowProductCategorias": [
+    "granos-semillas-y-cereales"
+  ],
+  "potentialDuplicates": [],
+  "topCategories": [
+    {
+      "category": "frutas-y-verduras-a-granel",
+      "count": 285,
+      "products": [
+        "Betabel blanco",
+        "Betabel chioggia",
+        "Betabel merlin",
+        "Betabel sangre de toro",
+        "Cilantro común",
+        "jitomate saladet",
+        "Rábano de colores",
+        "Rábano sandia",
+        "Tomate verde",
+        "Zanahoria anaranjada baby",
+        "Zanahoria de colores baby",
+        "Lechuga amaranto",
+        "Lechuga carlbad chicas",
+        "Lechuga espalda de trucha mediana",
+        "Lechuga jericho",
+        "Lechuga lengua de diablo",
+        "Lechuga little gem",
+        "Lechuga lollo rosa",
+        "Lechuga mantequilla jaspeada  chicas",
+        "Lechuga punta de flecha",
+        "Lechuga punta de flecha amaranto",
+        "Lechuga reina de julio",
+        "Lechuga roble roja",
+        "Lechuga roble verde",
+        "Lechuga romana roja  chicas",
+        "Lechuga romana verde",
+        "Mezcla de lechugas",
+        "Quelite colorado",
+        "Rábano de colores",
+        "Rábano frances",
+        "Rabano rojo",
+        "Rábano rojo punta blanca",
+        "Apio (.250-0.4kg)",
+        "Brocolini",
+        "Calabaza bola",
+        "Calabaza italiana",
+        "Cebolla amarilla",
+        "Cebolla blanca",
+        "Cebolla cambray",
+        "Cebolla cambray morada",
+        "Cebolla morada",
+        "Ejote verde",
+        "Jitomate cherry mixto",
+        "Jitomate heirloom",
+        "Jitomate saladet",
+        "Pera criolla",
+        "Tomate verde",
+        "Zanahoria de colores",
+        "Zanahoria escarlata",
+        "Apio",
+        "Betabel merlin",
+        "Brocoli",
+        "Calabaza bola",
+        "Cebolla blanca",
+        "Cebolla morada",
+        "Chile jalapeño",
+        "Chile morron verde",
+        "Chile serrano",
+        "Chirivia",
+        "Col morada",
+        "Col verde",
+        "Coliflor blanca",
+        "Coliflor cheddar",
+        "Coliflor morada",
+        "Coliflor romanesco",
+        "Coliflor verde",
+        "Ejote amarillo frances",
+        "Ejote verde",
+        "Espinaca común",
+        "Espinaca roja",
+        "Poro",
+        "Rabano sandia",
+        "Tomate verde",
+        "Zanahoria de colores",
+        "Zanahoria escarlata",
+        "Acelga Arcoiris",
+        "Acelga verde",
+        "Betabel chioggia",
+        "Betabel golden",
+        "Betabel merlin",
+        "Brocoli",
+        "Col morada",
+        "Col verde",
+        "Espinaca baby",
+        "Kale rizado morado",
+        "Kale rizado verde",
+        "Lechuga francesa o mantequilla",
+        "Lechuga italiana",
+        "Lechuga orejona",
+        "Lechuga roble roja",
+        "Lechuga roble verde",
+        "Lechuga sangría",
+        "Apio",
+        "Cebolla blanca",
+        "Cebolla cambray",
+        "Cebolla morada",
+        "Col morada",
+        "Col verde",
+        "Poro",
+        "Brocoli",
+        "Calabaza redonda",
+        "Calabaza bola",
+        "Cilantro",
+        "Espinaca",
+        "Rábano rojo",
+        "Calabaza italiana",
+        "Calabaza italiana amarilla",
+        "Cebolla blanca",
+        "Col bruselas",
+        "Jitomate cherry",
+        "Jitomate heirloom mix",
+        "Jitomate saladet",
+        "Jitomate san marzano",
+        "Betabel blanco",
+        "Betabel chioggia",
+        "Betabel golden",
+        "Betabel merlin",
+        "Betabel mixto",
+        "Betabel sangre de toro",
+        "Brocoli",
+        "Brocolini",
+        "Cilantro común",
+        "Cilantro confetti",
+        "Coliflor blanca",
+        "Coliflor cheddar",
+        "Coliflor morada",
+        "Coliflor verde",
+        "Lechuga italiana baby",
+        "Lechuga mantequilla o francesa",
+        "Lechuga roble roja",
+        "Lechuga roble verde",
+        "Lechuga sangría",
+        "Zanahoria anaranjada",
+        "Zanahoria de colores baby",
+        "Apionabo",
+        "Calabaza butternut",
+        "Calabaza italiana",
+        "Calabaza italiana amarilla",
+        "Cebolla amarilla",
+        "Cebolla blanca",
+        "Cebolla morada",
+        "Chile jalapeño",
+        "Chile morron",
+        "Chile poblano",
+        "Chile serrano",
+        "Ejote amarillo frances",
+        "Ejote verde",
+        "Fresa",
+        "Jitomate cherry",
+        "Jitomate heirloom",
+        "Jitomate saladet",
+        "Jitomate san marzano",
+        "Zanahoria de colores",
+        "Limón eureka",
+        "Apionabo",
+        "Betabel chioggia",
+        "Betabel golden",
+        "Calabaza italiana",
+        "Cebolla blanca",
+        "Cebolla morada",
+        "Chirivia",
+        "Col china",
+        "Coliflor verde",
+        "Ejote amarillo frances",
+        "Zanahoria de colores",
+        "Zanahoria escarlata",
+        "Zanahoria purpura",
+        "Apio",
+        "Betabel chioggia",
+        "Betabel golden",
+        "Betabel merlin",
+        "Brocoli",
+        "Calabaza amarilla star",
+        "Calabaza bola",
+        "Calabaza butternut",
+        "Calabaza italiana",
+        "Cebolla amarilla",
+        "Cebolla blanca",
+        "Cebolla cambray morada",
+        "Chile jalapeño",
+        "Chile morron rojo",
+        "Chile morron verde",
+        "Chile serrano",
+        "Col china morada",
+        "Col china verde",
+        "Col morada",
+        "Col verde",
+        "Coliflor blanca",
+        "Coliflor romanesco",
+        "Ejote verde",
+        "Espinaca común",
+        "Fresa",
+        "Poro",
+        "Tomate verde",
+        "Aguacate criollo",
+        "Aguacate hass",
+        "Calabaza talamayota",
+        "Limón agrio",
+        "Limón mandarina",
+        "Naranja",
+        "Apio",
+        "Betabel merlin",
+        "Brocoli",
+        "Calabaza bola",
+        "Cebolla blanca",
+        "Cebolla cambray",
+        "Cebolla cambray morada",
+        "Chile jalapeño",
+        "Coliflor blanca",
+        "Ejote verde",
+        "Tomate verde",
+        "Zanahoria de colores",
+        "Zanahoria escarlata",
+        "Ajo poro",
+        "Apio",
+        "Apionabo",
+        "Betabel merlin",
+        "Brocoli",
+        "Calabaza bola",
+        "Calabaza castilla",
+        "Calabaza estrella verde",
+        "Calabaza italiana",
+        "Calabaza italiana amarilla",
+        "Cebolla blanca",
+        "Cebolla cambray",
+        "Col morada",
+        "Col verde",
+        "Coliflor blanca",
+        "Coliflor cheddar",
+        "Coliflor morada",
+        "Coliflor verde",
+        "Ejote amarillo frances",
+        "Ejote spaguetti",
+        "Ejote verde",
+        "Espinaca común",
+        "Jitomate cherry mixto",
+        "Jitomate heirloom",
+        "Jitomate san marzano",
+        "Pera criolla",
+        "Poro",
+        "Zanahoria de colores",
+        "Zanahoria escarlata",
+        "Apio",
+        "Chirivia",
+        "Poro",
+        "Zanahoria de colores",
+        "Zanahoria escarlata",
+        "Calabaza amarilla star",
+        "Calabaza bola",
+        "Calabaza estrella verde",
+        "Calabaza Italiana",
+        "Calabaza italiana amarilla",
+        "Calabaza redonda amarilla",
+        "Chile de arbol verde",
+        "Betabel Golden",
+        "Betabel Merlin",
+        "Apio medianos",
+        "Betabel blanco",
+        "Betabel chioggia",
+        "Betabel golden",
+        "Betabel merlin",
+        "Betabel sangre de toro",
+        "Betabel mixto baby",
+        "Betabel chioggia grande",
+        "Brocoli",
+        "brocolini verde",
+        "Cilantro común",
+        "Cilantro común con flor y/o semilla fresca",
+        "Coliflor blanca",
+        "Coliflor morada",
+        "Espinaca común",
+        "Lechuga italiana",
+        "Lechuga mantequilla o francesa",
+        "Lechuga mapple",
+        "Lechuga orejona",
+        "Lechuga romana verde (bola)",
+        "Lechuga sangría",
+        "Rabano rojo",
+        "Apio",
+        "Calabaza bola",
+        "Cebolla amarilla",
+        "Cebolla blanca",
+        "Col verde",
+        "Tomate verde",
+        "Zanahoria de colores"
+      ]
+    },
+    {
+      "category": "especias",
+      "count": 93,
+      "products": [
+        "Levistico hoja",
+        "Manzanilla",
+        "Mezcla Baldío",
+        "Mezcla de hierbas",
+        "Mezcla especial",
+        "Mezcla especial restaurantes",
+        "Mizuna tallo morado grande",
+        "Mizuna verde grande",
+        "Mizuna verde baby",
+        "Mostaza frills mediana",
+        "Mostaza scarlet grande",
+        "Mostaza Scarlett baby",
+        "Nepeta",
+        "Quelite cenizo",
+        "Romerito",
+        "Romero aromático",
+        "Ruda",
+        "Chicharo",
+        "Elote",
+        "Haba",
+        "Haba tierna",
+        "Pepino común",
+        "Arugula astro",
+        "Bulbo de hinojo verde",
+        "Chicharo",
+        "Elote",
+        "Haba tierna",
+        "Pepino común",
+        "Flor de cepasuchitl",
+        "Berenjena morada",
+        "Berenjena rosa bianca",
+        "Bulbo de hinojo verde",
+        "Pepino común",
+        "Seta gris",
+        "Seta rosa",
+        "Nopales",
+        "Acedera Verde",
+        "Arúgula sylvetta",
+        "Mezcla especial",
+        "Verdolaga",
+        "Berenjena listada gandia",
+        "Berenjena morada",
+        "Berenjena rosa bianca",
+        "Echalot",
+        "Melon amarillo",
+        "Melon blanco",
+        "Pepino común",
+        "Pepino persa",
+        "Sandia amarilla",
+        "Sandia roja",
+        "PUEBLA",
+        "Mache",
+        "Pac choy",
+        "Pepino persa",
+        "Berenjena listada gandia",
+        "Chicharo",
+        "Elote",
+        "Haba tierna",
+        "Manzanilla",
+        "Okra",
+        "Granada",
+        "Guayaba",
+        "Hoja santa",
+        "Chayote",
+        "Chicharo",
+        "Haba",
+        "Mache",
+        "Papa morada",
+        "Papa roja",
+        "Berenjena morada",
+        "Berenjena rosa bianca",
+        "Chicharo",
+        "Haba tierna",
+        "Hoja santa",
+        "Huauzontle",
+        "Lavanda",
+        "Mache",
+        "Nabo cuello morado",
+        "Nopal",
+        "Pepino cocumis encurtir",
+        "PUEBLA",
+        "Lavanda",
+        "ESTADO DE MÉXICO",
+        "HIDALGO",
+        "PUEBLA",
+        "Epazote morado",
+        "Pak choi",
+        "Verdolaga",
+        "Chicharo",
+        "Chicharo golden",
+        "Elote",
+        "Haba",
+        "Lavanda"
+      ]
+    },
+    {
+      "category": "condimentos",
+      "count": 26,
+      "products": [
+        "Menta",
+        "Menta manzana",
+        "Perejil chino",
+        "Perejil común",
+        "Toronjil",
+        "Toronjil rosa",
+        "Albahaca Genovesa",
+        "Cedron",
+        "Mejorana",
+        "Oregano",
+        "Perejil",
+        "Tomillo",
+        "Toronjil",
+        "Albahaca Genovesa",
+        "Perejil común",
+        "cedron",
+        "Hierbabuena",
+        "Perejil común",
+        "Albahaca Genovesa",
+        "Cedron",
+        "Hierbabuena",
+        "Menta",
+        "Perejil común",
+        "Tomillo",
+        "Perejil común",
+        "Toronjil"
+      ]
+    },
+    {
+      "category": "granos-semillas-y-cereales",
+      "count": 1,
+      "products": [
+        "Frijol"
+      ]
+    }
+  ]
+}

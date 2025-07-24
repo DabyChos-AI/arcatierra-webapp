@@ -1,0 +1,85 @@
+// src/data/productos.ts
+// CATÁLOGO RECONSTRUIDO CON DATOS LITERALES DE CSV - 2025-07-22T20:19:09.863Z
+// ⚠️ REGLA CRÍTICA: Solo contiene datos verificables de tiendaSEO.csv y trazabili.csv
+
+export interface Product {
+  id: string;
+  nombre: string;
+  precio: number;
+  unidad: string;
+  imagen: string;
+  productor: string;
+  ubicacion: string;
+  categoria: string;
+  rating: number;
+  reviews: number;
+  stock: number;
+  badges: string[];
+  descripcion: string;
+  storytelling: string;
+  metricas: {
+    co2: string;
+    agua: string;
+    plastico: string;
+  };
+  // CAMPOS AVANZADOS DE TRAZABILIDAD - SOLO SI EXISTEN EN CSV
+  trazabilidad?: {
+    agricultor: {
+      nombre: string;
+      experiencia?: string;
+      especializacion?: string;
+      fotografia?: string;
+    };
+    origen: {
+      region: string;
+      estado: string;
+      municipio?: string;
+      coordenadas?: {
+        lat: number;
+        lng: number;
+      };
+      altitud?: string;
+      clima?: string;
+    };
+    cultivo: {
+      metodo: string; 
+      certificaciones: string[];
+      temporada: string;
+      tiempoCosecha: string;
+      tiempoTransporte: string;
+    };
+    impacto: {
+      familiasBeneficiadas?: number;
+      kmRecorridos: number;
+      empleoLocal: boolean;
+      practicasRegenerativas: string[];
+    };
+  };
+  // SEO METADATA POR PRODUCTO
+  seo?: {
+    metaTitle: string;
+    metaDescription: string;
+    keywords: string[];
+    categoria_seo: string;
+  };
+  seoData?: {
+    metaTitle: string;
+    metaDescription: string;
+    keywords: string[];
+  };
+}
+
+// CATÁLOGO RECONSTRUIDO - SOLO DATOS DE CSV VERIFICABLES
+export const productos: Product[] = [];
+
+// CATEGORÍAS DETECTADAS EN EL CATÁLOGO
+export const categorias = [];
+
+// ESTADÍSTICAS DEL CATÁLOGO
+export const catalogStats = {
+  totalProducts: 0,
+  categories: 0,
+  rebuiltAt: '2025-07-22T20:19:09.863Z',
+  dataSource: 'tiendaSEO.csv + trazabili.csv',
+  dataIntegrity: 'VERIFIED_CSV_ONLY'
+};

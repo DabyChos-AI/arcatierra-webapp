@@ -1,0 +1,3237 @@
+{
+  "timestamp": "2025-07-24T00:34:40.136Z",
+  "stats": {
+    "totalProducts": 405,
+    "successfulMappings": 280,
+    "failedMappings": 125,
+    "defaultAssignments": 125,
+    "successRate": "69.1"
+  },
+  "finalDistribution": {
+    "granos-y-cereales-integrales": 6,
+    "frutas-y-verduras-a-granel": 328,
+    "mermeladas-y-untables": 4,
+    "especias": 24,
+    "condimentos": 4,
+    "infusiones-y-te": 7,
+    "maiz": 7,
+    "granos-semillas-y-cereales": 19,
+    "te-y-hierbas-medicinales": 3,
+    "aceites-naturales": 1,
+    "galletas-harinas-y-pan": 1,
+    "proteina-animal": 1
+  },
+  "csvCategories": {
+    "canastas-de-frutas-y-verduras-agroecolgicas": {
+      "originalName": "Canastas de frutas y verduras agroecol�gicas",
+      "count": 7,
+      "products": [
+        "CANASTA INDIVIDUAL SUSCRIPCI�N",
+        "CANASTA MEDIA SUSCRIPCION",
+        "CANASTA COMPLETA SUSCRIPCION",
+        "CANASTA FAMILIAR SUSCRIPCION",
+        "CANASTA B�SICA INDIVIDUAL SUSCRIPCION",
+        "CANASTA BASICA MEDIA SUSCRIPCION",
+        "CANASTA BASICA FAMILIAR SUSCRIPCION"
+      ]
+    },
+    "aceites-naturales": {
+      "originalName": "Aceites naturales",
+      "count": 5,
+      "products": [
+        "ACEITE DE AJONJOLI REFINADO",
+        "ACEITE DE AJONJOLI TOSTADO",
+        "ACEITE DE AGUACATE",
+        "ACEITE DE COCO 450 ML",
+        "ACEITE DE OLIVA 750 ML"
+      ]
+    },
+    "no-hidrogenado-ideal-para-cocinar": {
+      "originalName": "no hidrogenado. Ideal para cocinar",
+      "count": 1,
+      "products": [
+        "100% natural y sin olor. Prensado en fr�o"
+      ]
+    },
+    "granos-y-cereales-integrales": {
+      "originalName": "Granos y cereales integrales",
+      "count": 6,
+      "products": [
+        "AJONJOLI 100 G",
+        "AMARANTO 250 G",
+        "AMARANTO REVENTADO",
+        "ARROZ BLANCO 500 G",
+        "ARROZ INTEGRAL 500 G",
+        "AVENA 500 G"
+      ]
+    },
+    "protenas-regenerativas": {
+      "originalName": "Prote�nas Regenerativas",
+      "count": 1,
+      "products": [
+        "ARRACHERA  500 G"
+      ]
+    },
+    "endulzantes": {
+      "originalName": "ENDULZANTES",
+      "count": 3,
+      "products": [
+        "AZUCAR ORGANICA ZULKA 500 G",
+        "MIEL DE LAS CHINAMPAS 250 G",
+        "PILONCILLO GRANULADO 250 G"
+      ]
+    },
+    "proteina-animal": {
+      "originalName": "PROTEINA ANIMAL",
+      "count": 22,
+      "products": [
+        "BISTEC DE RES 500 G",
+        "CALDO DE HUESO 9 G",
+        "CALDO DE HUESO DE RES 700 ML",
+        "CARNE DE PAVO PARA HAMBURGUESA 500 G",
+        "CARNE DE RES DESHEBRADA 500 G",
+        "CARNE DE RES MOLIDA 500 G",
+        "CARNE DE RES PARA HAMBURGUESA DE ORIGEN REGENERATIVO 400 G",
+        "CARNITAS EN MANTECA MADRE CON TORTILLAS",
+        "COSTILLA DE RES 1.5 KG",
+        "FILETE DE RES 1 KG",
+        "HUEVO ORGANICO DE LIBRE PASTOREO",
+        "JAM�N DE PECHUGA DE PAVO 250 G",
+        "LOMO DE CERDO 1 KG",
+        "MILANESA DE CERDO",
+        "MILANESA DE POLLO 500 G",
+        "OSSOBUCO DE RES 1 KG",
+        "PECHUGA DE POLLO ENTERA CON HUESO 650 G",
+        "PICA�A DE RES 1.5 KG",
+        "SALCHICHA DE PECHUGA DE PAVO 250 G",
+        "SALCHICHAS BRATWURST",
+        "SALCHICHAS DE HIERBAS FINAS",
+        "TOCINO AHUMADO 350 G"
+      ]
+    },
+    "granos-semillas-y-cereales": {
+      "originalName": "GRANOS, SEMILLAS Y CEREALES",
+      "count": 13,
+      "products": [
+        "CACAHUATE 100 G",
+        "CHIA 100 G",
+        "FRIJOL NEGRO 500 G",
+        "FRIJOL PINTO SALTILLO 500 G",
+        "GARBANZO 500 G",
+        "GRANOLA ARTESANAL 900 G",
+        "LENTEJA 500 G",
+        "MACADAMIA 100 G",
+        "NUEZ PECANA 100 G",
+        "PEPITA DE CALABAZA 100 G",
+        "SEMILLA DE AMARANTO",
+        "SEMILLA DE CARDAMOMO 50 G",
+        "SEMILLA DE GIRASOL 100 G"
+      ]
+    },
+    "cafe-cacao-y-chocolate": {
+      "originalName": "CAFE, CACAO Y CHOCOLATE",
+      "count": 4,
+      "products": [
+        "CACAO EN POLVO 250 G",
+        "CACAO EN POLVO 500 G",
+        "CAFE DE GRANO 500 G",
+        "CAFE MOLIDO 500 G"
+      ]
+    },
+    "sin-hormonas": {
+      "originalName": "sin Hormonas",
+      "count": 1,
+      "products": [
+        "sin Saborizantes"
+      ]
+    },
+    "mezcla-con-una-cuchara-y-esta-listo": {
+      "originalName": "mezcla con una cuchara y esta listo.",
+      "count": 1,
+      "products": [
+        "s�lo vierte el contenido del sobre en una taza (240ml) de agua bien caliente"
+      ]
+    },
+    "especias": {
+      "originalName": "ESPECIAS",
+      "count": 15,
+      "products": [
+        "CANELA 50 G",
+        "CARDAMOMO 20 G",
+        "CEBOLLINO DESHIDRATADO 20 G",
+        "CLAVO DE OLOR 50 G",
+        "COMINO",
+        "CURCUMA 55 G",
+        "CURRY 55 G",
+        "HOJA DE LAUREL 60 G",
+        "HOJUELAS DE CHILE 50 G",
+        "JENGIBRE 50 G",
+        "OREGANO 50 G",
+        "PEREJIL DESHIDRATADO 20 G",
+        "PIMIENTA CAYENA 50 G",
+        "PIMIENTA GORDA 50 G",
+        "PIMIENTA NEGRA MOLIDA"
+      ]
+    },
+    "guisos-o-para-perfumar-tu-cocina-con-lo-que-el-campo-sabe-dar": {
+      "originalName": "guisos o para perfumar tu cocina con lo que el campo sabe dar.",
+      "count": 1,
+      "products": [
+        "postres"
+      ]
+    },
+    "currys": {
+      "originalName": "currys",
+      "count": 1,
+      "products": [
+        "es ideal para infusiones"
+      ]
+    },
+    "que-aporta-un-sabor-ligero-a-cebolla": {
+      "originalName": "que aporta un sabor ligero a cebolla.,,",
+      "count": 1,
+      "products": [
+        "con versatilidad en sus aplicaciones"
+      ]
+    },
+    "abarrotes": {
+      "originalName": "ABARROTES",
+      "count": 2,
+      "products": [
+        "DESINFECTANTE FRUTAS Y VERDURAS 15 ML",
+        "DESINFECTANTE FRUTAS Y VERDURAS 240 ML"
+      ]
+    },
+    "mermeladas-y-untables": {
+      "originalName": "MERMELADAS Y UNTABLES",
+      "count": 8,
+      "products": [
+        "DULCE DE LECHE DE OVEJA 330 G",
+        "JALEA DE ROSAS 255 G",
+        "MANTEQUILLA DE CACAHUATE CACAO 272 ML",
+        "MANTEQUILLA DE CACAHUATE CRUNCHY 272 ML",
+        "MERMELADA DE HIGO 300 G",
+        "MERMELADA DE JAMAICA 300 G",
+        "MERMELADA DE NARANJA 300 G",
+        "MERMELADA GUAYABAMIEL 300 G"
+      ]
+    },
+    "pastas": {
+      "originalName": "PASTAS",
+      "count": 1,
+      "products": [
+        "FETTUCCINI INTEGRAL ORGANICO 380 G"
+      ]
+    },
+    "infusiones-y-te": {
+      "originalName": "INFUSIONES Y TE",
+      "count": 5,
+      "products": [
+        "FLOR DE JAMAICA 500 G",
+        "MELISA PARA TE 50 G",
+        "MENTAS PARA TE 50 G",
+        "MEZCLA DE FLORES DE AZAHAR Y HIERBAS 50 G",
+        "MEZCLA DE MENTAS Y JENGIBRE DESHIDRATADOS 50 G"
+      ]
+    },
+    "galletas-harinas-y-pan": {
+      "originalName": "GALLETAS, HARINAS Y PAN",
+      "count": 9,
+      "products": [
+        "GALLETA DE MAIZ Y ANIS 50G",
+        "GALLETAS DE MAIZ  Y JENGIBRE 50 G",
+        "GALLETAS DE MAIZ  Y NARANJA 50 G",
+        "GALLETAS DE MAIZ , TASCALATE, JENGIBRE Y ANIS 200 G",
+        "GALLETAS DE MAIZ, CACAO Y PATLAXTLE 100 G",
+        "HARINA DE TRIGO INTEGRAL 500 G",
+        "HARINA INTEGRAL DE SORGO 500 G",
+        "HARINA PARA HOT CAKES CON TRIGO Y MACADAMIA 500 G",
+        "HOGAZA CAMPESINA"
+      ]
+    },
+    "huevo-y-lcteos": {
+      "originalName": "HUEVO Y L�CTEOS",
+      "count": 2,
+      "products": [
+        "LECHE ENTERA DE VACA 1 L",
+        "LECHE SEMIDESCREMADA DE VACA 1 L"
+      ]
+    },
+    "aceites-y-grasas": {
+      "originalName": "ACEITES Y GRASAS",
+      "count": 1,
+      "products": [
+        "MANTECA DE CERDO"
+      ]
+    },
+    "condimentos": {
+      "originalName": "CONDIMENTOS",
+      "count": 7,
+      "products": [
+        "MOSTAZA DE ESTRAGON 150 ML",
+        "MOSTAZA DIJON 255 ML",
+        "SAL DE CHAUTENGO 500 G",
+        "SAL DE MANANTIAL 100G",
+        "SALSA CATRINA 235 ML",
+        "VINAGRE DE MANZANA 250 ML",
+        "VINAGRE DE MUCILAGO DE CACAO 250 ML"
+      ]
+    },
+    "cacao-y-chocolate": {
+      "originalName": "CACAO Y CHOCOLATE",
+      "count": 1,
+      "products": [
+        "NIBS DE CACAO 100 G"
+      ]
+    },
+    "te-y-hierbas-medicinales": {
+      "originalName": "TE Y HIERBAS MEDICINALES",
+      "count": 3,
+      "products": [
+        "POLEN 40 ML",
+        "PROPOLEO 70 G",
+        "ZACATE LIMON DESHIDRATADO PARA TE 50 G"
+      ]
+    },
+    "huevo-y-lacteos": {
+      "originalName": "HUEVO Y LACTEOS",
+      "count": 8,
+      "products": [
+        "QUESO MANCHEGO 1 KG",
+        "QUESO MANCHEGO 250 G",
+        "QUESO MANCHEGO 500 G",
+        "QUESO OAXACA 1 KG",
+        "QUESO OAXACA 250 G",
+        "QUESO OAXACA 500 G",
+        "YOGURT DE VACA 480 G",
+        "YOGURT GRIEGO DE VACA 480 G"
+      ]
+    },
+    "maiz": {
+      "originalName": "MAIZ",
+      "count": 2,
+      "products": [
+        "TORTILLA AZUL 600 G",
+        "TORTILLA BLANCA 600 G"
+      ]
+    },
+    "frutas-y-verduras-a-granel": {
+      "originalName": "Frutas y Verduras a Granel",
+      "count": 31,
+      "products": [
+        "ACELGA COMUN 200 G",
+        "AGUACATE CRIOLLO 500 G",
+        "AJO 100 G",
+        "APIO 1PZA",
+        "BETABEL MERLIN 500 G",
+        "BLUEBERRY 250 G",
+        "CALABAZA ESPAGUETI 1 PZA",
+        "CALABAZA ITALIANA 500 G",
+        "CAMOTE 1 KG",
+        "CEBOLLA BLANCA 500 G",
+        "CHICHARO COMUN 500 G",
+        "CIRUELA 500 G",
+        "COL DE BRUSELAS 500 G",
+        "COL VERDE 1 PZA",
+        "EJOTE AMARILLO 250 G",
+        "ELOTE 1 PZA",
+        "ESPARRAGO 500 G",
+        "JITOMATE HEIRLOOM MIXTO 500 G",
+        "JITOMATE SALADET 500 G",
+        "LIMON AMARILLO 500 G",
+        "MANDARINA 500 G",
+        "MANGO PETACON 500 G",
+        "MANZANA CRIOLLA 500 G",
+        "MEZCLA DE ENSALADAS 300 G",
+        "NARANJA 1 KG",
+        "PEPINO COMUN 500 G",
+        "PLATANO MORADO 1 KG",
+        "PORO 1 PZA",
+        "ROMERITOS TIERNOS 500 G",
+        "VERDOLAGA 500 GRS",
+        "ZANAHORIA DE COLORES 250 G"
+      ]
+    },
+    "desparasitantes": {
+      "originalName": "desparasitantes",
+      "count": 1,
+      "products": [
+        "antigarrapaticidas"
+      ]
+    }
+  },
+  "mappingResults": {
+    "successful": 280,
+    "failed": 125,
+    "mappings": [
+      {
+        "productId": "betabel-blanco-angel",
+        "productName": "Betabel blanco",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-y-cereales-integrales",
+        "csvProductName": "ARROZ BLANCO 500 G",
+        "csvCategory": "Granos y cereales integrales"
+      },
+      {
+        "productId": "betabel-chioggia-angel",
+        "productName": "Betabel chioggia",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-merlin-angel",
+        "productName": "Betabel merlin",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-sangre-de-toro-angel",
+        "productName": "Betabel sangre de toro",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cilantro-comn-angel",
+        "productName": "Cilantro común",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ACELGA COMUN 200 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "jitomate-saladet-angel",
+        "productName": "jitomate saladet",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "JITOMATE SALADET 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "rbano-de-colores-angel",
+        "productName": "Rábano de colores",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "tomate-verde-angel",
+        "productName": "Tomate verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-anaranjada-baby-angel",
+        "productName": "Zanahoria anaranjada baby",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-de-colores-baby-angel",
+        "productName": "Zanahoria de colores baby",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "lechuga-amaranto-arca",
+        "productName": "Lechuga amaranto",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-y-cereales-integrales",
+        "csvProductName": "AMARANTO 250 G",
+        "csvCategory": "Granos y cereales integrales"
+      },
+      {
+        "productId": "lechuga-mantequilla-jaspeada-chicas-arca",
+        "productName": "Lechuga mantequilla jaspeada  chicas",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "mermeladas-y-untables",
+        "csvProductName": "MANTEQUILLA DE CACAHUATE CACAO 272 ML",
+        "csvCategory": "MERMELADAS Y UNTABLES"
+      },
+      {
+        "productId": "lechuga-punta-de-flecha-amaranto-arca",
+        "productName": "Lechuga punta de flecha amaranto",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-y-cereales-integrales",
+        "csvProductName": "AMARANTO 250 G",
+        "csvCategory": "Granos y cereales integrales"
+      },
+      {
+        "productId": "lechuga-roble-verde-arca",
+        "productName": "Lechuga roble verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "lechuga-romana-verde-arca",
+        "productName": "Lechuga romana verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "levistico-hoja-arca",
+        "productName": "Levistico hoja",
+        "oldCategory": "especias",
+        "newCategory": "especias",
+        "csvProductName": "HOJA DE LAUREL 60 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "menta-manzana-arca",
+        "productName": "Menta manzana",
+        "oldCategory": "condimentos",
+        "newCategory": "condimentos",
+        "csvProductName": "VINAGRE DE MANZANA 250 ML",
+        "csvCategory": "CONDIMENTOS"
+      },
+      {
+        "productId": "mezcla-baldo-arca",
+        "productName": "Mezcla Baldío",
+        "oldCategory": "especias",
+        "newCategory": "infusiones-y-te",
+        "csvProductName": "MEZCLA DE FLORES DE AZAHAR Y HIERBAS 50 G",
+        "csvCategory": "INFUSIONES Y TE"
+      },
+      {
+        "productId": "mezcla-de-hierbas-arca",
+        "productName": "Mezcla de hierbas",
+        "oldCategory": "especias",
+        "newCategory": "infusiones-y-te",
+        "csvProductName": "MEZCLA DE FLORES DE AZAHAR Y HIERBAS 50 G",
+        "csvCategory": "INFUSIONES Y TE"
+      },
+      {
+        "productId": "mezcla-de-lechugas-arca",
+        "productName": "Mezcla de lechugas",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "infusiones-y-te",
+        "csvProductName": "MEZCLA DE FLORES DE AZAHAR Y HIERBAS 50 G",
+        "csvCategory": "INFUSIONES Y TE"
+      },
+      {
+        "productId": "mezcla-especial-arca",
+        "productName": "Mezcla especial",
+        "oldCategory": "especias",
+        "newCategory": "infusiones-y-te",
+        "csvProductName": "MEZCLA DE FLORES DE AZAHAR Y HIERBAS 50 G",
+        "csvCategory": "INFUSIONES Y TE"
+      },
+      {
+        "productId": "mezcla-especial-restaurantes-arca",
+        "productName": "Mezcla especial restaurantes",
+        "oldCategory": "especias",
+        "newCategory": "infusiones-y-te",
+        "csvProductName": "MEZCLA DE FLORES DE AZAHAR Y HIERBAS 50 G",
+        "csvCategory": "INFUSIONES Y TE"
+      },
+      {
+        "productId": "mizuna-tallo-morado-grande-arca",
+        "productName": "Mizuna tallo morado grande",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "PLATANO MORADO 1 KG",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "mizuna-verde-grande-arca",
+        "productName": "Mizuna verde grande",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "mizuna-verde-baby-arca",
+        "productName": "Mizuna verde baby",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "mostaza-frills-mediana-arca",
+        "productName": "Mostaza frills mediana",
+        "oldCategory": "especias",
+        "newCategory": "condimentos",
+        "csvProductName": "MOSTAZA DE ESTRAGON 150 ML",
+        "csvCategory": "CONDIMENTOS"
+      },
+      {
+        "productId": "mostaza-scarlet-grande-arca",
+        "productName": "Mostaza scarlet grande",
+        "oldCategory": "especias",
+        "newCategory": "condimentos",
+        "csvProductName": "MOSTAZA DE ESTRAGON 150 ML",
+        "csvCategory": "CONDIMENTOS"
+      },
+      {
+        "productId": "mostaza-scarlett-baby-arca",
+        "productName": "Mostaza Scarlett baby",
+        "oldCategory": "especias",
+        "newCategory": "condimentos",
+        "csvProductName": "MOSTAZA DE ESTRAGON 150 ML",
+        "csvCategory": "CONDIMENTOS"
+      },
+      {
+        "productId": "perejil-chino-arca",
+        "productName": "Perejil chino",
+        "oldCategory": "condimentos",
+        "newCategory": "especias",
+        "csvProductName": "PEREJIL DESHIDRATADO 20 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "perejil-comn-arca",
+        "productName": "Perejil común",
+        "oldCategory": "condimentos",
+        "newCategory": "especias",
+        "csvProductName": "PEREJIL DESHIDRATADO 20 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "rbano-de-colores-arca",
+        "productName": "Rábano de colores",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "rbano-rojo-punta-blanca-arca",
+        "productName": "Rábano rojo punta blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "maiz",
+        "csvProductName": "TORTILLA BLANCA 600 G",
+        "csvCategory": "MAIZ"
+      },
+      {
+        "productId": "apio-25004kg-armando",
+        "productName": "Apio (.250-0.4kg)",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "APIO 1PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "calabaza-bola-armando",
+        "productName": "Calabaza bola",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "calabaza-italiana-armando",
+        "productName": "Calabaza italiana",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CALABAZA ITALIANA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-amarilla-armando",
+        "productName": "Cebolla amarilla",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-blanca-armando",
+        "productName": "Cebolla blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-cambray-armando",
+        "productName": "Cebolla cambray",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-cambray-morada-armando",
+        "productName": "Cebolla cambray morada",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-morada-armando",
+        "productName": "Cebolla morada",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "chicharo-armando",
+        "productName": "Chicharo",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CHICHARO COMUN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "ejote-verde-armando",
+        "productName": "Ejote verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "elote-armando",
+        "productName": "Elote",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ELOTE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "jitomate-cherry-mixto-armando",
+        "productName": "Jitomate cherry mixto",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "JITOMATE HEIRLOOM MIXTO 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "jitomate-heirloom-armando",
+        "productName": "Jitomate heirloom",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "JITOMATE HEIRLOOM MIXTO 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "jitomate-saladet-armando",
+        "productName": "Jitomate saladet",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "JITOMATE SALADET 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "pepino-comn-armando",
+        "productName": "Pepino común",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "PEPINO COMUN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "pera-criolla-armando",
+        "productName": "Pera criolla",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "MANZANA CRIOLLA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "tomate-verde-armando",
+        "productName": "Tomate verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-de-colores-armando",
+        "productName": "Zanahoria de colores",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-escarlata-armando",
+        "productName": "Zanahoria escarlata",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "apio-cirilo",
+        "productName": "Apio",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "APIO 1PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-merlin-cirilo",
+        "productName": "Betabel merlin",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "calabaza-bola-cirilo",
+        "productName": "Calabaza bola",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "cebolla-blanca-cirilo",
+        "productName": "Cebolla blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-morada-cirilo",
+        "productName": "Cebolla morada",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "chile-jalapeo-cirilo",
+        "productName": "Chile jalapeño",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "especias",
+        "csvProductName": "HOJUELAS DE CHILE 50 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "chile-morron-verde-cirilo",
+        "productName": "Chile morron verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "especias",
+        "csvProductName": "HOJUELAS DE CHILE 50 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "chile-serrano-cirilo",
+        "productName": "Chile serrano",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "especias",
+        "csvProductName": "HOJUELAS DE CHILE 50 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "col-morada-cirilo",
+        "productName": "Col morada",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL DE BRUSELAS 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "col-verde-cirilo",
+        "productName": "Col verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "coliflor-blanca-cirilo",
+        "productName": "Coliflor blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "maiz",
+        "csvProductName": "TORTILLA BLANCA 600 G",
+        "csvCategory": "MAIZ"
+      },
+      {
+        "productId": "coliflor-verde-cirilo",
+        "productName": "Coliflor verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "ejote-amarillo-frances-cirilo",
+        "productName": "Ejote amarillo frances",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "EJOTE AMARILLO 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "ejote-verde-cirilo",
+        "productName": "Ejote verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "espinaca-comn-cirilo",
+        "productName": "Espinaca común",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ACELGA COMUN 200 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "oregano-cirilo",
+        "productName": "Oregano",
+        "oldCategory": "condimentos",
+        "newCategory": "especias",
+        "csvProductName": "OREGANO 50 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "perejil-cirilo",
+        "productName": "Perejil",
+        "oldCategory": "condimentos",
+        "newCategory": "especias",
+        "csvProductName": "PEREJIL DESHIDRATADO 20 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "poro-cirilo",
+        "productName": "Poro",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "PORO 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "tomate-verde-cirilo",
+        "productName": "Tomate verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-de-colores-cirilo",
+        "productName": "Zanahoria de colores",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-escarlata-cirilo",
+        "productName": "Zanahoria escarlata",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "acelga-arcoiris-cutberto",
+        "productName": "Acelga Arcoiris",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ACELGA COMUN 200 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "acelga-verde-cutberto",
+        "productName": "Acelga verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ACELGA COMUN 200 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-chioggia-cutberto",
+        "productName": "Betabel chioggia",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-golden-cutberto",
+        "productName": "Betabel golden",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-merlin-cutberto",
+        "productName": "Betabel merlin",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "bulbo-de-hinojo-verde-cutberto",
+        "productName": "Bulbo de hinojo verde",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "col-morada-cutberto",
+        "productName": "Col morada",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL DE BRUSELAS 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "col-verde-cutberto",
+        "productName": "Col verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "kale-rizado-morado-cutberto",
+        "productName": "Kale rizado morado",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "PLATANO MORADO 1 KG",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "kale-rizado-verde-cutberto",
+        "productName": "Kale rizado verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "lechuga-francesa-o-mantequilla-cutberto",
+        "productName": "Lechuga francesa o mantequilla",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "mermeladas-y-untables",
+        "csvProductName": "MANTEQUILLA DE CACAHUATE CACAO 272 ML",
+        "csvCategory": "MERMELADAS Y UNTABLES"
+      },
+      {
+        "productId": "lechuga-italiana-cutberto",
+        "productName": "Lechuga italiana",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CALABAZA ITALIANA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "lechuga-roble-verde-cutberto",
+        "productName": "Lechuga roble verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "apio-enrique",
+        "productName": "Apio",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "APIO 1PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-blanca-enrique",
+        "productName": "Cebolla blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-cambray-enrique",
+        "productName": "Cebolla cambray",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-morada-enrique",
+        "productName": "Cebolla morada",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "chicharo-enrique",
+        "productName": "Chicharo",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CHICHARO COMUN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "col-morada-enrique",
+        "productName": "Col morada",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL DE BRUSELAS 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "col-verde-enrique",
+        "productName": "Col verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "elote-enrique",
+        "productName": "Elote",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ELOTE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "pepino-comn-enrique",
+        "productName": "Pepino común",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "PEPINO COMUN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "poro-enrique",
+        "productName": "Poro",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "PORO 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "calabaza-redonda-luis",
+        "productName": "Calabaza redonda",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "calabaza-bola-luis",
+        "productName": "Calabaza bola",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "flor-de-cepasuchitl-luis",
+        "productName": "Flor de cepasuchitl",
+        "oldCategory": "especias",
+        "newCategory": "infusiones-y-te",
+        "csvProductName": "FLOR DE JAMAICA 500 G",
+        "csvCategory": "INFUSIONES Y TE"
+      },
+      {
+        "productId": "bulbo-de-hinojo-verde-erick",
+        "productName": "Bulbo de hinojo verde",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "calabaza-italiana-erick",
+        "productName": "Calabaza italiana",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CALABAZA ITALIANA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "calabaza-italiana-amarilla-erick",
+        "productName": "Calabaza italiana amarilla",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CALABAZA ITALIANA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-blanca-erick",
+        "productName": "Cebolla blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "col-bruselas-erick",
+        "productName": "Col bruselas",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL DE BRUSELAS 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "jitomate-cherry-erick",
+        "productName": "Jitomate cherry",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "JITOMATE HEIRLOOM MIXTO 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "jitomate-heirloom-mix-erick",
+        "productName": "Jitomate heirloom mix",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "JITOMATE HEIRLOOM MIXTO 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "jitomate-saladet-erick",
+        "productName": "Jitomate saladet",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "JITOMATE SALADET 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "jitomate-san-marzano-erick",
+        "productName": "Jitomate san marzano",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "JITOMATE HEIRLOOM MIXTO 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "pepino-comn-erick",
+        "productName": "Pepino común",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "PEPINO COMUN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "acedera-verde-geovanni",
+        "productName": "Acedera Verde",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-blanco-geovanni",
+        "productName": "Betabel blanco",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-y-cereales-integrales",
+        "csvProductName": "ARROZ BLANCO 500 G",
+        "csvCategory": "Granos y cereales integrales"
+      },
+      {
+        "productId": "betabel-chioggia-geovanni",
+        "productName": "Betabel chioggia",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-golden-geovanni",
+        "productName": "Betabel golden",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-merlin-geovanni",
+        "productName": "Betabel merlin",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-mixto-geovanni",
+        "productName": "Betabel mixto",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-sangre-de-toro-geovanni",
+        "productName": "Betabel sangre de toro",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cilantro-comn-geovanni",
+        "productName": "Cilantro común",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ACELGA COMUN 200 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "coliflor-blanca-geovanni",
+        "productName": "Coliflor blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "maiz",
+        "csvProductName": "TORTILLA BLANCA 600 G",
+        "csvCategory": "MAIZ"
+      },
+      {
+        "productId": "coliflor-verde-geovanni",
+        "productName": "Coliflor verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "lechuga-italiana-baby-geovanni",
+        "productName": "Lechuga italiana baby",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CALABAZA ITALIANA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "lechuga-mantequilla-o-francesa-geovanni",
+        "productName": "Lechuga mantequilla o francesa",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "mermeladas-y-untables",
+        "csvProductName": "MANTEQUILLA DE CACAHUATE CACAO 272 ML",
+        "csvCategory": "MERMELADAS Y UNTABLES"
+      },
+      {
+        "productId": "lechuga-roble-verde-geovanni",
+        "productName": "Lechuga roble verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "mezcla-especial-geovanni",
+        "productName": "Mezcla especial",
+        "oldCategory": "especias",
+        "newCategory": "infusiones-y-te",
+        "csvProductName": "MEZCLA DE FLORES DE AZAHAR Y HIERBAS 50 G",
+        "csvCategory": "INFUSIONES Y TE"
+      },
+      {
+        "productId": "verdolaga-geovanni",
+        "productName": "Verdolaga",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "VERDOLAGA 500 GRS",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-anaranjada-geovanni",
+        "productName": "Zanahoria anaranjada",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-de-colores-baby-geovanni",
+        "productName": "Zanahoria de colores baby",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "calabaza-butternut-gustavo",
+        "productName": "Calabaza butternut",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "calabaza-italiana-gustavo",
+        "productName": "Calabaza italiana",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CALABAZA ITALIANA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "calabaza-italiana-amarilla-gustavo",
+        "productName": "Calabaza italiana amarilla",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CALABAZA ITALIANA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-amarilla-gustavo",
+        "productName": "Cebolla amarilla",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-blanca-gustavo",
+        "productName": "Cebolla blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-morada-gustavo",
+        "productName": "Cebolla morada",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "chile-jalapeo-gustavo",
+        "productName": "Chile jalapeño",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "especias",
+        "csvProductName": "HOJUELAS DE CHILE 50 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "chile-morron-gustavo",
+        "productName": "Chile morron",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "especias",
+        "csvProductName": "HOJUELAS DE CHILE 50 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "chile-poblano-gustavo",
+        "productName": "Chile poblano",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "especias",
+        "csvProductName": "HOJUELAS DE CHILE 50 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "chile-serrano-gustavo",
+        "productName": "Chile serrano",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "especias",
+        "csvProductName": "HOJUELAS DE CHILE 50 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "ejote-amarillo-frances-gustavo",
+        "productName": "Ejote amarillo frances",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "EJOTE AMARILLO 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "ejote-verde-gustavo",
+        "productName": "Ejote verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "jitomate-cherry-gustavo",
+        "productName": "Jitomate cherry",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "JITOMATE HEIRLOOM MIXTO 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "jitomate-heirloom-gustavo",
+        "productName": "Jitomate heirloom",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "JITOMATE HEIRLOOM MIXTO 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "jitomate-saladet-gustavo",
+        "productName": "Jitomate saladet",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "JITOMATE SALADET 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "jitomate-san-marzano-gustavo",
+        "productName": "Jitomate san marzano",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "JITOMATE HEIRLOOM MIXTO 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "melon-amarillo-gustavo",
+        "productName": "Melon amarillo",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "EJOTE AMARILLO 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "melon-blanco-gustavo",
+        "productName": "Melon blanco",
+        "oldCategory": "especias",
+        "newCategory": "granos-y-cereales-integrales",
+        "csvProductName": "ARROZ BLANCO 500 G",
+        "csvCategory": "Granos y cereales integrales"
+      },
+      {
+        "productId": "pepino-comn-gustavo",
+        "productName": "Pepino común",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "PEPINO COMUN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "pepino-persa-gustavo",
+        "productName": "Pepino persa",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "PEPINO COMUN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "perejil-comn-gustavo",
+        "productName": "Perejil común",
+        "oldCategory": "condimentos",
+        "newCategory": "especias",
+        "csvProductName": "PEREJIL DESHIDRATADO 20 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "zanahoria-de-colores-gustavo",
+        "productName": "Zanahoria de colores",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "limn-eureka-hector",
+        "productName": "Limón eureka",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "te-y-hierbas-medicinales",
+        "csvProductName": "ZACATE LIMON DESHIDRATADO PARA TE 50 G",
+        "csvCategory": "TE Y HIERBAS MEDICINALES"
+      },
+      {
+        "productId": "betabel-chioggia-hermilo",
+        "productName": "Betabel chioggia",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-golden-hermilo",
+        "productName": "Betabel golden",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "calabaza-italiana-hermilo",
+        "productName": "Calabaza italiana",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CALABAZA ITALIANA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-blanca-hermilo",
+        "productName": "Cebolla blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-morada-hermilo",
+        "productName": "Cebolla morada",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "col-china-hermilo",
+        "productName": "Col china",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL DE BRUSELAS 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "coliflor-verde-hermilo",
+        "productName": "Coliflor verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "ejote-amarillo-frances-hermilo",
+        "productName": "Ejote amarillo frances",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "EJOTE AMARILLO 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "pepino-persa-hermilo",
+        "productName": "Pepino persa",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "PEPINO COMUN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-de-colores-hermilo",
+        "productName": "Zanahoria de colores",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-escarlata-hermilo",
+        "productName": "Zanahoria escarlata",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-purpura-hermilo",
+        "productName": "Zanahoria purpura",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "apio-hugo",
+        "productName": "Apio",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "APIO 1PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-chioggia-hugo",
+        "productName": "Betabel chioggia",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-golden-hugo",
+        "productName": "Betabel golden",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-merlin-hugo",
+        "productName": "Betabel merlin",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "calabaza-amarilla-star-hugo",
+        "productName": "Calabaza amarilla star",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "calabaza-bola-hugo",
+        "productName": "Calabaza bola",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "calabaza-butternut-hugo",
+        "productName": "Calabaza butternut",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "calabaza-italiana-hugo",
+        "productName": "Calabaza italiana",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CALABAZA ITALIANA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-amarilla-hugo",
+        "productName": "Cebolla amarilla",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-blanca-hugo",
+        "productName": "Cebolla blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-cambray-morada-hugo",
+        "productName": "Cebolla cambray morada",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "chicharo-hugo",
+        "productName": "Chicharo",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CHICHARO COMUN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "chile-jalapeo-hugo",
+        "productName": "Chile jalapeño",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "especias",
+        "csvProductName": "HOJUELAS DE CHILE 50 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "chile-morron-rojo-hugo",
+        "productName": "Chile morron rojo",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "especias",
+        "csvProductName": "HOJUELAS DE CHILE 50 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "chile-morron-verde-hugo",
+        "productName": "Chile morron verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "especias",
+        "csvProductName": "HOJUELAS DE CHILE 50 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "chile-serrano-hugo",
+        "productName": "Chile serrano",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "especias",
+        "csvProductName": "HOJUELAS DE CHILE 50 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "col-china-morada-hugo",
+        "productName": "Col china morada",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL DE BRUSELAS 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "col-china-verde-hugo",
+        "productName": "Col china verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "col-morada-hugo",
+        "productName": "Col morada",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL DE BRUSELAS 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "col-verde-hugo",
+        "productName": "Col verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "coliflor-blanca-hugo",
+        "productName": "Coliflor blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "maiz",
+        "csvProductName": "TORTILLA BLANCA 600 G",
+        "csvCategory": "MAIZ"
+      },
+      {
+        "productId": "ejote-verde-hugo",
+        "productName": "Ejote verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "elote-hugo",
+        "productName": "Elote",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ELOTE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "espinaca-comn-hugo",
+        "productName": "Espinaca común",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ACELGA COMUN 200 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "frijol-hugo",
+        "productName": "Frijol",
+        "oldCategory": "granos-semillas-y-cereales",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "FRIJOL NEGRO 500 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "perejil-comn-hugo",
+        "productName": "Perejil común",
+        "oldCategory": "condimentos",
+        "newCategory": "especias",
+        "csvProductName": "PEREJIL DESHIDRATADO 20 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "poro-hugo",
+        "productName": "Poro",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "PORO 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "tomate-verde-hugo",
+        "productName": "Tomate verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "aguacate-criollo-felix",
+        "productName": "Aguacate criollo",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "AGUACATE CRIOLLO 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "aguacate-hass-felix",
+        "productName": "Aguacate hass",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "aceites-naturales",
+        "csvProductName": "ACEITE DE AGUACATE",
+        "csvCategory": "Aceites naturales"
+      },
+      {
+        "productId": "calabaza-talamayota-felix",
+        "productName": "Calabaza talamayota",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "hoja-santa-felix",
+        "productName": "Hoja santa",
+        "oldCategory": "especias",
+        "newCategory": "especias",
+        "csvProductName": "HOJA DE LAUREL 60 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "limn-agrio-felix",
+        "productName": "Limón agrio",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "te-y-hierbas-medicinales",
+        "csvProductName": "ZACATE LIMON DESHIDRATADO PARA TE 50 G",
+        "csvCategory": "TE Y HIERBAS MEDICINALES"
+      },
+      {
+        "productId": "limn-mandarina-felix",
+        "productName": "Limón mandarina",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "te-y-hierbas-medicinales",
+        "csvProductName": "ZACATE LIMON DESHIDRATADO PARA TE 50 G",
+        "csvCategory": "TE Y HIERBAS MEDICINALES"
+      },
+      {
+        "productId": "naranja-felix",
+        "productName": "Naranja",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "galletas-harinas-y-pan",
+        "csvProductName": "GALLETAS DE MAIZ  Y NARANJA 50 G",
+        "csvCategory": "GALLETAS, HARINAS Y PAN"
+      },
+      {
+        "productId": "apio-jose",
+        "productName": "Apio",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "APIO 1PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-merlin-jose",
+        "productName": "Betabel merlin",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "calabaza-bola-jose",
+        "productName": "Calabaza bola",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "cebolla-blanca-jose",
+        "productName": "Cebolla blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-cambray-jose",
+        "productName": "Cebolla cambray",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-cambray-morada-jose",
+        "productName": "Cebolla cambray morada",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "chicharo-jose",
+        "productName": "Chicharo",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CHICHARO COMUN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "chile-jalapeo-jose",
+        "productName": "Chile jalapeño",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "especias",
+        "csvProductName": "HOJUELAS DE CHILE 50 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "coliflor-blanca-jose",
+        "productName": "Coliflor blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "maiz",
+        "csvProductName": "TORTILLA BLANCA 600 G",
+        "csvCategory": "MAIZ"
+      },
+      {
+        "productId": "ejote-verde-jose",
+        "productName": "Ejote verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "tomate-verde-jose",
+        "productName": "Tomate verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-de-colores-jose",
+        "productName": "Zanahoria de colores",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-escarlata-jose",
+        "productName": "Zanahoria escarlata",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "ajo-poro-josefina",
+        "productName": "Ajo poro",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "AJO 100 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "apio-josefina",
+        "productName": "Apio",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "APIO 1PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-merlin-josefina",
+        "productName": "Betabel merlin",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "calabaza-bola-josefina",
+        "productName": "Calabaza bola",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "calabaza-castilla-josefina",
+        "productName": "Calabaza castilla",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "calabaza-estrella-verde-josefina",
+        "productName": "Calabaza estrella verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "calabaza-italiana-josefina",
+        "productName": "Calabaza italiana",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CALABAZA ITALIANA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "calabaza-italiana-amarilla-josefina",
+        "productName": "Calabaza italiana amarilla",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CALABAZA ITALIANA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-blanca-josefina",
+        "productName": "Cebolla blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-cambray-josefina",
+        "productName": "Cebolla cambray",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "chicharo-josefina",
+        "productName": "Chicharo",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CHICHARO COMUN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "col-morada-josefina",
+        "productName": "Col morada",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL DE BRUSELAS 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "col-verde-josefina",
+        "productName": "Col verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "coliflor-blanca-josefina",
+        "productName": "Coliflor blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "maiz",
+        "csvProductName": "TORTILLA BLANCA 600 G",
+        "csvCategory": "MAIZ"
+      },
+      {
+        "productId": "coliflor-verde-josefina",
+        "productName": "Coliflor verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "ejote-amarillo-frances-josefina",
+        "productName": "Ejote amarillo frances",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "EJOTE AMARILLO 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "ejote-spaguetti-josefina",
+        "productName": "Ejote spaguetti",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "EJOTE AMARILLO 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "ejote-verde-josefina",
+        "productName": "Ejote verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "espinaca-comn-josefina",
+        "productName": "Espinaca común",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ACELGA COMUN 200 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "hoja-santa-josefina",
+        "productName": "Hoja santa",
+        "oldCategory": "especias",
+        "newCategory": "especias",
+        "csvProductName": "HOJA DE LAUREL 60 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "jitomate-cherry-mixto-josefina",
+        "productName": "Jitomate cherry mixto",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "JITOMATE HEIRLOOM MIXTO 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "jitomate-heirloom-josefina",
+        "productName": "Jitomate heirloom",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "JITOMATE HEIRLOOM MIXTO 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "jitomate-san-marzano-josefina",
+        "productName": "Jitomate san marzano",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "JITOMATE HEIRLOOM MIXTO 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "nabo-cuello-morado-josefina",
+        "productName": "Nabo cuello morado",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "PLATANO MORADO 1 KG",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "pepino-cocumis-encurtir-josefina",
+        "productName": "Pepino cocumis encurtir",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "PEPINO COMUN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "pera-criolla-josefina",
+        "productName": "Pera criolla",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "MANZANA CRIOLLA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "perejil-comn-josefina",
+        "productName": "Perejil común",
+        "oldCategory": "condimentos",
+        "newCategory": "especias",
+        "csvProductName": "PEREJIL DESHIDRATADO 20 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "poro-josefina",
+        "productName": "Poro",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "PORO 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-de-colores-josefina",
+        "productName": "Zanahoria de colores",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-escarlata-josefina",
+        "productName": "Zanahoria escarlata",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "apio-julio",
+        "productName": "Apio",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "APIO 1PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "poro-julio",
+        "productName": "Poro",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "PORO 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-de-colores-julio",
+        "productName": "Zanahoria de colores",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-escarlata-julio",
+        "productName": "Zanahoria escarlata",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "calabaza-amarilla-star-lucio",
+        "productName": "Calabaza amarilla star",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "calabaza-bola-lucio",
+        "productName": "Calabaza bola",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "calabaza-estrella-verde-lucio",
+        "productName": "Calabaza estrella verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "calabaza-italiana-lucio",
+        "productName": "Calabaza Italiana",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CALABAZA ITALIANA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "calabaza-italiana-amarilla-lucio",
+        "productName": "Calabaza italiana amarilla",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CALABAZA ITALIANA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "calabaza-redonda-amarilla-lucio",
+        "productName": "Calabaza redonda amarilla",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "chile-de-arbol-verde-lucio",
+        "productName": "Chile de arbol verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "especias",
+        "csvProductName": "HOJUELAS DE CHILE 50 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "perejil-comn-lucio",
+        "productName": "Perejil común",
+        "oldCategory": "condimentos",
+        "newCategory": "especias",
+        "csvProductName": "PEREJIL DESHIDRATADO 20 G",
+        "csvCategory": "ESPECIAS"
+      },
+      {
+        "productId": "betabel-golden-marco",
+        "productName": "Betabel Golden",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-merlin-marco",
+        "productName": "Betabel Merlin",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "apio-medianos-marco",
+        "productName": "Apio medianos",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "APIO 1PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-blanco-victor",
+        "productName": "Betabel blanco",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-y-cereales-integrales",
+        "csvProductName": "ARROZ BLANCO 500 G",
+        "csvCategory": "Granos y cereales integrales"
+      },
+      {
+        "productId": "betabel-chioggia-victor",
+        "productName": "Betabel chioggia",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-golden-victor",
+        "productName": "Betabel golden",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-merlin-victor",
+        "productName": "Betabel merlin",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-sangre-de-toro-victor",
+        "productName": "Betabel sangre de toro",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-mixto-baby-victor",
+        "productName": "Betabel mixto baby",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "betabel-chioggia-grande-victor",
+        "productName": "Betabel chioggia grande",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "BETABEL MERLIN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "brocolini-verde-victor",
+        "productName": "brocolini verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cilantro-comn-victor",
+        "productName": "Cilantro común",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ACELGA COMUN 200 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cilantro-comn-con-flor-yo-semilla-fresca-victor",
+        "productName": "Cilantro común con flor y/o semilla fresca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "proteina-animal",
+        "csvProductName": "CARNITAS EN MANTECA MADRE CON TORTILLAS",
+        "csvCategory": "PROTEINA ANIMAL"
+      },
+      {
+        "productId": "coliflor-blanca-victor",
+        "productName": "Coliflor blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "maiz",
+        "csvProductName": "TORTILLA BLANCA 600 G",
+        "csvCategory": "MAIZ"
+      },
+      {
+        "productId": "epazote-morado-victor",
+        "productName": "Epazote morado",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "PLATANO MORADO 1 KG",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "espinaca-comn-victor",
+        "productName": "Espinaca común",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ACELGA COMUN 200 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "lechuga-italiana-victor",
+        "productName": "Lechuga italiana",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CALABAZA ITALIANA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "lechuga-mantequilla-o-francesa-victor",
+        "productName": "Lechuga mantequilla o francesa",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "mermeladas-y-untables",
+        "csvProductName": "MANTEQUILLA DE CACAHUATE CACAO 272 ML",
+        "csvCategory": "MERMELADAS Y UNTABLES"
+      },
+      {
+        "productId": "lechuga-romana-verde-bola-victor",
+        "productName": "Lechuga romana verde (bola)",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "verdolaga-victor",
+        "productName": "Verdolaga",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "VERDOLAGA 500 GRS",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "apio-victoria",
+        "productName": "Apio",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "APIO 1PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "calabaza-bola-victoria",
+        "productName": "Calabaza bola",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "granos-semillas-y-cereales",
+        "csvProductName": "PEPITA DE CALABAZA 100 G",
+        "csvCategory": "GRANOS, SEMILLAS Y CEREALES"
+      },
+      {
+        "productId": "cebolla-amarilla-victoria",
+        "productName": "Cebolla amarilla",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "cebolla-blanca-victoria",
+        "productName": "Cebolla blanca",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CEBOLLA BLANCA 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "chicharo-victoria",
+        "productName": "Chicharo",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CHICHARO COMUN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "chicharo-golden-victoria",
+        "productName": "Chicharo golden",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "CHICHARO COMUN 500 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "col-verde-victoria",
+        "productName": "Col verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "elote-victoria",
+        "productName": "Elote",
+        "oldCategory": "especias",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ELOTE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "tomate-verde-victoria",
+        "productName": "Tomate verde",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "COL VERDE 1 PZA",
+        "csvCategory": "Frutas y Verduras a Granel"
+      },
+      {
+        "productId": "zanahoria-de-colores-victoria",
+        "productName": "Zanahoria de colores",
+        "oldCategory": "frutas-y-verduras-a-granel",
+        "newCategory": "frutas-y-verduras-a-granel",
+        "csvProductName": "ZANAHORIA DE COLORES 250 G",
+        "csvCategory": "Frutas y Verduras a Granel"
+      }
+    ],
+    "unmapped": [
+      {
+        "productId": "rbano-sandia-angel",
+        "productName": "Rábano sandia",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-carlbad-chicas-arca",
+        "productName": "Lechuga carlbad chicas",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-espalda-de-trucha-mediana-arca",
+        "productName": "Lechuga espalda de trucha mediana",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-jericho-arca",
+        "productName": "Lechuga jericho",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-lengua-de-diablo-arca",
+        "productName": "Lechuga lengua de diablo",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-little-gem-arca",
+        "productName": "Lechuga little gem",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-lollo-rosa-arca",
+        "productName": "Lechuga lollo rosa",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-punta-de-flecha-arca",
+        "productName": "Lechuga punta de flecha",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-reina-de-julio-arca",
+        "productName": "Lechuga reina de julio",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-roble-roja-arca",
+        "productName": "Lechuga roble roja",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-romana-roja-chicas-arca",
+        "productName": "Lechuga romana roja  chicas",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "manzanilla-arca",
+        "productName": "Manzanilla",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "menta-arca",
+        "productName": "Menta",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "nepeta-arca",
+        "productName": "Nepeta",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "quelite-cenizo-arca",
+        "productName": "Quelite cenizo",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "quelite-colorado-arca",
+        "productName": "Quelite colorado",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "rbano-frances-arca",
+        "productName": "Rábano frances",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "rabano-rojo-arca",
+        "productName": "Rabano rojo",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "romerito-arca",
+        "productName": "Romerito",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "romero-aromtico-arca",
+        "productName": "Romero aromático",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "ruda-arca",
+        "productName": "Ruda",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "toronjil-arca",
+        "productName": "Toronjil",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "toronjil-rosa-arca",
+        "productName": "Toronjil rosa",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "brocolini-armando",
+        "productName": "Brocolini",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "haba-armando",
+        "productName": "Haba",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "haba-tierna-armando",
+        "productName": "Haba tierna",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "albahaca-genovesa-cirilo",
+        "productName": "Albahaca Genovesa",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "brocoli-cirilo",
+        "productName": "Brocoli",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "cedron-cirilo",
+        "productName": "Cedron",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "chirivia-cirilo",
+        "productName": "Chirivia",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "coliflor-cheddar-cirilo",
+        "productName": "Coliflor cheddar",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "coliflor-morada-cirilo",
+        "productName": "Coliflor morada",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "coliflor-romanesco-cirilo",
+        "productName": "Coliflor romanesco",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "espinaca-roja-cirilo",
+        "productName": "Espinaca roja",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "mejorana-cirilo",
+        "productName": "Mejorana",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "rabano-sandia-cirilo",
+        "productName": "Rabano sandia",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "tomillo-cirilo",
+        "productName": "Tomillo",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "toronjil-cirilo",
+        "productName": "Toronjil",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "arugula-astro-cutberto",
+        "productName": "Arugula astro",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "brocoli-cutberto",
+        "productName": "Brocoli",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "espinaca-baby-cutberto",
+        "productName": "Espinaca baby",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-orejona-cutberto",
+        "productName": "Lechuga orejona",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-roble-roja-cutberto",
+        "productName": "Lechuga roble roja",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-sangra-cutberto",
+        "productName": "Lechuga sangría",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "haba-tierna-enrique",
+        "productName": "Haba tierna",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "brocoli-luis",
+        "productName": "Brocoli",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "cilantro-luis",
+        "productName": "Cilantro",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "espinaca-luis",
+        "productName": "Espinaca",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "rbano-rojo-luis",
+        "productName": "Rábano rojo",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "albahaca-genovesa-erick",
+        "productName": "Albahaca Genovesa",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "berenjena-morada-erick",
+        "productName": "Berenjena morada",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "berenjena-rosa-bianca-erick",
+        "productName": "Berenjena rosa bianca",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "seta-gris-erick",
+        "productName": "Seta gris",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "seta-rosa-erick",
+        "productName": "Seta rosa",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "nopales-felipe",
+        "productName": "Nopales",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "argula-sylvetta-geovanni",
+        "productName": "Arúgula sylvetta",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "brocoli-geovanni",
+        "productName": "Brocoli",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "brocolini-geovanni",
+        "productName": "Brocolini",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "cilantro-confetti-geovanni",
+        "productName": "Cilantro confetti",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "coliflor-cheddar-geovanni",
+        "productName": "Coliflor cheddar",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "coliflor-morada-geovanni",
+        "productName": "Coliflor morada",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-roble-roja-geovanni",
+        "productName": "Lechuga roble roja",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-sangra-geovanni",
+        "productName": "Lechuga sangría",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "apionabo-gustavo",
+        "productName": "Apionabo",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "berenjena-listada-gandia-gustavo",
+        "productName": "Berenjena listada gandia",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "berenjena-morada-gustavo",
+        "productName": "Berenjena morada",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "berenjena-rosa-bianca-gustavo",
+        "productName": "Berenjena rosa bianca",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "echalot-gustavo",
+        "productName": "Echalot",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "fresa-gustavo",
+        "productName": "Fresa",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "sandia-amarilla-gustavo",
+        "productName": "Sandia amarilla",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "sandia-roja-gustavo",
+        "productName": "Sandia roja",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "puebla-hector",
+        "productName": "PUEBLA",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "apionabo-hermilo",
+        "productName": "Apionabo",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "chirivia-hermilo",
+        "productName": "Chirivia",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "mache-hermilo",
+        "productName": "Mache",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "pac-choy-hermilo",
+        "productName": "Pac choy",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "berenjena-listada-gandia-hugo",
+        "productName": "Berenjena listada gandia",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "brocoli-hugo",
+        "productName": "Brocoli",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "cedron-hugo",
+        "productName": "cedron",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "coliflor-romanesco-hugo",
+        "productName": "Coliflor romanesco",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "fresa-hugo",
+        "productName": "Fresa",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "haba-tierna-hugo",
+        "productName": "Haba tierna",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "hierbabuena-hugo",
+        "productName": "Hierbabuena",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "manzanilla-hugo",
+        "productName": "Manzanilla",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "okra-hugo",
+        "productName": "Okra",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "granada-felix",
+        "productName": "Granada",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "guayaba-felix",
+        "productName": "Guayaba",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "brocoli-jose",
+        "productName": "Brocoli",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "chayote-jose",
+        "productName": "Chayote",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "haba-jose",
+        "productName": "Haba",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "mache-jose",
+        "productName": "Mache",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "papa-morada-jose",
+        "productName": "Papa morada",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "papa-roja-jose",
+        "productName": "Papa roja",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "albahaca-genovesa-josefina",
+        "productName": "Albahaca Genovesa",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "apionabo-josefina",
+        "productName": "Apionabo",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "berenjena-morada-josefina",
+        "productName": "Berenjena morada",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "berenjena-rosa-bianca-josefina",
+        "productName": "Berenjena rosa bianca",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "brocoli-josefina",
+        "productName": "Brocoli",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "cedron-josefina",
+        "productName": "Cedron",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "coliflor-cheddar-josefina",
+        "productName": "Coliflor cheddar",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "coliflor-morada-josefina",
+        "productName": "Coliflor morada",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "haba-tierna-josefina",
+        "productName": "Haba tierna",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "hierbabuena-josefina",
+        "productName": "Hierbabuena",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "huauzontle-josefina",
+        "productName": "Huauzontle",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lavanda-josefina",
+        "productName": "Lavanda",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "mache-josefina",
+        "productName": "Mache",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "menta-josefina",
+        "productName": "Menta",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "nopal-josefina",
+        "productName": "Nopal",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "tomillo-josefina",
+        "productName": "Tomillo",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "chirivia-julio",
+        "productName": "Chirivia",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "puebla-kolijke",
+        "productName": "PUEBLA",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lavanda-lucio",
+        "productName": "Lavanda",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "toronjil-lucio",
+        "productName": "Toronjil",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "estado-de-mxico-orlando",
+        "productName": "ESTADO DE MÉXICO",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "hidalgo-pedro",
+        "productName": "HIDALGO",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "puebla-ricardo",
+        "productName": "PUEBLA",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "brocoli-victor",
+        "productName": "Brocoli",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "coliflor-morada-victor",
+        "productName": "Coliflor morada",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-mapple-victor",
+        "productName": "Lechuga mapple",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-orejona-victor",
+        "productName": "Lechuga orejona",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lechuga-sangra-victor",
+        "productName": "Lechuga sangría",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "pak-choi-victor",
+        "productName": "Pak choi",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "rabano-rojo-victor",
+        "productName": "Rabano rojo",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "haba-victoria",
+        "productName": "Haba",
+        "reason": "no_csv_match"
+      },
+      {
+        "productId": "lavanda-victoria",
+        "productName": "Lavanda",
+        "reason": "no_csv_match"
+      }
+    ]
+  },
+  "backupFile": "productos.ts.backup-categorization-fix.1753317280120"
+}

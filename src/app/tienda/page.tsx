@@ -11,7 +11,8 @@ import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import Link from 'next/link'
 import ProductQuickView from '@/components/ProductQuickView'
-import { productos, Product, cargarProductosDesdeCSV } from '@/data/productos'
+import { productos, Product } from '@/data/productos'
+import { categoriasSEO, getSEODataByName } from '@/data/categorias'
 
 // TIPOS DEFINIDOS
 
@@ -49,7 +50,7 @@ const SearchSuggestions = ({ searchTerm, onSelectProduct }: SearchSuggestionsPro
               >
                 <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
                   <img
-                    src={product.imagen}
+                    src={product.imagen || '/placeholder-product.jpg'}
                     alt={product.nombre}
                     className="w-full h-full object-cover"
                   />
@@ -126,26 +127,23 @@ const SearchSuggestions = ({ searchTerm, onSelectProduct }: SearchSuggestionsPro
   )
 }
 
+// CATEGORÍAS CON DATOS SEO EXACTOS DEL USUARIO - SIN INVENTAR NADA
 const categories = [
-  { id: 'all', name: 'Todas las categorías', emoji: '🌱', active: false },
-  { id: 'verduras', name: 'Verduras', emoji: '🥬', active: true },
-  { id: 'frutas', name: 'Frutas', emoji: '🍎', active: false },
-  { id: 'canastas', name: 'Canastas de Temporada', emoji: '🧺', active: false },
-  { id: 'aceites', name: 'Aceites Naturales', emoji: '🫒', active: false },
-  { id: 'granos', name: 'Granos y Cereales', emoji: '🌾', active: false },
-  { id: 'cafe', name: 'Café y Cacao', emoji: '☕', active: false },
-  { id: 'endulzantes', name: 'Endulzantes Naturales', emoji: '🍯', active: false },
-  { id: 'especias', name: 'Especias y Condimentos', emoji: '🌶️', active: false },
-  { id: 'proteinas', name: 'Proteínas Regenerativas', emoji: '🥩', active: false },
-  { id: 'lacteos', name: 'Lácteos Artesanales', emoji: '🧀', active: false },
-  { id: 'harinas', name: 'Harinas y Pan', emoji: '🥖', active: false },
-  { id: 'infusiones', name: 'Infusiones y Tés', emoji: '🍵', active: false },
-  { id: 'mermeladas', name: 'Mermeladas y Untables', emoji: '🍓', active: false },
-  { id: 'condimentos', name: 'Condimentos Artesanales', emoji: '🧂', active: false },
-  { id: 'tortillas', name: 'Tortillas y Maíz', emoji: '🌽', active: false },
-  { id: 'despensa', name: 'Despensa General', emoji: '📦', active: false },
-  { id: 'bebidas', name: 'Bebidas Naturales', emoji: '🥤', active: false },
-  { id: 'otros', name: 'Otros Productos', emoji: '🌿', active: false }
+  { id: 'all', name: 'Todas las categorías', emoji: '🌱', active: false, seoData: null },
+  { id: 'canastas-frutas-verduras', name: 'Canastas de frutas y verduras agroecológicas', emoji: '🧺', active: false, seoData: getSEODataByName('Canastas de frutas y verduras agroecológicas') },
+  { id: 'aceites-naturales', name: 'Aceites naturales', emoji: '🫒', active: false, seoData: getSEODataByName('Aceites naturales') },
+  { id: 'granos-cereales-integrales', name: 'Granos y cereales integrales', emoji: '🌾', active: false, seoData: getSEODataByName('Granos y cereales integrales') },
+  { id: 'proteinas-regenerativas', name: 'Proteínas Regenerativas', emoji: '🥩', active: false, seoData: getSEODataByName('Proteínas Regenerativas') },
+  { id: 'cafe-cacao-chocolate', name: 'Café, cacao y chocolate artesanal', emoji: '☕', active: false, seoData: getSEODataByName('Café, cacao y chocolate artesanal') },
+  { id: 'endulzantes-naturales', name: 'Endulzantes naturales', emoji: '🍯', active: false, seoData: getSEODataByName('Endulzantes naturales') },
+  { id: 'especias-condimentos', name: 'Especias y condimentos artesanales', emoji: '🌶️', active: false, seoData: getSEODataByName('Especias y condimentos artesanales') },
+  { id: 'frutas-verduras-granel', name: 'Frutas y Verduras a Granel', emoji: '🥕', active: false, seoData: getSEODataByName('Frutas y Verduras a Granel') },
+  { id: 'mermeladas-untables', name: 'Mermeladas y untables naturales', emoji: '🍓', active: false, seoData: getSEODataByName('Mermeladas y untables naturales') },
+  { id: 'huevo-lacteos', name: 'Huevo de libre pastoreo y lácteos artesanales', emoji: '🥚', active: false, seoData: getSEODataByName('Huevo de libre pastoreo y lácteos artesanales') },
+  { id: 'tes-infusiones', name: 'Tés e infusiones naturales', emoji: '🍵', active: false, seoData: getSEODataByName('Tés e infusiones naturales') },
+  { id: 'productos-arca-tierra', name: 'Productos Arca Tierra', emoji: '🌱', active: false, seoData: getSEODataByName('Productos Arca Tierra') },
+  { id: 'harinas-pastas', name: 'Harinas y pastas orgánicas', emoji: '🌾', active: false, seoData: getSEODataByName('Harinas y pastas orgánicas') },
+  { id: 'pan-galletas', name: 'Pan y galletas artesanales', emoji: '🍞', active: false, seoData: getSEODataByName('Pan y galletas artesanales') }
 ]
 
 const productores = [
@@ -296,7 +294,7 @@ export default function TiendaPage() {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState('verduras')
+  const [selectedCategory, setSelectedCategory] = useState('all')
   const [priceRange, setPriceRange] = useState([0, 200])
   const [precioMin, setPrecioMin] = useState('')
   const [precioMax, setPrecioMax] = useState('')
@@ -759,7 +757,7 @@ export default function TiendaPage() {
                   {/* Imagen del producto */}
                   <div className="relative aspect-square overflow-hidden">
                     <img
-                      src={product.imagen}
+                      src={product.imagen || '/placeholder-product.jpg'}
                       alt={product.nombre}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
