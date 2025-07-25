@@ -50,7 +50,7 @@ export default function ServicesInfoModal({ isOpen, onClose }: ServicesInfoModal
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="fixed inset-0 z-[2500] overflow-y-auto">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -66,26 +66,26 @@ export default function ServicesInfoModal({ isOpen, onClose }: ServicesInfoModal
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.3 }}
-            className="relative min-h-screen flex items-center justify-center p-4"
+            className="relative min-h-screen flex items-start justify-center p-4 py-8"
           >
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl mx-auto overflow-y-auto max-h-[90vh]">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl mx-auto overflow-hidden max-h-[85vh] flex flex-col">
               {/* Header */}
-              <div className="bg-gradient-to-r from-verde-dark to-verde-darker p-6 text-white relative">
+              <div className="bg-gradient-to-r from-verde-dark to-verde-darker p-6 text-white relative flex-shrink-0">
                 <button 
                   onClick={onClose}
-                  className="absolute top-6 right-6 text-white hover:text-neutral-200 transition-colors"
+                  className="absolute top-6 right-6 text-black hover:text-neutral-700 transition-colors z-10"
                   aria-label="Cerrar modal"
                 >
                   <X className="w-6 h-6" />
                 </button>
-                <h3 className="text-2xl font-bold">Servicios de Catering</h3>
-                <p className="text-white/90">
+                <h3 className="text-2xl font-bold pr-12">Servicios de Catering</h3>
+                <p className="text-white pr-12">
                   Descubre todos los servicios que Arca Tierra Catering ofrece para tu evento
                 </p>
               </div>
               
               {/* Content */}
-              <div className="p-6">
+              <div className="p-6 overflow-y-auto flex-1">
                 {/* Hero Banner */}
                 <div className="mb-8 p-6 rounded-xl bg-verde-light relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 -mr-10 -mt-10 rounded-full bg-verde-medium opacity-20"></div>
@@ -140,61 +140,33 @@ export default function ServicesInfoModal({ isOpen, onClose }: ServicesInfoModal
                     ))}
                   </div>
                 </div>
-                
-                {/* Footer CTA */}
-                <div className="text-center pt-6 border-t border-neutral-200">
-                  <p className="text-verde-dark mb-6">
-                    ¿Estás listo para crear una experiencia gastronómica memorable para tus invitados?
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button
-                      onClick={onClose}
-                      style={{
-                        backgroundColor: '#33503E', /* verde oscuro */
-                        color: 'white',
-                        padding: '0.75rem 2rem',
-                        borderRadius: '0.5rem',
-                        fontWeight: 500,
-                        transition: 'background-color 0.3s',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.5rem',
-                        border: 'none',
-                        cursor: 'pointer',
-                      }}
-                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2A4435'} /* verde más oscuro */
-                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#33503E'} /* verde oscuro */
-                    >
-                      <Check className="w-5 h-5" />
-                      Entendido, gracias
-                    </button>
-                    <button
-                      onClick={handleDownloadPDF}
-                      style={{
-                        backgroundColor: '#B15543', /* terracota principal */
-                        color: 'white',
-                        padding: '0.75rem 2rem',
-                        borderRadius: '0.5rem',
-                        fontWeight: 500,
-                        transition: 'background-color 0.3s',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.5rem',
-                        border: 'none',
-                        cursor: 'pointer',
-                      }}
-                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#975543'} /* terracota oscuro */
-                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#B15543'} /* terracota principal */
-                    >
-                      <Download className="w-5 h-5" />
-                      Descargar catálogo
-                    </button>
+                </div>
+
+                {/* CTA Section */}
+                <div className="mt-8 pt-6 border-t border-neutral-200">
+                  <div className="text-center">
+                    <p className="text-verde-dark mb-6">
+                      ¿Estás listo para crear una experiencia gastronómica memorable para tus invitados?
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <button
+                        onClick={onClose}
+                        className="bg-verde-principal text-white px-8 py-3 rounded-lg font-medium transition-colors hover:bg-verde-claro flex items-center justify-center gap-2"
+                      >
+                        <Check className="w-5 h-5" />
+                        Entendido, gracias
+                      </button>
+                      <button
+                        onClick={handleDownloadPDF}
+                        className="bg-terracota-principal text-white px-8 py-3 rounded-lg font-medium transition-colors hover:bg-terracota-oscuro flex items-center justify-center gap-2"
+                      >
+                        <Download className="w-5 h-5" />
+                        Descargar catálogo
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
           </motion.div>
         </div>
       )}
