@@ -37,8 +37,14 @@ export default function ServicesInfoModal({ isOpen, onClose }: ServicesInfoModal
   ];
   
   const handleDownloadPDF = () => {
-    // En un escenario real, aquí se implementaría la descarga del catálogo PDF
-    alert('La descarga del catálogo estará disponible próximamente. Por favor, contacta con nuestro equipo para más información.');
+    // Crear un enlace temporal para descargar el PDF
+    const link = document.createElement('a');
+    link.href = '/presentacion_catering_2025.pdf';
+    link.download = 'Catalogo_Catering_ArcaTierra_2025.pdf';
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
   
   return (
