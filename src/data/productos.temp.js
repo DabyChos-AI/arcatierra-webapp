@@ -1,0 +1,5048 @@
+/* eslint-disable */
+// Este archivo es generado por scripts/enrich_products.ts
+import { Producto } from '@/types';
+
+export const productos: Producto[] = [
+  {
+    id: "1885",
+    nombre: "CANASTA INDIVIDUAL SUSCRIPCIÓN",
+    precio: 290,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/4975392/pexels-photo-4975392.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Canastas de frutas y verduras agroecológicas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Esta canasta de 3.5 kg que incluye una selección de verduras cultivadas por la Red  Arca Tierra. La selección varía con la temporada, pero siempre encontrarás mezcla de ensalada cultivada en Xochimilco, jitomate y calabaza de Estado de México o Hidalgo, entre otros. También podrás encontrar una variedad de fruta proveniente de Puebla.¡Haz tu pedido ahora o suscríbete para recibir tu canasta regularmente!",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Canasta Fruta y Verdura Agroecológicas 3.5 kg | Arca Tierra",
+      metaDescription: "La canasta individual tiene 3.5 kilos de vegetales y algunas frutas de temporada producidos por la Red arca tierra. Suscríbete hoy",
+      keywords: []
+    },
+    variantes: [
+      {
+        nombre: "CANASTA INDIVIDUAL COMPRA UNICA",
+        precio: 305
+      }
+    ],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "1886",
+    nombre: "CANASTA MEDIA SUSCRIPCION",
+    precio: 350,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/4975349/pexels-photo-4975349.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Canastas de frutas y verduras agroecológicas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Esta canasta de 5 kg incluye una selección de verduras cultivadas por la Red  Arca Tierra. La selección varía con la temporada, pero siempre encontrarás mezcla de ensalada cultivada en Xochimilco, jitomate y calabaza de Estado de México o Hidalgo, entre otros. También podrás encontrar una variedad de fruta proveniente de Puebla.\nEsta canasta es ideal para 2 a 3 personas.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Canasta Fruta y Verdura Agroecológicas 5 kg | Arca Tierra",
+      metaDescription: "Canasta tamaño Media (5 kg) con selección de vegetales y frutas de temporada producidos por la Red arca tierra. Suscríbete hoy.",
+      keywords: []
+    },
+    variantes: [
+      {
+        nombre: "CANASTA MEDIA COMPRA UNICA",
+        precio: 367
+      }
+    ],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "1887",
+    nombre: "CANASTA COMPLETA SUSCRIPCION",
+    precio: 510,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/175414/pexels-photo-175414.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Canastas de frutas y verduras agroecológicas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Esta canasta con 7.5 kg incluye una selección de  hojas verdes, raíces, hortalizas y verduras cultivadas por la Red Arca Tierra. La selección varía con la temporada, pero siempre encontrarás mezcla de ensalada cultivada en Xochimilco, jitomate y calabaza de Estado de México o Hidalgo, entre otros. También podrás encontrar una o dos variedades de fruta proveniente de Puebla.\nIdeal para 2 a 3 personas.¡Haz tu pedido ahora o suscríbete para recibir tu canasta regularmente!",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [
+      {
+        nombre: "CANASTA COMPLETA COMPRA UNICA",
+        precio: 535
+      }
+    ],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "1888",
+    nombre: "CANASTA FAMILIAR SUSCRIPCION",
+    precio: 670,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/16999667/pexels-photo-16999667.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Canastas de frutas y verduras agroecológicas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "En esta canasta de 10 kg hay una selección de verduras cultivadas por la Red  Arca Tierra. La selección varía con la temporada, pero siempre encontrarás mezcla de ensalada cultivada en Xochimilco, jitomate y calabaza de Estado de México o Hidalgo, entre otros. También podrás encontrar variedad de fruta proveniente de Puebla.\nEste tamaño es ideal para 4 a 6 personas. \n¡Haz tu pedido ahora o suscríbete para recibir tu canasta regularmente!",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [
+      {
+        nombre: "CANASTA FAMILIAR COMPRA UNICA",
+        precio: 703
+      }
+    ],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "1889",
+    nombre: "CANASTA BÁSICA INDIVIDUAL SUSCRIPCION",
+    precio: 447.45,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/7994388/pexels-photo-7994388.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Canastas de frutas y verduras agroecológicas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Perfecta para una o dos personas,  ideal para quienes buscan cocinar más en casa con alimentos frescos y saludables.\nEsta es una selección de 3.5 kg de frutas y verduras frescas de temporada combinada con alimentos esenciales que te conectan con el campo mexicano.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [
+      {
+        nombre: "CANASTA BÁSICA INDIVIDUAL COMPRA UNICA",
+        precio: 471
+      }
+    ],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "1890",
+    nombre: "CANASTA BASICA MEDIA SUSCRIPCION",
+    precio: 971.85,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/7129160/pexels-photo-7129160.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Canastas de frutas y verduras agroecológicas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Suscríbete a esta canasta y recibirás:\n\n5 k de verdura y fruta de temporada\n500 g de queso Oaxaca de la cuenca lechera de Xochimilco\n24 tortillas de maíz nativo\n18 huevos frescos de gallinas de libre pastoreo en las chinampas\n500 g milanesas de pollo de origen regenerativo\n500 g bistec de res de origen regenerativo\nEs el combo perfecto para una alimentación rica y variada, directamente del campo a tu mesa.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [
+      {
+        nombre: "CANASTA BASICA MEDIA COMPRA UNICA",
+        precio: 1023
+      }
+    ],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "1891",
+    nombre: "CANASTA BASICA FAMILIAR SUSCRIPCION",
+    precio: 1413.6,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/16999667/pexels-photo-16999667.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Canastas de frutas y verduras agroecológicas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "La Canasta Básica Familiar es nuestro combo más completo, con aproximadamente 13 kg de una selección de verduras frescas y frutas de temporada, así como productos básicos de despensa para asegurar que todos en casa disfruten de alimentos nutritivos y de origen local.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [
+      {
+        nombre: "CANASTA BASICA FAMILIAR COMPRA UNICA",
+        precio: 1488
+      }
+    ],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-ACE-005",
+    nombre: "ACEITE DE AJONJOLI REFINADO",
+    precio: 159,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/8439268/pexels-photo-8439268.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Aceites naturales",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Descubre la versatilidad del aceite de ajonjolí 100% puro, un aceite vegetal comestible de sabor, color y olor neutral, ideal para cocinar. Gracias a su alto punto de humo, es perfecto para freír, asegurando que tus platillos queden crujientes y deliciosos. Este aceite también es una excelente base para emulsiones, como dips, aderezos y mayonesas, y se utiliza en aplicaciones farmacéuticas, nutracéuticas y cosméticas. ¡Incorpora el aceite de ajonjolí puro en tus recetas y disfruta de su calidad y versatilidad hoy mismo!",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Aceite refinado de ajonjolí de origen orgánico | Arca Tierra",
+      metaDescription: "Prueba este delicioso aceite de ajonjolí 100% puro y producido de forma orgánica en Guanajuato. Es ideal para freír y elaborar dips, aderezos y mayonesas.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-ACE-004",
+    nombre: "ACEITE DE AJONJOLI TOSTADO",
+    precio: 159,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/6605652/pexels-photo-6605652.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Aceites naturales",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "100% Aceite virgen de ajonjolí tostado: color café oscuro con un fuerte aroma y sabor a semilla de ajonjolí tostada. Ideal para cocinar a fuego medio-bajo (saltear) y como condimento en platillos terminados (aderezar).",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Aceite artesanal orgánico de ajonjolí tostado | Arca Tierra",
+      metaDescription: "Prueba este delicioso aceite 100% de puro ajonjolí tostado producido de forma orgánica en Guanajuato. Ideal para freír y elaborar dips, aderezos y mayonesas.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "MAZ-TOR-BLA-12P",
+    nombre: "ACEITE DE AGUACATE",
+    precio: 279,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/5558237/pexels-photo-5558237.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Aceites naturales",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Descubre el exquisito aceite de aguacate extra virgen, prensado en frío, con un aroma suave y delicado. De color verde y elaborado con aguacates maduros de huertos mexicanos.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Aceite de Aguacate (500 ml) I Arca Tierra",
+      metaDescription: "Prueba este delicioso aceite de aguacate extra virgen con aroma fino y delicado. Prensado en frio, color verde, hecho con fruta madura de huertos mexicanos.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-ACE-002",
+    nombre: "ACEITE DE COCO 450 ML",
+    precio: 107,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/33783/coconut-oil-coconut-sri-lanka.jpg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Aceites naturales",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Aceite de coco extra virgen, 100% natural, comestible, prensado en frío, no hidrogenado, sin olor ni sabor. Este producto se hace líquido a más de 25º C.\n\nIdeal para repostería y alternativa de uso de otros aceite vegetales para cocinar.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Aceite de Coco Natural y Extra Virgen 425 g I Arca Tierra",
+      metaDescription: "Aceite de coco extra virgen, 100% natural y sin olor. Prensado en frío, no hidrogenado. Ideal para cocinar, hornear o sustituir otros aceites.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-ACE-003",
+    nombre: "ACEITE DE OLIVA 750 ML",
+    precio: 250,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/1414690/pexels-photo-1414690.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Aceites naturales",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Prueba este delicioso aceite de oliva extra virgen. Está elaborado de forma agroecológica, y proviene de la cosecha fresca y más reciente de los productores.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Aceite de oliva extra virgen y agroecológico  | Arca Tierra",
+      metaDescription: "El aceite de oliva extra virgen de primera extracción en frio via procesos mecánicos sin intervención de calor o químicos. \nEste es un aceite fresco – de la cosecha mas reciente – provenientes directamente de los productores.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-001",
+    nombre: "AJONJOLI 100 G",
+    precio: 18,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/6605333/pexels-photo-6605333.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Granos y cereales integrales",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Este ajonjolí es cultivado por más de 600 productores de Comunidades Campesinas en Camino. Desde 1995, impulsan un modelo justo que respeta la tierra y los derechos campesinos. Úsalo para pan casero, granola, aderezos, hummus o salsas.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Ajonjolí Agroecológico 100 g I Arca Tierra",
+      metaDescription: "Este ajonjolí se cultiva de forma agroecológica por comunidades campesinas en el Istmo de Tehuantepec, Oaxaca.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-002",
+    nombre: "AMARANTO 250 G",
+    precio: 50,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/8951498/pexels-photo-8951498.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Granos y cereales integrales",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Descubre el poder nutritivo de las semillas de amaranto, cultivadas de forma agroecológica en el pueblo de Tuyehualco, una de las joyas del oriente de la Ciudad de México, en la alcaldía Xochimilco. Estas semillas están disponibles para compra a granel y son perfectas para incorporar en tu dieta diaria.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Semillas de amaranto de origen agroecológico | Arca Tierra",
+      metaDescription: "Descubre las nutritivas semillas de amaranto agroecológicas de Tuyehualco, las tenemos disponibles a granel. Una importante fuente de fibra para tu cuerpo.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-074",
+    nombre: "AMARANTO REVENTADO",
+    precio: 50,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/8951498/pexels-photo-8951498.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Granos y cereales integrales",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Descubre el poder nutritivo del amaranto reventado, cultivado de forma agroecológica en el pueblo de Tuyehualco, una de las joyas del oriente de la Ciudad de México, en la alcaldía Xochimilco. Estas semillas están disponibles para compra a granel y son perfectas para incorporar en tu dieta diaria.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Amaranto reventado de origen agroecológico | Arca Tierra",
+      metaDescription: "Disfruta este rico amaranto reventado de Tuyehualco, disponible a granel. Es una importante fuente de fibra que puedes disfrutar diariamente en tus alimentos.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-001",
+    nombre: "ARRACHERA  500 G",
+    precio: 260,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1-lbcYFvkSJI1yyDr02RJfaErJ1Fox6z_"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Arrachera de Res de Origen Regenerativo 500 g | Arca Tierra",
+      metaDescription: "Ideal para asar. Esta arrachera de origen regenerativo proviene del rancho de Santa Pradera, ubicados en Capilla de Guadalupe, Jalisco.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-003",
+    nombre: "ARROZ BLANCO 500 G",
+    precio: 35,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/1309592/pexels-photo-1309592.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Granos y cereales integrales",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "El arroz agroecológico de Morelos cuenta con denominación de origen desde el año 2012 y es uno de mayor calidad a nivel mundial. Producido por el Consorcio Arrocero Morelense, es ideal para tus guisos y postres.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Arroz Blanco de Morelos 500 g I Arca Tierra",
+      metaDescription: "Arroz agroecológico proveniente de Morelos. Uno de los arroces más nutritivos y ricos de México. Compra a granel a partir de 500gr.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-004",
+    nombre: "ARROZ INTEGRAL 500 G",
+    precio: 35,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/247923/pexels-photo-247923.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Granos y cereales integrales",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "El arroz agroecológico de Morelos cuenta con denominación de origen desde el año 2012 y es uno de mayor calidad a nivel mundial. Contiene más fibra, vitamina B y minerales (como magnesio, hierro, zinc) que el arroz blanco. Producido por el Consorcio Arrocero Morelense, es ideal para tus guisos y postres.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Arroz Integral de Morelos 500 g I Arca Tierra",
+      metaDescription: "Arroz agroecológico proveniente de Morelos. Uno de los arroces más nutritivos y ricos de México. Compra a granel a partir de 500gr.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-005",
+    nombre: "AVENA 500 G",
+    precio: 26,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=10qTmD35MmGCjq5hMnLISq_5s7UvYpRcS"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Granos y cereales integrales",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Adquiere hojuelas de avena orgánica cultivadas mediante prácticas agroecológicas en el municipio de Mocorito, Sinaloa. Disponible para compra al granel a partir de 500 gramos.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Avena Orgánica en Hojuelas al Granel 500gr | Arca Tierra",
+      metaDescription: "Avena orgánica en hojuelas, cultivada con métodos agroecológicos. Proveniente del municipio de Mocorito en Sinaloa. Cómprala al granel a partir de 500grs.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-079",
+    nombre: "AZUCAR ORGANICA ZULKA 500 G",
+    precio: 24.7,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1HdYIfk9Bf_kztq9VE7fabJvfYHcpXZtY"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Endulzantes naturales",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Prueba esta opción de azúcar de pura de caña certificado como orgánico por USDA y verificado por el Proyecto Non-GMO, que se cultiva y cosecha mediante métodos agrícolas respetuosos con el medio ambiente. Este método de cultivo orgánico garantiza una mayor conservación de los nutrientes, ya que está libre de elementos artificiales o químicos durante todo el proceso.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Azúcar pura de caña y certificación orgánica  | Arca Tierra",
+      metaDescription: "Compra esta azúcar pura de caña producida en Sinaloa con certificación orgánica. Libre de elementos artificiales, ideal para endulzar tus bebidas y alimentos.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-002",
+    nombre: "BISTEC DE RES 500 G",
+    precio: 171,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1Rk9Osdr42imRI8IUzYZqGQBlUYaKYTCL"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Disfruta el bistec de carne de res de Rancho 555, expertos en ganadería regenerativa con más de 15 años regenerando suelos y ecosistemas en Veracruz. \n\nIdeal para asar o cocinar en guisados sencillos y deliciosos.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Bistec de Res de Origen Regenerativo 500 g | Arca Tierra",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-006",
+    nombre: "CACAHUATE 100 G",
+    precio: 19,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/4198137/pexels-photo-4198137.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GRANOS, SEMILLAS Y CEREALES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Abastece tu despensa con cacahuetes naturales agroecológicos y disfruta de su auténtico sabor, crujiente y saludable. Adquiérelos al granel desde 100 gramos.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Cacahuate Natural Orgánico al Granel 100 g | Arca Tierra",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-007",
+    nombre: "CACAO EN POLVO 250 G",
+    precio: 140,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/5952136/pexels-photo-5952136.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "CAFE, CACAO Y CHOCOLATE",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Descubre el cacao en polvo orgánico 100% mexicano. Sin azúcares añadidos, elaborado únicamente con cacao puro y orgánico de Comacalco, Tabasco. Presentación de 250 gramos.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Cacao Orgánico en Polvo Sin Azúcar 250 g | Arca Tierra",
+      metaDescription: "Cacao en polvo orgánico 100% mexicano. Libre de azúcares, su único ingrediente es cacao puro y orgánico. Proveniente de Comacalco, Tabasco. Contiene 250 gramos.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-008",
+    nombre: "CACAO EN POLVO 500 G",
+    precio: 205,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/5410883/pexels-photo-5410883.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "CAFE, CACAO Y CHOCOLATE",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Descubre el cacao en polvo orgánico 100% mexicano. Sin azúcares añadidos, elaborado únicamente con cacao puro y orgánico de Comacalco, Tabasco. Presentación de 500 gramos.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Cacao Orgánico en Polvo Sin Azúcar 500 g | Arca Tierra",
+      metaDescription: "Cacao en polvo orgánico 100% mexicano. Libre de azúcares, su único ingrediente es cacao puro y orgánico. Proveniente de Comacalco, Tabasco. Contiene 500 gramos.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-009",
+    nombre: "CAFE DE GRANO 500 G",
+    precio: 130,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/7846353/pexels-photo-7846353.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "CAFE, CACAO Y CHOCOLATE",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Descubre nuestro café orgánico tostado de primera calidad, con un tostado perfecto que realza su sabor. Presentación en grano para conservar su frescura y moler en casa. Está disponible desde 500 g.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Café Serenata Tostado Orgánico en Grano 500gr | Arca Tierra",
+      metaDescription: "Café orgánico tostado de la mejor calidad: con tostado óptimo que realza su sabor. Presentación en grano, para moler en casa. Disponible a partir de 500 g.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-011",
+    nombre: "CAFE MOLIDO 500 G",
+    precio: 130,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/1460872/pexels-photo-1460872.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "CAFE, CACAO Y CHOCOLATE",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Descubre nuestro café orgánico tostado de primera calidad, con un tostado perfecto que realza su sabor. Molido para preparar en casa, disfrutando lo mejor.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Café Serenata Tostado Orgánico Molido 500 g | Arca Tierra",
+      metaDescription: "Café orgánico tostado de la mejor calidad: con tostado óptimo que realza su sabor. Ya viene molido para su fácil preparación. Disponible a partir de 500 g.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-085",
+    nombre: "CALDO DE HUESO 9 G",
+    precio: 127,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1bDBw1oW4yPXzPSEOqC-Fj64jx5ds7WH8"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Caldo de huesos listo para consumir.Esta rica infusión mineral está hecha con huesos de carne de animales sanos que se cuecen lentamente a baja temperartura por más de 18 horas y pasa por proceso de liofilización conservando sus propiedades. \n\nPaleo · Keto · SIN Gluten\nSin Conservadores, sin Saborizantes , sin Hormonas\n\nMejora la salud intestinal y la digestión.\nAyuda en la reparación y el crecimiento muscular. \n\nPara consumir, sólo vierte el contenido del sobre en una taza (240ml) de agua bien caliente, mezcla con una cuchara y esta listo.\nSe puede agregar limón o condimentar al gusto.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Caldo de huesos natural liofilizado en polvo | Arca Tierra",
+      metaDescription: "Disfruta de esta rica infusión mineral hecha naturalmente con huesos y carne de animales sanos. Un forma deliciosa de mejorar tu salud intestinal y digestiva.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-021",
+    nombre: "CALDO DE HUESO DE RES 700 ML",
+    precio: 120,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1ImPl8-q7b5bgaEHZhQY9ZYKW_4-s9rCA"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Delicioso caldo de huesos elaborado con carne  y huesos de res de Rancho Risueño, sazonado con cebolla, ajo, pimienta negra, apio, zanahoria, vinagre de manzana y flor de sal de Colima. Producto congelado. El caldo de huesos aporta minerales, aminoácidos y colágeno. Contribuyen a la salud de articulaciones, piel, cabello, uñas y sistema digestivo.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Caldo de Huesos de Res Risueño 500 ml l Arca Tierra",
+      metaDescription: "Disfruta de un caldo de huesos delicioso y saludable producido en Veracruz con huesos de carne de res de origen megadiverso.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-012",
+    nombre: "CANELA 50 G",
+    precio: 60,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/13594220/pexels-photo-13594220.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ESPECIAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Esta canela entera proviene del Consorcio Morelense Santa Anita, una comunidad comprometida con prácticas agroecológicas que cuidan la tierra y tu salud. Cultivada sin agroquímicos, secada al sol y seleccionada a mano, su aroma es cálido, intenso y natural.\nPerfecta para infusiones, postres, guisos o para perfumar tu cocina con lo que el campo sabe dar.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [
+      {
+        nombre: "CANELOS",
+        precio: 0
+      }
+    ],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-013",
+    nombre: "CARDAMOMO 20 G",
+    precio: 77,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/10398717/pexels-photo-10398717.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ESPECIAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Este cardamomo proviene de Chiapas, donde se cultiva bajo prácticas agroecológicas que respetan la tierra y la biodiversidad local. Su producción fomenta el comercio justo, asegurando mejores condiciones para las familias productoras.\n\nCon un aroma intenso y especiado, es ideal para infusiones, currys, repostería y mezclas de chai casero.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-003",
+    nombre: "CARNE DE PAVO PARA HAMBURGUESA 500 G",
+    precio: 220,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1aeiBzGbzJK4mEMqzfrPpDyRSFQNO4O_C"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Prueba las hamburguesas de pavo regenerativo, criado de manera sostenible por Granja Paraíso Gourmet en Amanalco. Disfruta su sabor único y saludable.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-004",
+    nombre: "CARNE DE RES DESHEBRADA 500 G",
+    precio: 171,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=19cwOpkbuXTXpPHD3eKyk95cc8aWdciT3"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Disfruta esta deshebrada de res de Rancho 555, expertos en ganadería regenerativa con más de 15 años regenerando suelos y ecosistemas en Veracruz. ¡Elige sustentable!",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-005",
+    nombre: "CARNE DE RES MOLIDA 500 G",
+    precio: 171,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1ZdQMj6ZAENBZ8VZG9kgb4BsbsACFpKqH"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Proteína producida por Rancho Triple Cinco, empresa mexicana con más de 15 años de experiencia en ganadería regenerativa, regenerando suelo y ecosistemas en Veracruz.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-006",
+    nombre: "CARNE DE RES PARA HAMBURGUESA DE ORIGEN REGENERATIVO 400 G",
+    precio: 198,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1x5gIRRMTSz_AcWt6xmYYK12hJ_kncUoj"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "La Canasta Básica Familiar es nuestro combo más completo, con aproximadamente 13 kg de una selección de verduras frescas y frutas de temporada, así como productos básicos de despensa para asegurar que todos en casa disfruten de alimentos nutritivos y de origen local.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-022",
+    nombre: "CARNITAS EN MANTECA MADRE CON TORTILLAS",
+    precio: 445,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=11Z9Jm_8MPvcpPtvUV_XyzbTbXRj-LlBV"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Prueba estas carnitas preparadas en manteca madre, listas para disfrutarse. Criados en el corazón del bosque seco tropical veracruzano, los cerdos de Rancho Risueño disfrutan de una vida libre, pastoreando entre más de 60 plantas nativas que impregnan la carne con aromas únicos y profundos sabores silvestres. Incluye una docena de tortillas de maíz azul.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-014",
+    nombre: "CEBOLLINO DESHIDRATADO 20 G",
+    precio: 76,
+    unidad: "",
+    imagenes: ["https://images.pexels.com/photos/4113943/pexels-photo-4113943.jpeg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ESPECIAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Cebollino deshidratado, producido agroecológicamente en Veracruz.\n\nEs un gran sazonador de alimentos, con versatilidad en sus aplicaciones, que aporta un sabor ligero a cebolla.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-015",
+    nombre: "CHIA 100 G",
+    precio: 30,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1fMgH9n24zww27ZaJSzCjFCusqVB40UJz"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GRANOS, SEMILLAS Y CEREALES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "Chía orgánica provienen de las faldas del Iztaccíhuatl, en Ozumba. Aprovecha para llenar tu despensa de forma saludable. Compra al granel a partir de 100gr.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Semillas Chía Natural Orgánica Granel 100gr | Arca Tierra",
+      metaDescription: "Adquiere chía orgánica de las laderas del Iztaccíhuatl, en Ozumba. Aprovecha para abastecer tu despensa con salud. Disponible al granel desde 100 gramos.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-020",
+    nombre: "CLAVO DE OLOR 50 G",
+    precio: 28,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1VnOL5BIDDXz71mrzhkXkf2llQexMEn-q"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ESPECIAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-081",
+    nombre: "COMINO",
+    precio: 78,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1QMcETDhx8FOBX0HtHyzXixOizaNe3gdQ"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ESPECIAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-007",
+    nombre: "COSTILLA DE RES 1.5 KG",
+    precio: 315,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1o_gVI5i4uYBUoyafVIyHG1T7mzbKaxe7"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-022",
+    nombre: "CURCUMA 55 G",
+    precio: 80,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1lcY8PMvOHK8eXVCXPwK6TsO1nUt4cEqx"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ESPECIAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-023",
+    nombre: "CURRY 55 G",
+    precio: 85,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1Ny3MjT42glSoBHelH8FfaiSFCOn_oenS"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ESPECIAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-ABA-002",
+    nombre: "DESINFECTANTE FRUTAS Y VERDURAS 15 ML",
+    precio: 18,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1jQFEGYbfSc8y8EMfgG4BNc1LaL2ouLlt"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ABARROTES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-ABA-003",
+    nombre: "DESINFECTANTE FRUTAS Y VERDURAS 240 ML",
+    precio: 95,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=13RZ9ZwLM78oOv_QLdO33L5PPl0iOk5OU"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ABARROTES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-021",
+    nombre: "DULCE DE LECHE DE OVEJA 330 G",
+    precio: 155,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1CpEAazPzh9SO7z73NwqOv9S1we1YXWwk"],
+    productor: "",
+    ubicacion: "",
+    categoria: "MERMELADAS Y UNTABLES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-024",
+    nombre: "FETTUCCINI INTEGRAL ORGANICO 380 G",
+    precio: 88,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1xRSc_txpyflJieasg4gY_F-9oGVEFPYG"],
+    productor: "",
+    ubicacion: "",
+    categoria: "PASTAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [
+      {
+        nombre: "FUSSILI",
+        precio: 0
+      }
+    ],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-008",
+    nombre: "FILETE DE RES 1 KG",
+    precio: 280,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1bNc3fSinjVmbYakotC4pAf2OASYV14mB"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-036",
+    nombre: "FLOR DE JAMAICA 500 G",
+    precio: 45,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1ETm5_n3Be5dVIBQrNLLCNin1K3x21xSd"],
+    productor: "",
+    ubicacion: "",
+    categoria: "INFUSIONES Y TE",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-025",
+    nombre: "FRIJOL NEGRO 500 G",
+    precio: 39,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1U_ZU1p7eyMiEacHJty4WZ91i08yO0YlY"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GRANOS, SEMILLAS Y CEREALES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-026",
+    nombre: "FRIJOL PINTO SALTILLO 500 G",
+    precio: 40,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1xAcycNlouRqBjTe659jYzd5_2hn3tOPf"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GRANOS, SEMILLAS Y CEREALES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-084",
+    nombre: "GALLETA DE MAIZ Y ANIS 50G",
+    precio: 40,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1ojeI2si9UzPd2wiNlyfIPExrSQus-eTW"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GALLETAS, HARINAS Y PAN",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-075",
+    nombre: "GALLETAS DE MAIZ  Y JENGIBRE 50 G",
+    precio: 40,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=118a4NElHrVaQLgRyYdbIcblKviEB_MQ7"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GALLETAS, HARINAS Y PAN",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-076",
+    nombre: "GALLETAS DE MAIZ  Y NARANJA 50 G",
+    precio: 40,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1l4bPm0DkJ4hGlR44LNuq_Uhhsgf_FhG3"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GALLETAS, HARINAS Y PAN",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-078",
+    nombre: "GALLETAS DE MAIZ , TASCALATE, JENGIBRE Y ANIS 200 G",
+    precio: 160,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1_CGj80Espw_VpQvDYDdsUV1yzCKnOIEf"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GALLETAS, HARINAS Y PAN",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-077",
+    nombre: "GALLETAS DE MAIZ, CACAO Y PATLAXTLE 100 G",
+    precio: 79,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1SVpjoKodBodKnJ7qcdUU_OIsgraEsFeB"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GALLETAS, HARINAS Y PAN",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-028",
+    nombre: "GARBANZO 500 G",
+    precio: 38,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1UlKtZ8xWx48G2Bd5ysR1SVcyMOn1CX9W"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GRANOS, SEMILLAS Y CEREALES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-029",
+    nombre: "GRANOLA ARTESANAL 900 G",
+    precio: 166.5,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1nc-ewSGwKvLE2-6do9NHJIPCsUHBlAmm"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GRANOS, SEMILLAS Y CEREALES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-030",
+    nombre: "HARINA DE TRIGO INTEGRAL 500 G",
+    precio: 44,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1sWFM7FSUoiTjFDRQhjV5hRKHtzVQi8eb"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GALLETAS, HARINAS Y PAN",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-031",
+    nombre: "HARINA INTEGRAL DE SORGO 500 G",
+    precio: 27,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1RLLJwNEcZz84A8jqD2A20BkdH3b7uehF"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GALLETAS, HARINAS Y PAN",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-032",
+    nombre: "HARINA PARA HOT CAKES CON TRIGO Y MACADAMIA 500 G",
+    precio: 110,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1xnBktVuYy97Cb4SMrS-fweeYxN131N61"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GALLETAS, HARINAS Y PAN",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-ABA-007",
+    nombre: "HOGAZA CAMPESINA",
+    precio: 130,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1pR4BPRDlQNFIFXxYbCfXfxuK-A4qipsy"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GALLETAS, HARINAS Y PAN",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-083",
+    nombre: "HOJA DE LAUREL 60 G",
+    precio: 78,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1ZVyb6-ZqXBhqYW8oK_zejDmG_nLUYXT8"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ESPECIAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-034",
+    nombre: "HOJUELAS DE CHILE 50 G",
+    precio: 91,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1tZ3f5idQpwFmnr2Z5bQwNX83bOzTvDya"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ESPECIAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-009",
+    nombre: "HUEVO ORGANICO DE LIBRE PASTOREO",
+    precio: 7.6,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1sL0AgFnZK4kHF88tdTDx6zeM4M-U1_Gx"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-035",
+    nombre: "JALEA DE ROSAS 255 G",
+    precio: 104,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1Th_XKMGcx3SWzRe07ZQfi5iDWrh9ihGV"],
+    productor: "",
+    ubicacion: "",
+    categoria: "MERMELADAS Y UNTABLES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-023",
+    nombre: "JAMÓN DE PECHUGA DE PAVO 250 G",
+    precio: 175,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1oCig0m3YEOO6OgPR10DYznFKeIK9snDl"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-037",
+    nombre: "JENGIBRE 50 G",
+    precio: 46,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1FeD5ZF3fx9V_XK1Axr6LtcgYvLJKr7U8"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ESPECIAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-LAC-005",
+    nombre: "LECHE ENTERA DE VACA 1 L",
+    precio: 65,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1_unk2ch6TfmZPqW2RhRiBZgBHZDmF5DY"],
+    productor: "",
+    ubicacion: "",
+    categoria: "HUEVO Y LÁCTEOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Leche de Nuez Orgánica y Miel de Maguey 500 ml I Arca Tierra",
+      metaDescription: "Leche de nuez, elaborada con nuez orgánica y endulzada con miel de maguey. De cultivo orgánico y procesada en frío.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-LAC-006",
+    nombre: "LECHE SEMIDESCREMADA DE VACA 1 L",
+    precio: 61,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1drRtC5tt5Xo9YqXMaJb_NLcBmdH9W-Vv"],
+    productor: "",
+    ubicacion: "",
+    categoria: "HUEVO Y LÁCTEOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Leche semidescremada de vaca presentacion 1L | Arca Tierra",
+      metaDescription: "Leche de vacas de libre pastoreo, con mayor cantidad de omega 3 y vitamina E, y mejor calidad de nutrientes en comparación con la leche convencional.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-038",
+    nombre: "LENTEJA 500 G",
+    precio: 39,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1CARYa1PjCW3Rkv9CQnoQx4GGhU_d-WfY"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GRANOS, SEMILLAS Y CEREALES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-018",
+    nombre: "LOMO DE CERDO 1 KG",
+    precio: 550,
+    unidad: "",
+    imagenes: [""],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-039",
+    nombre: "MACADAMIA 100 G",
+    precio: 78,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1ZsN5CXu92QRlul6gtz3m5B-sbiFiqy6i"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GRANOS, SEMILLAS Y CEREALES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-019",
+    nombre: "MANTECA DE CERDO",
+    precio: 195,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1p9ga1MqVvYl23FXC6sQoUIx8f-DcTa9O"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ACEITES Y GRASAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-041",
+    nombre: "MANTEQUILLA DE CACAHUATE CACAO 272 ML",
+    precio: 135,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1-eRr33z4BC0s_ixNCoNciJsQf6TOtCoE"],
+    productor: "",
+    ubicacion: "",
+    categoria: "MERMELADAS Y UNTABLES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-042",
+    nombre: "MANTEQUILLA DE CACAHUATE CRUNCHY 272 ML",
+    precio: 121,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=101OonMnoANUC4gq29Z9RBNNoPPs033Y6"],
+    productor: "",
+    ubicacion: "",
+    categoria: "MERMELADAS Y UNTABLES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-043",
+    nombre: "MELISA PARA TE 50 G",
+    precio: 142,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1Uav6x6tNAMFqVS7pLJGQgTYdqS4gW9Bq"],
+    productor: "",
+    ubicacion: "",
+    categoria: "INFUSIONES Y TE",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-044",
+    nombre: "MENTAS PARA TE 50 G",
+    precio: 142,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=10h2CSfVa_hRqR9oc78yH_Uhk_ArgbIbd"],
+    productor: "",
+    ubicacion: "",
+    categoria: "INFUSIONES Y TE",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-045",
+    nombre: "MERMELADA DE HIGO 300 G",
+    precio: 104,
+    unidad: "",
+    imagenes: [""],
+    productor: "",
+    ubicacion: "",
+    categoria: "MERMELADAS Y UNTABLES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-046",
+    nombre: "MERMELADA DE JAMAICA 300 G",
+    precio: 104,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1bsjP6S2kGOunBU5iz3L_6C6ONhC7HCzs"],
+    productor: "",
+    ubicacion: "",
+    categoria: "MERMELADAS Y UNTABLES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-047",
+    nombre: "MERMELADA DE NARANJA 300 G",
+    precio: 104,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1O9YBZM-ZQoHk7fgUFmIz-TU3IrekfPjB"],
+    productor: "",
+    ubicacion: "",
+    categoria: "MERMELADAS Y UNTABLES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-048",
+    nombre: "MERMELADA GUAYABAMIEL 300 G",
+    precio: 120,
+    unidad: "",
+    imagenes: [""],
+    productor: "",
+    ubicacion: "",
+    categoria: "MERMELADAS Y UNTABLES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-049",
+    nombre: "MEZCLA DE FLORES DE AZAHAR Y HIERBAS 50 G",
+    precio: 130,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1joeCBi7R6DFa1XCaVZP93Av1a4xpo31S"],
+    productor: "",
+    ubicacion: "",
+    categoria: "INFUSIONES Y TE",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-050",
+    nombre: "MEZCLA DE MENTAS Y JENGIBRE DESHIDRATADOS 50 G",
+    precio: 125,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=10h2CSfVa_hRqR9oc78yH_Uhk_ArgbIbd"],
+    productor: "",
+    ubicacion: "",
+    categoria: "INFUSIONES Y TE",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-051",
+    nombre: "MIEL DE LAS CHINAMPAS 250 G",
+    precio: 90,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1wTvUTVp0sZm_4iT8WYAtGo-xwy846mkk"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Endulzantes naturales",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-017",
+    nombre: "MILANESA DE CERDO",
+    precio: 455,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1sZRvm8sLvXtanrXBAG_HQTtB2_vQAL7A"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-010",
+    nombre: "MILANESA DE POLLO 500 G",
+    precio: 185,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1ChN1ED0tfRhItTM0fxJiXv0fX4ExrOzh"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-052",
+    nombre: "MOSTAZA DE ESTRAGON 150 ML",
+    precio: 120,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1B-EmHv7koTTdu5_6_lizINELdy1aF8VF"],
+    productor: "",
+    ubicacion: "",
+    categoria: "CONDIMENTOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-053",
+    nombre: "MOSTAZA DIJON 255 ML",
+    precio: 95,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1H7cBqe1J6Uzrboz2NF5PBev1dxWe-sws"],
+    productor: "",
+    ubicacion: "",
+    categoria: "CONDIMENTOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-054",
+    nombre: "NIBS DE CACAO 100 G",
+    precio: 59,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1D5EBUmEuM-MyapGqiqp_TzeP1FvkdkUq"],
+    productor: "",
+    ubicacion: "",
+    categoria: "CACAO Y CHOCOLATE",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-055",
+    nombre: "NUEZ PECANA 100 G",
+    precio: 63,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=19VW45lJhKguv_BPitMGQI_QX4Q3iC_So"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GRANOS, SEMILLAS Y CEREALES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-056",
+    nombre: "OREGANO 50 G",
+    precio: 32,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1nUFnaylYZpkSgWRshWUt2yi5Rzk94JEJ"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ESPECIAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-011",
+    nombre: "OSSOBUCO DE RES 1 KG",
+    precio: 315,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=10oECJuSkxGnuMS2cuI6cKxIH4uOk-Gab"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-012",
+    nombre: "PECHUGA DE POLLO ENTERA CON HUESO 650 G",
+    precio: 240,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1ewRs1NHd94K1booDPhIsfwpSoHMFFxgM"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-058",
+    nombre: "PEPITA DE CALABAZA 100 G",
+    precio: 31,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1DhgbWe6hkVjB7e29YtsaemBTCgkqoaD0"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GRANOS, SEMILLAS Y CEREALES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-033",
+    nombre: "PEREJIL DESHIDRATADO 20 G",
+    precio: 76,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1ootOYs4xS0wOSGGD7KvHzwcnDnjnTBA1"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ESPECIAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-013",
+    nombre: "PICAÑA DE RES 1.5 KG",
+    precio: 530,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1Rls6jTy_0HEFkIKWqDGgESJ4fTGt-15j"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-059",
+    nombre: "PILONCILLO GRANULADO 250 G",
+    precio: 29,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1O0Jfc7EdX_DRyykXcqLOVITSTqwqgzuL"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Endulzantes naturales",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-060",
+    nombre: "PIMIENTA CAYENA 50 G",
+    precio: 30,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=15xVHDwhNc22ASGSLPHJ_I1RQ3aee4ps1"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ESPECIAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-061",
+    nombre: "PIMIENTA GORDA 50 G",
+    precio: 26,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1P7EGo0fpNaZ1bWIYc4Mp1oO_BY_pGrt-"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ESPECIAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-082",
+    nombre: "PIMIENTA NEGRA MOLIDA",
+    precio: 85,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1rGb-jVV6pzhpQGdLYPyVtHOvYVRYBNWZ"],
+    productor: "",
+    ubicacion: "",
+    categoria: "ESPECIAS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-062",
+    nombre: "POLEN 40 ML",
+    precio: 140,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1om39cXyWvZwgo61UXKsyWh1igaWpStsu"],
+    productor: "",
+    ubicacion: "",
+    categoria: "TE Y HIERBAS MEDICINALES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-063",
+    nombre: "PROPOLEO 70 G",
+    precio: 140,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1A1DgIJ-XnCH7mhAqylvfh_4WEGKMU3Zj"],
+    productor: "",
+    ubicacion: "",
+    categoria: "TE Y HIERBAS MEDICINALES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-LAC-007",
+    nombre: "QUESO MANCHEGO 1 KG",
+    precio: 357,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1EfNJBfCUBvi4AuzeLy1Mcr5eIDubG7ye"],
+    productor: "",
+    ubicacion: "",
+    categoria: "HUEVO Y LACTEOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Queso manchego artesanal de las chinampas 1 k  | Arca Tierra",
+      metaDescription: "Queso manchego artesanal, elaborado en Xochimilco. Proviene de vacas en pastoreo, ordeñadas por don Tomás Flores. Sin químicos. Ideal para tabla de quesos.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-LAC-009",
+    nombre: "QUESO MANCHEGO 250 G",
+    precio: 89,
+    unidad: "",
+    imagenes: [""],
+    productor: "",
+    ubicacion: "",
+    categoria: "HUEVO Y LACTEOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Queso manchego artesanal de las chinampas  250 g | Arca Tierra",
+      metaDescription: "Queso manchego artesanal, elaborado en Xochimilco. Proviene de vacas en pastoreo, ordeñadas por don Tomás Flores. Sin químicos. Ideal para tabla de quesos.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-LAC-008",
+    nombre: "QUESO MANCHEGO 500 G",
+    precio: 178,
+    unidad: "",
+    imagenes: [""],
+    productor: "",
+    ubicacion: "",
+    categoria: "HUEVO Y LACTEOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Queso manchego artesanal de las chinampas  500 g | Arca Tierra",
+      metaDescription: "Queso manchego artesanal, elaborado en Xochimilco. Proviene de vacas en pastoreo, ordeñadas por don Tomás Flores. Sin químicos. Ideal para tabla de quesos.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-LAC-010",
+    nombre: "QUESO OAXACA 1 KG",
+    precio: 214,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1CJf6qE3B3SQbE9Y65DDnk9qgc2dWr4pN"],
+    productor: "",
+    ubicacion: "",
+    categoria: "HUEVO Y LACTEOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Queso Oaxaca Artesanal de Chinampas 1 k | Arca Tierra",
+      metaDescription: "Queso Oaxaca artesanal, elaborado en Xochimilco. Proviene de vacas en pastoreo, ordeñadas por don Tomás Flores. Sin químicos. Ideal para snack o quesadillas.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-LAC-011",
+    nombre: "QUESO OAXACA 250 G",
+    precio: 53,
+    unidad: "",
+    imagenes: [""],
+    productor: "",
+    ubicacion: "",
+    categoria: "HUEVO Y LACTEOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Queso Oaxaca Artesanal de Chinampas 250 g | Arca Tierra",
+      metaDescription: "Queso Oaxaca artesanal, elaborado en Xochimilco. Proviene de vacas en pastoreo, ordeñadas por don Tomás Flores. Sin químicos. Ideal para snack o quesadillas.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-LAC-012",
+    nombre: "QUESO OAXACA 500 G",
+    precio: 107,
+    unidad: "",
+    imagenes: [""],
+    productor: "",
+    ubicacion: "",
+    categoria: "HUEVO Y LACTEOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Queso Oaxaca Artesanal de Chinampas 500 g | Arca Tierra",
+      metaDescription: "Queso Oaxaca artesanal, elaborado en Xochimilco. Proviene de vacas en pastoreo, ordeñadas por don Tomás Flores. Sin químicos. Ideal para snack o quesadillas.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-065",
+    nombre: "SAL DE CHAUTENGO 500 G",
+    precio: 18.5,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1uGTLErGeCFe_hj01H6wM6U6i6bBUln46"],
+    productor: "",
+    ubicacion: "",
+    categoria: "CONDIMENTOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-086",
+    nombre: "SAL DE MANANTIAL 100G",
+    precio: 20,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1uGTLErGeCFe_hj01H6wM6U6i6bBUln46"],
+    productor: "",
+    ubicacion: "",
+    categoria: "CONDIMENTOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-024",
+    nombre: "SALCHICHA DE PECHUGA DE PAVO 250 G",
+    precio: 117,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=149NPY8sbJ-s-GbsTTFnaJ0LuG3ObGNX5"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-015",
+    nombre: "SALCHICHAS BRATWURST",
+    precio: 247,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1gRsB2mDTDiV_AAVTCws6GADzpgYIScwM"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-016",
+    nombre: "SALCHICHAS DE HIERBAS FINAS",
+    precio: 247,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1bNzIJGcag-PczqcuJk9Na62N0L3rtuSN"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-067",
+    nombre: "SALSA CATRINA 235 ML",
+    precio: 125,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1k4OrYYdo-C24z-EWdOXeZimdACKqvPbI"],
+    productor: "",
+    ubicacion: "",
+    categoria: "CONDIMENTOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-073",
+    nombre: "SEMILLA DE AMARANTO",
+    precio: 40,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1_-tMeBY_nLYVjRpS0Aq2s67K5BF_h3lD"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GRANOS, SEMILLAS Y CEREALES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-068",
+    nombre: "SEMILLA DE CARDAMOMO 50 G",
+    precio: 98,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=127MDfl_yCW7uKQyPcnc5rM7aqJo8cBNy"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GRANOS, SEMILLAS Y CEREALES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-069",
+    nombre: "SEMILLA DE GIRASOL 100 G",
+    precio: 13,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1aJDBdEK4IWcqFidQa7_3t16cOvA9GoOM"],
+    productor: "",
+    ubicacion: "",
+    categoria: "GRANOS, SEMILLAS Y CEREALES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [
+      {
+        nombre: "SOPA DE LETRAS",
+        precio: 0
+      }
+    ],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-PRO-014",
+    nombre: "TOCINO AHUMADO 350 G",
+    precio: 245,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1p04EfS_0eiljDIiXBSytp7afAl3QVO8S"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Proteínas Regenerativas",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-MAI-003",
+    nombre: "TORTILLA AZUL 600 G",
+    precio: 37,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1pPSHamPhc8qVLxpcLSNkq3FdlUL9odPU"],
+    productor: "",
+    ubicacion: "",
+    categoria: "MAIZ",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-MAI-004",
+    nombre: "TORTILLA BLANCA 600 G",
+    precio: 37,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1QusenOnma9ZawkeImG9C2gZziKpctaON"],
+    productor: "",
+    ubicacion: "",
+    categoria: "MAIZ",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-070",
+    nombre: "VINAGRE DE MANZANA 250 ML",
+    precio: 75,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1S8MHTm4tsLKFSkH4Ymb6DGE8iR9PlgJj"],
+    productor: "",
+    ubicacion: "",
+    categoria: "CONDIMENTOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-071",
+    nombre: "VINAGRE DE MUCILAGO DE CACAO 250 ML",
+    precio: 57,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1bwg9PqQlWlAE-XnCTBt--I4whyW1gATh"],
+    productor: "",
+    ubicacion: "",
+    categoria: "CONDIMENTOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-LAC-013",
+    nombre: "YOGURT DE VACA 480 G",
+    precio: 60,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1ROq3locoxxLqQjBXVBBecIFD4GV8tXvb"],
+    productor: "",
+    ubicacion: "",
+    categoria: "HUEVO Y LACTEOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-LAC-014",
+    nombre: "YOGURT GRIEGO DE VACA 480 G",
+    precio: 90,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=13ALvGkZ-yWM3syHtHeqTwI6Q7LMe6W2w"],
+    productor: "",
+    ubicacion: "",
+    categoria: "HUEVO Y LACTEOS",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "Yogur griego de leche orgánica de vaca 480 g | Arca Tierra",
+      metaDescription: "Yogur griego orgánico de leche de vaca, cremoso y espeso. Ideal para desayunos, aderezos, salsas y agregar acidez a tus platillos favoritos.",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-SEC-072",
+    nombre: "ZACATE LIMON DESHIDRATADO PARA TE 50 G",
+    precio: 72,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1zLypR9ajO_fcAlyih5vK2nME03_XnsRh"],
+    productor: "",
+    ubicacion: "",
+    categoria: "TE Y HIERBAS MEDICINALES",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-001",
+    nombre: "ACELGA COMUN 200 G",
+    precio: 15,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1zNueVDQk8r8M0NGWmAaOFyECDjRjaRNs"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-002",
+    nombre: "AGUACATE CRIOLLO 500 G",
+    precio: 80,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1hvghcZTmkD-DUgNyCDPFTBw2gvTNX_6a"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-003",
+    nombre: "AJO 100 G",
+    precio: 25,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1DcN9Gnirr2nCi--BhLdB1VkhruS9-JU5"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-004",
+    nombre: "APIO 1PZA",
+    precio: 27,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1StOFHn1V1blLhOvQVukXo1pG-3GSMUDG"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "¿Por qué es carne regenerativa?\n\n-No se añaden químicos a la dieta del animal.\n-No se usan granos en la dieta del animal.\n-No se usan hormonas, antigarrapaticidas, desparasitantes, antibióticos u otras sustancias químicas para el cuidado de la vida del animal que afectan nuestra salud momento de consumo.\n-No se usan agroquímicos en el suelo donde pastan libremente los animales.\n\nBeneficios de la carne de origen regenerativo:\n-Consumos de carne a base de celulosa vegetal (libre pastoreo) y no carbohidratos y azúcares que se dan en la alimentación a base de granos concentrados.\n-Mayor concentración de vitaminas y minerales.\n-Contribución a la captura de carbono a través del libre pastoreo.\n-Regeneración de la capa fértil del suelo a través del libre pastoreo.\n-Conservación de flora y fauna silvestre.\n-Creación de un ecosistema natural protegido.\n-Comercio local.\n-Pago justo.",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-005",
+    nombre: "BETABEL MERLIN 500 G",
+    precio: 34,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1AVj_HWPyetp7LkqmyTzjr9V9kRIbUxgb"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-006",
+    nombre: "BLUEBERRY 250 G",
+    precio: 0,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1qvzPMMZp-a4COYqoboxC4NiuuvzhXeiC"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-008",
+    nombre: "CALABAZA ESPAGUETI 1 PZA",
+    precio: 82,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1Z4PYfp6FkaWmxuJL_Ili3qFFd82PGrUg"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-009",
+    nombre: "CALABAZA ITALIANA 500 G",
+    precio: 23,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1bs70dpY_aiVUDxVGKJR2S5XXrWpKtryP"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-010",
+    nombre: "CAMOTE 1 KG",
+    precio: 67,
+    unidad: "",
+    imagenes: [""],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-011",
+    nombre: "CEBOLLA BLANCA 500 G",
+    precio: 28,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1DLOwkRE4rJA9wxddudf4aE76dp2D-OX7"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-012",
+    nombre: "CHICHARO COMUN 500 G",
+    precio: 45,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1_-Su25fVfXkaHPTpW8F4lWhBWAu52iId"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-013",
+    nombre: "CIRUELA 500 G",
+    precio: 30,
+    unidad: "",
+    imagenes: [""],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-014",
+    nombre: "COL DE BRUSELAS 500 G",
+    precio: 62,
+    unidad: "",
+    imagenes: [""],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-016",
+    nombre: "COL VERDE 1 PZA",
+    precio: 24,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1irpZfU_ouG8x9ngnrFI_p3C6zEN4Z94X"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-017",
+    nombre: "EJOTE AMARILLO 250 G",
+    precio: 29,
+    unidad: "",
+    imagenes: [""],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-018",
+    nombre: "ELOTE 1 PZA",
+    precio: 19.5,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1OO-ZMswX15xjJun8hzQyJ6ZEJ7LVozTX"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-019",
+    nombre: "ESPARRAGO 500 G",
+    precio: 125,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1qKIdMKEU0Hre5S33oljmL_7OklhD5uSb"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-021",
+    nombre: "JITOMATE HEIRLOOM MIXTO 500 G",
+    precio: 45,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=13Zpjm_MWDD9eLkTldcXoRWTd30SGvwjc"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-022",
+    nombre: "JITOMATE SALADET 500 G",
+    precio: 23,
+    unidad: "",
+    imagenes: [""],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-024",
+    nombre: "LIMON AMARILLO 500 G",
+    precio: 0,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1SE2c9Gm8nU3NDUdGLmrkfNR8PFurvCMB"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-025",
+    nombre: "MANDARINA 500 G",
+    precio: 0,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1DFtPMycgLTJEXrH6seoRtzoOrFn2b67h"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-026",
+    nombre: "MANGO PETACON 500 G",
+    precio: 0,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1mOAL0w-6wtV4YsaWla3cMUH8D5jfVLBb"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-027",
+    nombre: "MANZANA CRIOLLA 500 G",
+    precio: 0,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1fl5j-FyYeHWtKXU6l-E6f_lB-8NN2QHi"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-028",
+    nombre: "MEZCLA DE ENSALADAS 300 G",
+    precio: 0,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1gZKevutOdDpNzscLk0iXjG-bFriqo67q"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-029",
+    nombre: "NARANJA 1 KG",
+    precio: 0,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=10wWoiqvDkRcakOabTokHfW6eQ7BzH0x4"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-031",
+    nombre: "PEPINO COMUN 500 G",
+    precio: 0,
+    unidad: "",
+    imagenes: [""],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-032",
+    nombre: "PLATANO MORADO 1 KG",
+    precio: 0,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1nHbdadMynnPXt9dEjAjpe-jA1aNwSKhr"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-033",
+    nombre: "PORO 1 PZA",
+    precio: 0,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1jknJ4uQG4gm0TVzE57OBMRpvLA0wt6Hn"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-035",
+    nombre: "ROMERITOS TIERNOS 500 G",
+    precio: 0,
+    unidad: "",
+    imagenes: [""],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-037",
+    nombre: "VERDOLAGA 500 GRS",
+    precio: 0,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1N0yLUy_PagMOFBn84n99FjrO5X3Ci4BI"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  },
+  {
+    id: "P-WEB-VEG-039",
+    nombre: "ZANAHORIA DE COLORES 250 G",
+    precio: 0,
+    unidad: "",
+    imagenes: ["https://drive.google.com/uc?export=view&id=1B5iersrZggeISt3aUJ03-M0sIZR9W8tk"],
+    productor: "",
+    ubicacion: "",
+    categoria: "Frutas y Verduras a Granel",
+    rating: 5,
+    reviews: 0,
+    stock: 100,
+    badges: [
+      "Local",
+      "Fresco"
+    ],
+    descripcion: "",
+    storytelling: "",
+    metricas: {
+      co2: "-- kg CO₂",
+      agua: "-- L agua",
+      plastico: "0g plástico evitado"
+    },
+    seoData: {
+      metaTitle: "",
+      metaDescription: "",
+      keywords: []
+    },
+    variantes: [],
+    metaTitle: "",
+    metaDescription: ""
+  }
+];

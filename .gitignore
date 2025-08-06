@@ -76,3 +76,6 @@ storybook-static/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated files
+src/data/productos.js
