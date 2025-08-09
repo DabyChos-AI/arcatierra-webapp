@@ -36,7 +36,7 @@ export const productos: Product[] = [
   {
     "id": "1885",
     "nombre": "CANASTA INDIVIDUAL SUSCRIPCIÓN",
-    "precio": 0,
+    "precio": 290,
     "unidad": "",
     "imagen": "/images/tienda/Acelga_closeup_individual.jpg",
     "productor": "",
@@ -88,7 +88,7 @@ export const productos: Product[] = [
   {
     "id": "1886",
     "nombre": "CANASTA MEDIA SUSCRIPCION",
-    "precio": 0,
+    "precio": 350,
     "unidad": "",
     "imagen": "/images/tienda/Bodegon_Invierno_Canasta_Completa.jpg",
     "productor": "",
@@ -140,7 +140,7 @@ export const productos: Product[] = [
   {
     "id": "1887",
     "nombre": "CANASTA COMPLETA SUSCRIPCION",
-    "precio": 0,
+    "precio": 510,
     "unidad": "",
     "imagen": "/images/tienda/Bodegon_Invierno_Canasta_Completa.jpg",
     "productor": "",
@@ -192,7 +192,7 @@ export const productos: Product[] = [
   {
     "id": "1888",
     "nombre": "CANASTA FAMILIAR SUSCRIPCION",
-    "precio": 0,
+    "precio": 670,
     "unidad": "",
     "imagen": "/images/tienda/Bodegon_Invierno_Canasta_Completa.jpg",
     "productor": "",
@@ -244,7 +244,7 @@ export const productos: Product[] = [
   {
     "id": "1889",
     "nombre": "CANASTA BÁSICA INDIVIDUAL SUSCRIPCION",
-    "precio": 0,
+    "precio": 447.45,
     "unidad": "",
     "imagen": "/images/tienda/Acelga_closeup_individual.jpg",
     "productor": "",
@@ -296,7 +296,7 @@ export const productos: Product[] = [
   {
     "id": "1890",
     "nombre": "CANASTA BASICA MEDIA SUSCRIPCION",
-    "precio": 0,
+    "precio": 971.85,
     "unidad": "",
     "imagen": "/images/tienda/Bodegon_Invierno_Canasta_Completa.jpg",
     "productor": "",
@@ -348,7 +348,7 @@ export const productos: Product[] = [
   {
     "id": "1891",
     "nombre": "CANASTA BASICA FAMILIAR SUSCRIPCION",
-    "precio": 0,
+    "precio": 1,
     "unidad": "",
     "imagen": "/images/tienda/Bodegon_Invierno_Canasta_Completa.jpg",
     "productor": "",
@@ -400,7 +400,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-ACE-005",
     "nombre": "ACEITE DE AJONJOLI REFINADO",
-    "precio": 0,
+    "precio": 159,
     "unidad": "",
     "imagen": "/images/tienda/aceite-aguacate-tienda-arca-tierra.jpg",
     "productor": "",
@@ -426,7 +426,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-ACE-004",
     "nombre": "ACEITE DE AJONJOLI TOSTADO",
-    "precio": 0,
+    "precio": 159,
     "unidad": "",
     "imagen": "/images/tienda/aceite-aguacate-tienda-arca-tierra.jpg",
     "productor": "",
@@ -452,7 +452,7 @@ export const productos: Product[] = [
   {
     "id": "MAZ-TOR-BLA-12P",
     "nombre": "ACEITE DE AGUACATE",
-    "precio": 0,
+    "precio": 279,
     "unidad": "",
     "imagen": "/images/tienda/aceite-aguacate-tienda-arca-tierra.jpg",
     "productor": "",
@@ -478,7 +478,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-ACE-002",
     "nombre": "ACEITE DE COCO 450 ML",
-    "precio": 0,
+    "precio": 107,
     "unidad": "",
     "imagen": "/images/tienda/aceite-aguacate-tienda-arca-tierra.jpg",
     "productor": "",
@@ -504,7 +504,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-ACE-003",
     "nombre": "ACEITE DE OLIVA 750 ML",
-    "precio": 0,
+    "precio": 250,
     "unidad": "",
     "imagen": "/images/tienda/aceite-aguacate-tienda-arca-tierra.jpg",
     "productor": "",
@@ -530,7 +530,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-001",
     "nombre": "AJONJOLI 100 G",
-    "precio": 0,
+    "precio": 18,
     "unidad": "",
     "imagen": "/images/tienda/Aceite_Ajonjoli_Refinado.jpg",
     "productor": "",
@@ -556,7 +556,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-002",
     "nombre": "AMARANTO 250 G",
-    "precio": 0,
+    "precio": 50,
     "unidad": "",
     "imagen": "/images/tienda/amaranto-granel-tienda-arca-tierra.jpg",
     "productor": "",
@@ -582,7 +582,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-074",
     "nombre": "AMARANTO REVENTADO",
-    "precio": 0,
+    "precio": 50,
     "unidad": "",
     "imagen": "/images/tienda/amaranto-granel-tienda-arca-tierra.jpg",
     "productor": "",
@@ -608,7 +608,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-001",
     "nombre": "ARRACHERA  500 G",
-    "precio": 0,
+    "precio": 260,
     "unidad": "",
     "imagen": "/images/tienda/arrachera-sp-tienda-arca-tierra.jpg",
     "productor": "",
@@ -634,7 +634,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-003",
     "nombre": "ARROZ BLANCO 500 G",
-    "precio": 0,
+    "precio": 35,
     "unidad": "",
     "imagen": "/images/tienda/arroz-blanco-tienda-arca-tierra.jpg",
     "productor": "",
@@ -660,7 +660,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-004",
     "nombre": "ARROZ INTEGRAL 500 G",
-    "precio": 0,
+    "precio": 35,
     "unidad": "",
     "imagen": "/images/tienda/arroz-blanco-tienda-arca-tierra.jpg",
     "productor": "",
@@ -686,7 +686,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-005",
     "nombre": "AVENA 500 G",
-    "precio": 0,
+    "precio": 26,
     "unidad": "",
     "imagen": "/images/tienda/avena-granel-tienda-arca-tierra.jpg",
     "productor": "",
@@ -712,7 +712,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-079",
     "nombre": "AZUCAR ORGANICA ZULKA 500 G",
-    "precio": 0,
+    "precio": 24.7,
     "unidad": "",
     "imagen": "",
     "productor": "",
@@ -738,7 +738,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-002",
     "nombre": "BISTEC DE RES 500 G",
-    "precio": 0,
+    "precio": 171,
     "unidad": "",
     "imagen": "/images/tienda/bistec-rtc-tienda-arca-tierra.jpg",
     "productor": "",
@@ -894,7 +894,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-085",
     "nombre": "CALDO DE HUESO 9 G",
-    "precio": 0,
+    "precio": 127,
     "unidad": "",
     "imagen": "/images/tienda/Caldo-de-huesos_Congelado.jpg",
     "productor": "",
@@ -920,7 +920,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-021",
     "nombre": "CALDO DE HUESO DE RES 700 ML",
-    "precio": 0,
+    "precio": 120,
     "unidad": "",
     "imagen": "/images/tienda/Caldo-de-huesos_Congelado.jpg",
     "productor": "",
@@ -946,7 +946,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-012",
     "nombre": "CANELA 50 G",
-    "precio": 0,
+    "precio": 60,
     "unidad": "",
     "imagen": "/images/tienda/canela-granel-tienda-arca-tierra.jpg",
     "productor": "",
@@ -972,7 +972,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-013",
     "nombre": "CARDAMOMO 20 G",
-    "precio": 0,
+    "precio": 77,
     "unidad": "",
     "imagen": "/images/tienda/cardamomo-caja.jpg",
     "productor": "",
@@ -998,7 +998,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-003",
     "nombre": "CARNE DE PAVO PARA HAMBURGUESA 500 G",
-    "precio": 0,
+    "precio": 220,
     "unidad": "",
     "imagen": "/images/tienda/Carne_Deshebrada_de_res.jpg",
     "productor": "",
@@ -1024,7 +1024,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-004",
     "nombre": "CARNE DE RES DESHEBRADA 500 G",
-    "precio": 0,
+    "precio": 171,
     "unidad": "",
     "imagen": "/images/tienda/Carne_Deshebrada_de_res.jpg",
     "productor": "",
@@ -1050,7 +1050,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-005",
     "nombre": "CARNE DE RES MOLIDA 500 G",
-    "precio": 0,
+    "precio": 171,
     "unidad": "",
     "imagen": "/images/tienda/Carne_Deshebrada_de_res.jpg",
     "productor": "",
@@ -1076,7 +1076,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-006",
     "nombre": "CARNE DE RES PARA HAMBURGUESA DE ORIGEN REGENERATIVO 400 G",
-    "precio": 0,
+    "precio": 198,
     "unidad": "",
     "imagen": "/images/tienda/Carne_Deshebrada_de_res.jpg",
     "productor": "",
@@ -1102,7 +1102,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-022",
     "nombre": "CARNITAS EN MANTECA MADRE CON TORTILLAS",
-    "precio": 0,
+    "precio": 445,
     "unidad": "",
     "imagen": "/images/tienda/Carnitas_con_Tortillas.jpg",
     "productor": "",
@@ -1128,7 +1128,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-014",
     "nombre": "CEBOLLINO DESHIDRATADO 20 G",
-    "precio": 0,
+    "precio": 76,
     "unidad": "",
     "imagen": "/images/tienda/cebollino-deshidratado-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1180,7 +1180,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-020",
     "nombre": "CLAVO DE OLOR 50 G",
-    "precio": 0,
+    "precio": 28,
     "unidad": "",
     "imagen": "/images/tienda/clavo-olor-granel-tienda-arca-tierra.png",
     "productor": "",
@@ -1206,7 +1206,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-081",
     "nombre": "COMINO",
-    "precio": 0,
+    "precio": 78,
     "unidad": "",
     "imagen": "",
     "productor": "",
@@ -1232,7 +1232,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-007",
     "nombre": "COSTILLA DE RES 1.5 KG",
-    "precio": 0,
+    "precio": 315,
     "unidad": "",
     "imagen": "/images/tienda/costilla-res-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1258,7 +1258,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-022",
     "nombre": "CURCUMA 55 G",
-    "precio": 0,
+    "precio": 80,
     "unidad": "",
     "imagen": "/images/tienda/Curcuma_Entera.jpg",
     "productor": "",
@@ -1284,7 +1284,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-023",
     "nombre": "CURRY 55 G",
-    "precio": 0,
+    "precio": 85,
     "unidad": "",
     "imagen": "/images/tienda/curry-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1310,7 +1310,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-ABA-002",
     "nombre": "DESINFECTANTE FRUTAS Y VERDURAS 15 ML",
-    "precio": 0,
+    "precio": 18,
     "unidad": "",
     "imagen": "/images/tienda/desinfectante-organico-15-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1336,7 +1336,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-ABA-003",
     "nombre": "DESINFECTANTE FRUTAS Y VERDURAS 240 ML",
-    "precio": 0,
+    "precio": 95,
     "unidad": "",
     "imagen": "/images/tienda/desinfectante-organico-15-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1362,7 +1362,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-021",
     "nombre": "DULCE DE LECHE DE OVEJA 330 G",
-    "precio": 0,
+    "precio": 155,
     "unidad": "",
     "imagen": "/images/tienda/dulce-de-leche-villa-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1388,7 +1388,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-024",
     "nombre": "FETTUCCINI INTEGRAL ORGANICO 380 G",
-    "precio": 0,
+    "precio": 88,
     "unidad": "",
     "imagen": "/images/tienda/arroz-integral-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1414,7 +1414,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-008",
     "nombre": "FILETE DE RES 1 KG",
-    "precio": 0,
+    "precio": 280,
     "unidad": "",
     "imagen": "/images/tienda/filete-rtc-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1440,7 +1440,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-036",
     "nombre": "FLOR DE JAMAICA 500 G",
-    "precio": 0,
+    "precio": 45,
     "unidad": "",
     "imagen": "/images/tienda/flores-azahar-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1596,7 +1596,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-078",
     "nombre": "GALLETAS DE MAIZ , TASCALATE, JENGIBRE Y ANIS 200 G",
-    "precio": 0,
+    "precio": 200,
     "unidad": "",
     "imagen": "/images/tienda/Galletas_Maiz_Anis.jpg",
     "productor": "",
@@ -1804,7 +1804,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-083",
     "nombre": "HOJA DE LAUREL 60 G",
-    "precio": 0,
+    "precio": 78,
     "unidad": "",
     "imagen": "/images/tienda/Poro_con_hojas.jpg",
     "productor": "",
@@ -1830,7 +1830,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-034",
     "nombre": "HOJUELAS DE CHILE 50 G",
-    "precio": 0,
+    "precio": 91,
     "unidad": "",
     "imagen": "/images/tienda/Chiles_manzano_encurtidos.jpg",
     "productor": "",
@@ -1856,7 +1856,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-009",
     "nombre": "HUEVO ORGANICO DE LIBRE PASTOREO",
-    "precio": 0,
+    "precio": 7.6,
     "unidad": "",
     "imagen": "/images/tienda/desinfectante-organico-15-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1882,7 +1882,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-035",
     "nombre": "JALEA DE ROSAS 255 G",
-    "precio": 0,
+    "precio": 104,
     "unidad": "",
     "imagen": "/images/tienda/jalea-rosas-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1908,7 +1908,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-023",
     "nombre": "JAMÓN DE PECHUGA DE PAVO 250 G",
-    "precio": 0,
+    "precio": 175,
     "unidad": "",
     "imagen": "/images/tienda/Hamburguesa_Pavo.jpg",
     "productor": "",
@@ -1934,7 +1934,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-037",
     "nombre": "JENGIBRE 50 G",
-    "precio": 0,
+    "precio": 46,
     "unidad": "",
     "imagen": "/images/tienda/jengibre-en-polvo-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1960,7 +1960,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-LAC-005",
     "nombre": "LECHE ENTERA DE VACA 1 L",
-    "precio": 0,
+    "precio": 65,
     "unidad": "",
     "imagen": "/images/tienda/Curcuma_Entera.jpg",
     "productor": "",
@@ -1986,7 +1986,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-LAC-006",
     "nombre": "LECHE SEMIDESCREMADA DE VACA 1 L",
-    "precio": 0,
+    "precio": 61,
     "unidad": "",
     "imagen": "/images/tienda/dulce-de-leche-villa-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2038,7 +2038,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-018",
     "nombre": "LOMO DE CERDO 1 KG",
-    "precio": 0,
+    "precio": 550,
     "unidad": "",
     "imagen": "/images/tienda/Costilla_Cerdo.jpg",
     "productor": "",
@@ -2090,7 +2090,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-019",
     "nombre": "MANTECA DE CERDO",
-    "precio": 0,
+    "precio": 195,
     "unidad": "",
     "imagen": "/images/tienda/Costilla_Cerdo.jpg",
     "productor": "",
@@ -2116,7 +2116,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-041",
     "nombre": "MANTEQUILLA DE CACAHUATE CACAO 272 ML",
-    "precio": 0,
+    "precio": 135,
     "unidad": "",
     "imagen": "/images/tienda/cacahuate-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2142,7 +2142,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-042",
     "nombre": "MANTEQUILLA DE CACAHUATE CRUNCHY 272 ML",
-    "precio": 0,
+    "precio": 121,
     "unidad": "",
     "imagen": "/images/tienda/cacahuate-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2168,7 +2168,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-043",
     "nombre": "MELISA PARA TE 50 G",
-    "precio": 0,
+    "precio": 142,
     "unidad": "",
     "imagen": "/images/tienda/melisa-para-te-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2194,7 +2194,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-044",
     "nombre": "MENTAS PARA TE 50 G",
-    "precio": 0,
+    "precio": 142,
     "unidad": "",
     "imagen": "/images/tienda/melisa-para-te-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2220,7 +2220,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-045",
     "nombre": "MERMELADA DE HIGO 300 G",
-    "precio": 0,
+    "precio": 104,
     "unidad": "",
     "imagen": "/images/tienda/mermelada-jamaica-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2246,7 +2246,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-046",
     "nombre": "MERMELADA DE JAMAICA 300 G",
-    "precio": 0,
+    "precio": 104,
     "unidad": "",
     "imagen": "/images/tienda/jamaica-granel-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2272,7 +2272,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-047",
     "nombre": "MERMELADA DE NARANJA 300 G",
-    "precio": 0,
+    "precio": 104,
     "unidad": "",
     "imagen": "/images/tienda/Media_Naranja.jpg",
     "productor": "",
@@ -2298,7 +2298,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-048",
     "nombre": "MERMELADA GUAYABAMIEL 300 G",
-    "precio": 0,
+    "precio": 120,
     "unidad": "",
     "imagen": "/images/tienda/mermelada-jamaica-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2324,7 +2324,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-049",
     "nombre": "MEZCLA DE FLORES DE AZAHAR Y HIERBAS 50 G",
-    "precio": 0,
+    "precio": 130,
     "unidad": "",
     "imagen": "/images/tienda/flores-azahar-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2350,7 +2350,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-050",
     "nombre": "MEZCLA DE MENTAS Y JENGIBRE DESHIDRATADOS 50 G",
-    "precio": 0,
+    "precio": 125,
     "unidad": "",
     "imagen": "/images/tienda/jengibre-en-polvo-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2376,7 +2376,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-051",
     "nombre": "MIEL DE LAS CHINAMPAS 250 G",
-    "precio": 0,
+    "precio": 90,
     "unidad": "",
     "imagen": "/images/tienda/miel-chinampas-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2402,7 +2402,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-017",
     "nombre": "MILANESA DE CERDO",
-    "precio": 0,
+    "precio": 455,
     "unidad": "",
     "imagen": "/images/tienda/Costilla_Cerdo.jpg",
     "productor": "",
@@ -2428,7 +2428,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-010",
     "nombre": "MILANESA DE POLLO 500 G",
-    "precio": 0,
+    "precio": 185,
     "unidad": "",
     "imagen": "/images/tienda/Milanesas_Cerdo_Risueño.jpg",
     "productor": "",
@@ -2454,7 +2454,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-052",
     "nombre": "MOSTAZA DE ESTRAGON 150 ML",
-    "precio": 0,
+    "precio": 120,
     "unidad": "",
     "imagen": "/images/tienda/mostaza-dijon-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2480,7 +2480,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-053",
     "nombre": "MOSTAZA DIJON 255 ML",
-    "precio": 0,
+    "precio": 95,
     "unidad": "",
     "imagen": "/images/tienda/mostaza-dijon-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2506,7 +2506,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-054",
     "nombre": "NIBS DE CACAO 100 G",
-    "precio": 0,
+    "precio": 59,
     "unidad": "",
     "imagen": "/images/tienda/cacao-polvo-250-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2558,7 +2558,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-056",
     "nombre": "OREGANO 50 G",
-    "precio": 0,
+    "precio": 32,
     "unidad": "",
     "imagen": "/images/tienda/oregano-granel-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2584,7 +2584,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-011",
     "nombre": "OSSOBUCO DE RES 1 KG",
-    "precio": 0,
+    "precio": 315,
     "unidad": "",
     "imagen": "/images/tienda/ossobuco-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2610,7 +2610,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-012",
     "nombre": "PECHUGA DE POLLO ENTERA CON HUESO 650 G",
-    "precio": 0,
+    "precio": 240,
     "unidad": "",
     "imagen": "/images/tienda/Caldo-de-huesos_Congelado.jpg",
     "productor": "",
@@ -2662,7 +2662,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-033",
     "nombre": "PEREJIL DESHIDRATADO 20 G",
-    "precio": 0,
+    "precio": 76,
     "unidad": "",
     "imagen": "/images/tienda/cebollino-deshidratado-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2688,7 +2688,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-013",
     "nombre": "PICAÑA DE RES 1.5 KG",
-    "precio": 0,
+    "precio": 530,
     "unidad": "",
     "imagen": "/images/tienda/picana-rtc-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2714,7 +2714,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-059",
     "nombre": "PILONCILLO GRANULADO 250 G",
-    "precio": 0,
+    "precio": 29,
     "unidad": "",
     "imagen": "/images/tienda/piloncillo-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2740,7 +2740,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-060",
     "nombre": "PIMIENTA CAYENA 50 G",
-    "precio": 0,
+    "precio": 30,
     "unidad": "",
     "imagen": "/images/tienda/pimienta-cayena-granel-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2766,7 +2766,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-061",
     "nombre": "PIMIENTA GORDA 50 G",
-    "precio": 0,
+    "precio": 26,
     "unidad": "",
     "imagen": "/images/tienda/pimienta-cayena-granel-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2792,7 +2792,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-082",
     "nombre": "PIMIENTA NEGRA MOLIDA",
-    "precio": 0,
+    "precio": 85,
     "unidad": "",
     "imagen": "/images/tienda/molida-res-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2818,7 +2818,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-062",
     "nombre": "POLEN 40 ML",
-    "precio": 0,
+    "precio": 140,
     "unidad": "",
     "imagen": "/images/tienda/polen-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2844,7 +2844,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-063",
     "nombre": "PROPOLEO 70 G",
-    "precio": 0,
+    "precio": 140,
     "unidad": "",
     "imagen": "/images/tienda/propoleo-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2870,7 +2870,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-LAC-007",
     "nombre": "QUESO MANCHEGO 1 KG",
-    "precio": 0,
+    "precio": 357,
     "unidad": "",
     "imagen": "/images/tienda/queso-manchego-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2896,7 +2896,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-LAC-009",
     "nombre": "QUESO MANCHEGO 250 G",
-    "precio": 0,
+    "precio": 89,
     "unidad": "",
     "imagen": "/images/tienda/queso-manchego-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2922,7 +2922,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-LAC-008",
     "nombre": "QUESO MANCHEGO 500 G",
-    "precio": 0,
+    "precio": 178,
     "unidad": "",
     "imagen": "/images/tienda/queso-manchego-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2948,7 +2948,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-LAC-010",
     "nombre": "QUESO OAXACA 1 KG",
-    "precio": 0,
+    "precio": 214,
     "unidad": "",
     "imagen": "/images/tienda/queso-manchego-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2974,7 +2974,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-LAC-011",
     "nombre": "QUESO OAXACA 250 G",
-    "precio": 0,
+    "precio": 53,
     "unidad": "",
     "imagen": "/images/tienda/queso-manchego-tienda-arca-tierra.jpg",
     "productor": "",
@@ -3000,7 +3000,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-LAC-012",
     "nombre": "QUESO OAXACA 500 G",
-    "precio": 0,
+    "precio": 107,
     "unidad": "",
     "imagen": "/images/tienda/queso-manchego-tienda-arca-tierra.jpg",
     "productor": "",
@@ -3026,7 +3026,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-065",
     "nombre": "SAL DE CHAUTENGO 500 G",
-    "precio": 0,
+    "precio": 18.5,
     "unidad": "",
     "imagen": "",
     "productor": "",
@@ -3052,7 +3052,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-086",
     "nombre": "SAL DE MANANTIAL 100G",
-    "precio": 0,
+    "precio": 20,
     "unidad": "",
     "imagen": "",
     "productor": "",
@@ -3078,7 +3078,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-024",
     "nombre": "SALCHICHA DE PECHUGA DE PAVO 250 G",
-    "precio": 0,
+    "precio": 117,
     "unidad": "",
     "imagen": "/images/tienda/Hamburguesa_Pavo.jpg",
     "productor": "",
@@ -3104,7 +3104,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-015",
     "nombre": "SALCHICHAS BRATWURST",
-    "precio": 0,
+    "precio": 247,
     "unidad": "",
     "imagen": "/images/tienda/Salchichas_Bratwurst.jpg",
     "productor": "",
@@ -3130,7 +3130,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-016",
     "nombre": "SALCHICHAS DE HIERBAS FINAS",
-    "precio": 0,
+    "precio": 247,
     "unidad": "",
     "imagen": "/images/tienda/Salchichas_Bratwurst.jpg",
     "productor": "",
@@ -3156,7 +3156,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-067",
     "nombre": "SALSA CATRINA 235 ML",
-    "precio": 0,
+    "precio": 125,
     "unidad": "",
     "imagen": "/images/tienda/salsa-catrina-arca-tierra.jpg",
     "productor": "",
@@ -3260,7 +3260,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-PRO-014",
     "nombre": "TOCINO AHUMADO 350 G",
-    "precio": 0,
+    "precio": 245,
     "unidad": "",
     "imagen": "/images/tienda/tocino-ahumado-tienda-arca-tierra.jpg",
     "productor": "",
@@ -3286,7 +3286,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-MAI-003",
     "nombre": "TORTILLA AZUL 600 G",
-    "precio": 0,
+    "precio": 37,
     "unidad": "",
     "imagen": "/images/tienda/Carnitas_con_Tortillas.jpg",
     "productor": "",
@@ -3312,7 +3312,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-MAI-004",
     "nombre": "TORTILLA BLANCA 600 G",
-    "precio": 0,
+    "precio": 37,
     "unidad": "",
     "imagen": "/images/tienda/Carnitas_con_Tortillas.jpg",
     "productor": "",
@@ -3338,7 +3338,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-070",
     "nombre": "VINAGRE DE MANZANA 250 ML",
-    "precio": 0,
+    "precio": 75,
     "unidad": "",
     "imagen": "/images/tienda/Manzanas_Criolla.jpg",
     "productor": "",
@@ -3364,7 +3364,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-071",
     "nombre": "VINAGRE DE MUCILAGO DE CACAO 250 ML",
-    "precio": 0,
+    "precio": 57,
     "unidad": "",
     "imagen": "/images/tienda/cacao-polvo-250-tienda-arca-tierra.jpg",
     "productor": "",
@@ -3390,7 +3390,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-LAC-013",
     "nombre": "YOGURT DE VACA 480 G",
-    "precio": 0,
+    "precio": 60,
     "unidad": "",
     "imagen": "/images/tienda/yogurt-griego-vaca-tienda-arca-tierra.jpg",
     "productor": "",
@@ -3416,7 +3416,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-LAC-014",
     "nombre": "YOGURT GRIEGO DE VACA 480 G",
-    "precio": 0,
+    "precio": 90,
     "unidad": "",
     "imagen": "/images/tienda/yogurt-griego-vaca-tienda-arca-tierra.jpg",
     "productor": "",
@@ -3442,7 +3442,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-072",
     "nombre": "ZACATE LIMON DESHIDRATADO PARA TE 50 G",
-    "precio": 0,
+    "precio": 72,
     "unidad": "",
     "imagen": "/images/tienda/cebollino-deshidratado-tienda-arca-tierra.jpg",
     "productor": "",
@@ -3468,7 +3468,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-001",
     "nombre": "ACELGA COMUN 200 G",
-    "precio": 0,
+    "precio": 15,
     "unidad": "",
     "imagen": "/images/tienda/acelga-comun-agroecologico-tienda-arca-tierra.jpg",
     "productor": "",
@@ -3494,7 +3494,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-002",
     "nombre": "AGUACATE CRIOLLO 500 G",
-    "precio": 0,
+    "precio": 80,
     "unidad": "",
     "imagen": "/images/tienda/aceite-aguacate-tienda-arca-tierra.jpg",
     "productor": "",
@@ -3520,7 +3520,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-003",
     "nombre": "AJO 100 G",
-    "precio": 0,
+    "precio": 25,
     "unidad": "",
     "imagen": "",
     "productor": "",
@@ -3546,7 +3546,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-004",
     "nombre": "APIO 1PZA",
-    "precio": 0,
+    "precio": 27,
     "unidad": "",
     "imagen": "",
     "productor": "",
@@ -3572,7 +3572,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-005",
     "nombre": "BETABEL MERLIN 500 G",
-    "precio": 0,
+    "precio": 34,
     "unidad": "",
     "imagen": "/images/tienda/Betabeles.jpg",
     "productor": "",
@@ -3624,7 +3624,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-008",
     "nombre": "CALABAZA ESPAGUETI 1 PZA",
-    "precio": 0,
+    "precio": 82,
     "unidad": "",
     "imagen": "/images/tienda/Calabaza_estrella.jpg",
     "productor": "",
@@ -3650,7 +3650,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-009",
     "nombre": "CALABAZA ITALIANA 500 G",
-    "precio": 0,
+    "precio": 23,
     "unidad": "",
     "imagen": "/images/tienda/Calabaza_estrella.jpg",
     "productor": "",
@@ -3676,7 +3676,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-010",
     "nombre": "CAMOTE 1 KG",
-    "precio": 0,
+    "precio": 67,
     "unidad": "",
     "imagen": "",
     "productor": "",
@@ -3702,7 +3702,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-011",
     "nombre": "CEBOLLA BLANCA 500 G",
-    "precio": 0,
+    "precio": 28,
     "unidad": "",
     "imagen": "/images/tienda/Cebollas_Medianas_Fondo_Azul.jpg",
     "productor": "",
@@ -3728,7 +3728,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-012",
     "nombre": "CHICHARO COMUN 500 G",
-    "precio": 0,
+    "precio": 45,
     "unidad": "",
     "imagen": "/images/tienda/acelga-comun-agroecologico-tienda-arca-tierra.jpg",
     "productor": "",
@@ -3754,7 +3754,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-013",
     "nombre": "CIRUELA 500 G",
-    "precio": 0,
+    "precio": 30,
     "unidad": "",
     "imagen": "",
     "productor": "",
@@ -3780,7 +3780,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-014",
     "nombre": "COL DE BRUSELAS 500 G",
-    "precio": 0,
+    "precio": 62,
     "unidad": "",
     "imagen": "/images/tienda/coles-de-bruselas-tienda-arca-tierra.jpg",
     "productor": "",
@@ -3806,7 +3806,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-016",
     "nombre": "COL VERDE 1 PZA",
-    "precio": 0,
+    "precio": 24,
     "unidad": "",
     "imagen": "/images/tienda/Platanos_Back_Verde.jpg",
     "productor": "",
@@ -3832,7 +3832,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-017",
     "nombre": "EJOTE AMARILLO 250 G",
-    "precio": 0,
+    "precio": 29,
     "unidad": "",
     "imagen": "/images/tienda/Ejotes_amarillos.jpg",
     "productor": "",
@@ -3858,7 +3858,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-018",
     "nombre": "ELOTE 1 PZA",
-    "precio": 0,
+    "precio": 19.5,
     "unidad": "",
     "imagen": "/images/tienda/Elote_criollo.jpg",
     "productor": "",
@@ -3884,7 +3884,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-019",
     "nombre": "ESPARRAGO 500 G",
-    "precio": 0,
+    "precio": 125,
     "unidad": "",
     "imagen": "/images/tienda/Esparragos.jpg",
     "productor": "",
@@ -3910,7 +3910,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-021",
     "nombre": "JITOMATE HEIRLOOM MIXTO 500 G",
-    "precio": 0,
+    "precio": 45,
     "unidad": "",
     "imagen": "/images/tienda/jitomate-heirloom-agroecologico-tienda-arca-tierra.jpg",
     "productor": "",
@@ -3936,7 +3936,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-022",
     "nombre": "JITOMATE SALADET 500 G",
-    "precio": 0,
+    "precio": 23,
     "unidad": "",
     "imagen": "/images/tienda/jitomate-heirloom-agroecologico-tienda-arca-tierra.jpg",
     "productor": "",
