@@ -228,7 +228,7 @@ export default function HomePage() {
                   price: 290,
                   items: '1-2 personas',
                   weight: '3.5 kg',
-                  image: '/images/canastas/canasta-individual.jpg',
+                  image: '/images/canastas/canastaindividual.jpg',
                   features: ['Variedad balanceada de nutrientes', 'Fácil de consumir en una semana', 'Incluye fruta y verduras de temporada'],
                   popular: true
                 },
@@ -239,7 +239,7 @@ export default function HomePage() {
                   price: 350,
                   items: '2-3 personas',
                   weight: '5 kg',
-                  image: '/images/canastas/canasta-familiar.jpg',
+                  image: '/images/canastas/canastamedia.jpg',
                   features: ['Incluye frutas y verduras de temporada', 'Ideal para familias pequeñas', 'Excelente relación calidad-precio'],
                   popular: true
                 },
@@ -250,7 +250,7 @@ export default function HomePage() {
                   price: 510,
                   items: '3-4 personas',
                   weight: '7.5 kg',
-                  image: '/images/canastas/canasta-premium.jpg',
+                  image: '/images/canastas/canastacompleta.jpg',
                   features: ['Variedad amplia de productos', 'Perfecta para familias medianas', 'Mayor diversidad nutricional'],
                   popular: false
                 },
@@ -261,7 +261,7 @@ export default function HomePage() {
                   price: 670,
                   items: '4-6 personas',
                   weight: '10 kg',
-                  image: '/images/canastas/canasta-familiar.jpg',
+                  image: '/images/canastas/canastafamiliar.jpg',
                   features: ['La opción más popular para familias grandes', 'Abundante variedad de alimentos agroecológicos', 'Mejor relación precio-calidad por kilogramo'],
                   popular: true,
                   masPopular: true,
@@ -270,13 +270,13 @@ export default function HomePage() {
                 }
               ].map((canasta) => (
                 <Card key={canasta.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all group">
-                  <div className="relative overflow-hidden pt-[56.25%]">
+                  <div className="relative overflow-hidden pt-[100%]">
                     <div className="absolute inset-0 bg-gray-200">
                       <OptimizedImage 
                         src={canasta.image}
                         alt={canasta.name}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="object-contain group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                     

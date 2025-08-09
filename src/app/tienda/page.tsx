@@ -127,24 +127,47 @@ const SearchSuggestions = ({ searchTerm, onSelectProduct }: SearchSuggestionsPro
   )
 }
 
-// CATEGORÍAS CON DATOS SEO EXACTOS DEL USUARIO - SIN INVENTAR NADA
+// Helper to convert slug to Title Case
+function slugToTitle(slug: string): string {
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+// Define a mapping from category slug to emoji
+const categoryEmojiMap: { [key: string]: string } = {
+  'canastas-de-frutas-y-verduras-agroecologicas': '🧺',
+  'aceites-naturales': '🫒',
+  'granos-y-cereales-integrales': '🌾',
+  'proteinas-regenerativas': '🥩',
+  'cafe-cacao-y-chocolate': '☕',
+  'endulzantes': '🍯',
+  'especias': '🌶️',
+  'frutas-y-verduras-a-granel': '🥕',
+  'mermeladas-y-untables': '🍓',
+  'huevo-y-lacteos': '🥚',
+  'infusiones-y-te': '🍵',
+  'harinas-y-pastas-organicas': '🍝',
+  'pan-y-galletas-artesanales': '🍞',
+  // Add other mappings here as needed
+};
+
+// Dynamically generate categories from the `productos.ts` data source
+const categorySlugs = [...new Set(productos.map(p => p.categoria))];
 const categories = [
-  { id: 'all', name: 'Todas las categorías', emoji: '🌱', active: false, seoData: null },
-  { id: 'canastas-frutas-verduras', name: 'Canastas de frutas y verduras agroecológicas', emoji: '🧺', active: false, seoData: getSEODataByName('Canastas de frutas y verduras agroecológicas') },
-  { id: 'aceites-naturales', name: 'Aceites naturales', emoji: '🫒', active: false, seoData: getSEODataByName('Aceites naturales') },
-  { id: 'granos-cereales-integrales', name: 'Granos y cereales integrales', emoji: '🌾', active: false, seoData: getSEODataByName('Granos y cereales integrales') },
-  { id: 'proteinas-regenerativas', name: 'Proteínas Regenerativas', emoji: '🥩', active: false, seoData: getSEODataByName('Proteínas Regenerativas') },
-  { id: 'cafe-cacao-chocolate', name: 'Café, cacao y chocolate artesanal', emoji: '☕', active: false, seoData: getSEODataByName('Café, cacao y chocolate artesanal') },
-  { id: 'endulzantes-naturales', name: 'Endulzantes naturales', emoji: '🍯', active: false, seoData: getSEODataByName('Endulzantes naturales') },
-  { id: 'especias-condimentos', name: 'Especias y condimentos artesanales', emoji: '🌶️', active: false, seoData: getSEODataByName('Especias y condimentos artesanales') },
-  { id: 'frutas-verduras-granel', name: 'Frutas y Verduras a Granel', emoji: '🥕', active: false, seoData: getSEODataByName('Frutas y Verduras a Granel') },
-  { id: 'mermeladas-untables', name: 'Mermeladas y untables naturales', emoji: '🍓', active: false, seoData: getSEODataByName('Mermeladas y untables naturales') },
-  { id: 'huevo-lacteos', name: 'Huevo de libre pastoreo y lácteos artesanales', emoji: '🥚', active: false, seoData: getSEODataByName('Huevo de libre pastoreo y lácteos artesanales') },
-  { id: 'tes-infusiones', name: 'Tés e infusiones naturales', emoji: '🍵', active: false, seoData: getSEODataByName('Tés e infusiones naturales') },
-  { id: 'productos-arca-tierra', name: 'Productos Arca Tierra', emoji: '🌱', active: false, seoData: getSEODataByName('Productos Arca Tierra') },
-  { id: 'harinas-pastas', name: 'Harinas y pastas orgánicas', emoji: '🌾', active: false, seoData: getSEODataByName('Harinas y pastas orgánicas') },
-  { id: 'pan-galletas', name: 'Pan y galletas artesanales', emoji: '🍞', active: false, seoData: getSEODataByName('Pan y galletas artesanales') }
-]
+  { id: 'all', name: 'Todas las categorías', emoji: '🌱', active: true, seoData: null },
+  ...categorySlugs.map(slug => {
+    const name = slugToTitle(slug);
+    return {
+      id: slug,
+      name: name,
+      emoji: categoryEmojiMap[slug] || '🛒', // Use mapped emoji or a default one
+      active: false,
+      seoData: getSEODataByName(name)
+    };
+  })
+];
 
 const productores = [
   'Cooperativa Las Flores',
