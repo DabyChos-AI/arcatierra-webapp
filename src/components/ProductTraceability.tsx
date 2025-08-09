@@ -131,7 +131,7 @@ export default function ProductTraceability({ product, compact = false }: Produc
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
-            {cultivo.certificaciones.map((cert, index) => (
+            {cultivo.certificaciones.map((cert: string, index: number) => (
               <Badge key={index} variant="outline" className="border-[#B15543] text-[#B15543]">
                 <Award className="w-3 h-3 mr-1" />
                 {cert}
@@ -174,7 +174,7 @@ export default function ProductTraceability({ product, compact = false }: Produc
               Prácticas regenerativas:
             </h5>
             <div className="flex flex-wrap gap-2">
-              {impacto.practicasRegenerativas.map((practica, index) => (
+              {impacto.practicasRegenerativas.map((practica: string, index: number) => (
                 <Badge key={index} variant="secondary" className="bg-green-50 text-green-700">
                   {practica}
                 </Badge>
