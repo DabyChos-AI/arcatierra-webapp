@@ -464,7 +464,7 @@ export default function TiendaPage() {
 
       {/* Productores */}
       <div>
-        <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Productores</h3>
+        <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Agricultores</h3>
         <div className="space-y-1 sm:space-y-2 max-h-32 sm:max-h-40 overflow-y-auto">
           {productores.map((productor) => (
             <label key={productor} className="flex items-center space-x-2 text-white/90 hover:text-white cursor-pointer">
@@ -667,7 +667,7 @@ export default function TiendaPage() {
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <Input
                   type="text"
-                  placeholder="Busca productos frescos, productores..."
+                  placeholder="Busca alimentos frescos, agricultores..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onFocus={() => setShowSearchSuggestions(true)}
@@ -763,7 +763,7 @@ export default function TiendaPage() {
               <div className="space-y-3 sm:space-y-4 lg:space-y-6">
                 <div className="text-center">
                   <h2 className="text-sm sm:text-lg lg:text-xl font-bold text-white mb-1 lg:mb-2">Filtros</h2>
-                  <p className="text-white/70 text-xs sm:text-sm hidden sm:block">Encuentra productos perfectos</p>
+                  <p className="text-white/70 text-xs sm:text-sm hidden sm:block">Encuentra tus alimentos</p>
                 </div>
                 <FiltersBody />
               </div>
@@ -797,7 +797,7 @@ export default function TiendaPage() {
                   {showFavorites ? 'Mis Favoritos' : activeCategory?.name || 'Productos'}
                 </h2>
                 <p className="text-sm sm:text-base text-gray-600">
-                  {sortedProducts.length} productos encontrados
+                  {sortedProducts.length} alimentos encontrados
                 </p>
               </div>
               
