@@ -212,27 +212,56 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
 
           {/* Descripción */}
           <div>
-            <h2 className="font-medium mb-2">Descripción</h2>
-            <p className="text-gray-600">{producto.descripcion}</p>
-          </div>
-
-          {/* Trazabilidad */}
-          <div>
-            <h2 className="font-medium mb-4">Trazabilidad del Producto</h2>
-            <ProductTraceability product={producto} compact={false} />
+            <h2 className="text-xl font-semibold mb-3 text-gray-800">Descripción</h2>
+            <div className="space-y-3">
+              {/* Información básica */}
+              <p className="text-gray-700 leading-relaxed">
+                {producto.descripcion.split('CARACTERÍSTICAS:')[0]?.trim()}
+              </p>
+              
+              {/* Lista de características con palomitas */}
+              {producto.descripcion.includes('CARACTERÍSTICAS:') && (
+                <div>
+                  <ul className="space-y-2 mt-3">
+                    {producto.descripcion
+                      .split('CARACTERÍSTICAS:')[1]
+                      ?.split('✅')
+                      .filter(item => item.trim().length > 0)
+                      .map((item: string, index: number) => (
+                        <li key={index} className="flex items-start">
+                          <Check className="h-4 w-4 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700 leading-relaxed">{item.trim()}</span>
+                        </li>
+                      ))
+                    }
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Características destacadas */}
           <div>
-            <h2 className="font-medium mb-2">Características destacadas</h2>
-            <ul className="space-y-2">
-              {(producto.descripcion || '').split('. ').filter(s => s.length > 0).map((caracteristica: string, index: number) => (
-                <li key={index} className="flex items-start">
-                  <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
-                  <span className="text-gray-600">{caracteristica}</span>
-                </li>
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">Características destacadas</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                'Sin pesticidas',
+                'Producción local', 
+                'Comercio justo',
+                'Empaque eco-friendly'
+              ].map((caracteristica: string, index: number) => (
+                <div key={index} className="flex items-center">
+                  <Check className="h-5 w-5 text-green-600 mr-3 flex-shrink-0" />
+                  <span className="text-gray-800 font-medium">{caracteristica}</span>
+                </div>
               ))}
-            </ul>
+            </div>
+          </div>
+
+          {/* Trazabilidad */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">Trazabilidad del Producto</h2>
+            <ProductTraceability product={producto} compact={false} />
           </div>
 
           {/* Etiquetas */}
