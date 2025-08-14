@@ -249,6 +249,15 @@ export default function SignIn() {
             )}
           </Button>
 
+          {/* Continuar sin cuenta */}
+          <Button
+            onClick={() => router.push('/suscripciones')}
+            disabled={loading}
+            className="w-full bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all duration-200 py-3 px-4 rounded-lg"
+          >
+            Continuar sin cuenta
+          </Button>
+
           <div className="text-center text-sm text-gray-500 mt-6">
             Al iniciar sesión, aceptas nuestros{' '}
             <a href="/terminos" className="text-[#B15543] hover:underline">

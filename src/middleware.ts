@@ -32,7 +32,6 @@ export const config = {
     '/dashboard/:path*',
     '/ordenes/:path*',
     '/perfil/:path*',
-    '/admin/:path*',
-    '/suscripciones/:path*'
+    '/admin/:path*'
   ]
 }

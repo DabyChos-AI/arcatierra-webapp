@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Suspense } from 'react'
-import { Search, Heart, ShoppingCart, Grid3X3, LayoutGrid, Star, Filter, Eye, MapPin, ChevronDown } from 'lucide-react'
+import { Search, Heart, ShoppingCart, Grid3X3, LayoutGrid, Star, Filter, Eye, MapPin, ChevronDown, ChevronRight, X } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,12 +13,23 @@ import Link from 'next/link'
 import ProductQuickView from '@/components/ProductQuickView'
 import { productos, Product } from '@/data/productos'
 import { categoriasSEO, getSEODataByName } from '@/data/categorias'
+import { destacadosSemana } from '@/data/destacados'
 
 // TIPOS DEFINIDOS
 
 interface SearchSuggestionsProps {
   searchTerm: string
   onSelectProduct: (product: { nombre: string }) => void
+}
+
+// Helper: imagen de canastas por nombre
+function getCanastaImage(nombre: string, original?: string): string {
+  const n = nombre.toLowerCase()
+  if (n.includes('canasta individual')) return '/images/canastas/canastaindividual.jpg'
+  if (n.includes('canasta media')) return '/images/canastas/canastamedia.jpg'
+  if (n.includes('canasta completa')) return '/images/canastas/canastacompleta.jpg'
+  if (n.includes('canasta familiar')) return '/images/canastas/canastafamiliar.jpg'
+  return original && original.trim() !== '' ? original : '/placeholder-product.jpg'
 }
 
 // Componente para las sugerencias de búsqueda
@@ -50,7 +61,7 @@ const SearchSuggestions = ({ searchTerm, onSelectProduct }: SearchSuggestionsPro
               >
                 <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
                   <img
-                    src={product.imagen || '/placeholder-product.jpg'}
+                    src={getCanastaImage(product.nombre, product.imagen)}
                     alt={product.nombre}
                     className="w-full h-full object-cover"
                   />
@@ -332,6 +343,7 @@ export default function TiendaPage() {
   const [sortBy, setSortBy] = useState('mas-recientes')
   const [showFavorites, setShowFavorites] = useState(false)
   const [showMobileFilters, setShowMobileFilters] = useState(false)
+  const [isDesktopFiltersCollapsed, setIsDesktopFiltersCollapsed] = useState(false)
 
   // Cargar favoritos y carrito desde localStorage al iniciar
   useEffect(() => {
@@ -356,6 +368,147 @@ export default function TiendaPage() {
     window.addEventListener('cartUpdated', handleCartUpdate)
     return () => window.removeEventListener('cartUpdated', handleCartUpdate)
   }, [])
+
+  // Listener global para abrir/cerrar filtros en móvil
+  useEffect(() => {
+    const handleToggleFilters = () => setShowMobileFilters(prev => !prev)
+    window.addEventListener('toggleFiltersSidebar', handleToggleFilters)
+    return () => window.removeEventListener('toggleFiltersSidebar', handleToggleFilters)
+  }, [])
+
+  // Cerrar drawer con Escape
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowMobileFilters(false)
+    }
+    if (showMobileFilters) window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [showMobileFilters])
+
+  // Cargar filtros guardados
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('arcaTierraFilters')
+      if (saved) {
+        const f = JSON.parse(saved)
+        if (f.selectedCategory) setSelectedCategory(f.selectedCategory)
+        if (typeof f.precioMin === 'string') setPrecioMin(f.precioMin)
+        if (typeof f.precioMax === 'string') setPrecioMax(f.precioMax)
+        if (Array.isArray(f.selectedProductores)) setSelectedProductores(f.selectedProductores)
+        if (Array.isArray(f.selectedCertificaciones)) setSelectedCertificaciones(f.selectedCertificaciones)
+        if (f.sortBy) setSortBy(f.sortBy)
+      }
+    } catch {}
+  }, [])
+
+  // Guardar filtros
+  const saveFilters = (closeAfter?: boolean) => {
+    try {
+      const data = {
+        selectedCategory,
+        precioMin,
+        precioMax,
+        selectedProductores,
+        selectedCertificaciones,
+        sortBy,
+      }
+      localStorage.setItem('arcaTierraFilters', JSON.stringify(data))
+    } catch {}
+    if (closeAfter) setShowMobileFilters(false)
+  }
+
+  // Cuerpo reutilizable de filtros
+  const FiltersBody = () => (
+    <>
+      {/* Categorías */}
+      <div>
+        <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Categorías</h3>
+        <div className="space-y-1 sm:space-y-2">
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`w-full flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-left transition-all ${
+                selectedCategory === category.id
+                  ? 'bg-[#B15543] text-white'
+                  : 'text-white/90 hover:bg-white/10'
+              }`}
+            >
+              <span className="text-xs sm:text-sm">{category.emoji}</span>
+              <span className="text-xs sm:text-sm lg:text-sm truncate">{category.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Rango de precios */}
+      <div>
+        <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Rango de Precio</h3>
+        <div className="space-y-2 sm:space-y-3">
+          <Input
+            type="number"
+            placeholder="Precio mínimo"
+            value={precioMin}
+            onChange={(e) => setPrecioMin(e.target.value)}
+            className="bg-white/10 border-white/20 text-white placeholder-white/60 text-xs sm:text-sm h-8 sm:h-10"
+          />
+          <Input
+            type="number"
+            placeholder="Precio máximo"
+            value={precioMax}
+            onChange={(e) => setPrecioMax(e.target.value)}
+            className="bg-white/10 border-white/20 text-white placeholder-white/60 text-xs sm:text-sm h-8 sm:h-10"
+          />
+        </div>
+      </div>
+
+      {/* Productores */}
+      <div>
+        <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Productores</h3>
+        <div className="space-y-1 sm:space-y-2 max-h-32 sm:max-h-40 overflow-y-auto">
+          {productores.map((productor) => (
+            <label key={productor} className="flex items-center space-x-2 text-white/90 hover:text-white cursor-pointer">
+              <Checkbox
+                checked={selectedProductores.includes(productor)}
+                onCheckedChange={(checked: boolean) => {
+                  if (checked) {
+                    setSelectedProductores([...selectedProductores, productor])
+                  } else {
+                    setSelectedProductores(selectedProductores.filter(p => p !== productor))
+                  }
+                }}
+                className="border-white/30 data-[state=checked]:bg-[#B15543] data-[state=checked]:border-[#B15543]"
+              />
+              <span className="text-xs sm:text-sm text-white/90 truncate">{productor}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Certificaciones */}
+      <div>
+        <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Certificaciones</h3>
+        <div className="space-y-1 sm:space-y-2 max-h-32 sm:max-h-40 overflow-y-auto">
+          {certificaciones.map((cert) => (
+            <label key={cert} className="flex items-center space-x-2 text-white/90 hover:text-white cursor-pointer">
+              <Checkbox
+                checked={selectedCertificaciones.includes(cert)}
+                onCheckedChange={(checked: boolean) => {
+                  if (checked) {
+                    setSelectedCertificaciones([...selectedCertificaciones, cert])
+                  } else {
+                    setSelectedCertificaciones(selectedCertificaciones.filter(c => c !== cert))
+                  }
+                }}
+                className="border-white/30 data-[state=checked]:bg-[#B15543] data-[state=checked]:border-[#B15543]"
+              />
+              <span className="text-xs sm:text-sm text-white/90 truncate">{cert}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+    </>
+  )
 
   // Filtros funcionales
   const filteredProducts = productos.filter(product => {
@@ -394,93 +547,6 @@ export default function TiendaPage() {
     }
   })
 
-  const toggleFavorite = (productId: string, event: React.MouseEvent) => {
-    event.preventDefault()
-    event.stopPropagation()
-    
-    const product = productos.find(p => p.id === productId)
-    if (!product) return
-    
-    const isFavorite = favorites.includes(productId)
-    const newFavorites = isFavorite
-      ? favorites.filter(id => id !== productId)
-      : [...favorites, productId]
-    
-    setFavorites(newFavorites)
-    localStorage.setItem('arcaTierraFavoritos', JSON.stringify(newFavorites))
-    
-    // Mostrar toast
-    if (isFavorite) {
-      toast.favorite(`${product.nombre} eliminado de favoritos`, {
-        title: 'Producto eliminado de favoritos',
-        action: {
-          label: 'Deshacer',
-          onClick: () => {
-            const restored = [...favorites.filter(id => id !== productId), productId]
-            setFavorites(restored)
-            localStorage.setItem('arcaTierraFavoritos', JSON.stringify(restored))
-            toast.success(`${product.nombre} restaurado a favoritos`)
-          }
-        }
-      })
-    } else {
-      toast.favorite(`${product.nombre} añadido a favoritos`, {
-        title: 'Producto añadido a favoritos'
-      })
-    }
-  }
-
-  const addToCart = (product: Product, event: React.MouseEvent) => {
-    event.preventDefault()
-    event.stopPropagation()
-    
-    const cartItem = {
-      id: product.id,
-      name: product.nombre,
-      price: product.precio,
-      quantity: 1,
-      image: product.imagen,
-      unit: product.unidad
-    }
-    
-    const existingCart = JSON.parse(localStorage.getItem('arcaTierraCart') || '[]')
-    const existingItemIndex = existingCart.findIndex((item: any) => item.id === cartItem.id)
-    
-    if (existingItemIndex >= 0) {
-      existingCart[existingItemIndex].quantity += 1
-    } else {
-      existingCart.push(cartItem)
-    }
-    
-    localStorage.setItem('arcaTierraCart', JSON.stringify(existingCart))
-    setCartItems(existingCart)
-    
-    // Disparar evento para notificar al header que actualice el contador
-    window.dispatchEvent(new Event('cartUpdated'))
-    
-    // Usar el sistema global de toast
-    toast.cart(`${product.nombre} agregado al carrito`, {
-      title: '¡Excelente elección!',
-      action: {
-        label: 'Ver carrito',
-        onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
-      }
-    })
-    
-    // Ya no abrimos el carrito automáticamente para no tapar los toasts y mejorar UX
-    // window.dispatchEvent(new Event('toggleCartSidebar'))
-  }
-
-  const openQuickView = (product: Product, event: React.MouseEvent) => {
-    event.preventDefault()
-    event.stopPropagation()
-    setProductoQuickView(product)
-  }
-
-  const goToProductDetail = (productId: string) => {
-    window.location.href = `/producto/${productId}`
-  }
-
   const cartItemsCount = cartItems.reduce((total, item) => total + item.quantity, 0)
 
   const activeCategory = categories.find(cat => cat.id === selectedCategory)
@@ -500,6 +566,63 @@ export default function TiendaPage() {
         return 'bg-gray-500 hover:bg-gray-600'
     }
   }
+
+  // Navegar al detalle del producto
+  const goToProductDetail = (productId: string) => {
+    router.push(`/producto/${productId}`)
+  }
+
+  // Marcar/desmarcar favoritos y persistir en localStorage
+  const toggleFavorite = (productId: string, e?: any) => {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation()
+    setFavorites(prev => {
+      const exists = prev.includes(productId)
+      const next = exists ? prev.filter(id => id !== productId) : [...prev, productId]
+      localStorage.setItem('arcaTierraFavoritos', JSON.stringify(next))
+      return next
+    })
+  }
+
+  // Abrir vista rápida
+  const openQuickView = (product: Product, e?: any) => {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation()
+    setProductoQuickView({ ...product, imagen: getCanastaImage(product.nombre, product.imagen) })
+  }
+
+  // Agregar al carrito y mostrar toast
+  const addToCart = (product: Product, e?: any) => {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation()
+    const cartItem = {
+      id: product.id,
+      name: product.nombre,
+      price: product.precio,
+      quantity: 1,
+      image: product.imagen,
+      unit: product.unidad
+    }
+    const existingCart = JSON.parse(localStorage.getItem('arcaTierraCart') || '[]')
+    const existingItemIndex = existingCart.findIndex((item: any) => item.id === cartItem.id)
+    if (existingItemIndex >= 0) {
+      existingCart[existingItemIndex].quantity += 1
+    } else {
+      existingCart.push(cartItem)
+    }
+    localStorage.setItem('arcaTierraCart', JSON.stringify(existingCart))
+    setCartItems(existingCart)
+    window.dispatchEvent(new Event('cartUpdated'))
+    toast.cart(`${product.nombre} agregado al carrito`, {
+      title: '¡Excelente elección!',
+      action: {
+        label: 'Ver carrito',
+        onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
+      }
+    })
+  }
+
+  // Productos destacados de la semana (IDs definidos en src/data/destacados.ts)
+  const featuredProducts = destacadosSemana
+    .map(id => productos.find(p => p.id === id))
+    .filter((p): p is Product => Boolean(p))
 
   return (
     <div className="min-h-screen bg-[#F5F2E8] pt-20">
@@ -549,7 +672,7 @@ export default function TiendaPage() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onFocus={() => setShowSearchSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
-                  className="pl-12 pr-4 py-4 text-lg bg-white border-0 rounded-xl shadow-lg focus:ring-2 focus:ring-white focus:ring-opacity-50"
+                  className="pl-12 pr-4 py-4 text-lg bg-white border-0 rounded-xl shadow-lg focus:ring-2 focus:ring-white focus:ring-opacity-50 text-black placeholder:text-gray-500 caret-black"
                 />
               </div>
               {showSearchSuggestions && (
@@ -567,105 +690,85 @@ export default function TiendaPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex gap-2 sm:gap-4 lg:gap-8 max-w-7xl mx-auto">
-          {/* Sidebar de filtros - Siempre visible, lateral en móvil */}
-          <div className="w-44 sm:w-52 lg:w-80 bg-[#33503E] rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-6 h-fit max-h-[calc(100vh-8rem)] lg:max-h-none overflow-y-auto lg:sticky lg:top-6 shadow-lg flex-shrink-0">
-            <div className="space-y-3 sm:space-y-4 lg:space-y-6">
-              {/* Título */}
-              <div className="text-center">
-                <h2 className="text-sm sm:text-lg lg:text-xl font-bold text-white mb-1 lg:mb-2">Filtros</h2>
-                <p className="text-white/70 text-xs sm:text-sm hidden sm:block">Encuentra productos perfectos</p>
-              </div>
+        {/* Botón flotante móvil para abrir filtros */}
+        {!showMobileFilters && (
+          <button
+            onClick={() => setShowMobileFilters(true)}
+            className="fixed left-0 top-1/2 -translate-y-1/2 bg-[#33503E] text-white px-2 py-5 rounded-r-lg shadow-lg z-[9990] flex lg:hidden flex-col items-center gap-2"
+            aria-label="Abrir filtros"
+          >
+            <ChevronRight className="w-5 h-5" />
+            <span className="font-medium [writing-mode:vertical-lr] rotate-180 my-2">Filtros</span>
+          </button>
+        )}
 
-              {/* Categorías */}
-              <div>
-                <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Categorías</h3>
-                <div className="space-y-1 sm:space-y-2">
-                  {categories.map((category) => (
-                    <button
-                      key={category.id}
-                      onClick={() => setSelectedCategory(category.id)}
-                      className={`w-full flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-left transition-all ${
-                        selectedCategory === category.id
-                          ? 'bg-[#B15543] text-white'
-                          : 'text-white/90 hover:bg-white/10'
-                      }`}
-                    >
-                      <span className="text-xs sm:text-sm">{category.emoji}</span>
-                      <span className="text-xs sm:text-sm lg:text-sm truncate">{category.name}</span>
-                    </button>
-                  ))}
+        {/* Botón flotante desktop cuando colapsado */}
+        {isDesktopFiltersCollapsed && (
+          <button
+            onClick={() => setIsDesktopFiltersCollapsed(false)}
+            className="hidden lg:flex fixed left-0 top-1/2 -translate-y-1/2 bg-[#33503E] text-white px-2 py-5 rounded-r-lg shadow-lg z-[9990] flex-col items-center gap-2"
+            aria-label="Mostrar filtros"
+          >
+            <ChevronRight className="w-5 h-5" />
+            <span className="font-medium [writing-mode:vertical-lr] rotate-180 my-2">Filtros</span>
+          </button>
+        )}
+
+        {/* Drawer móvil de filtros */}
+        {showMobileFilters && (
+          <>
+            <div
+              className="fixed inset-0 bg-black/50 z-[9998] lg:hidden"
+              onClick={() => setShowMobileFilters(false)}
+            />
+            <div className="fixed left-0 top-0 h-screen w-80 bg-[#33503E] shadow-xl z-[9999] lg:hidden flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b border-white/20">
+                <h2 className="text-white text-lg font-bold flex items-center gap-2"><Filter className="w-5 h-5"/>Filtros</h2>
+                <div className="flex items-center gap-2">
+                  <Button onClick={() => saveFilters(true)} size="sm" className="bg-[#B15543] hover:bg-[#9d4a39] text-white px-3 py-1.5">
+                    Guardar
+                  </Button>
+                  <button onClick={() => setShowMobileFilters(false)} className="text-white/80 hover:text-white" aria-label="Cerrar filtros">
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
-
-              {/* Rango de precios */}
-              <div>
-                <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Rango de Precio</h3>
-                <div className="space-y-2 sm:space-y-3">
-                  <Input
-                    type="number"
-                    placeholder="Precio mínimo"
-                    value={precioMin}
-                    onChange={(e) => setPrecioMin(e.target.value)}
-                    className="bg-white/10 border-white/20 text-white placeholder-white/60 text-xs sm:text-sm h-8 sm:h-10"
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Precio máximo"
-                    value={precioMax}
-                    onChange={(e) => setPrecioMax(e.target.value)}
-                    className="bg-white/10 border-white/20 text-white placeholder-white/60 text-xs sm:text-sm h-8 sm:h-10"
-                  />
-                </div>
+              <div className="flex-1 p-4 overflow-y-auto space-y-6">
+                <FiltersBody />
               </div>
-
-              {/* Productores */}
-              <div>
-                <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Productores</h3>
-                <div className="space-y-1 sm:space-y-2 max-h-32 sm:max-h-40 overflow-y-auto">
-                  {productores.map((productor) => (
-                    <label key={productor} className="flex items-center space-x-2 text-white/90 hover:text-white cursor-pointer">
-                      <Checkbox
-                        checked={selectedProductores.includes(productor)}
-                        onCheckedChange={(checked: boolean) => {
-                          if (checked) {
-                            setSelectedProductores([...selectedProductores, productor])
-                          } else {
-                            setSelectedProductores(selectedProductores.filter(p => p !== productor))
-                          }
-                        }}
-                        className="border-white/30 data-[state=checked]:bg-[#B15543] data-[state=checked]:border-[#B15543]"
-                      />
-                      <span className="text-xs sm:text-sm text-white/90 truncate">{productor}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Certificaciones */}
-              <div>
-                <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Certificaciones</h3>
-                <div className="space-y-1 sm:space-y-2 max-h-32 sm:max-h-40 overflow-y-auto">
-                  {certificaciones.map((cert) => (
-                    <label key={cert} className="flex items-center space-x-2 text-white/90 hover:text-white cursor-pointer">
-                      <Checkbox
-                        checked={selectedCertificaciones.includes(cert)}
-                        onCheckedChange={(checked: boolean) => {
-                          if (checked) {
-                            setSelectedCertificaciones([...selectedCertificaciones, cert])
-                          } else {
-                            setSelectedCertificaciones(selectedCertificaciones.filter(c => c !== cert))
-                          }
-                        }}
-                        className="border-white/30 data-[state=checked]:bg-[#B15543] data-[state=checked]:border-[#B15543]"
-                      />
-                      <span className="text-xs sm:text-sm text-white/90 truncate">{cert}</span>
-                    </label>
-                  ))}
-                </div>
+              <div className="p-4 border-t border-white/20">
+                <Button onClick={() => saveFilters(true)} className="w-full bg-[#B15543] hover:bg-[#9d4a39] text-white">Aplicar filtros</Button>
               </div>
             </div>
-          </div>
+          </>
+        )}
+
+        <div className="flex gap-2 sm:gap-4 lg:gap-8 max-w-7xl mx-auto">
+          {/* Sidebar de filtros - oculto en móvil, colapsable en desktop */}
+          {!isDesktopFiltersCollapsed && (
+            <div className="hidden lg:block w-44 sm:w-52 lg:w-80 bg-[#33503E] rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-6 h-fit max-h-[calc(100vh-8rem)] overflow-y-auto lg:sticky lg:top-6 shadow-lg flex-shrink-0 relative">
+              {/* Botón minimizar estilo pestaña vertical */}
+              <button
+                onClick={() => setIsDesktopFiltersCollapsed(true)}
+                className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 bg-[#33503E] text-white px-2 py-5 rounded-l-lg shadow-lg z-[10000] flex-col items-center gap-2 border border-white/10"
+                aria-label="Minimizar filtros"
+              >
+                <ChevronRight className="w-5 h-5" />
+                <span className="font-medium [writing-mode:vertical-lr] rotate-180 my-2">Filtros</span>
+              </button>
+
+              <div className="absolute right-2 top-2 flex items-center gap-2">
+                <Button onClick={() => saveFilters(false)} size="sm" className="bg-[#B15543] hover:bg-[#9d4a39] text-white px-3 py-1.5">Guardar</Button>
+              </div>
+              <div className="space-y-3 sm:space-y-4 lg:space-y-6">
+                <div className="text-center">
+                  <h2 className="text-sm sm:text-lg lg:text-xl font-bold text-white mb-1 lg:mb-2">Filtros</h2>
+                  <p className="text-white/70 text-xs sm:text-sm hidden sm:block">Encuentra productos perfectos</p>
+                </div>
+                <FiltersBody />
+              </div>
+            </div>
+          )}
 
           {/* Contenido principal */}
           <div className="flex-1">
@@ -780,7 +883,7 @@ export default function TiendaPage() {
                   {/* Imagen del producto */}
                   <div className="relative aspect-square overflow-hidden">
                     <img
-                      src={product.imagen || '/placeholder-product.jpg'}
+                      src={getCanastaImage(product.nombre, product.imagen)}
                       alt={product.nombre}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
@@ -968,53 +1071,37 @@ export default function TiendaPage() {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300">
-              <div className="w-16 h-16 bg-[#B15543]/10 rounded-full flex items-center justify-center mb-4">
-                <span className="text-2xl">🌱</span>
-              </div>
-              <h3 className="font-bold text-lg mb-2 text-[#33503E]">Apio fresco</h3>
-              <p className="text-gray-600 text-sm mb-3">
-                Cultivado por Juan Pérez en Huasca de Ocampo, Hidalgo
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="text-[#B15543] font-bold">$25/kg</span>
-                <button className="bg-[#B15543] text-white px-4 py-2 rounded-lg hover:bg-[#9d4a39] transition-colors">
-                  Ver producto
-                </button>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300">
-              <div className="w-16 h-16 bg-[#B15543]/10 rounded-full flex items-center justify-center mb-4">
-                <span className="text-2xl">🥕</span>
-              </div>
-              <h3 className="font-bold text-lg mb-2 text-[#33503E]">Zanahoria de colores</h3>
-              <p className="text-gray-600 text-sm mb-3">
-                Directa de las chinampas de Xochimilco
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="text-[#B15543] font-bold">$30/kg</span>
-                <button className="bg-[#B15543] text-white px-4 py-2 rounded-lg hover:bg-[#9d4a39] transition-colors">
-                  Ver producto
-                </button>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300">
-              <div className="w-16 h-16 bg-[#B15543]/10 rounded-full flex items-center justify-center mb-4">
-                <span className="text-2xl">🍅</span>
-              </div>
-              <h3 className="font-bold text-lg mb-2 text-[#33503E]">Tomate verde</h3>
-              <p className="text-gray-600 text-sm mb-3">
-                Cosechado en Amanalco, Estado de México
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="text-[#B15543] font-bold">$35/kg</span>
-                <button className="bg-[#B15543] text-white px-4 py-2 rounded-lg hover:bg-[#9d4a39] transition-colors">
-                  Ver producto
-                </button>
-              </div>
-            </div>
+            {featuredProducts.length > 0 ? (
+              featuredProducts.map((product) => (
+                <div key={product.id} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300">
+                  <div className="w-16 h-16 bg-[#B15543]/10 rounded-full flex items-center justify-center mb-4 overflow-hidden">
+                    {product.imagen ? (
+                      <img src={product.imagen} alt={product.nombre} className="w-full h-full object-cover rounded-full" />
+                    ) : (
+                      <span className="text-2xl">🌱</span>
+                    )}
+                  </div>
+                  <h3 className="font-bold text-lg mb-2 text-[#33503E]">{product.nombre}</h3>
+                  {(product.productor || product.ubicacion) ? (
+                    <p className="text-gray-600 text-sm mb-3">
+                      {[product.productor, product.ubicacion].filter(Boolean).join(' · ')}
+                    </p>
+                  ) : (
+                    <p className="text-gray-600 text-sm mb-3">{product.categoria.replaceAll('-', ' ')}</p>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[#B15543] font-bold">
+                      {product.precio > 0 ? `$${product.precio}${product.unidad ? `/${product.unidad}` : ''}` : '—'}
+                    </span>
+                    <button onClick={() => goToProductDetail(product.id)} className="bg-[#B15543] text-white px-4 py-2 rounded-lg hover:bg-[#9d4a39] transition-colors">
+                      Ver producto
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-3 text-center text-gray-600">Pronto publicaremos los destacados.</div>
+            )}
           </div>
         </div>
       </section>

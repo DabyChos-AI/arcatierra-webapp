@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 
 // Esta función se ejecuta en el servidor
 export async function generateMetadata(): Promise<Metadata> {
@@ -77,17 +77,6 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     
-    // Viewport y mobile
-    viewport: {
-      width: 'device-width',
-      initialScale: 1,
-      maximumScale: 5,
-      userScalable: true,
-    },
-    
-    // Color de tema para navegadores
-    themeColor: '#B15543',
-    
     // Metadatos adicionales
     other: {
       'geo.region': 'MX-CMX',
@@ -99,6 +88,15 @@ export async function generateMetadata(): Promise<Metadata> {
     },
   };
 }
+
+// Viewport export (Next.js App Router)
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: '#B15543',
+};
 
 // Este es un componente de servidor que carga los datos
 export default function TiendaLayout({

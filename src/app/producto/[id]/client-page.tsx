@@ -10,6 +10,16 @@ import { productos, Product } from '@/data/productos'
 import { useToast } from '@/components/ui/Toast'
 import ProductTraceability from '@/components/ProductTraceability'
 
+// Helper: imagen de canastas por nombre
+function getCanastaImage(nombre: string, original?: string): string {
+  const n = nombre.toLowerCase()
+  if (n.includes('canasta individual')) return '/images/canastas/canastaindividual.jpg'
+  if (n.includes('canasta media')) return '/images/canastas/canastamedia.jpg'
+  if (n.includes('canasta completa')) return '/images/canastas/canastacompleta.jpg'
+  if (n.includes('canasta familiar')) return '/images/canastas/canastafamiliar.jpg'
+  return original && original.trim() !== '' ? original : '/placeholder-product.jpg'
+}
+
 type ClientProductoPageProps = {
   id: string;
 };
@@ -146,7 +156,7 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
         <div className="space-y-4">
           <div className="relative bg-gray-100 rounded-xl overflow-hidden aspect-square">
             <img
-              src={producto.imagen || '/placeholder-product.jpg'}
+              src={getCanastaImage(producto.nombre, producto.imagen)}
               alt={producto.nombre}
               className="w-full h-full object-cover"
             />
@@ -157,7 +167,7 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
             {[0, 1, 2].map((index: number) => (
               <div key={index} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-green-500" onClick={() => setImagenSeleccionada(index)}>
                 <img
-                  src={producto.imagen || '/placeholder-product.jpg'}
+                  src={getCanastaImage(producto.nombre, producto.imagen)}
                   alt={`${producto.nombre} ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
