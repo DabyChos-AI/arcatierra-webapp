@@ -6,9 +6,9 @@ import { lazy } from 'react';
 const RecipeDetailClient = lazy(() => import('./client-page'));
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function generateStaticParams() {
@@ -18,7 +18,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const recipe = recipesData.find((r) => r.id === parseInt(params.id));
+  const resolvedParams = await params;
+  const recipe = recipesData.find((r) => r.id === parseInt(resolvedParams.id));
   
   if (!recipe) {
     return {
@@ -45,8 +46,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default function RecipePage({ params }: PageProps) {
-  const recipe = recipesData.find((r) => r.id === parseInt(params.id));
+export default async function RecipePage({ params }: PageProps) {
+  const resolvedParams = await params;
+  const recipe = recipesData.find((r) => r.id === parseInt(resolvedParams.id));
 
   if (!recipe) {
     return (

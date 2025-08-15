@@ -97,6 +97,131 @@ export default function ClientRecetasPage() {
     }
   };
 
+  // Función para agregar ingredientes de una receta al carrito
+  const addIngredientsToCart = async (recipe: any) => {
+    try {
+      // Importar datos de productos desde el archivo
+      const productModule = await import('@/data/productos');
+      const productData = productModule.productos;
+      
+      const matchedProducts: any[] = [];
+      const notFoundIngredients: string[] = [];
+      
+      recipe.ingredients.forEach((ingredient: string) => {
+        // Limpiar el ingrediente removiendo cantidades y medidas para buscar solo el nombre del producto
+        const cleanIngredient = ingredient
+          .replace(/^\d+(\.\d+)?\s*(g|gramos?|kg|kilogramos?|ml|mililitros?|l|litros?|cucharadas?|cucharaditas?|tazas?|manojos?|dientes?|unidades?)\s+(de\s+)?/gi, '')
+          .replace(/^\d+\s+(de\s+)?/gi, '')
+          .replace(/\s*(mediana?s?|grande?s?|pequeña?s?|fresco?s?|orgánico?s?|extra\s+virgen|en\s+polvo|rallado?s?)\s*/gi, ' ')
+          .replace(/jugo\s+de\s+/gi, '')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .toLowerCase();
+        
+        // Buscar producto con coincidencia ESTRICTA - solo productos vegetarianos relevantes
+        const matchingProduct = productData.find((product: any) => {
+          const productName = product.nombre.toLowerCase();
+          
+          // Coincidencia exacta
+          if (productName === cleanIngredient) return true;
+          
+          // Lista de coincidencias específicas y estrictas para evitar agregar carnes
+          const specificMatches: { [key: string]: string[] } = {
+            'acelgas': ['acelgas'],
+            'kale': ['kale'],
+            'hojas verdes': ['hojas', 'lechuga', 'espinacas', 'rugula', 'arugula'],
+            'mix de hojas': ['hojas', 'lechuga', 'espinacas', 'rugula', 'arugula'],
+            'tomates cherry': ['tomates', 'cherry'],
+            'tomates': ['tomates'],
+            'pepino': ['pepino', 'pepinos'],
+            'zanahorias': ['zanahoria', 'zanahorias'],
+            'rábanos': ['rábano', 'rábanos'],
+            'cebolla': ['cebolla', 'cebollas'],
+            'cebolla morada': ['cebolla'],
+            'ajo': ['ajo', 'ajos'],
+            'jengibre': ['jengibre'],
+            'cúrcuma': ['cúrcuma'],
+            'aceite de oliva': ['aceite', 'oliva'],
+            'limón': ['limón', 'limones'],
+            'sal marina': ['sal'],
+            'especias': ['especias', 'condimentos'],
+            'hierbas frescas': ['hierbas', 'perejil', 'cilantro', 'albahaca']
+          };
+          
+          // Buscar coincidencia específica
+          for (const [ingredient, validProducts] of Object.entries(specificMatches)) {
+            if (cleanIngredient.includes(ingredient)) {
+              return validProducts.some(validProduct => productName.includes(validProduct));
+            }
+          }
+          
+          // Si no hay coincidencia específica, solo permitir coincidencia exacta
+          return false;
+        });
+        
+        if (matchingProduct) {
+          matchedProducts.push({
+            id: matchingProduct.id,
+            name: matchingProduct.nombre,
+            price: matchingProduct.precio,
+            quantity: 1,
+            image: matchingProduct.imagen,
+            unit: matchingProduct.unidad,
+            originalIngredient: ingredient
+          });
+        } else {
+          notFoundIngredients.push(ingredient);
+        }
+      });
+      
+      // Agregar productos encontrados al carrito
+      if (matchedProducts.length > 0) {
+        const existingCart = JSON.parse(localStorage.getItem('arcaTierraCart') || '[]');
+        
+        matchedProducts.forEach(item => {
+          const existingItemIndex = existingCart.findIndex((cartItem: any) => cartItem.id === item.id);
+          if (existingItemIndex >= 0) {
+            existingCart[existingItemIndex].quantity += item.quantity;
+          } else {
+            existingCart.push(item);
+          }
+        });
+        
+        localStorage.setItem('arcaTierraCart', JSON.stringify(existingCart));
+        window.dispatchEvent(new Event('cartUpdated'));
+        
+        // Toast de éxito
+        const addedCount = matchedProducts.length;
+        const totalIngredients = recipe.ingredients.length;
+        
+        toast.cart(`${addedCount} de ${totalIngredients} ingredientes agregados al carrito`, {
+          title: `Ingredientes de "${recipe.title}"`,
+          action: {
+            label: 'Ver carrito',
+            onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
+          }
+        });
+        
+        // Si hay ingredientes no encontrados, mostrar toast informativo
+        if (notFoundIngredients.length > 0) {
+          setTimeout(() => {
+            toast.warning(`${notFoundIngredients.length} ingredientes no disponibles en tienda: ${notFoundIngredients.join(', ')}`, {
+              title: 'Algunos ingredientes no encontrados'
+            });
+          }, 1500);
+        }
+      } else {
+        // No se encontraron productos
+        toast.warning('No se encontraron productos disponibles para esta receta', {
+          title: 'Ingredientes no disponibles'
+        });
+      }
+    } catch (error) {
+      console.error('Error al agregar ingredientes al carrito:', error);
+      toast.error('Error al agregar ingredientes al carrito');
+    }
+  };
+
   // Filter toggle functionality
   const toggleFilter = (category: 'difficulty' | 'season' | 'tags', value: string) => {
     switch (category) {
@@ -380,15 +505,30 @@ export default function ClientRecetasPage() {
                       transition={{ duration: 0.5, delay: index * 0.1 }}
                       className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300"
                     >
-                      <div className="relative">
+                      <div className="relative group">
                         <img
                           src={recipe.image}
                           alt={recipe.title}
-                          className="w-full h-48 object-cover"
+                          className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                         />
+                        
+                        {/* Ingredients Hover Overlay */}
+                        <div className="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center p-4">
+                          <div className="text-white text-center max-w-full overflow-hidden">
+                            <h4 className="text-sm font-semibold mb-3 text-yellow-300">🥘 Ingredientes:</h4>
+                            <div className="space-y-1 max-h-32 overflow-y-auto scrollbar-thin">
+                              {recipe.ingredients.map((ingredient, idx) => (
+                                <div key={idx} className="text-xs bg-white/20 rounded-full px-2 py-1 backdrop-blur-sm">
+                                  • {ingredient}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
                         <button
                           onClick={() => toggleLike(recipe.id)}
-                          className={`absolute top-3 right-3 p-2 rounded-full transition-all ${
+                          className={`absolute top-3 right-3 p-2 rounded-full transition-all z-10 ${
                             likedRecipes.includes(recipe.id)
                               ? 'bg-red-100 text-red-600'
                               : 'bg-white/80 text-gray-600 hover:text-red-600'
@@ -396,7 +536,7 @@ export default function ClientRecetasPage() {
                         >
                           <Heart className={`w-5 h-5 ${likedRecipes.includes(recipe.id) ? 'fill-current' : ''}`} />
                         </button>
-                        <div className="absolute bottom-3 left-3 flex gap-2">
+                        <div className="absolute bottom-3 left-3 flex gap-2 z-10">
                           <span className="px-2 py-1 bg-white/90 rounded-full text-xs font-medium" style={{ color: '#33503E' }}>
                             {recipe.difficulty}
                           </span>
@@ -445,10 +585,15 @@ export default function ClientRecetasPage() {
                             </button>
                           </Link>
                           <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addIngredientsToCart(recipe);
+                            }}
                             className="py-2 px-4 text-white rounded-lg hover:shadow-lg transition-all"
                             style={{ backgroundColor: '#B15543' }}
                             onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#975543'}
                             onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#B15543'}
+                            title="Agregar ingredientes al carrito"
                           >
                             <ShoppingCart className="w-4 h-4" />
                           </button>

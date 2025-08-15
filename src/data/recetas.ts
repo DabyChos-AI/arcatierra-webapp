@@ -85,7 +85,7 @@ export const recipesData: Recipe[] = [
     difficulty: "Fácil",
     season: "Primavera",
     tags: ["Sin desperdicio", "Verduras de hoja", "Agroecológico"],
-    ingredients: ["Acelgas Arca Tierra", "Cebolla morada", "Ajo orgánico"],
+    ingredients: ["200g de acelgas Arca Tierra", "1 cebolla morada mediana", "2 dientes de ajo orgánico"],
     rating: 4.8,
     reviews: 127,
     steps: [
@@ -132,9 +132,44 @@ export const recipesData: Recipe[] = [
     difficulty: "Medio",
     season: "Invierno",
     tags: ["Aprovechamiento integral", "Raíces", "Nutritivo"],
-    ingredients: ["Zanahorias con hojas", "Jengibre fresco", "Cúrcuma"],
+    ingredients: ["300g de zanahorias con hojas", "1 cucharada de jengibre fresco rallado", "1/2 cucharadita de cúrcuma en polvo"],
     rating: 4.9,
-    reviews: 89
+    reviews: 89,
+    steps: [
+      {
+        id: 1,
+        title: "Limpiar y separar",
+        description: "Lava cuidadosamente las zanahorias con sus hojas. Separa las hojas verdes de las raíces.",
+        duration: 5,
+        tips: ["Las hojas deben estar frescas y sin manchas", "Reserva las raíces para el paso siguiente"]
+      },
+      {
+        id: 2,
+        title: "Preparar raíces",
+        description: "Corta las zanahorias en bastones medianos. Ralla jengibre fresco y prepara cúrcuma.",
+        duration: 8
+      },
+      {
+        id: 3,
+        title: "Saltear raíces",
+        description: "En una sartén con aceite, saltea las zanahorias con jengibre y cúrcuma por 12 minutos.",
+        duration: 12
+      },
+      {
+        id: 4,
+        title: "Incorporar hojas",
+        description: "Agrega las hojas de zanahoria picadas y cocina 3-5 minutos hasta que se ablanden. Condimenta al gusto.",
+        duration: 5,
+        tips: ["Las hojas aportan un sabor ligeramente amargo y nutritivo", "No cocines demasiado las hojas para mantener nutrientes"]
+      }
+    ],
+    nutritionInfo: {
+      calories: 120,
+      protein: "3g",
+      carbs: "18g",
+      fat: "5g",
+      fiber: "4g"
+    }
   },
   {
     id: 3,
@@ -145,9 +180,45 @@ export const recipesData: Recipe[] = [
     difficulty: "Avanzado",
     season: "Todo el año",
     tags: ["Fermentación", "Conservación", "Probióticos"],
-    ingredients: ["Rábanos frescos", "Sal marina", "Especias aromáticas"],
+    ingredients: ["500g de rábanos frescos", "10g de sal marina (2% del peso)", "1 cucharadita de especias aromáticas mixtas"],
     rating: 4.7,
-    reviews: 156
+    reviews: 156,
+    steps: [
+      {
+        id: 1,
+        title: "Preparar rábanos",
+        description: "Lava y corta los rábanos en rodajas finas. Déjalos reposar con sal marina por 30 minutos.",
+        duration: 35,
+        tips: ["La sal extraerá el agua de los rábanos", "Usa 2% del peso de los rábanos en sal"]
+      },
+      {
+        id: 2,
+        title: "Preparar especias",
+        description: "Tuesta ligeramente las especias aromáticas y déjalas enfriar completamente.",
+        duration: 5
+      },
+      {
+        id: 3,
+        title: "Masajear y mezclar",
+        description: "Masajea los rábanos con las manos hasta que liberen más líquido. Agrega las especias.",
+        duration: 3,
+        tips: ["El masajeado es crucial para una buena fermentación", "Debe quedar líquido suficiente para cubrir"]
+      },
+      {
+        id: 4,
+        title: "Fermentar",
+        description: "Coloca en frasco limpio, presiona para que quede sumergido. Deja fermentar 3-7 días a temperatura ambiente.",
+        duration: 2,
+        tips: ["Los vegetales deben estar siempre bajo el líquido", "Prueba diariamente para controlar el sabor"]
+      }
+    ],
+    nutritionInfo: {
+      calories: 25,
+      protein: "1g",
+      carbs: "4g",
+      fat: "0g",
+      fiber: "2g"
+    }
   },
   {
     id: 4,
@@ -158,9 +229,45 @@ export const recipesData: Recipe[] = [
     difficulty: "Fácil",
     season: "Verano",
     tags: ["Fresco", "Crudo", "Vitaminas"],
-    ingredients: ["Mix de hojas", "Tomates cherry", "Pepino orgánico"],
+    ingredients: ["150g de mix de hojas verdes", "200g de tomates cherry", "1 pepino orgánico mediano"],
     rating: 4.6,
-    reviews: 203
+    reviews: 203,
+    steps: [
+      {
+        id: 1,
+        title: "Preparar las hojas",
+        description: "Lava cuidadosamente el mix de hojas verdes en agua fría. Seca con centrífuga o papel absorbente.",
+        duration: 5,
+        tips: ["Las hojas deben estar completamente secas", "Refrigera unos minutos para mayor frescura"]
+      },
+      {
+        id: 2,
+        title: "Cortar vegetales",
+        description: "Corta los tomates cherry por la mitad y el pepino en rodajas finas o cubos medianos.",
+        duration: 5
+      },
+      {
+        id: 3,
+        title: "Armar la ensalada",
+        description: "Combina las hojas, tomates y pepino en un bowl grande. Mezcla suavemente con las manos.",
+        duration: 3,
+        tips: ["Mezclar con las manos es más delicado que con utensilios", "Agrega el aderezo justo antes de servir"]
+      },
+      {
+        id: 4,
+        title: "Aderezar y servir",
+        description: "Agrega un aderezo simple de aceite de oliva, limón y sal. Sirve inmediatamente.",
+        duration: 2,
+        tips: ["El aderezo simple resalta los sabores naturales", "Sirve en platos fríos para mantener la frescura"]
+      }
+    ],
+    nutritionInfo: {
+      calories: 45,
+      protein: "2g",
+      carbs: "8g",
+      fat: "1g",
+      fiber: "3g"
+    }
   },
   {
     id: 5,
@@ -171,9 +278,45 @@ export const recipesData: Recipe[] = [
     difficulty: "Medio",
     season: "Otoño",
     tags: ["Cero desperdicio", "Nutritivo", "Económico"],
-    ingredients: ["Cáscaras vegetales", "Caldo casero", "Hierbas frescas"],
+    ingredients: ["200g de cáscaras vegetales variadas", "1 litro de caldo casero", "2 cucharadas de hierbas frescas mixtas"],
     rating: 4.5,
-    reviews: 98
+    reviews: 98,
+    steps: [
+      {
+        id: 1,
+        title: "Recolectar y limpiar",
+        description: "Reúne cáscaras y tallos limpios de vegetales (zanahoria, apio, cebolla, etc.). Lávalos bien.",
+        duration: 10,
+        tips: ["Guarda las cáscaras en el refrigerador hasta tener suficientes", "Evita cáscaras de papa con ojos verdes"]
+      },
+      {
+        id: 2,
+        title: "Saltear base aromática",
+        description: "En una olla grande, saltea las cáscaras de cebolla y tallos de apio con un poco de aceite por 5 minutos.",
+        duration: 5
+      },
+      {
+        id: 3,
+        title: "Agregar líquido y cocinar",
+        description: "Añade el caldo casero y el resto de cáscaras. Cocina a fuego medio por 25 minutos.",
+        duration: 25,
+        tips: ["El caldo debe cubrir bien todos los vegetales", "Remueve la espuma que se forme en la superficie"]
+      },
+      {
+        id: 4,
+        title: "Colar y finalizar",
+        description: "Cuela la sopa, presiona los sólidos para extraer sabor. Agrega hierbas frescas y condimenta.",
+        duration: 5,
+        tips: ["Puedes triturar algunos vegetales y regresarlos para textura", "Las hierbas frescas se agregan al final"]
+      }
+    ],
+    nutritionInfo: {
+      calories: 65,
+      protein: "2g",
+      carbs: "12g",
+      fat: "2g",
+      fiber: "4g"
+    }
   },
   {
     id: 6,
@@ -184,9 +327,45 @@ export const recipesData: Recipe[] = [
     difficulty: "Fácil",
     season: "Invierno",
     tags: ["Técnica especial", "Superfood", "Antioxidante"],
-    ingredients: ["Kale fresco", "Limón orgánico", "Aceite oliva"],
+    ingredients: ["1 manojo grande de kale fresco (aprox. 150g)", "Jugo de 1 limón orgánico", "2 cucharadas de aceite de oliva extra virgen"],
     rating: 4.8,
-    reviews: 167
+    reviews: 167,
+    steps: [
+      {
+        id: 1,
+        title: "Preparar el kale",
+        description: "Lava las hojas de kale y retira los tallos duros. Corta las hojas en trozos medianos.",
+        duration: 3,
+        tips: ["Los tallos se pueden reservar para caldos", "Las hojas deben estar completamente secas"]
+      },
+      {
+        id: 2,
+        title: "Agregar condimentos",
+        description: "Coloca el kale en un bowl grande. Agrega jugo de limón fresco y una pizca de sal marina.",
+        duration: 1
+      },
+      {
+        id: 3,
+        title: "Masajear las hojas",
+        description: "Con las manos limpias, masajea vigorosamente el kale por 2-3 minutos hasta que se ablande y cambie de color.",
+        duration: 3,
+        tips: ["El masajeado rompe las fibras y hace el kale más digerible", "Las hojas deben quedar de color verde más intenso"]
+      },
+      {
+        id: 4,
+        title: "Finalizar con aceite",
+        description: "Agrega un chorrito de aceite de oliva y mezcla suavemente. Deja reposar 2 minutos antes de servir.",
+        duration: 3,
+        tips: ["El aceite ayuda a absorber las vitaminas liposolubles", "Puede guardarse en refrigerador hasta 2 días"]
+      }
+    ],
+    nutritionInfo: {
+      calories: 55,
+      protein: "3g",
+      carbs: "6g",
+      fat: "3g",
+      fiber: "2g"
+    }
   }
 ];
 
