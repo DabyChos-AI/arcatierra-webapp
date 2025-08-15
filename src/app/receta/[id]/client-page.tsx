@@ -245,6 +245,17 @@ export default function RecipeDetailClient({ recipe }: RecipeDetailClientProps) 
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F5F2E8' }}>
+      {/* Botón volver posicionado debajo del logo, no ocupando todo el ancho */}
+      <div className="absolute top-16 left-6 z-10">
+        <Link 
+          href="/recetas"
+          className="inline-flex items-center gap-2 bg-white bg-opacity-95 hover:bg-opacity-100 px-4 py-2 rounded-lg shadow-sm text-gray-600 hover:text-gray-900 transition-all duration-200 backdrop-blur-sm"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-sm font-medium">Volver</span>
+        </Link>
+      </div>
+
       {/* Header con imagen y información básica */}
       <div className="relative h-96 overflow-hidden">
         <img
@@ -253,14 +264,6 @@ export default function RecipeDetailClient({ recipe }: RecipeDetailClientProps) 
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black bg-opacity-40" />
-        
-        {/* Botón volver */}
-        <Link 
-          href="/recetas"
-          className="absolute top-6 left-6 bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full p-3 transition-all duration-200"
-        >
-          <ArrowLeft className="w-6 h-6" style={{ color: '#33503E' }} />
-        </Link>
 
         {/* Acciones en header */}
         <div className="absolute top-6 right-6 flex gap-3">
