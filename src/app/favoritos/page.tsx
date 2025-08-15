@@ -6,11 +6,13 @@ import Link from 'next/link'
 import { Heart, ShoppingCart, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { productos, Product } from '@/data/productos'
+import { recipesData, Recipe } from '@/data/recetas'
 import { useToast } from '@/components/ui/Toast'
 
 export default function FavoritosPage() {
   const [favoritos, setFavoritos] = useState<string[]>([])
   const [productosFavoritos, setProductosFavoritos] = useState<Product[]>([])
+  const [recetasFavoritas, setRecetasFavoritas] = useState<Recipe[]>([])
   const toast = useToast()
 
   useEffect(() => {
@@ -21,13 +23,22 @@ export default function FavoritosPage() {
         const listaFavoritos = favoritosGuardados ? JSON.parse(favoritosGuardados) : []
         setFavoritos(listaFavoritos)
         
+        // Separar productos y recetas
+        const productIds = listaFavoritos.filter((id: string) => !id.startsWith('recipe-'))
+        const recipeIds = listaFavoritos.filter((id: string) => id.startsWith('recipe-')).map((id: string) => parseInt(id.replace('recipe-', '')))
+        
         // Filtrar productos que están en favoritos
-        const productosFiltrados = productos.filter((p: Product) => listaFavoritos.includes(p.id))
+        const productosFiltrados = productos.filter((p: Product) => productIds.includes(p.id))
         setProductosFavoritos(productosFiltrados)
+        
+        // Filtrar recetas que están en favoritos
+        const recetasFiltradas = recipesData.filter((r: Recipe) => recipeIds.includes(r.id))
+        setRecetasFavoritas(recetasFiltradas)
       } catch (error) {
         console.error('Error al cargar favoritos:', error)
         setFavoritos([])
         setProductosFavoritos([])
+        setRecetasFavoritas([])
       }
     }
     
@@ -68,6 +79,33 @@ export default function FavoritosPage() {
           setProductosFavoritos(prev => [...prev, producto])
           localStorage.setItem('arcaTierraFavoritos', JSON.stringify(restaurarFavoritos))
           toast.success(`${producto.nombre} restaurado a favoritos`)
+        }
+      }
+    })
+  }
+
+  const eliminarRecetaFavorita = (receta: Recipe) => {
+    const recipeId = `recipe-${receta.id}`
+    const nuevosFavoritos = favoritos.filter(id => id !== recipeId)
+    setFavoritos(nuevosFavoritos)
+    
+    // Actualizar recetas mostradas
+    setRecetasFavoritas(prev => prev.filter(r => r.id !== receta.id))
+    
+    // Guardar en localStorage
+    localStorage.setItem('arcaTierraFavoritos', JSON.stringify(nuevosFavoritos))
+    
+    // Mostrar toast con opción de deshacer
+    toast.error(`${receta.title} eliminada de favoritos`, {
+      title: 'Receta eliminada',
+      action: {
+        label: 'Deshacer',
+        onClick: () => {
+          const restaurarFavoritos = [...nuevosFavoritos, recipeId]
+          setFavoritos(restaurarFavoritos)
+          setRecetasFavoritas(prev => [...prev, receta])
+          localStorage.setItem('arcaTierraFavoritos', JSON.stringify(restaurarFavoritos))
+          toast.success(`${receta.title} restaurada a favoritos`)
         }
       }
     })
@@ -128,7 +166,7 @@ export default function FavoritosPage() {
           </p>
         </div>
         
-        {favoritos.length === 0 ? (
+        {(productosFavoritos.length === 0 && recetasFavoritas.length === 0) ? (
           <div className="text-center py-16 bg-white rounded-xl shadow-sm">
             <div className="mx-auto w-20 h-20 flex items-center justify-center rounded-full bg-neutro-crema mb-4">
               <Heart className="h-10 w-10 text-terracota stroke-[1.5]" />
@@ -144,8 +182,13 @@ export default function FavoritosPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {productosFavoritos.map((producto) => (
+          <div className="space-y-12">
+            {/* Sección de Productos Favoritos */}
+            {productosFavoritos.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold text-verde-tipografia mb-6">Productos Favoritos ({productosFavoritos.length})</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {productosFavoritos.map((producto) => (
               <div 
                 key={producto.id}
                 className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow"
@@ -198,7 +241,69 @@ export default function FavoritosPage() {
                   </div>
                 </div>
               </div>
-            ))}
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sección de Recetas Favoritas */}
+            {recetasFavoritas.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold text-verde-tipografia mb-6">Recetas Favoritas ({recetasFavoritas.length})</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {recetasFavoritas.map((receta) => (
+                    <div 
+                      key={`recipe-${receta.id}`}
+                      className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow"
+                    >
+                      <div className="relative">
+                        <Link href={`/receta/${receta.id}`}>
+                          <div className="aspect-square overflow-hidden">
+                            <img
+                              src={receta.image}
+                              alt={receta.title}
+                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                        </Link>
+                        <button
+                          onClick={() => eliminarRecetaFavorita(receta)}
+                          className="absolute top-3 right-3 p-2 bg-white bg-opacity-90 rounded-full shadow-sm hover:bg-red-50 hover:text-red-500 transition-colors"
+                          aria-label={`Eliminar ${receta.title} de favoritos`}
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      </div>
+
+                      <div className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <Link href={`/receta/${receta.id}`} className="hover:text-terracota transition-colors">
+                              <h3 className="font-semibold text-gray-900 mb-1">{receta.title}</h3>
+                            </Link>
+                            <p className="text-sm text-gray-500 mb-2">{receta.description}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between mt-4">
+                          <div className="flex items-center space-x-4 text-sm text-gray-600">
+                            <span>⏱️ {receta.cookTime} min</span>
+                            <span>⭐ {receta.rating}</span>
+                          </div>
+                          
+                          <Link
+                            href={`/receta/${receta.id}`}
+                            className="flex items-center justify-center px-3 py-2 bg-terracota hover:bg-terracota-oscuro text-white rounded-lg transition-colors text-sm"
+                          >
+                            Ver Receta
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

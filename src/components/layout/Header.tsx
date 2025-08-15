@@ -133,6 +133,15 @@ const Header: React.FC = () => {
                   </li>
                   <li role="none">
                     <Link 
+                      href="/recetas" 
+                      role="menuitem"
+                      className="nav-link text-xs lg:text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2 whitespace-nowrap"
+                    >
+                      Recetas
+                    </Link>
+                  </li>
+                  <li role="none">
+                    <Link 
                       href="/experiencias-premium" 
                       role="menuitem"
                       className="nav-link text-xs lg:text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2 whitespace-nowrap"
@@ -341,6 +350,13 @@ const Header: React.FC = () => {
               onClick={() => setIsMenuOpen(false)}
             >
               Tienda
+            </Link>
+            <Link
+              href="/recetas"
+              className="block mx-4 px-4 py-3 rounded-lg text-base font-medium text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors duration-200 border-b border-gray-100 last:border-b-0"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Recetas
             </Link>
             <Link
               href="/experiencias-premium"
