@@ -329,7 +329,7 @@ export default function ClientRecetasPage() {
         <div className="flex flex-wrap gap-4 justify-center">
           {[
             { key: 'recetas', label: 'Recetas', icon: ChefHat },
-            { key: 'consejos', label: 'Consejos', icon: Lightbulb },
+            { key: 'consejos', label: 'ArcaTips', icon: Lightbulb },
             { key: 'comunidad', label: 'Comunidad', icon: Users }
           ].map(({ key, label, icon: Icon }) => (
             <button
@@ -619,7 +619,7 @@ export default function ClientRecetasPage() {
           >
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold mb-4" style={{ color: '#33503E' }}>
-                Consejos de Cocina Sustentable
+                ArcaTips de Cocina Sustentable
               </h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
                 Aprende técnicas ancestrales y modernas para aprovechar al máximo cada ingrediente
