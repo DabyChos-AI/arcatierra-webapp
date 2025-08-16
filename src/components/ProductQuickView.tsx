@@ -191,13 +191,29 @@ export default function ProductQuickView({
                 </div>
                 
                 <div className="flex gap-3">
-                  <Button
-                    onClick={handleAddToCart}
-                    className="flex-1 bg-[#B15543] hover:bg-[#9d4a39] text-white"
-                  >
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    Agregar al carrito
-                  </Button>
+                  {product.ctaType === 'subscription' ? (
+                    <Button
+                      onClick={() => {
+                        window.location.href = '/suscripciones'
+                        onClose()
+                      }}
+                      className="flex-1 bg-[#B15543] hover:bg-[#9d4a39] text-white"
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Suscribirse
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        onAddToCart(product)
+                        onClose()
+                      }}
+                      className="flex-1 bg-[#B15543] hover:bg-[#9d4a39] text-white"
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Agregar al carrito
+                    </Button>
+                  )}
                   <Link href={`/producto/${product.id}`}>
                     <Button
                       variant="outline"

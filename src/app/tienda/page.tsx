@@ -981,14 +981,28 @@ export default function TiendaPage() {
                         </span>
                         <span className="text-gray-500 text-sm ml-1">/ {product.unidad}</span>
                       </div>
-                      <Button
-                        onClick={(e) => addToCart(product, e)}
-                        className="bg-[#B15543] hover:bg-[#9d4a39] text-white px-4 py-2"
-                        size="sm"
-                      >
-                        <ShoppingCart className="w-4 h-4 mr-1" />
-                        Agregar
-                      </Button>
+                      {product.ctaType === 'subscription' ? (
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            window.location.href = '/suscripciones'
+                          }}
+                          className="bg-[#B15543] hover:bg-[#9d4a39] text-white px-4 py-2"
+                          size="sm"
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-1" />
+                          Suscribirse
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={(e) => addToCart(product, e)}
+                          className="bg-[#B15543] hover:bg-[#9d4a39] text-white px-4 py-2"
+                          size="sm"
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-1" />
+                          Agregar
+                        </Button>
+                      )}
                     </div>
 
                     {/* Storytelling al final con línea */}
