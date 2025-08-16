@@ -73,7 +73,7 @@ export const productos: Product[] = [
     "reviews": 0,
     "stock": 100,
     "badges": [],
-    "descripcion": "",
+    "descripcion": "Peso: 3.5 kg\nIdeal para: 1-2 personas\nCARACTERÍSTICAS:\n✅ Perfecta para personas solteras o parejas\n✅ Variedad balanceada de nutrientes\n✅ Fácil de consumir en una semana\n✅ Incluye fruta y verduras de temporada",
     "storytelling": "",
     "metricas": {
       "co2": "-- kg CO₂",
@@ -126,7 +126,7 @@ export const productos: Product[] = [
     "reviews": 0,
     "stock": 100,
     "badges": [],
-    "descripcion": "",
+    "descripcion": "Peso: 5 kg\nIdeal para: 2-3 personas\nCARACTERÍSTICAS:\n✅ Equilibrio perfecto entre variedad y cantidad\n✅ Incluye frutas y verduras de temporada\n✅ Ideal para familias pequeñas\n✅ Excelente relación calidad-precio",
     "storytelling": "",
     "metricas": {
       "co2": "-- kg CO₂",
@@ -179,7 +179,7 @@ export const productos: Product[] = [
     "reviews": 0,
     "stock": 100,
     "badges": [],
-    "descripcion": "",
+    "descripcion": "Peso: 7.5 kg\nIdeal para: 3-4 personas\nCARACTERÍSTICAS:\n✅ Variedad amplia de productos\n✅ Incluye fruta y verduras de temporada\n✅ Perfecta para familias medianas\n✅ Mayor diversidad nutricional",
     "storytelling": "",
     "metricas": {
       "co2": "-- kg CO₂",
@@ -232,7 +232,7 @@ export const productos: Product[] = [
     "reviews": 0,
     "stock": 100,
     "badges": [],
-    "descripcion": "",
+    "descripcion": "Peso: 10 kg\nIdeal para: 4-6 personas\nCARACTERÍSTICAS:\n✅ La opción más popular para familias grandes\n✅ Abundante variedad de alimentos agroecológicos\n✅ Incluye fruta y verduras de temporada\n✅ Máximo aprovechamiento familiar",
     "storytelling": "",
     "metricas": {
       "co2": "-- kg CO₂",
@@ -285,7 +285,7 @@ export const productos: Product[] = [
     "reviews": 0,
     "stock": 100,
     "badges": [],
-    "descripcion": "",
+    "descripcion": "Ideal para: 1-2 personas (productos básicos)\nDESCRIPCIÓN:\nEsta opcion es ideal para una o dos personas que desean recibir alimentos frescos y agroecologicos.\nIncluye una seleccion de frutas y verduras de temporada, combinadas con productos esenciales provenientes de nuetra red local de productores.\nCONTENIDO DETALLADO:\n- 3.5 kg de frutas y verduras de temporada\n- 250 g de queso Oaxaca artesanal\n- 12 tortillas de maíz nativo\n- 12 huevos de gallinas de libre pastoreo en las chinampas\n- Todo proveniente de productores locales\nCARACTERÍSTICAS:\n✅ Productos básicos esenciales\n✅ Queso artesanal\n✅ Tortillas de maíz nativo\n✅ Huevos de gallinas de libre pastoreo\n✅ Perfecto para cocinar en casa",
     "storytelling": "",
     "metricas": {
       "co2": "-- kg CO₂",
@@ -338,7 +338,7 @@ export const productos: Product[] = [
     "reviews": 0,
     "stock": 100,
     "badges": [],
-    "descripcion": "",
+    "descripcion": "Ideal para: 2-4 personas (productos básicos)\nDESCRIPCIÓN:\nEsta opcion es ideal para dos o cuatro personas , que desean recibir alimentos frescos y agroecologicos, asi como complementar mas las comidas de la semana.\nIncluye una seleccion de frutas y verduras de temporada, combinadas con productos esenciales provenientes de nuetra red local de productores.\nCONTENIDO DETALLADO:\n- 5 kg de frutas y verduras de temporada\n- 500 g de queso Oaxaca artesanal\n- 24 tortillas de maíz nativo\n- 18 huevos frescos de gallinas de libre pastoreo en las chinampas\n- 500 g de milanesas de pollo de origen regenerativo\n- 500 g de bistec de res de origen regenerativo\nCARACTERÍSTICAS:\n✅ Combo completo para alimentación variada\n✅ Incluye proteínas de origen regenerativo\n✅ Queso artesanal\n✅ Ideal para parejas o familias pequeñas\n✅ Directamente del campo a tu mesa",
     "storytelling": "",
     "metricas": {
       "co2": "-- kg CO₂",
@@ -391,7 +391,7 @@ export const productos: Product[] = [
     "reviews": 0,
     "stock": 100,
     "badges": [],
-    "descripcion": "",
+    "descripcion": "Ideal para: 4-6 personas (productos básicos)\nDESCRIPCIÓN:\nEsta opcion es ideal para cuatro o seis personas , que desean recibir alimentos frescos y agroecologicos, asi como complementar mas las comidas de la semana.\nIncluye una seleccion de frutas y verduras de temporada, combinadas con productos esenciales provenientes de nuetra red local de productores.\nCONTENIDO DETALLADO:\n- 10 kg de frutas y verduras de temporada\n- 500 g de queso Oaxaca artesanal\n- 250 g de queso Manchego artesanal\n- 24 tortillas de maíz nativo\n- 18 huevos frescos de gallinas de libre pastoreo de las chinampas\n- 600 g de pechuga de pollo (con hueso)\n- 500 g de carne molida o deshebrada de res de origen regenerativo (según disponibilidad)\nCARACTERÍSTICAS:\n✅ El combo más completo para familias\n✅ Doble variedad de quesos artesanales\n✅ Proteínas de origen regenerativo\n✅ Todo lo necesario para comidas balanceadas\n✅ Apoya a productores locales\n✅ Frescura del campo a tu mesa",
     "storytelling": "",
     "metricas": {
       "co2": "-- kg CO₂",
