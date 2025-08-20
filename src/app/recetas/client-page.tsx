@@ -31,7 +31,7 @@ export default function ClientRecetasPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [maxCookTime, setMaxCookTime] = useState(60);
   const [showFilters, setShowFilters] = useState(false);
-  const [likedRecipes, setLikedRecipes] = useState<number[]>([]);
+  const [likedRecipes, setLikedRecipes] = useState<string[]>([]);
   const [activeView, setActiveView] = useState<'recetas' | 'consejos' | 'comunidad'>('recetas');
   const toast = useToast();
 
@@ -41,12 +41,12 @@ export default function ClientRecetasPage() {
     // Extraer solo los IDs de recetas (con prefijo 'recipe-')
     const recipeFavorites = favorites
       .filter((id: string) => id.startsWith('recipe-'))
-      .map((id: string) => parseInt(id.replace('recipe-', '')));
+      .map((id: string) => id.replace('recipe-', ''));
     setLikedRecipes(recipeFavorites);
   }, []);
 
   // Toggle like functionality - USAR EL MISMO SISTEMA QUE PRODUCTOS
-  const toggleLike = (recipeId: number) => {
+  const toggleLike = (recipeId: string) => {
     const favorites = JSON.parse(localStorage.getItem('arcaTierraFavoritos') || '[]');
     const recipeIdWithPrefix = `recipe-${recipeId}`;
     const isCurrentlyLiked = favorites.includes(recipeIdWithPrefix);
