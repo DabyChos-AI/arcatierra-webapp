@@ -44,36 +44,13 @@ export default function RecipeDetailClient({ recipe }: RecipeDetailClientProps) 
   const toast = useToast();
 
   useEffect(() => {
-    // Cargar comentarios y ratings de ejemplo
-    const sampleComments: RecipeComment[] = [
-      {
-        id: "c1",
-        recipeId: 1,
-        userId: "u1",
-        userName: "Ana Martínez",
-        userAvatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face",
-        comment: "Esta receta se ha vuelto una de nuestras favoritas en casa. Los tallos de acelga quedan perfectos siguiendo estos pasos.",
-        date: "2024-03-15",
-        likes: 12,
-        replies: [
-          {
-            id: "c1-r1",
-            recipeId: 1,
-            userId: "u3",
-            userName: "Laura Sánchez",
-            userAvatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
-            comment: "¡Totalmente de acuerdo! Es increíble cómo se aprovecha toda la verdura.",
-            date: "2024-03-16",
-            likes: 3
-          }
-        ]
-      }
-    ];
+    // Usar comentarios reales de la receta o comentarios vacíos si no existen
+    const recipeComments = recipe.comments || [];
     
     const sampleRatings: UserRating[] = [
       {
         id: "r1",
-        recipeId: 1,
+        recipeId: recipe.id,
         userId: "u1",
         userName: "Ana Martínez",
         rating: 5,
@@ -82,7 +59,7 @@ export default function RecipeDetailClient({ recipe }: RecipeDetailClientProps) 
       }
     ];
     
-    setComments(sampleComments.filter((c: RecipeComment) => c.recipeId === recipe.id));
+    setComments(recipeComments);
     setRatings(sampleRatings.filter((r: UserRating) => r.recipeId === recipe.id));
     
     // Cargar favoritos desde localStorage - USAR EL MISMO SISTEMA QUE PRODUCTOS
@@ -369,6 +346,26 @@ export default function RecipeDetailClient({ recipe }: RecipeDetailClientProps) 
             <div className="mb-8">
               <p className="text-lg text-gray-700 leading-relaxed">{recipe.description}</p>
             </div>
+
+            {/* Beneficios */}
+            {recipe.beneficios && recipe.beneficios.length > 0 && (
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 shadow-sm mb-8 border border-green-100">
+                <h2 className="text-2xl font-bold mb-6" style={{ color: '#33503E' }}>
+                  🌿 Beneficios para la Salud
+                </h2>
+                <ul className="space-y-3">
+                  {recipe.beneficios.map((beneficio, index) => (
+                    <li key={index} className="flex items-start text-gray-700">
+                      <div 
+                        className="w-2 h-2 rounded-full mr-4 mt-2 flex-shrink-0"
+                        style={{ backgroundColor: '#16a34a' }}
+                      />
+                      <span className="leading-relaxed">{beneficio}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Ingredientes */}
             <div className="bg-white rounded-xl p-6 shadow-sm mb-8">

@@ -63,7 +63,7 @@ export const productos: Product[] = [
   {
     "id": "1885u",
     "nombre": "CANASTA INDIVIDUAL COMPRA UNICA",
-    "precio": 0,
+    "precio": 305,
     "unidad": "",
     "imagen": "/images/tienda/Acelga_closeup_individual.jpg",
     "productor": "",
@@ -100,7 +100,7 @@ export const productos: Product[] = [
     "reviews": 0,
     "stock": 100,
     "badges": [],
-    "descripcion": "Peso: 5 kg\nIdeal para: 2-3 personas\nCARACTERÍSTICAS:\n✅ Equilibrio perfecto entre variedad y cantidad\n✅ Incluye frutas y verduras de temporada\n✅ Ideal para familias pequeñas\n✅ Excelente relación calidad-precio",
+    "descripcion": "Peso: 5 kg\nIdeal para: 2-3 personas\nCARACTERÍSTICAS:\n✅ Equilibrio perfecto entre variedad y cantidad\n✅ Incluye fruta y verduras de temporada\n✅ Ideal para familias pequeñas\n✅ Excelente relación calidad-precio",
     "storytelling": "",
     "metricas": {
       "co2": "-- kg CO₂",
@@ -116,7 +116,7 @@ export const productos: Product[] = [
   {
     "id": "1886u",
     "nombre": "CANASTA MEDIA COMPRA UNICA",
-    "precio": 0,
+    "precio": 367,
     "unidad": "",
     "imagen": "/images/tienda/canasta-media-tienda-arca-tierra.jpg",
     "productor": "",
@@ -126,7 +126,7 @@ export const productos: Product[] = [
     "reviews": 0,
     "stock": 100,
     "badges": [],
-    "descripcion": "Peso: 5 kg\nIdeal para: 2-3 personas\nCARACTERÍSTICAS:\n✅ Equilibrio perfecto entre variedad y cantidad\n✅ Incluye frutas y verduras de temporada\n✅ Ideal para familias pequeñas\n✅ Excelente relación calidad-precio",
+    "descripcion": "Peso: 5 kg\nIdeal para: 2-3 personas\nCARACTERÍSTICAS:\n✅ Equilibrio perfecto entre variedad y cantidad\n✅ Incluye fruta y verduras de temporada\n✅ Ideal para familias pequeñas\n✅ Excelente relación calidad-precio",
     "storytelling": "",
     "metricas": {
       "co2": "-- kg CO₂",
@@ -169,7 +169,7 @@ export const productos: Product[] = [
   {
     "id": "1887u",
     "nombre": "CANASTA COMPLETA COMPRA UNICA",
-    "precio": 0,
+    "precio": 535,
     "unidad": "",
     "imagen": "/images/tienda/canasta-completa-tienda-arca-tierra.jpg",
     "productor": "",
@@ -222,7 +222,7 @@ export const productos: Product[] = [
   {
     "id": "1888u",
     "nombre": "CANASTA FAMILIAR COMPRA UNICA",
-    "precio": 0,
+    "precio": 703,
     "unidad": "",
     "imagen": "/images/tienda/Bodegon_Invierno_Canasta_Completa.jpg",
     "productor": "",
@@ -247,7 +247,7 @@ export const productos: Product[] = [
   },
   {
     "id": "1889",
-    "nombre": "CANASTA BÁSICA INDIVIDUAL SUSCRIPCION",
+    "nombre": "CANASTA BÁSICA INDIVIDUAL SUSCRIPCIÓN",
     "precio": 471,
     "unidad": "4.5 kg",
     "imagen": "/images/tienda/Canasta_basica_individual.jpg",
@@ -275,7 +275,7 @@ export const productos: Product[] = [
   {
     "id": "1889u",
     "nombre": "CANASTA BÁSICA INDIVIDUAL COMPRA UNICA",
-    "precio": 0,
+    "precio": 471,
     "unidad": "",
     "imagen": "/images/tienda/Canasta_basica_individual.jpg",
     "productor": "",
@@ -328,7 +328,7 @@ export const productos: Product[] = [
   {
     "id": "1890u",
     "nombre": "CANASTA BASICA MEDIA COMPRA UNICA",
-    "precio": 0,
+    "precio": 1023,
     "unidad": "",
     "imagen": "",
     "productor": "",
@@ -381,7 +381,7 @@ export const productos: Product[] = [
   {
     "id": "1891u",
     "nombre": "CANASTA BASICA FAMILIAR COMPRA UNICA",
-    "precio": 0,
+    "precio": 1488,
     "unidad": "",
     "imagen": "",
     "productor": "",
@@ -771,7 +771,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-006",
     "nombre": "CACAHUATE 100 G",
-    "precio": 0,
+    "precio": 19,
     "unidad": "",
     "imagen": "/images/tienda/cacahuate-tienda-arca-tierra.jpg",
     "productor": "",
@@ -797,7 +797,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-007",
     "nombre": "CACAO EN POLVO 250 G",
-    "precio": 0,
+    "precio": 140,
     "unidad": "",
     "imagen": "/images/tienda/cacao-polvo-250-tienda-arca-tierra.jpg",
     "productor": "",
@@ -823,7 +823,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-008",
     "nombre": "CACAO EN POLVO 500 G",
-    "precio": 0,
+    "precio": 205,
     "unidad": "",
     "imagen": "/images/tienda/cacao-polvo-500-tienda-arca-tierra.jpg",
     "productor": "",
@@ -849,7 +849,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-009",
     "nombre": "CAFE DE GRANO 500 G",
-    "precio": 0,
+    "precio": 130,
     "unidad": "",
     "imagen": "/images/tienda/cafe-grano-tienda-arca-tierra.jpg",
     "productor": "",
@@ -875,7 +875,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-011",
     "nombre": "CAFE MOLIDO 500 G",
-    "precio": 0,
+    "precio": 130,
     "unidad": "",
     "imagen": "/images/tienda/cafe-molido-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1161,7 +1161,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-015",
     "nombre": "CHIA 100 G",
-    "precio": 0,
+    "precio": 30,
     "unidad": "",
     "imagen": "/images/tienda/chia-granel-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1473,7 +1473,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-025",
     "nombre": "FRIJOL NEGRO 500 G",
-    "precio": 0,
+    "precio": 39,
     "unidad": "",
     "imagen": "/images/tienda/frijol-negro.png",
     "productor": "",
@@ -1499,7 +1499,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-026",
     "nombre": "FRIJOL PINTO SALTILLO 500 G",
-    "precio": 0,
+    "precio": 40,
     "unidad": "",
     "imagen": "/images/tienda/frijol-pinto-saltillo-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1525,7 +1525,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-084",
     "nombre": "GALLETA DE MAIZ Y ANIS 50G",
-    "precio": 0,
+    "precio": 40,
     "unidad": "",
     "imagen": "/images/tienda/Galletas_Maiz_Anis.jpg",
     "productor": "",
@@ -1551,7 +1551,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-075",
     "nombre": "GALLETAS DE MAIZ  Y JENGIBRE 50 G",
-    "precio": 0,
+    "precio": 40,
     "unidad": "",
     "imagen": "",
     "productor": "",
@@ -1577,7 +1577,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-076",
     "nombre": "GALLETAS DE MAIZ  Y NARANJA 50 G",
-    "precio": 0,
+    "precio": 40,
     "unidad": "",
     "imagen": "",
     "productor": "",
@@ -1629,7 +1629,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-077",
     "nombre": "GALLETAS DE MAIZ, CACAO Y PATLAXTLE 100 G",
-    "precio": 0,
+    "precio": 79,
     "unidad": "",
     "imagen": "",
     "productor": "",
@@ -1655,7 +1655,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-028",
     "nombre": "GARBANZO 500 G",
-    "precio": 0,
+    "precio": 38,
     "unidad": "",
     "imagen": "/images/tienda/garbanzo-granel-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1681,7 +1681,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-029",
     "nombre": "GRANOLA ARTESANAL 900 G",
-    "precio": 0,
+    "precio": 166.5,
     "unidad": "",
     "imagen": "/images/tienda/Granola_Artesanal.jpg",
     "productor": "",
@@ -1707,7 +1707,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-030",
     "nombre": "HARINA DE TRIGO INTEGRAL 500 G",
-    "precio": 0,
+    "precio": 44,
     "unidad": "",
     "imagen": "/images/tienda/harina-trigo-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1733,7 +1733,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-031",
     "nombre": "HARINA INTEGRAL DE SORGO 500 G",
-    "precio": 0,
+    "precio": 27,
     "unidad": "",
     "imagen": "/images/tienda/harina-sorgo-tienda-arca-tierra.jpg",
     "productor": "",
@@ -1759,7 +1759,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-032",
     "nombre": "HARINA PARA HOT CAKES CON TRIGO Y MACADAMIA 500 G",
-    "precio": 0,
+    "precio": 110,
     "unidad": "",
     "imagen": "/images/tienda/harina_para_hotcakes.jpg",
     "productor": "",
@@ -1785,7 +1785,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-ABA-007",
     "nombre": "HOGAZA CAMPESINA",
-    "precio": 0,
+    "precio": 130,
     "unidad": "",
     "imagen": "/images/tienda/hogaza-campesina-ost-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2019,7 +2019,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-038",
     "nombre": "LENTEJA 500 G",
-    "precio": 0,
+    "precio": 39,
     "unidad": "",
     "imagen": "/images/tienda/lenteja-granel-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2071,7 +2071,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-039",
     "nombre": "MACADAMIA 100 G",
-    "precio": 0,
+    "precio": 78,
     "unidad": "",
     "imagen": "/images/tienda/macadamia-tienda-arca-tierra.jpg",
     "productor": "",
@@ -2539,7 +2539,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-055",
     "nombre": "NUEZ PECANA 100 G",
-    "precio": 0,
+    "precio": 63,
     "unidad": "",
     "imagen": "",
     "productor": "",
@@ -2643,7 +2643,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-058",
     "nombre": "PEPITA DE CALABAZA 100 G",
-    "precio": 0,
+    "precio": 31,
     "unidad": "",
     "imagen": "/images/tienda/pepita-calabaza-tienda-arca-tierra.jpg",
     "productor": "",
@@ -3189,7 +3189,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-073",
     "nombre": "SEMILLA DE AMARANTO",
-    "precio": 0,
+    "precio": 40,
     "unidad": "",
     "imagen": "",
     "productor": "",
@@ -3215,7 +3215,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-068",
     "nombre": "SEMILLA DE CARDAMOMO 50 G",
-    "precio": 0,
+    "precio": 98,
     "unidad": "",
     "imagen": "",
     "productor": "",
@@ -3241,7 +3241,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-SEC-069",
     "nombre": "SEMILLA DE GIRASOL 100 G",
-    "precio": 0,
+    "precio": 13,
     "unidad": "",
     "imagen": "/images/tienda/semilla-girasol-granel-tienda-arca-tierra.jpg",
     "productor": "",
@@ -3969,7 +3969,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-024",
     "nombre": "LIMON AMARILLO 500 G",
-    "precio": 0,
+    "precio": 45,
     "unidad": "",
     "imagen": "/images/tienda/limon-amarillo-agroecologico-tienda-arca-tierra.jpg",
     "productor": "",
@@ -3995,7 +3995,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-025",
     "nombre": "MANDARINA 500 G",
-    "precio": 0,
+    "precio": 35,
     "unidad": "",
     "imagen": "/images/tienda/Mandarina_Partida.jpg",
     "productor": "",
@@ -4021,7 +4021,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-026",
     "nombre": "MANGO PETACON 500 G",
-    "precio": 0,
+    "precio": 36,
     "unidad": "",
     "imagen": "/images/tienda/Mango_Petacon.jpg",
     "productor": "",
@@ -4047,7 +4047,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-027",
     "nombre": "MANZANA CRIOLLA 500 G",
-    "precio": 0,
+    "precio": 35,
     "unidad": "",
     "imagen": "/images/tienda/Manzanas_Criolla.jpg",
     "productor": "",
@@ -4073,7 +4073,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-028",
     "nombre": "MEZCLA DE ENSALADAS 300 G",
-    "precio": 0,
+    "precio": 80,
     "unidad": "",
     "imagen": "/images/tienda/mezcla-ensalada-agroecologico-tienda-arca-tierra.jpg",
     "productor": "",
@@ -4099,7 +4099,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-029",
     "nombre": "NARANJA 1 KG",
-    "precio": 0,
+    "precio": 58.50,
     "unidad": "",
     "imagen": "/images/tienda/naranja-agroecologico-tienda-arca-tierra.jpg",
     "productor": "",
@@ -4125,7 +4125,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-031",
     "nombre": "PEPINO COMUN 500 G",
-    "precio": 0,
+    "precio": 31,
     "unidad": "",
     "imagen": "/images/tienda/pepino-agroecologico-tienda-arca-tierra.jpg",
     "productor": "",
@@ -4255,7 +4255,7 @@ export const productos: Product[] = [
   {
     "id": "P-WEB-VEG-039",
     "nombre": "ZANAHORIA DE COLORES 250 G",
-    "precio": 0,
+    "precio": 35,
     "unidad": "",
     "imagen": "/images/tienda/zanahorias-colores-agroecologico-tienda-arca-tierra.jpg",
     "productor": "",
