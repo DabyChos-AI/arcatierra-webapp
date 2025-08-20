@@ -99,6 +99,10 @@ export const recipesData: Recipe[] = [
     title: "Acelgas sin Desperdicio - Del Tallo a la Hoja",
     description: "Aprovecha cada parte de las acelgas en esta receta sustentable que celebra la diversidad de texturas y sabores.",
     image: "/images/recetas/Acelgas_sin_desperdicio.jpg",
+    author: {
+      name: "Equipo Arca Tierra",
+      bio: "Especialistas en cocina agroecológica y aprovechamiento integral"
+    },
     cookTime: 25,
     difficulty: "Fácil",
     season: "Primavera",
@@ -167,6 +171,10 @@ export const recipesData: Recipe[] = [
     title: "Zanahoria Completa - Raíz y Hojas Verdes",
     description: "Descubre el sabor único de las hojas de zanahoria en esta receta que aprovecha toda la planta.",
     image: "/images/recetas/Zanahoria_Completa-Raiz_y_Hojas.png",
+    author: {
+      name: "Equipo Arca Tierra",
+      bio: "Especialistas en cocina agroecológica y aprovechamiento integral"
+    },
     cookTime: 30,
     difficulty: "Medio",
     season: "Invierno",
@@ -236,6 +244,10 @@ export const recipesData: Recipe[] = [
     title: "Rábanos Fermentados - Técnica Ancestral",
     description: "Aprende la técnica tradicional de fermentación para conservar y potenciar el sabor de los rábanos.",
     image: "/images/recetas/Rabanos_Fermentados_Ancestral.jpg",
+    author: {
+      name: "Equipo Arca Tierra",
+      bio: "Especialistas en cocina agroecológica y aprovechamiento integral"
+    },
     cookTime: 45,
     difficulty: "Avanzado",
     season: "Todo el año",
@@ -306,6 +318,10 @@ export const recipesData: Recipe[] = [
     title: "Ensalada de Temporada Colorida",
     description: "Una explosión de colores y sabores con los vegetales más frescos de la temporada actual.",
     image: "/images/recetas/Ensalada_de_Temporada_Colorida.jpg",
+    author: {
+      name: "Equipo Arca Tierra",
+      bio: "Especialistas en cocina agroecológica y aprovechamiento integral"
+    },
     cookTime: 15,
     difficulty: "Fácil",
     season: "Verano",
@@ -376,6 +392,10 @@ export const recipesData: Recipe[] = [
     title: "Sopa de Aprovechamiento - Cáscaras y Tallos",
     description: "Transforma cáscaras y tallos en una sopa nutritiva y deliciosa que reduce el desperdicio.",
     image: "/images/recetas/Sopa_de_Aprovechamiento_de_Cascaras.jpg",
+    author: {
+      name: "Equipo Arca Tierra",
+      bio: "Especialistas en cocina agroecológica y aprovechamiento integral"
+    },
     cookTime: 40,
     difficulty: "Medio",
     season: "Otoño",
@@ -446,6 +466,10 @@ export const recipesData: Recipe[] = [
     title: "Kale Masajeado con Limón",
     description: "Técnica especial de masajeado que transforma el kale en una base perfecta para ensaladas.",
     image: "/images/recetas/Kale_Masajeado_con_Limon.jpg",
+    author: {
+      name: "Equipo Arca Tierra",
+      bio: "Especialistas en cocina agroecológica y aprovechamiento integral"
+    },
     cookTime: 10,
     difficulty: "Fácil",
     season: "Invierno",
@@ -1014,7 +1038,7 @@ export const recipesData: Recipe[] = [
     description: "Una receta sencilla, refrescante y deliciosa increíble bebida para acompañar tus comidas o para relajarte en cualquier momento del día, con diversos beneficios para la salud debido a sus ingredientes frescos y orgánicos.",
     image: "/images/recetas/Limonada_Antiestres.jpg",
     author: {
-      name: "Arca Tierra",
+      name: "Equipo Arca Tierra",
       bio: "Especialistas en cocina agroecológica"
     },
     cookTime: 10,
@@ -1076,7 +1100,7 @@ export const recipesData: Recipe[] = [
     description: "Una receta sencilla de hacer; porque los postres también pueden contener múltiples beneficios para la salud si elegimos los ingredientes correctos y que mejor que moras azules frescas y orgánicas.",
     image: "/images/recetas/Mejores_Muffins_de_Tu_Vida.jpg",
     author: {
-      name: "Arca Tierra",
+      name: "Equipo Arca Tierra",
       bio: "Especialistas en cocina agroecológica"
     },
     cookTime: 35,
@@ -1180,7 +1204,7 @@ export const recipesData: Recipe[] = [
     description: "Una receta italiana clásica y nutritiva que combina pasta con brócoli fresco, ajo aromático y un toque cítrico de limón. Perfecta para una comida equilibrada y deliciosa.",
     image: "/images/recetas/Pasta_con_Brocoli.jpg",
     author: {
-      name: "Arca Tierra",
+      name: "Equipo Arca Tierra",
       bio: "Especialistas en cocina agroecológica"
     },
     cookTime: 20,

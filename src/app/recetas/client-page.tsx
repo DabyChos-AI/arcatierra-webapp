@@ -550,6 +550,15 @@ export default function ClientRecetasPage() {
                         <h3 className="text-xl font-semibold mb-2" style={{ color: '#33503E' }}>
                           {recipe.title}
                         </h3>
+                        {recipe.author && (
+                          <div className="flex items-center gap-2 mb-3">
+                            <ChefHat className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm text-gray-600 font-medium">{recipe.author.name}</span>
+                            {recipe.author.bio && (
+                              <span className="text-xs text-gray-500">• {recipe.author.bio}</span>
+                            )}
+                          </div>
+                        )}
                         <p className="text-gray-600 mb-4 line-clamp-3">
                           {recipe.description}
                         </p>

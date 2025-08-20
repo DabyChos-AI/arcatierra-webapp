@@ -317,6 +317,24 @@ export default function RecipeDetailClient({ recipe }: RecipeDetailClientProps) 
       <div className="max-w-6xl mx-auto px-6 pt-8 pb-4">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-6" style={{ color: '#33503E' }}>{recipe.title}</h1>
+          
+          {/* Información del autor/chef */}
+          {recipe.author && (
+            <div className="flex items-center justify-center gap-3 mb-6 p-4 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm max-w-2xl mx-auto">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center text-white">
+                  <ChefHat className="w-6 h-6" />
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-gray-800">Chef: {recipe.author.name}</div>
+                  {recipe.author.bio && (
+                    <div className="text-sm text-gray-600">{recipe.author.bio}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-wrap justify-center gap-8 text-gray-600">
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5" style={{ color: '#B15543' }} />
