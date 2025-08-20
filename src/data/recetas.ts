@@ -98,7 +98,7 @@ export const recipesData: Recipe[] = [
     id: "acelgas-sin-desperdicio",
     title: "Acelgas sin Desperdicio - Del Tallo a la Hoja",
     description: "Aprovecha cada parte de las acelgas en esta receta sustentable que celebra la diversidad de texturas y sabores.",
-    image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400&h=300&fit=crop",
+    image: "/images/recetas/Acelgas_sin_desperdicio.jpg",
     cookTime: 25,
     difficulty: "Fácil",
     season: "Primavera",
@@ -166,7 +166,7 @@ export const recipesData: Recipe[] = [
     id: "zanahoria-completa-raiz-hojas",
     title: "Zanahoria Completa - Raíz y Hojas Verdes",
     description: "Descubre el sabor único de las hojas de zanahoria en esta receta que aprovecha toda la planta.",
-    image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400&h=300&fit=crop",
+    image: "/images/recetas/Zanahoria_Completa-Raiz_y_Hojas.png",
     cookTime: 30,
     difficulty: "Medio",
     season: "Invierno",
@@ -235,7 +235,7 @@ export const recipesData: Recipe[] = [
     id: "rabanos-fermentados-ancestral",
     title: "Rábanos Fermentados - Técnica Ancestral",
     description: "Aprende la técnica tradicional de fermentación para conservar y potenciar el sabor de los rábanos.",
-    image: "https://images.unsplash.com/photo-1509358271058-acd22cc93898?w=400&h=300&fit=crop",
+    image: "/images/recetas/Rabanos_Fermentados_Ancestral.jpg",
     cookTime: 45,
     difficulty: "Avanzado",
     season: "Todo el año",
@@ -305,7 +305,7 @@ export const recipesData: Recipe[] = [
     id: "ensalada-temporada-colorida",
     title: "Ensalada de Temporada Colorida",
     description: "Una explosión de colores y sabores con los vegetales más frescos de la temporada actual.",
-    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop",
+    image: "/images/recetas/Ensalada_de_Temporada_Colorida.jpg",
     cookTime: 15,
     difficulty: "Fácil",
     season: "Verano",
@@ -375,7 +375,7 @@ export const recipesData: Recipe[] = [
     id: "sopa-aprovechamiento-cascaras",
     title: "Sopa de Aprovechamiento - Cáscaras y Tallos",
     description: "Transforma cáscaras y tallos en una sopa nutritiva y deliciosa que reduce el desperdicio.",
-    image: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop",
+    image: "/images/recetas/Sopa_de_Aprovechamiento_de_Cascaras.jpg",
     cookTime: 40,
     difficulty: "Medio",
     season: "Otoño",
@@ -445,7 +445,7 @@ export const recipesData: Recipe[] = [
     id: "kale-masajeado-limon",
     title: "Kale Masajeado con Limón",
     description: "Técnica especial de masajeado que transforma el kale en una base perfecta para ensaladas.",
-    image: "https://images.unsplash.com/photo-1515543237350-b3eea1ec8082?w=400&h=300&fit=crop",
+    image: "/images/recetas/Kale_Masajeado_con_Limon.jpg",
     cookTime: 10,
     difficulty: "Fácil",
     season: "Invierno",
@@ -515,7 +515,7 @@ export const recipesData: Recipe[] = [
     id: "barquitos-calabaza-rellenos",
     title: "Barquitos de Calabaza Rellenos",
     description: "Deliciosa receta de calabazas rellenas con verduras coloridas y queso manchego, perfecta para aprovechar la calabaza completa.",
-    image: "https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=400&h=300&fit=crop",
+    image: "/images/recetas/Barquitos_de_Calabaza_Rellenos.jpg",
     author: {
       name: "Equipo Arca Tierra",
       bio: "Especialistas en cocina agroecológica y aprovechamiento integral"
@@ -608,7 +608,7 @@ export const recipesData: Recipe[] = [
     id: "blt-sandwich-clasico",
     title: "BLT - Sandwich de Tocino, Lechuga y Jitomate",
     description: "Clásico sandwich con tocino crujiente, jitomate heirloom fresco y lechuga, servido en hogaza campesina tostada.",
-    image: "https://images.unsplash.com/photo-1553979459-d2229ba7433a?w=400&h=300&fit=crop",
+    image: "/images/recetas/BLT_Sandwich_Clasico.jpg",
     author: {
       name: "Equipo Arca Tierra",
       bio: "Especialistas en cocina agroecológica y aprovechamiento integral"
@@ -692,7 +692,7 @@ export const recipesData: Recipe[] = [
     id: "crema-calabaza-curry-coco",
     title: "Crema de Calabaza Amarilla + Curry y Crema de Coco",
     description: "Dale un apapacho al corazón con esta deliciosa y fácil crema, perfecta para el clima frío. Receta sencilla que combina la dulzura natural de la calabaza con el sabor exótico del curry y la cremosidad del coco.",
-    image: "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=400&h=300&fit=crop",
+    image: "/images/recetas/Crema_de_Calabaza_Curry-Coco.jpg",
     author: {
       name: "Chef Black Mamba",
       bio: "Chef especializado en cocina fusion con ingredientes orgánicos"
@@ -792,7 +792,7 @@ export const recipesData: Recipe[] = [
     id: "melitzanosalata-ensalada-griega-berenjena",
     title: "Melitzanosalata - Ensalada Griega de Berenjena",
     description: "Receta griega tradicional ideal como entrada para botanear o acompañar platillos. La berenjena asada se mezcla con hierbas frescas y aceite de oliva, creando una textura cremosa y un sabor mediterráneo auténtico.",
-    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop",
+    image: "/images/recetas/Melitzanosalata-Ensalada_Griega_de_Berenjena.png",
     author: {
       name: "Chef Black Mamba",
       bio: "Chef especializado en cocina fusion con ingredientes orgánicos"
@@ -883,7 +883,7 @@ export const recipesData: Recipe[] = [
     id: "ensalada-cremosa-calabaza-zanahoria-pepino",
     title: "Ensalada Cremosa de Calabaza, Zanahoria y Pepino",
     description: "Una receta sencilla de hacer; perfecta como ensalada o bien puede ser una colación entre cada comida. Con diversos beneficios para la salud debido a sus ingredientes frescos y orgánicos.",
-    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop",
+    image: "/images/recetas/Ensalada_Cremosa_Calabaza_Zanahoria_Pepino.jpg",
     author: {
       name: "Chef Black Mamba",
       bio: "Chef especializado en cocina fusion con ingredientes orgánicos"
@@ -949,7 +949,7 @@ export const recipesData: Recipe[] = [
     id: "ensalada-surimi",
     title: "Ensalada de Surimi",
     description: "Una receta sencilla de hacer; perfecta como ensalada o bien puede ser una colación entre cada comida. Con diversos beneficios para la salud debido a sus ingredientes frescos y orgánicos.",
-    image: "https://images.unsplash.com/photo-1559847844-d724b9997a20?w=400&h=300&fit=crop",
+    image: "/images/recetas/Ensalada_Surimi.jpg",
     author: {
       name: "Chef Black Mamba",
       bio: "Chef especializado en cocina fusion con ingredientes orgánicos"
@@ -1012,7 +1012,7 @@ export const recipesData: Recipe[] = [
     id: "limonada-antiestres",
     title: "Limonada Antiestrés",
     description: "Una receta sencilla, refrescante y deliciosa increíble bebida para acompañar tus comidas o para relajarte en cualquier momento del día, con diversos beneficios para la salud debido a sus ingredientes frescos y orgánicos.",
-    image: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop",
+    image: "/images/recetas/Limonada_Antiestres.jpg",
     author: {
       name: "Arca Tierra",
       bio: "Especialistas en cocina agroecológica"
@@ -1074,7 +1074,7 @@ export const recipesData: Recipe[] = [
     id: "mejores-muffins-tu-vida",
     title: "Los Mejores Muffins de Tu Vida",
     description: "Una receta sencilla de hacer; porque los postres también pueden contener múltiples beneficios para la salud si elegimos los ingredientes correctos y que mejor que moras azules frescas y orgánicas.",
-    image: "https://images.unsplash.com/photo-1603532648955-039310d9ed75?w=400&h=300&fit=crop",
+    image: "/images/recetas/Mejores_Muffins_de_Tu_Vida.jpg",
     author: {
       name: "Arca Tierra",
       bio: "Especialistas en cocina agroecológica"
@@ -1178,7 +1178,7 @@ export const recipesData: Recipe[] = [
     id: "pasta-con-brocoli",
     title: "Pasta con Brócoli",
     description: "Una receta italiana clásica y nutritiva que combina pasta con brócoli fresco, ajo aromático y un toque cítrico de limón. Perfecta para una comida equilibrada y deliciosa.",
-    image: "https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=400&h=300&fit=crop",
+    image: "/images/recetas/Pasta_con_Brocoli.jpg",
     author: {
       name: "Arca Tierra",
       bio: "Especialistas en cocina agroecológica"
@@ -1263,7 +1263,7 @@ export const recipesData: Recipe[] = [
     id: "tacos-de-coliflor",
     title: "Tacos de Coliflor",
     description: "Una receta sencilla de hacer; se puede servir como plato fuerte o bien ser una colación entre cada comida. Con diversos beneficios para la salud debido a sus ingredientes frescos y orgánicos.",
-    image: "https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=400&h=300&fit=crop",
+    image: "/images/recetas/Tacos_de_Coliflor.jpg",
     author: {
       name: "Chef Black Mamba",
       bio: "Chef especializado en cocina fusion con ingredientes orgánicos"
@@ -1335,7 +1335,7 @@ export const recipesData: Recipe[] = [
     id: "dip-elote-estilo-esquites",
     title: "Dip de Elote Estilo Esquites",
     description: "Una receta tradicional para acompañar tus comidas o bien para disfrutar como aperitivo en cualquier momento del día. Con diversos beneficios para la salud debido a sus ingredientes frescos y orgánicos.",
-    image: "https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&h=300&fit=crop",
+    image: "/images/recetas/Dip_de_Elote_Estilo_Esquites.jpg",
     author: {
       name: "Chef Black Mamba",
       bio: "Chef especializado en cocina fusion con ingredientes orgánicos"
@@ -1402,7 +1402,7 @@ export const recipesData: Recipe[] = [
     id: "zanahorias-asadas-tahini-zaatar",
     title: "Zanahorias Asadas con Aderezo de Tahini y Zaatar",
     description: "Una receta rápida y sencilla de hacer; se puede servir como entrada para plato fuerte o bien ser una colación entre cada comida. Con diversos beneficios para la salud debido a sus ingredientes frescos y orgánicos.",
-    image: "https://images.unsplash.com/photo-1445282768818-728615cc910a?w=400&h=300&fit=crop",
+    image: "/images/recetas/Zanahorias_Asadas_Tahini_Zaatar.jpg",
     author: {
       name: "Chef Black Mamba",
       bio: "Chef especializado en cocina fusion con ingredientes orgánicos"
@@ -1471,7 +1471,7 @@ export const recipesData: Recipe[] = [
     id: "salmorejo-cordobes",
     title: "Salmorejo Cordobés",
     description: "Una receta sencilla de hacer; se puede servir como primer tiempo ya que es una sopa fácil y rápida con diversos beneficios para la salud debido a sus ingredientes frescos y orgánicos.",
-    image: "https://images.unsplash.com/photo-1563379091339-03246963d7d3?w=400&h=300&fit=crop",
+    image: "/images/recetas/Salmorejo_Cordobes.jpg",
     author: {
       name: "Chef Black Mamba",
       bio: "Chef especializado en cocina fusion con ingredientes orgánicos"
@@ -1536,7 +1536,7 @@ export const recipesData: Recipe[] = [
     id: "tapas-berenjena-horno",
     title: "Tapas de Berenjena al Horno",
     description: "Una receta elegante y sofisticada que combina la textura cremosa de la berenjena asada con ingredientes frescos y queso de cabra. Perfecta como aperitivo o entrada.",
-    image: "https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=400&h=300&fit=crop",
+    image: "/images/recetas/Tapas_de_Berenjena_al_Horno.jpg",
     author: {
       name: "Záhie Téllez",
       bio: "Chef especializada en cocina mediterránea"
@@ -1605,7 +1605,7 @@ export const recipesData: Recipe[] = [
     id: "tomates-verdes-fritos",
     title: "Tomates Verdes Fritos",
     description: "Una botana sencilla y saludable para acompañar nuestras tardes o antojos de fin de semana. Nos puede ayudar para reemplazar las botanas procesadas dándonos un increíble gusto y sabor.",
-    image: "https://images.unsplash.com/photo-1630859805136-a4b7d6a5d6e6?w=400&h=300&fit=crop",
+    image: "/images/recetas/Tomates_Verdes_Fritos.png",
     author: {
       name: "Chef Black Mamba",
       bio: "Chef especializado en cocina fusion con ingredientes orgánicos"
@@ -1703,7 +1703,7 @@ export const recipesData: Recipe[] = [
     id: "chimichurri",
     title: "Chimichurri",
     description: "Una salsa argentina clásica y versátil que acompaña perfectamente carnes, vegetales asados, empanadas y múltiples platillos. Su frescor y sabor intenso lo convierten en el condimento perfecto para realzar cualquier comida.",
-    image: "https://images.unsplash.com/photo-1565895405229-71bec9b7493d?w=400&h=300&fit=crop",
+    image: "/images/recetas/Chimichurri.jpg",
     author: {
       name: "Záhie Téllez",
       bio: "Chef especializada en cocina mediterránea"
@@ -1787,7 +1787,7 @@ export const recipesData: Recipe[] = [
     id: "fideos-de-calabaza",
     title: "Fideos de Calabaza",
     description: "Una alternativa saludable y deliciosa a la pasta tradicional, utilizando calabacines frescos cortados en tiras delgadas y bañados en una cremosa salsa de cilantro. Perfecto como plato principal ligero o acompañamiento sofisticado.",
-    image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop",
+    image: "/images/recetas/Fideos_de_Calabaza.jpg",
     author: {
       name: "Záhie Téllez",
       bio: "Chef especializada en cocina mediterránea"
