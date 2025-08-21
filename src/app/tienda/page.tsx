@@ -22,14 +22,14 @@ interface SearchSuggestionsProps {
   onSelectProduct: (product: { nombre: string }) => void
 }
 
-// Helper: imagen de canastas por nombre
+// Helper: imagen de canastas por nombre (optimized for WebP)
 function getCanastaImage(nombre: string, original?: string): string {
   const n = nombre.toLowerCase()
-  if (n.includes('canasta individual')) return '/images/canastas/canastaindividual.jpg'
-  if (n.includes('canasta media')) return '/images/canastas/canastamedia.jpg'
-  if (n.includes('canasta completa')) return '/images/canastas/canastacompleta.jpg'
-  if (n.includes('canasta familiar')) return '/images/canastas/canastafamiliar.jpg'
-  return original && original.trim() !== '' ? original : '/placeholder-product.jpg'
+  if (n.includes('canasta individual')) return '/images/canastas/canastaindividual.webp'
+  if (n.includes('canasta media')) return '/images/canastas/canastamedia.webp'
+  if (n.includes('canasta completa')) return '/images/canastas/canastacompleta.webp'
+  if (n.includes('canasta familiar')) return '/images/canastas/canastafamiliar.webp'
+  return original && original.trim() !== '' ? original : '/placeholder-product.webp'
 }
 
 // Componente para las sugerencias de búsqueda

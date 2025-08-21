@@ -106,9 +106,16 @@ export default function HomePage() {
       <main className="min-h-screen">
         {/* HERO SECTION */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-          {/* Background Image */}
+          {/* Optimized Background Image */}
           <div className="absolute inset-0 z-0">
-            <div className="w-full h-full bg-[url('/images/home/chinampas_xochimilco.png')] bg-cover bg-center"></div>
+            <OptimizedImage
+              src="/images/home/chinampas_xochimilco.webp"
+              alt="Chinampas de Xochimilco"
+              fill
+              priority
+              className="object-cover"
+              webpSupport={true}
+            />
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30"></div>
           </div>
           
@@ -228,7 +235,7 @@ export default function HomePage() {
                   price: 290,
                   items: '1-2 personas',
                   weight: '3.5 kg',
-                  image: '/images/canastas/canastaindividual.jpg',
+                  image: '/images/canastas/canastaindividual.webp',
                   features: ['Variedad balanceada de nutrientes', 'Fácil de consumir en una semana', 'Incluye fruta y verduras de temporada'],
                   popular: true
                 },
@@ -239,7 +246,7 @@ export default function HomePage() {
                   price: 350,
                   items: '2-3 personas',
                   weight: '5 kg',
-                  image: '/images/canastas/canastamedia.jpg',
+                  image: '/images/canastas/canastamedia.webp',
                   features: ['Incluye frutas y verduras de temporada', 'Ideal para familias pequeñas', 'Excelente relación calidad-precio'],
                   popular: true
                 },
@@ -250,7 +257,7 @@ export default function HomePage() {
                   price: 510,
                   items: '3-4 personas',
                   weight: '7.5 kg',
-                  image: '/images/canastas/canastacompleta.jpg',
+                  image: '/images/canastas/canastacompleta.webp',
                   features: ['Variedad amplia de productos', 'Perfecta para familias medianas', 'Mayor diversidad nutricional'],
                   popular: false
                 },
