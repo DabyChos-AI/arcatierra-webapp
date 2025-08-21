@@ -324,7 +324,7 @@ const organizationStructuredData = {
   }
 };
 
-export default function TiendaPage() {
+function TiendaPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchTerm, setSearchTerm] = useState('')
@@ -1511,3 +1511,16 @@ export default function TiendaPage() {
   )
 }
 
+// Componente principal con Suspense boundary para useSearchParams
+export default function TiendaPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B15543] mx-auto mb-4"></div>
+        <p className="text-gray-600">Cargando tienda...</p>
+      </div>
+    </div>}>
+      <TiendaPageContent />
+    </Suspense>
+  )
+}
