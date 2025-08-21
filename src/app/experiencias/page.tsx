@@ -95,7 +95,7 @@ export default function ExperienciasPage() {
       {filtroActivo === 'todas' && (
         <>
           {/* Experiencias Públicas */}
-          <section className="py-12 px-4 md:px-8">
+          <section id="publicas" className="py-12 px-4 md:px-8">
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-12">
                 <h3 className="text-3xl md:text-4xl font-playfair font-bold text-gray-800 mb-4 animate-fade-in-up">
@@ -121,7 +121,7 @@ export default function ExperienciasPage() {
           </section>
 
           {/* Experiencias Privadas */}
-          <section className="py-12 px-4 md:px-8 bg-gradient-to-r from-terracota-50 to-verde-50">
+          <section id="privadas" className="py-12 px-4 md:px-8 bg-gradient-to-r from-terracota-50 to-verde-50">
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-12">
                 <h3 className="text-3xl md:text-4xl font-playfair font-bold text-gray-800 mb-4 animate-fade-in-up">
@@ -250,7 +250,7 @@ export default function ExperienciasPage() {
       {filtroActivo === 'todas' && (
         <>
           {/* Sección de Testimonios y FAQ */}
-          <section className="py-16 px-4 md:px-8 bg-neutral-50">
+          <section id="faq" className="py-16 px-4 md:px-8 bg-neutral-50">
             <div className="max-w-6xl mx-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* CTA Testimonios */}

@@ -21,20 +21,20 @@ export const mainNavigation: NavigationItem[] = [
     href: '/tienda',
     hasSubmenu: true,
     submenuItems: [
-      { name: 'Canastas de frutas y verduras agroecológicas', href: '/tienda/canastas-frutas-verduras' },
-      { name: 'Frutas y Verduras a Granel', href: '/tienda/frutas-verduras-granel' },
-      { name: 'Proteínas Regenerativas', href: '/tienda/proteinas-regenerativas' },
-      { name: 'Huevo de libre pastoreo y lácteos artesanales', href: '/tienda/huevos-lacteos' },
-      { name: 'Café, cacao y chocolate artesanal', href: '/tienda/cafe-cacao-chocolate' },
-      { name: 'Aceites naturales', href: '/tienda/aceites-naturales' },
-      { name: 'Granos y cereales integrales', href: '/tienda/granos-cereales' },
-      { name: 'Harinas y pastas orgánicas', href: '/tienda/harinas-pastas' },
-      { name: 'Pan y galletas artesanales', href: '/tienda/pan-galletas' },
-      { name: 'Endulzantes naturales', href: '/tienda/endulzantes-naturales' },
-      { name: 'Especias y condimentos artesanales', href: '/tienda/especias-condimentos' },
-      { name: 'Tés e infusiones naturales', href: '/tienda/tes-infusiones' },
-      { name: 'Mermeladas y untables naturales', href: '/tienda/mermeladas-untables' },
-      { name: 'Alimentos Arca Tierra', href: '/tienda/productos-arca-tierra' },
+      { name: 'Canastas de frutas y verduras agroecológicas', href: '/tienda?categoria=canastas-de-frutas-y-verduras-agroecologicas' },
+      { name: 'Frutas y Verduras a Granel', href: '/tienda?categoria=frutas-y-verduras-a-granel' },
+      { name: 'Proteínas Regenerativas', href: '/tienda?categoria=proteinas-regenerativas' },
+      { name: 'Huevo de libre pastoreo y lácteos artesanales', href: '/tienda?categoria=huevo-y-lacteos' },
+      { name: 'Café, cacao y chocolate artesanal', href: '/tienda?categoria=cafe-cacao-y-chocolate' },
+      { name: 'Aceites naturales', href: '/tienda?categoria=aceites-naturales' },
+      { name: 'Granos y cereales integrales', href: '/tienda?categoria=granos-y-cereales-integrales' },
+      { name: 'Pastas', href: '/tienda?categoria=pastas' },
+      { name: 'Galletas, harinas y pan artesanales', href: '/tienda?categoria=galletas-harinas-y-pan' },
+      { name: 'Endulzantes naturales', href: '/tienda?categoria=endulzantes' },
+      { name: 'Especias y condimentos artesanales', href: '/tienda?categoria=especias' },
+      { name: 'Tés e infusiones naturales', href: '/tienda?categoria=infusiones-y-te' },
+      { name: 'Mermeladas y untables naturales', href: '/tienda?categoria=mermeladas-y-untables' },
+      { name: 'Alimentos Arca Tierra', href: '/tienda' },
     ]
   },
   {
@@ -42,14 +42,10 @@ export const mainNavigation: NavigationItem[] = [
     href: '/experiencias',
     hasSubmenu: true,
     submenuItems: [
-      // Nuevas
-      { name: 'Públicas', href: '/experiencias/publicas' },
-      { name: 'Privadas', href: '/experiencias/privadas' },
+      { name: 'Públicas', href: '/experiencias#publicas' },
+      { name: 'Privadas', href: '/experiencias#privadas' },
+      { name: 'Calendario', href: '/calendario' },
       { name: 'Preguntas frecuentes (FAQ)', href: '/experiencias/faq' },
-      // Actuales
-      { name: 'Calendario Experiencias', href: '/experiencias/calendario' },
-      { name: 'Galería de Experiencias', href: '/experiencias/galeria' },
-      { name: 'Experiencias (versión antigua)', href: '/experiencias-antigua' },
     ]
   },
   {
@@ -107,6 +103,14 @@ export const additionalSections: NavigationItem[] = [
   {
     name: 'Contacto',
     href: '/contacto'
+  },
+  {
+    name: 'Términos y Condiciones',
+    href: '/terminos'
+  },
+  {
+    name: 'Política de Privacidad',
+    href: '/privacidad'
   }
 ];
 
@@ -145,9 +149,9 @@ export const mobileUserMenuItems: NavigationItem[] = [
 ];
 
 // CONFIGURACIÓN COMPLETA PARA MENÚ HAMBURGUESA
-// Combina navegación principal + secciones adicionales en el orden especificado
+// Combina navegación principal (sin "Arca Tierra") + secciones adicionales
 export const hamburgerMenuItems: NavigationItem[] = [
-  ...mainNavigation,
+  ...mainNavigation.filter(item => item.name !== 'Arca Tierra'),
   ...additionalSections
 ];
 

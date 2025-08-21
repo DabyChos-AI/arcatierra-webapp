@@ -93,7 +93,11 @@ export function useHeaderState() {
   }, [userDropdownOpen, activeSubmenu]);
 
   // Funciones para manejar estados
-  const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
+  const toggleMobileMenu = () => {
+    console.log('toggleMobileMenu called, current state:', mobileMenuOpen);
+    setMobileMenuOpen(!mobileMenuOpen);
+    console.log('toggleMobileMenu setting state to:', !mobileMenuOpen);
+  };
   const closeMobileMenu = () => setMobileMenuOpen(false);
   
   const toggleUserDropdown = (e: React.MouseEvent) => {

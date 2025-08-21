@@ -304,7 +304,6 @@ const styles = {
     textDecoration: 'none',
     textAlign: 'center' as const,
     transition: 'background-color 0.2s',
-    whiteSpace: 'nowrap' as const,
   },
   cartSidebar: {
     position: 'fixed' as const,
@@ -491,6 +490,7 @@ const TransparentHeader: React.FC = () => {
   };
 
   const toggleMobileMenu = () => {
+    console.log('toggleMobileMenu clicked, current state:', mobileMenuOpen);
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
@@ -837,21 +837,30 @@ const TransparentHeader: React.FC = () => {
 
           {/* Mobile Menu Button - Máxima visibilidad en móvil */}
           <button 
-            onClick={toggleMobileMenu} 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Button clicked!');
+              toggleMobileMenu();
+            }}
+            onMouseDown={() => console.log('Mouse down on button')}
+            onMouseUp={() => console.log('Mouse up on button')}
             className="header-mobile-button"
             style={{
-              display: windowSize.width && windowSize.width < 2000 ? 'flex' : 'none',
+              display: 'flex', 
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'none',
-              border: 'none',
+              background: 'red', // Temporal para debugging
+              border: '2px solid blue', // Temporal para debugging
               cursor: 'pointer',
               padding: '0.5rem',
               color: isTransparent && !isScrolled ? 'white' : 'var(--arcatierra-verde-tipografia)',
               fontSize: '1.3rem',
-              zIndex: 1001,
+              zIndex: 9999, // Aumentado para asegurar que esté encima
               minWidth: '36px',
-              minHeight: '36px'
+              minHeight: '36px',
+              pointerEvents: 'auto',
+              position: 'relative'
             }}
           >
             {/* Hamburger icon usando SVG para garantizar visibilidad */}

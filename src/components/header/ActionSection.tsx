@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signIn, signOut, useSession } from 'next-auth/react';
-import { useHeaderState } from './hooks/useHeaderState';
+import { useHeaderContext } from '../../context/HeaderContext';
 import { useCart } from './hooks/useCart';
 import { getActionIcons, getUserMenuItems } from './NavigationConfig';
 
@@ -144,7 +144,7 @@ const actionStyles = {
 
 // Componente del carrito
 const CartButton: React.FC = () => {
-  const { isTransparent, isScrolled, breakpoint } = useHeaderState();
+  const { isTransparent, isScrolled, breakpoint } = useHeaderContext();
   const { cartCount, handleCartButtonClick } = useCart();
   
   const isSmall = breakpoint === 'mobile' || breakpoint === 'tablet';
@@ -175,7 +175,7 @@ const CartButton: React.FC = () => {
 
 // Componente de iconos de acción (solo desktop >=2000px)
 const ActionIcons: React.FC = () => {
-  const { isTransparent, isScrolled, breakpoint } = useHeaderState();
+  const { isTransparent, isScrolled, breakpoint } = useHeaderContext();
   const actionIcons = getActionIcons();
 
   // Solo mostrar en desktop muy grande
@@ -217,15 +217,15 @@ const ActionIcons: React.FC = () => {
 };
 
 // Componente de usuario
-const UserSection: React.FC = () => {
+const UserButton: React.FC = () => {
   const { data: session } = useSession();
   const { 
     isTransparent, 
     isScrolled, 
-    breakpoint, 
     userDropdownOpen, 
-    toggleUserDropdown 
-  } = useHeaderState();
+    toggleUserDropdown,
+    breakpoint 
+  } = useHeaderContext();
   
   const userMenuItems = getUserMenuItems();
   const isSmall = breakpoint === 'mobile' || breakpoint === 'tablet';
@@ -319,16 +319,14 @@ const UserSection: React.FC = () => {
 
 // Componente del botón hamburguesa
 const HamburgerButton: React.FC = () => {
-  const { isTransparent, isScrolled, breakpoint, toggleMobileMenu } = useHeaderState();
+  const { isTransparent, isScrolled, breakpoint, toggleMobileMenu } = useHeaderContext();
 
-  // Solo mostrar en móvil y tablet
-  if (breakpoint === 'desktop' || breakpoint === 'desktop-small') {
-    return null;
-  }
+  // Siempre mostrar el botón hamburguesa
+  // (Removida condición que ocultaba en desktop para monitores 4K)
 
   return (
     <button 
-      onClick={toggleMobileMenu} 
+      onClick={toggleMobileMenu}
       className="header-mobile-button"
       style={actionStyles.hamburgerButton(isTransparent, isScrolled)}
       aria-label="Menú de navegación"
@@ -357,7 +355,7 @@ interface ActionSectionProps {
 }
 
 const ActionSection: React.FC<ActionSectionProps> = ({ className }) => {
-  const { breakpoint } = useHeaderState();
+  const { breakpoint } = useHeaderContext();
   
   const gap = breakpoint === 'mobile' || breakpoint === 'tablet' ? '0.3rem' : '0.7rem';
 
@@ -372,7 +370,7 @@ const ActionSection: React.FC<ActionSectionProps> = ({ className }) => {
         <CartButton />
         
         {/* Usuario - siempre visible */}
-        <UserSection />
+        <UserButton />
 
         {/* Menú hamburguesa - móvil y tablet */}
         <HamburgerButton />
@@ -382,4 +380,4 @@ const ActionSection: React.FC<ActionSectionProps> = ({ className }) => {
 };
 
 export default ActionSection;
-export { CartButton, UserSection, HamburgerButton, ActionIcons };
+export { CartButton, UserButton, HamburgerButton, ActionIcons };

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useHeaderState } from './hooks/useHeaderState';
+import { useHeaderContext } from '../../context/HeaderContext';
 import LogoSection from './LogoSection';
 import MainNavigation from './MainNavigation';
 import ActionSection from './ActionSection';
@@ -40,20 +40,13 @@ interface HeaderContainerProps {
   style?: React.CSSProperties;
 }
 
-const HeaderContainer: React.FC<HeaderContainerProps> = ({ 
-  className,
-  style 
-}) => {
-  const { isTransparent, isScrolled } = useHeaderState();
+const HeaderContainer: React.FC = () => {
+  const { isTransparent, isScrolled } = useHeaderContext();
 
   return (
     <>
       <header 
-        style={{
-          ...headerStyles.header(isTransparent, isScrolled),
-          ...style
-        }}
-        className={className}
+        style={headerStyles.header(isTransparent, isScrolled)}
       >
         <div style={headerStyles.container}>
           {/* Logo responsivo */}

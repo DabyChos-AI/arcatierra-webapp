@@ -5,6 +5,7 @@ import HeaderContainer from "@/components/header/HeaderContainer";
 import Footer from "@/components/layout/Footer";
 import AuthProvider from '@/components/AuthProvider'
 import { NotificationProvider } from '@/components/NotificationSystem'
+import { HeaderProvider } from '@/context/HeaderContext'
 import WhatsAppChat from '@/components/WhatsAppChat'
 import ClientLayout from './client-layout'
 
@@ -188,21 +189,23 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased bg-neutro-crema text-verde-tipografia min-h-screen flex flex-col`}>
         <AuthProvider>
           <NotificationProvider>
-            {/* Header Transparente */}
-            <HeaderContainer />
-            
-            {/* Contenido Principal envuelto en ClientLayout */}
-            <ClientLayout>
-              <div className="flex-1">
-                {children}
-              </div>
-            </ClientLayout>
-            
-            {/* Footer Oficial */}
-            <Footer />
-            
-            {/* WhatsApp Chat Flotante */}
-            <WhatsAppChat />
+            <HeaderProvider>
+              {/* Header Transparente */}
+              <HeaderContainer />
+              
+              {/* Contenido Principal envuelto en ClientLayout */}
+              <ClientLayout>
+                <div className="flex-1">
+                  {children}
+                </div>
+              </ClientLayout>
+              
+              {/* Footer Oficial */}
+              <Footer />
+              
+              {/* WhatsApp Chat Flotante */}
+              <WhatsAppChat />
+            </HeaderProvider>
           </NotificationProvider>
         </AuthProvider>
         

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import OptimizedImage from '@/components/ui/OptimizedImage';
-import { useHeaderState } from './hooks/useHeaderState';
+import { useHeaderContext } from '../../context/HeaderContext';
 import { getHamburgerMenuItems, getMobileUserMenuItems } from './NavigationConfig';
 
 // Estilos para el menú móvil
@@ -281,15 +281,15 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ className }) => {
     closeMobileMenu, 
     pathname,
     breakpoint 
-  } = useHeaderState();
+  } = useHeaderContext();
   
   const hamburgerMenuItems = getHamburgerMenuItems();
   const mobileUserMenuItems = getMobileUserMenuItems();
 
-  // Cerrar menú al cambiar de ruta
-  useEffect(() => {
-    closeMobileMenu();
-  }, [pathname, closeMobileMenu]);
+  // Cerrar menú al cambiar de ruta (deshabilitado temporalmente para debugging)
+  // useEffect(() => {
+  //   closeMobileMenu();
+  // }, [pathname, closeMobileMenu]);
 
   // Prevenir scroll del body cuando el menú está abierto
   useEffect(() => {
@@ -304,10 +304,8 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ className }) => {
     };
   }, [mobileMenuOpen]);
 
-  // Solo mostrar en móvil y tablet
-  if (breakpoint === 'desktop' || breakpoint === 'desktop-small') {
-    return null;
-  }
+  // Menú móvil siempre disponible
+  // (Removida condición que ocultaba en desktop para monitores 4K)
 
   const handleSignOut = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -319,6 +317,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ className }) => {
     window.location.href = '/auth/signin';
     closeMobileMenu();
   };
+
 
   return (
     <AnimatePresence>
@@ -374,7 +373,19 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ className }) => {
                 style={mobileMenuStyles.closeButton}
                 aria-label="Cerrar menú"
               >
-                <i className="fas fa-times" aria-hidden="true"></i>
+                <svg 
+                  width="20" 
+                  height="20" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
               </button>
             </div>
 

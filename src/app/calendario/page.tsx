@@ -92,8 +92,8 @@ const categorias = [
 ]
 
 export default function CalendarioPage() {
-  const [fechaActual, setFechaActual] = useState(new Date(2025, 6, 1)) // Julio 2025
-  const [vista, setVista] = useState<'calendario' | 'lista'>('calendario')
+  const [fechaActual, setFechaActual] = useState(new Date()) // Mes actual
+  const [vista, setVista] = useState<'calendario' | 'lista'>('lista')
   const [fechaSeleccionada, setFechaSeleccionada] = useState<Date | null>(null)
   const [filtroCategoria, setFiltroCategoria] = useState<string>('')
   const [carrito, setCarrito] = useState<any[]>([])

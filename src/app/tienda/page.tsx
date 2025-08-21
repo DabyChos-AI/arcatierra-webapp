@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { Search, Heart, ShoppingCart, Grid3X3, LayoutGrid, Star, Filter, Eye, MapPin, ChevronDown, ChevronRight, X } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
@@ -326,6 +326,7 @@ const organizationStructuredData = {
 
 export default function TiendaPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [searchTerm, setSearchTerm] = useState('')
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -344,6 +345,14 @@ export default function TiendaPage() {
   const [showFavorites, setShowFavorites] = useState(false)
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const [isDesktopFiltersCollapsed, setIsDesktopFiltersCollapsed] = useState(false)
+
+  // Leer parámetro categoria de la URL al iniciar
+  useEffect(() => {
+    const categoria = searchParams.get('categoria')
+    if (categoria) {
+      setSelectedCategory(categoria)
+    }
+  }, [searchParams])
 
   // Cargar favoritos y carrito desde localStorage al iniciar
   useEffect(() => {
