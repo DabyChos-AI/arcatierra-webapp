@@ -551,6 +551,35 @@ const TransparentHeader: React.FC = () => {
                   }} />
               </div>
               
+              {/* Logo para vista intermedia (tablet/hamburgesa) - Logo circular + texto */}
+              <div className="header-logo-intermediate" style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                {/* Logo circular */}
+                <div style={{ position: 'relative', width: '40px', height: '40px' }}>
+                  <OptimizedImage 
+                    src="/images/logos/logo_arcatierra_sin_texto.png"
+                    alt="Arca Tierra" 
+                    width={40}
+                    height={40}
+                    style={{ objectFit: 'contain' }}
+                  />
+                </div>
+                
+                {/* Texto del logo */}
+                <div style={{ position: 'relative', height: '25px' }}>
+                  <OptimizedImage 
+                    src="/images/logos/logo_arcatierra_solo_texto.png"
+                    alt="Arca Tierra" 
+                    width={80}
+                    height={25}
+                    style={{ objectFit: 'contain' }}
+                  />
+                </div>
+              </div>
+              
               {/* Logo para móvil - Controlado por CSS media queries */}
               <div className="header-logo-mobile" style={{ 
                 position: 'relative',
@@ -892,7 +921,7 @@ const TransparentHeader: React.FC = () => {
                   {/* Logo solo letras */}
                   <div style={{ position: 'relative', height: '25px' }}>
                     <OptimizedImage 
-                      src="/images/logos/logo_arcatiera_solo_texto.png"
+                      src="/images/logos/logo_arcatierra_solo_texto.png"
                       alt="Arca Tierra" 
                       width={80}
                       height={25}

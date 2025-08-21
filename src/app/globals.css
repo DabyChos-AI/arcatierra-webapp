@@ -520,8 +520,10 @@ a.animated-link:hover::after {
   z-index: 1001;
 }
 
-/* HEADER RESPONSIVE - FORZAR COMPORTAMIENTO MÓVIL */
-@media (max-width: 1200px) {
+/* HEADER RESPONSIVE - COMPORTAMIENTO DE LOGOS Y NAVEGACIÓN */
+
+/* Vista móvil completa (< 768px) */
+@media (max-width: 767px) {
   /* Ocultar navegación desktop */
   .header-desktop-nav {
     display: none !important;
@@ -543,17 +545,58 @@ a.animated-link:hover::after {
     min-height: 40px !important;
   }
   
-  /* Logo desktop - ocultar */
+  /* Logos: solo móvil */
   .header-logo-desktop {
     display: none !important;
   }
   
-  /* Logo móvil - mostrar */
+  .header-logo-intermediate {
+    display: none !important;
+  }
+  
   .header-logo-mobile {
     display: block !important;
   }
 }
 
+/* Vista intermedia/tablet (768px - 1200px) */
+@media (min-width: 768px) and (max-width: 1200px) {
+  /* Ocultar navegación desktop */
+  .header-desktop-nav {
+    display: none !important;
+  }
+  
+  /* Mostrar botón hamburguesa */
+  .header-mobile-button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 0.5rem !important;
+    color: var(--arcatierra-verde-tipografia) !important;
+    font-size: 1.2rem !important;
+    z-index: 1001 !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+  
+  /* Logos: mostrar intermedio (circular + texto) */
+  .header-logo-desktop {
+    display: none !important;
+  }
+  
+  .header-logo-intermediate {
+    display: flex !important;
+  }
+  
+  .header-logo-mobile {
+    display: none !important;
+  }
+}
+
+/* Vista desktop (> 1200px) */
 @media (min-width: 1201px) {
   /* Mostrar navegación desktop */
   .header-desktop-nav {
@@ -565,12 +608,15 @@ a.animated-link:hover::after {
     display: none !important;
   }
   
-  /* Logo desktop - mostrar */
+  /* Logos: mostrar desktop horizontal */
   .header-logo-desktop {
     display: block !important;
   }
   
-  /* Logo móvil - ocultar */
+  .header-logo-intermediate {
+    display: none !important;
+  }
+  
   .header-logo-mobile {
     display: none !important;
   }
