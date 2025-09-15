@@ -30,6 +30,7 @@
 # archivos de entorno (excepto templates)
 .env*.local
 .env
+.env.production
 !.env.example
 !.env.production.template
 

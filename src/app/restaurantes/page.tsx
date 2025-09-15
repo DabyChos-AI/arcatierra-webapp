@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Truck, Clock, Calendar, CheckCircle, Leaf, Package, Star, Send } from 'lucide-react'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 
 // Definición de colores según manual de identidad
 const colors = {
@@ -28,9 +29,10 @@ const colors = {
 const ImageCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0)
   const images = [
-    { url: '/images/reparto-1.jpg', alt: 'Primera estrella verde en CDMX' },
-    { url: '/images/reparto-2.jpg', alt: 'Entrega de productos agroecológicos' },
-    { url: '/images/reparto-3.jpg', alt: 'Servicio de entrega a restaurantes' }
+    { url: '/images/restaurantes/descarga-verduras-para-restaurantes.JPG', alt: 'Descarga de verduras para restaurantes' },
+    { url: '/images/restaurantes/recepcion-verduras-contramar.jpg', alt: 'Recepción de verduras en Contramar' },
+    { url: '/images/restaurantes/verduras-frescas-de-temporada.jpg', alt: 'Verduras frescas de temporada' },
+    { url: '/images/restaurantes/seleccion-verduras-de-temporada.JPG', alt: 'Selección de verduras de temporada' }
   ]
 
   useEffect(() => {
@@ -42,13 +44,40 @@ const ImageCarousel = () => {
 
   return (
     <div className="relative w-full h-[400px] md:h-[500px] overflow-hidden rounded-2xl shadow-xl">
-      {/* Placeholder para las imágenes */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#B15543] to-[#975543] flex items-center justify-center">
-        <div className="text-white text-center p-8">
-          <Truck className="w-16 h-16 mx-auto mb-4 animate-pulse" />
-          <p className="text-xl">Servicio de entrega directa del campo a tu cocina</p>
+      {/* Imágenes del carrusel */}
+      {images.map((image, idx) => (
+        <div
+          key={idx}
+          className={`absolute inset-0 transition-opacity duration-500 ${
+            idx === currentSlide ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          {idx === 0 ? (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#E3DBCB] to-[#CCBB9A]">
+              <OptimizedImage
+                src={image.url}
+                alt={image.alt}
+                width={800}
+                height={400}
+                className="max-w-full max-h-full object-contain"
+                priority={true}
+                webpSupport={true}
+              />
+            </div>
+          ) : (
+            <OptimizedImage
+              src={image.url}
+              alt={image.alt}
+              fill
+              className="object-cover"
+              style={idx === 3 ? { objectPosition: '50% 60%' } : {}}
+              webpSupport={true}
+            />
+          )}
+          {/* Overlay sutil para legibilidad */}
+          <div className="absolute inset-0 bg-black/20"></div>
         </div>
-      </div>
+      ))}
       
       {/* Controles del carrusel */}
       <button

@@ -2590,7 +2590,7 @@ export const productos: Product[] = [
   },
   {
     "id": "P-WEB-PRO-011",
-    "nombre": "OSSOBUCO DE RES 1 KG",
+    "nombre": "CHAMBARETE DE RES 1 KG",
     "precio": 315,
     "unidad": "",
     "imagen": "/images/tienda/ossobuco-tienda-arca-tierra.jpg",
@@ -2609,7 +2609,7 @@ export const productos: Product[] = [
       "plastico": "0g plástico evitado"
     },
     "seoData": {
-      "metaTitle": "OSSOBUCO DE RES 1 KG",
+      "metaTitle": "CHAMBARETE DE RES 1 KG",
       "metaDescription": "",
       "keywords": []
     }
