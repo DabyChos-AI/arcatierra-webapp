@@ -17,10 +17,7 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# No redirects needed - Netlify Next.js plugin handles routing automatically
 
 [build.environment]
   NODE_VERSION = "20"
