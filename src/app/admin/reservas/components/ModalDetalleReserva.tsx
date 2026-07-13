@@ -16,12 +16,22 @@ import {
 import { API_URL } from '@/lib/api'
 import {
   formatMXN,
+  calcularCotizacion,
+  initialWizardData,
+  type Cotizacion,
   type ExperienciaCatalogo,
   type IdiomaCliente,
   type ManifestInvitado,
   type Personal,
   type Reserva,
 } from '@/types/reservas'
+
+// El backend expone en `cotizacion` el precio base 1-9 y el adicional por persona
+// del catalogo. No estan en el tipo Cotizacion base; los leemos con esta extension.
+interface CotizacionConCatalogo extends Cotizacion {
+  precio_base_experiencia?: number
+  precio_adicional_por_persona?: number
+}
 import BadgeEstado from '../../components/BadgeEstado'
 import BadgeEstadoPago from '../../components/BadgeEstadoPago'
 import MultiSelectGuias from '../../components/MultiSelectGuias'
@@ -114,6 +124,9 @@ export default function ModalDetalleReserva({
   // Add-on selector
   const [nuevoAddonId, setNuevoAddonId] = useState('')
   const [nuevoAddonCant, setNuevoAddonCant] = useState(1)
+
+  // C38: actualizar cotizacion cuando el manifest excede los invitados cotizados
+  const [savingCotizacion, setSavingCotizacion] = useState(false)
 
   // SAP
   const [flagSap, setFlagSap] = useState(false)
@@ -445,6 +458,36 @@ export default function ModalDetalleReserva({
     }
   }
 
+  // C38: PATCH numero_invitados_min = N; el backend recalcula montos server-side.
+  async function actualizarCotizacionInvitados(nuevoInvitados: number) {
+    if (!token || !reserva) return
+    setSavingCotizacion(true)
+    try {
+      const res = await fetch(`${API_URL}/api/admin/reservas/${reserva.id}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ numero_invitados_min: nuevoInvitados }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.detail || `Error ${res.status}`)
+      }
+      showToast('Cotización actualizada', 'success')
+      await fetchReserva(true)
+      onUpdated()
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : 'Error al actualizar cotización',
+        'error',
+      )
+    } finally {
+      setSavingCotizacion(false)
+    }
+  }
+
   async function saveSap() {
     if (!token || !reserva) return
     try {
@@ -647,6 +690,8 @@ export default function ModalDetalleReserva({
               setNuevoInvitado={setNuevoInvitado}
               onAdd={addInvitado}
               onUpdate={updateInvitadoEnLista}
+              onActualizarCotizacion={actualizarCotizacionInvitados}
+              savingCotizacion={savingCotizacion}
             />
           )}
           {tab === 'pagos' && (
@@ -1266,6 +1311,8 @@ function TabManifest({
   setNuevoInvitado,
   onAdd,
   onUpdate,
+  onActualizarCotizacion,
+  savingCotizacion,
 }: {
   reserva: Reserva
   nuevoInvitado: ManifestInvitado
@@ -1276,6 +1323,8 @@ function TabManifest({
     field: keyof ManifestInvitado,
     value: string | number | null,
   ) => Promise<void>
+  onActualizarCotizacion: (nuevoInvitados: number) => Promise<void>
+  savingCotizacion: boolean
 }) {
   const lista = reserva.manifest_invitados ?? []
   const esPlaceholder = lista.length === 0
@@ -1288,8 +1337,98 @@ function TabManifest({
       }))
     : lista
 
+  // C38: comparar invitados reales del manifest vs los cotizados en la reserva.
+  const [confirmando, setConfirmando] = useState(false)
+  const cotizados = reserva.numero_invitados_min
+  const manifestCount = lista.length
+  const excedeCotizacion = manifestCount > cotizados
+
+  const totalActual = Number(reserva.monto_total)
+  const cot = reserva.cotizacion as CotizacionConCatalogo | undefined
+  const nuevaCotizacion = calcularCotizacion({
+    ...initialWizardData,
+    invMin: manifestCount,
+    precioBase: cot?.precio_base_experiencia ?? 0,
+    precioAdicional: cot?.precio_adicional_por_persona ?? 0,
+    addons: (reserva.addons ?? []).map((a) => ({
+      id: a.addon_id,
+      nombre: a.nombre,
+      cantidad: a.cantidad,
+      precio_unitario: Number(a.precio_unitario),
+    })),
+    propinaPct: Number(reserva.propina_pct),
+    descuento: Number(reserva.monto_descuento),
+    anticipo: Number(reserva.monto_anticipo),
+  })
+  const nuevoTotal = nuevaCotizacion.total
+
   return (
     <div className="space-y-4">
+      {/* C38: badge + boton manual (NUNCA recalcula automaticamente) */}
+      {excedeCotizacion && (
+        <div className="bg-terracota/5 border border-terracota/30 rounded-lg p-3 space-y-2">
+          <div className="flex items-start gap-2">
+            <AlertTriangle
+              className="h-4 w-4 text-terracota flex-shrink-0 mt-0.5"
+              aria-hidden="true"
+            />
+            <div className="flex-1">
+              <span className="inline-block bg-terracota/10 text-terracota text-xs font-medium px-2 py-0.5 rounded-full">
+                Excede cotización ({manifestCount} invitados vs {cotizados} cotizados)
+              </span>
+              <p className="text-xs text-verde-suave mt-1">
+                El manifest tiene más invitados que los cotizados. Puedes actualizar la
+                cotización para recalcular el precio.
+              </p>
+            </div>
+          </div>
+          {!confirmando ? (
+            <button
+              type="button"
+              onClick={() => setConfirmando(true)}
+              disabled={savingCotizacion}
+              className="inline-flex items-center gap-1 bg-terracota hover:bg-terracota-dark text-white px-3 py-1.5 rounded-lg text-sm font-medium disabled:opacity-50"
+            >
+              <CreditCard className="h-4 w-4" aria-hidden="true" />
+              Actualizar cotización
+            </button>
+          ) : (
+            <div className="bg-white border border-terracota/30 rounded-lg p-3 space-y-2">
+              <p className="text-sm text-verde">
+                Esto recalculará el precio de{' '}
+                <strong className="tabular-nums">{formatMXN(totalActual)}</strong> a{' '}
+                <strong className="tabular-nums text-terracota">{formatMXN(nuevoTotal)}</strong>{' '}
+                (para {manifestCount} invitados). ¿Continuar?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await onActualizarCotizacion(manifestCount)
+                    setConfirmando(false)
+                  }}
+                  disabled={savingCotizacion}
+                  className="inline-flex items-center gap-1 bg-terracota hover:bg-terracota-dark text-white px-3 py-1.5 rounded-lg text-sm font-medium disabled:opacity-50"
+                >
+                  {savingCotizacion && (
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  )}
+                  Sí, actualizar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmando(false)}
+                  disabled={savingCotizacion}
+                  className="px-3 py-1.5 text-sm text-verde border border-neutro-borde rounded-lg hover:bg-neutro-light disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="bg-white border border-neutro-borde rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead>

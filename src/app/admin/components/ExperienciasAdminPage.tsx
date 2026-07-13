@@ -10,6 +10,25 @@ import {
 import { ImageUploader, GalleryUploader } from '@/components/admin/ImageUploader'
 import MapPicker from '@/components/admin/MapPicker'
 import { formatFechaMexico } from '@/lib/dates'
+import { CAPACIDAD_SIN_TOPE } from '@/types/catalogos'
+import DisplayCapacidad from './DisplayCapacidad'
+import DisplayDuracion from './DisplayDuracion'
+
+// Dias de la semana: 0=domingo .. 6=sabado (convencion backend dias_disponibles)
+const DIAS_SEMANA: { value: number; label: string }[] = [
+  { value: 0, label: 'Dom' },
+  { value: 1, label: 'Lun' },
+  { value: 2, label: 'Mar' },
+  { value: 3, label: 'Mié' },
+  { value: 4, label: 'Jue' },
+  { value: 5, label: 'Vie' },
+  { value: 6, label: 'Sáb' },
+]
+
+// Normaliza "HH:MM:SS" o "HH:MM" a "HH:MM" (el backend puede devolver con segundos)
+function normalizaHora(h: string): string {
+  return h.slice(0, 5)
+}
 
 interface Experiencia {
   id: string
@@ -105,7 +124,9 @@ export default function ExperienciasAdminPage({
     informacion_importante: [''],
     imagen_principal: '',
     galeria_imagenes: [] as string[],
-    disponible: true
+    disponible: true,
+    dias_disponibles: [] as number[],
+    horarios_disponibles: [] as string[]
   })
 
   const [temporadasDisponibles, setTemporadasDisponibles] = useState<string[]>([
@@ -402,7 +423,9 @@ export default function ExperienciasAdminPage({
       informacion_importante: [''],
       imagen_principal: '',
       galeria_imagenes: [],
-      disponible: true
+      disponible: true,
+      dias_disponibles: [],
+      horarios_disponibles: []
     })
     setShowNewTemporada(false)
     setNewTemporadaName('')
@@ -427,7 +450,9 @@ export default function ExperienciasAdminPage({
       informacion_importante: exp.informacion_importante.length > 0 ? exp.informacion_importante : [''],
       imagen_principal: exp.imagen_principal || '',
       galeria_imagenes: exp.galeria_imagenes || [],
-      disponible: exp.disponible
+      disponible: exp.disponible,
+      dias_disponibles: exp.dias_disponibles || [],
+      horarios_disponibles: (exp.horarios_disponibles || []).map(normalizaHora)
     })
     setActiveTab('info')
     setShowModal('editar')
@@ -537,7 +562,10 @@ export default function ExperienciasAdminPage({
             </div>
             <div>
               <p className="text-2xl font-bold text-amber-600">
-                {experiencias.reduce((sum, e) => sum + e.capacidad_maxima, 0)}
+                {experiencias.reduce(
+                  (sum, e) => sum + (e.capacidad_maxima === CAPACIDAD_SIN_TOPE ? 0 : e.capacidad_maxima),
+                  0
+                )}
               </p>
               <p className="text-xs text-gray-500">Capacidad Total</p>
             </div>
@@ -600,7 +628,7 @@ export default function ExperienciasAdminPage({
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Experiencia</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Precio</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Capacidad</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duración</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duración estimada</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
                 </tr>
               </thead>
@@ -644,7 +672,14 @@ export default function ExperienciasAdminPage({
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="font-medium text-gray-900 truncate max-w-[200px]">{exp.nombre}</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-medium text-gray-900 truncate max-w-[200px]">{exp.nombre}</p>
+                            {exp.nombre === 'DEL CAMPO A LA BARRA' && (
+                              <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-[#B15543]/10 text-[#B15543] whitespace-nowrap">
+                                TODO rename
+                              </span>
+                            )}
+                          </div>
                           <p className="text-xs text-gray-500 flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
                             {exp.ubicacion}
@@ -660,14 +695,14 @@ export default function ExperienciasAdminPage({
                     <td className="px-4 py-4 text-sm text-gray-500">
                       <div className="flex items-center gap-1">
                         <Users className="h-4 w-4" />
-                        {exp.capacidad_maxima}
+                        <DisplayCapacidad valor={exp.capacidad_maxima} />
                       </div>
                     </td>
-                    
+
                     <td className="px-4 py-4 text-sm text-gray-500">
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
-                        {exp.duracion_horas}h
+                        <DisplayDuracion horas={exp.duracion_horas} />
                       </div>
                     </td>
                     
@@ -909,7 +944,7 @@ export default function ExperienciasAdminPage({
                   
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-1">Precio/Persona *</label>
+                      <label className="block text-sm font-medium mb-1">Precio base 1-9 px (MXN) *</label>
                       <input
                         type="number"
                         value={formData.precio_por_persona}
@@ -931,14 +966,26 @@ export default function ExperienciasAdminPage({
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium mb-1">Capacidad Máx *</label>
-                      <input
-                        type="number"
-                        value={formData.capacidad_maxima}
-                        onChange={(e) => setFormData(prev => ({ ...prev, capacidad_maxima: parseInt(e.target.value) || 1 }))}
-                        min="1"
-                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 ${theme.ring}`}
-                      />
+                      <label htmlFor="exp-capacidad" className="block text-sm font-medium mb-1">Capacidad Máx *</label>
+                      <div className="flex gap-2">
+                        <input
+                          id="exp-capacidad"
+                          type="number"
+                          value={formData.capacidad_maxima}
+                          onChange={(e) => setFormData(prev => ({ ...prev, capacidad_maxima: parseInt(e.target.value) || 1 }))}
+                          min="1"
+                          className={`flex-1 min-w-0 px-4 py-2 border rounded-lg focus:ring-2 ${theme.ring}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, capacidad_maxima: CAPACIDAD_SIN_TOPE }))}
+                          className="px-2 py-2 text-xs border rounded-lg hover:bg-gray-50 whitespace-nowrap"
+                          title="Marcar sin tope (999)"
+                        >
+                          Sin tope
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">999 = sin tope</p>
                     </div>
                     
                     <div>
@@ -992,7 +1039,104 @@ export default function ExperienciasAdminPage({
                     </p>
                   </div>
                 </div>
-                
+
+                {/* Disponibilidad: dias + horarios */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <Calendar className={`h-5 w-5 ${theme.icon}`} />
+                    Disponibilidad
+                  </h3>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Días disponibles</label>
+                    <div className="flex flex-wrap gap-2">
+                      {DIAS_SEMANA.map((dia) => {
+                        const activo = formData.dias_disponibles.includes(dia.value)
+                        return (
+                          <button
+                            key={dia.value}
+                            type="button"
+                            aria-pressed={activo}
+                            onClick={() =>
+                              setFormData(prev => ({
+                                ...prev,
+                                dias_disponibles: activo
+                                  ? prev.dias_disponibles.filter(d => d !== dia.value)
+                                  : [...prev.dias_disponibles, dia.value].sort((a, b) => a - b)
+                              }))
+                            }
+                            className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
+                              activo
+                                ? `${theme.primary} text-white border-transparent`
+                                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            {dia.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Días de la semana en que se puede reservar esta experiencia.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Horarios disponibles</label>
+                    <div className="space-y-2">
+                      {formData.horarios_disponibles.length === 0 && (
+                        <p className="text-xs text-gray-400 italic">
+                          Sin horarios configurados. Agrega uno abajo.
+                        </p>
+                      )}
+                      {formData.horarios_disponibles.map((hora, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <input
+                            type="time"
+                            aria-label={`Horario ${idx + 1}`}
+                            value={hora}
+                            onChange={(e) =>
+                              setFormData(prev => ({
+                                ...prev,
+                                horarios_disponibles: prev.horarios_disponibles.map((h, i) =>
+                                  i === idx ? e.target.value : h
+                                )
+                              }))
+                            }
+                            className={`px-3 py-2 border rounded-lg focus:ring-2 ${theme.ring}`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData(prev => ({
+                                ...prev,
+                                horarios_disponibles: prev.horarios_disponibles.filter((_, i) => i !== idx)
+                              }))
+                            }
+                            aria-label={`Quitar horario ${idx + 1}`}
+                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData(prev => ({
+                          ...prev,
+                          horarios_disponibles: [...prev.horarios_disponibles, '10:00']
+                        }))
+                      }
+                      className={`mt-2 inline-flex items-center gap-1 text-sm ${theme.icon} hover:underline`}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Agregar horario
+                    </button>
+                  </div>
+                </div>
+
                 <div className="space-y-4">
                   <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                     <Eye className={`h-5 w-5 ${theme.icon}`} />
