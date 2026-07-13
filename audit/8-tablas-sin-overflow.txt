@@ -1,0 +1,22 @@
+# TABLAS SIN OVERFLOW-X-AUTO
+# Generado: Tue Oct 21 01:42:41 UTC 2025
+# Problema: <table sin wrapper responsive
+
+app/dashboard/page.tsx-          
+app/dashboard/page.tsx:            <table className="w-full">
+app/dashboard/page.tsx-              <thead>
+app/dashboard/page.tsx-                <tr className="border-b border-gray-200">
+--
+app/admin/productos/page.tsx-        
+app/admin/productos/page.tsx:          <table className="min-w-full divide-y divide-gray-200">
+app/admin/productos/page.tsx-            <thead className="bg-gray-50">
+app/admin/productos/page.tsx-              <tr>
+--
+app/admin/empleados/page.tsx-        </div>
+app/admin/empleados/page.tsx:          <table className="min-w-full divide-y divide-gray-200">
+app/admin/empleados/page.tsx-            <thead className="bg-gray-50">
+app/admin/empleados/page.tsx-              <tr>
+--
+app/admin/carritos-abandonados/page.tsx:          <table className="min-w-full divide-y divide-gray-200">
+app/admin/carritos-abandonados/page.tsx-            <thead className="bg-gray-50">
+app/admin/carritos-abandonados/page.tsx-              <tr>

@@ -25,15 +25,10 @@ const NON_TRANSPARENT_ROUTES = [
  * Verifica si una ruta específica debe tener un header transparente
  * @param pathname La ruta actual
  * @returns boolean
+ * 
+ * ACTUALIZACIÓN 10 Nov 2025: Header SIEMPRE opaco en todas las páginas
  */
 export const shouldHaveTransparentHeader = (pathname: string): boolean => {
-  // Primero verificamos si la ruta está en la lista de excepciones
-  for (const route of NON_TRANSPARENT_ROUTES) {
-    if (pathname === route || pathname.startsWith(`${route}/`)) {
-      return false;
-    }
-  }
-
-  // Por defecto, todas las demás rutas tendrán header transparente
-  return true;
+  // NUNCA transparente - solicitado por el dueño
+  return false;
 };

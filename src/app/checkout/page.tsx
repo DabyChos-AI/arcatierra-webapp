@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import CheckoutForm from '@/components/CheckoutForm'
+import CheckoutFormSingleStep from '@/components/CheckoutFormSingleStep'
+import DeliveryTypeSelector from '@/components/ui/DeliveryTypeSelector'
+import AddToSubscriptionButton from '@/components/ui/AddToSubscriptionButton'
 import { ShoppingCart, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
@@ -12,6 +14,7 @@ export default function CheckoutPage() {
   const { data: session, status } = sessionResult || { data: null, status: 'loading' }
   const router = useRouter()
   const [cartItems, setCartItems] = useState([])
+  const [tipoEntrega, setTipoEntrega] = useState<'envio_domicilio' | 'recoger_almacen'>('envio_domicilio')
 
   useEffect(() => {
     // Cargar items del carrito desde localStorage
@@ -82,9 +85,36 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Formulario de checkout */}
           <div className="lg:col-span-2">
-            <CheckoutForm 
+            {/* Opción de agregar a suscripción existente */}
+            <AddToSubscriptionButton 
+              cartItems={cartItems}
+              onSuccess={() => {
+                localStorage.removeItem('arcaTierraCart')
+                setCartItems([])
+              }}
+            />
+
+            {/* Selector de tipo de entrega */}
+            <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+              <DeliveryTypeSelector
+                value={tipoEntrega}
+                onChange={setTipoEntrega}
+                subtotal={cartItems
+                  .filter((item: any) => item.tipo !== 'experiencia')
+                  .reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
+                }
+                minimoEnvioGratis={1000}
+                costoEnvio={100}
+              />
+            </div>
+            
+            <CheckoutFormSingleStep 
               cartItems={cartItems}
               onOrderComplete={handleOrderComplete}
+              tipoEntrega={tipoEntrega}
+              costoEnvio={tipoEntrega === 'recoger_almacen' ? 0 : 
+                (cartItems.filter((item: any) => item.tipo !== 'experiencia')
+                  .reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0) >= 1000 ? 0 : 100)}
             />
           </div>
 
@@ -126,19 +156,63 @@ export default function CheckoutPage() {
                 <div className="flex justify-between">
                   <span>Envío</span>
                   <span>
-                    {cartItems.reduce((sum: number, item: any) => 
-                      sum + (item.price * item.quantity), 0
-                    ) > 500 ? 'Gratis' : '$50.00'}
+                    {(() => {
+                      if (tipoEntrega === 'recoger_almacen') return 'Gratis (recoger)'
+                      const subtotalProductos = cartItems
+                        .filter((item: any) => item.tipo !== 'experiencia')
+                        .reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
+                      return (subtotalProductos >= 1000) ? 'Gratis' : '$100.00'
+                    })()}
                   </span>
                 </div>
+                {(() => {
+                  if (tipoEntrega === 'recoger_almacen') {
+                    return (
+                      <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
+                        🏪 Recoger en: Gob. Antonio Díez de Bonilla #37, San Miguel Chapultepec
+                      </div>
+                    )
+                  }
+                  const subtotalProductos = cartItems
+                    .filter((item: any) => item.tipo !== 'experiencia')
+                    .reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
+                  const subtotalExperiencias = cartItems
+                    .filter((item: any) => item.tipo === 'experiencia')
+                    .reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
+                  
+                  if (subtotalProductos > 0 && subtotalProductos < 1000) {
+                    return (
+                      <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
+                        💰 Te faltan ${(1000 - subtotalProductos).toFixed(2)} en productos para envío GRATIS
+                      </div>
+                    )
+                  } else if (subtotalProductos >= 1000) {
+                    return (
+                      <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
+                        🎉 ¡Felicidades! Tu envío es GRATIS
+                      </div>
+                    )
+                  } else if (subtotalProductos === 0 && subtotalExperiencias > 0) {
+                    return (
+                      <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
+                        ✨ Las experiencias no tienen costo de envío
+                      </div>
+                    )
+                  }
+                  return null
+                })()}
                 <div className="border-t pt-2 flex justify-between font-semibold">
                   <span>Total</span>
                   <span>
-                    ${(cartItems.reduce((sum: number, item: any) => 
-                      sum + (item.price * item.quantity), 0
-                    ) + (cartItems.reduce((sum: number, item: any) => 
-                      sum + (item.price * item.quantity), 0
-                    ) > 500 ? 0 : 50)).toFixed(2)}
+                    ${(() => {
+                      const subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
+                      const subtotalProductos = cartItems
+                        .filter((item: any) => item.tipo !== 'experiencia')
+                        .reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
+                      const shipping = tipoEntrega === 'recoger_almacen' ? 0 : 
+                        (subtotalProductos >= 1000 ? 0 : 100)
+                      return (subtotal + shipping).toFixed(2)
+                    })()}
                   </span>
                 </div>
               </div>

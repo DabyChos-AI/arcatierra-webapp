@@ -28,9 +28,10 @@ const colors = {
 const ImageCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0)
   const images = [
-    { url: '/images/reparto-1.jpg', alt: 'Primera estrella verde en CDMX' },
-    { url: '/images/reparto-2.jpg', alt: 'Entrega de productos agroecológicos' },
-    { url: '/images/reparto-3.jpg', alt: 'Servicio de entrega a restaurantes' }
+    { url: '/images/restaurantes/restaurantes_entrega_carrusel1.jpg', alt: 'Entrega de productos agroecológicos frescos' },
+    { url: '/images/restaurantes/restaurantes_entrega_carrusel2.jpg', alt: 'Servicio de entrega directa del campo' },
+    { url: '/images/restaurantes/restaurantes_entrega_carrusel3.jpg', alt: 'Productos frescos para restaurantes' },
+    { url: '/images/restaurantes/Restaurantes_entrega_carrusel4.jpg', alt: 'Entrega de ingredientes de chinampas' }
   ]
 
   useEffect(() => {
@@ -42,13 +43,21 @@ const ImageCarousel = () => {
 
   return (
     <div className="relative w-full h-[400px] md:h-[500px] overflow-hidden rounded-2xl shadow-xl">
-      {/* Placeholder para las imágenes */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#B15543] to-[#975543] flex items-center justify-center">
-        <div className="text-white text-center p-8">
-          <Truck className="w-16 h-16 mx-auto mb-4 animate-pulse" />
-          <p className="text-xl">Servicio de entrega directa del campo a tu cocina</p>
+      {/* Imágenes del carrusel */}
+      {images.map((image, idx) => (
+        <div
+          key={idx}
+          className={`absolute inset-0 transition-opacity duration-500 ${
+            idx === currentSlide ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <img
+            src={image.url}
+            alt={image.alt}
+            className="w-full h-full object-contain"
+          />
         </div>
-      </div>
+      ))}
       
       {/* Controles del carrusel */}
       <button
@@ -187,7 +196,7 @@ export default function ServicioRestaurantes() {
             className="text-lg md:text-xl leading-relaxed text-center"
             style={{ color: colors.verde.tipografia }}
           >
-            Llevamos lo mejor del campo regenerativo a las cocinas de la ciudad. Arca Tierra colabora con restaurantes que valoran la temporalidad, la trazabilidad y el sabor real de los alimentos. Ofrecemos proveeduría de frutas, verduras, granos y alimentos agroecológicos, exclusivamente en la Ciudad de México.
+            Llevamos lo mejor del campo regenerativo a las cocinas de la ciudad. Colabora con restaurantes que valoran la temporalidad, la trazabilidad y el sabor real de los alimentos. Ofrecemos proveeduría de frutas, verduras, granos y alimentos agroecológicos, exclusivamente en la Ciudad de México.
           </p>
         </div>
       </section>
@@ -212,7 +221,7 @@ export default function ServicioRestaurantes() {
             />
             <ServiceCard 
               icon={Package} 
-              text="Granos, cereales y tortillas nixtamalizadas" 
+              text="Harinas, granos y cereales" 
             />
             <ServiceCard 
               icon={Star} 
@@ -226,41 +235,6 @@ export default function ServicioRestaurantes() {
               icon={Calendar} 
               text="Planeación semanal con base en la cosecha real" 
             />
-          </div>
-        </div>
-      </section>
-
-      {/* Experiencia BALDÍO */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <h2 
-              className="text-3xl md:text-4xl font-bold text-center mb-12"
-              style={{ color: colors.verde.principal }}
-            >
-              Experiencia BALDÍO
-            </h2>
-            
-            <div className="relative w-full max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl">
-              <img 
-                src="/images/baldio/experienciabaldio.png" 
-                alt="Experiencia BALDÍO - Taquiza de cerdo con mole"
-                className="w-full h-auto object-cover"
-                style={{ maxHeight: '600px' }}
-              />
-            </div>
-            
-            <div 
-              className="mt-8 p-8 rounded-2xl shadow-lg max-w-4xl mx-auto"
-              style={{ backgroundColor: 'white' }}
-            >
-              <p 
-                className="text-lg md:text-xl leading-relaxed text-center"
-                style={{ color: colors.verde.tipografia }}
-              >
-                Una experiencia gastronómica única que celebra los sabores tradicionales mexicanos con ingredientes agroecológicos de temporada. BALDÍO representa la perfecta armonía entre la cocina ancestral y la agricultura regenerativa.
-              </p>
-            </div>
           </div>
         </div>
       </section>
@@ -466,7 +440,7 @@ export default function ServicioRestaurantes() {
               href="https://www.contramar.com.mx" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 w-40 h-40 flex items-center justify-center"
+              className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:scale-110 transition-all duration-300 w-40 h-40 flex items-center justify-center"
               aria-label="Visitar sitio web de Contramar"
             >
               <img src="/logos/restauranntes/contramar_logo.png" alt="Logo Contramar" className="max-w-full max-h-full object-contain" />
@@ -475,7 +449,7 @@ export default function ServicioRestaurantes() {
               href="https://www.rosetta.com.mx" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 w-40 h-40 flex items-center justify-center"
+              className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:scale-110 transition-all duration-300 w-40 h-40 flex items-center justify-center"
               aria-label="Visitar sitio web de Rosetta"
             >
               <img src="/logos/restauranntes/rosetta_logo.png" alt="Logo Rosetta" className="max-w-full max-h-full object-contain" />
@@ -484,7 +458,7 @@ export default function ServicioRestaurantes() {
               href="https://www.azulrestaurantes.com" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 w-40 h-40 flex items-center justify-center"
+              className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:scale-110 transition-all duration-300 w-40 h-40 flex items-center justify-center"
               aria-label="Visitar sitio web de Azul Histórico"
             >
               <img src="/logos/restauranntes/azul_historico_logo.png" alt="Logo Azul Histórico" className="max-w-full max-h-full object-contain" />
@@ -493,7 +467,7 @@ export default function ServicioRestaurantes() {
               href="https://www.baldio.mx" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 w-40 h-40 flex items-center justify-center"
+              className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:scale-110 transition-all duration-300 w-40 h-40 flex items-center justify-center"
               aria-label="Visitar sitio web de Baldío"
             >
               <img src="/logos/restauranntes/baldio_logo.png" alt="Logo Baldío" className="max-w-full max-h-full object-contain" />
@@ -502,7 +476,7 @@ export default function ServicioRestaurantes() {
               href="https://www.grupomaximo.mx" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 w-40 h-40 flex items-center justify-center"
+              className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:scale-110 transition-all duration-300 w-40 h-40 flex items-center justify-center"
               aria-label="Visitar sitio web de Grupo Máximo"
             >
               <img src="/logos/restauranntes/grupo_maximo_logo.png" alt="Logo Grupo Máximo" className="max-w-full max-h-full object-contain" />
@@ -511,7 +485,7 @@ export default function ServicioRestaurantes() {
               href="https://www.tetetlan.com" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 w-40 h-40 flex items-center justify-center"
+              className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:scale-110 transition-all duration-300 w-40 h-40 flex items-center justify-center"
               aria-label="Visitar sitio web de Tetitlán"
             >
               <img src="/logos/restauranntes/tetetlan_logo.jpg" alt="Logo Tetitlán" className="max-w-full max-h-full object-contain" />

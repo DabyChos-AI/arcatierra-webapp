@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import OptimizedImage from '@/components/ui/OptimizedImage';
-import { useBreakpoint } from './hooks/useHeaderState';
+import { useBreakpoint } from './hooks/HeaderStateContext';
 
 // Estilos para la sección de logos
 const logoStyles = {
@@ -103,7 +103,8 @@ const LogoSection: React.FC<LogoSectionProps> = ({ className }) => {
             <OptimizedImage 
               src="/images/logos/logo_arcatierra_sin_texto.png"
               alt="Arca Tierra" 
-              fill
+              width={50}
+              height={50}
               style={{ 
                 objectFit: 'contain',
                 opacity: 1

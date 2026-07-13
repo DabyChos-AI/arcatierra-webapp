@@ -4,21 +4,65 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { User, Mail, Phone, MapPin, Calendar, Edit3, Save, X, Camera } from 'lucide-react'
+import CountryCodeSelector from '@/components/ui/CountryCodeSelector'
+import PostalCodeSelector from '@/components/ui/PostalCodeSelector'
+
+// Mapeo de código de marcación a código de país ISO para banderas
+const dialCodeToCountry: Record<string, string> = {
+  '+52': 'MX', '+1': 'US', '+34': 'ES', '+54': 'AR', '+57': 'CO',
+  '+56': 'CL', '+51': 'PE', '+55': 'BR', '+593': 'EC', '+58': 'VE',
+  '+502': 'GT', '+53': 'CU', '+1809': 'DO', '+504': 'HN', '+503': 'SV',
+  '+505': 'NI', '+506': 'CR', '+507': 'PA', '+598': 'UY', '+595': 'PY',
+  '+591': 'BO', '+44': 'GB', '+33': 'FR', '+49': 'DE', '+39': 'IT',
+  '+351': 'PT', '+81': 'JP', '+86': 'CN', '+91': 'IN', '+61': 'AU',
+}
+
+const getCountryCode = (dialCode: string): string => {
+  return dialCodeToCountry[dialCode] || 'MX'
+}
+
+interface ZonaEntrega {
+  id: number
+  codigo_postal: string
+  colonia: string
+  municipio: string
+  lunes: boolean
+  martes: boolean
+  miercoles: boolean
+  jueves: boolean
+  viernes: boolean
+  sabado: boolean
+  domingo: boolean
+  tiempo_minimo_dias: number
+}
 
 interface UserProfile {
+  id: string
   name: string
   email: string
   phone?: string
+  codigoPais?: string
   address?: string
+  codigoPostal?: string
+  diaFavoritoEntrega?: string
   birthDate?: string
   preferences?: {
     newsletter: boolean
     notifications: boolean
-    dietary: string[]
+    dietaryRestrictions?: {
+      vegetarian: boolean
+      vegan: boolean
+      glutenFree: boolean
+      lactoseFree: boolean
+    }
   }
   memberSince: string
   totalOrders: number
   favoriteExperience?: string
+  // Datos reales de la API
+  apellidos?: string
+  nombre_completo?: string
+  direcciones?: any[]
 }
 
 export default function PerfilPage() {
@@ -28,69 +72,80 @@ export default function PerfilPage() {
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
   const [editedProfile, setEditedProfile] = useState<UserProfile | null>(null)
+  const [zonaEntrega, setZonaEntrega] = useState<ZonaEntrega | null>(null)
 
-  // Mock data del perfil
+  // Cargar datos reales del usuario desde la API
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/signin')
       return
     }
 
-    if (session?.user) {
-      // Simular carga del perfil
-      setTimeout(() => {
-        // Detectar si es usuario demo
-        const isDemoUser = session.user.email === 'prueba@prueba.com' || session.user.name === 'Usuario Prueba'
-        
-        // Intentar cargar datos guardados en localStorage
-        const userKey = `user_profile_${session.user.email || 'unknown'}`
-        const savedProfile = localStorage.getItem(userKey)
-        let parsedSavedProfile = null
-        
-        if (savedProfile) {
-          try {
-            parsedSavedProfile = JSON.parse(savedProfile)
-          } catch (error) {
-            console.error('Error parsing saved profile:', error)
-            localStorage.removeItem(userKey) // Limpiar dato corrupto
+    if (session?.user?.id) {
+      const fetchUserProfile = async () => {
+        try {
+          setLoading(true)
+          
+          // Llamar al proxy interno (evita CORS)
+          const response = await fetch('/api/auth/me', {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
+
+          if (response.ok) {
+            const userData = await response.json()
+            
+            // Obtener direcciones del usuario
+            const direccionesResponse = await fetch('/api/direcciones/', {
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            })
+            
+            const direcciones = direccionesResponse.ok ? await direccionesResponse.json() : []
+            const direccionPrincipal = direcciones.find((d: any) => d.activa) || direcciones[0]
+            
+            const userProfile: UserProfile = {
+              id: userData.id,
+              name: userData.nombre_completo || userData.nombre,
+              email: userData.email,
+              phone: userData.telefono || '',
+              codigoPais: userData.codigo_pais || '+52',
+              address: direccionPrincipal ? 
+                `${direccionPrincipal.calle} ${direccionPrincipal.numero_exterior}, ${direccionPrincipal.colonia}, ${direccionPrincipal.alcaldia}` 
+                : '',
+              birthDate: userData.fecha_nacimiento || '',
+              preferences: {
+                newsletter: userData.preferencias?.newsletter || false,
+                notifications: userData.preferencias?.notificaciones || false,
+                dietaryRestrictions: {
+                  vegetarian: userData.preferencias?.restricciones_dieteticas?.includes('vegetariano') || false,
+                  vegan: userData.preferencias?.restricciones_dieteticas?.includes('vegano') || false,
+                  glutenFree: userData.preferencias?.restricciones_dieteticas?.includes('sin_gluten') || false,
+                  lactoseFree: userData.preferencias?.restricciones_dieteticas?.includes('sin_lactosa') || false
+                }
+              },
+              memberSince: userData.fecha_registro || new Date().toISOString().split('T')[0],
+              totalOrders: 0,
+              apellidos: userData.apellidos,
+              nombre_completo: userData.nombre_completo,
+              direcciones: direcciones
+            }
+            
+            setProfile(userProfile)
+            setEditedProfile(userProfile)
+          } else {
+            console.error('Error al cargar perfil:', await response.text())
           }
+        } catch (error) {
+          console.error('Error fetching profile:', error)
+        } finally {
+          setLoading(false)
         }
-        
-        const userProfile: UserProfile = isDemoUser ? {
-          // Usuario demo con datos completos
-          name: 'Usuario Prueba',
-          email: 'prueba@prueba.com',
-          phone: '+52 55 1234 5678',
-          address: 'Roma Norte, Ciudad de México, CP 06700',
-          birthDate: '1990-05-15',
-          preferences: {
-            newsletter: true,
-            notifications: true,
-            dietary: ['vegetariano', 'orgánico']
-          },
-          memberSince: '2024-01-15',
-          totalOrders: 12,
-          favoriteExperience: 'Tour Premium por las Chinampas'
-        } : parsedSavedProfile || {
-          // Usuario real - usar datos guardados o campos vacíos por defecto
-          name: session.user.name || 'Usuario',
-          email: session.user.email || '',
-          phone: '',  // Campo vacío para que el usuario lo llene
-          address: '',  // Campo vacío para que el usuario lo llene
-          birthDate: '',  // Campo vacío para que el usuario lo llene
-          preferences: {
-            newsletter: false,
-            notifications: false,
-            dietary: []
-          },
-          memberSince: new Date().toISOString().split('T')[0], // Fecha actual
-          totalOrders: 0,  // Se actualizará con datos reales
-          favoriteExperience: undefined
-        }
-        setProfile(userProfile)
-        setEditedProfile(userProfile)
-        setLoading(false)
-      }, 1000)
+      }
+      
+      fetchUserProfile()
     }
   }, [session, status, router])
 
@@ -101,21 +156,65 @@ export default function PerfilPage() {
   const handleSave = async () => {
     if (editedProfile) {
       try {
-        // Guardar cambios en localStorage como persistencia temporal
-        const userKey = `user_profile_${session?.user?.email || 'unknown'}`
-        localStorage.setItem(userKey, JSON.stringify(editedProfile))
+        // Preparar restricciones dietéticas
+        const restrictions: string[] = []
+        if (editedProfile.preferences?.dietaryRestrictions) {
+          if (editedProfile.preferences.dietaryRestrictions.vegetarian) restrictions.push('vegetariano')
+          if (editedProfile.preferences.dietaryRestrictions.vegan) restrictions.push('vegano')
+          if (editedProfile.preferences.dietaryRestrictions.glutenFree) restrictions.push('sin_gluten')
+          if (editedProfile.preferences.dietaryRestrictions.lactoseFree) restrictions.push('sin_lactosa')
+        }
+        
+        // Preparar datos para el backend
+        const updateData = {
+          nombre: editedProfile.name?.split(' ')[0],
+          apellidos: editedProfile.name?.split(' ').slice(1).join(' '),
+          nombre_completo: editedProfile.name,
+          telefono: editedProfile.phone,
+          direccion_principal: editedProfile.address,
+          fecha_nacimiento: editedProfile.birthDate || null,
+          preferencias: {
+            newsletter: editedProfile.preferences?.newsletter || false,
+            notificaciones: editedProfile.preferences?.notifications || false,
+            restricciones_dieteticas: restrictions
+          }
+        }
+        
+        console.log('🔄 Guardando perfil...', updateData)
+        console.log('📍 URL: /api/auth/me (proxy interno)')
+        
+        // Llamar al proxy interno de Next.js (sin CORS)
+        const response = await fetch('/api/auth/me', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updateData)
+        })
+        
+        console.log('📡 Response status:', response.status)
+        
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error('❌ Error response:', errorText)
+          let error
+          try {
+            error = JSON.parse(errorText)
+          } catch {
+            error = { detail: errorText }
+          }
+          throw new Error(error.detail || 'Error actualizando perfil')
+        }
+        
+        const updatedUser = await response.json()
+        console.log('✅ Perfil actualizado:', updatedUser)
         
         setProfile(editedProfile)
         setEditing(false)
-        
-        // TODO: Implementar llamada real a API cuando esté lista
-        // await fetch('/api/user/profile', { method: 'PUT', body: JSON.stringify(editedProfile) })
-        
-        console.log('Perfil guardado exitosamente en localStorage')
+        alert('Perfil actualizado exitosamente')
       } catch (error) {
-        console.error('Error guardando perfil:', error)
-        // En caso de error, mantener en modo edición
-        alert('Error guardando los cambios. Inténtalo de nuevo.')
+        console.error('❌ Error guardando perfil:', error)
+        alert(`Error guardando los cambios: ${error}`)
       }
     }
   }
@@ -283,19 +382,52 @@ export default function PerfilPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Teléfono
-                  </label>
-                  {editing ? (
-                    <input
-                      type="tel"
-                      value={editedProfile.phone || ''}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-verde-principal focus:border-transparent"
-                    />
-                  ) : (
-                    <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg">{profile.phone || 'No especificado'}</p>
-                  )}
+                  <div className="flex gap-2">
+                    <div className="w-28 flex-shrink-0">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        País
+                      </label>
+                      {editing ? (
+                        <CountryCodeSelector
+                          value={editedProfile.codigoPais || ''}
+                          onChange={(code) => handleInputChange('codigoPais', code)}
+                        />
+                      ) : (
+                        <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 h-[42px]">
+                          {profile.codigoPais ? (
+                            <>
+                              <img 
+                                src={`https://flagcdn.com/w40/${getCountryCode(profile.codigoPais).toLowerCase()}.png`}
+                                alt="País"
+                                className="w-6 h-4 object-cover rounded-sm"
+                              />
+                              <span className="text-gray-900 font-medium">{profile.codigoPais}</span>
+                            </>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Teléfono
+                      </label>
+                      {editing ? (
+                        <input
+                          type="tel"
+                          value={editedProfile.phone || ''}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-verde-principal focus:border-transparent"
+                          placeholder="9992921500"
+                        />
+                      ) : (
+                        <div className="bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 h-[42px] flex items-center">
+                          <span className="text-gray-900">{profile.phone || 'No especificado'}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div>
@@ -311,14 +443,51 @@ export default function PerfilPage() {
                     />
                   ) : (
                     <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg">
-                      {profile.birthDate ? new Date(profile.birthDate).toLocaleDateString('es-MX') : 'No especificado'}
+                      {profile.birthDate ? (() => {
+                        const [year, month, day] = profile.birthDate.split('-');
+                        return `${day}/${month}/${year}`;
+                      })() : 'No especificado'}
                     </p>
                   )}
                 </div>
 
                 <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Zona de entrega
+                  </label>
+                  {editing ? (
+                    <PostalCodeSelector
+                      value={editedProfile.codigoPostal || ''}
+                      onChange={(cp, zona) => {
+                        setZonaEntrega(zona)
+                        handleInputChange('codigoPostal', cp)
+                      }}
+                      onRecogerEnMatriz={() => {
+                        handleInputChange('address', 'Calle Anatole France 307, Polanco Reforma, Miguel Hidalgo, CDMX')
+                        handleInputChange('codigoPostal', '11550')
+                      }}
+                    />
+                  ) : (
+                    <div className="bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                      {profile.codigoPostal && zonaEntrega ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-600">✓</span>
+                          <span className="text-gray-900">
+                            CP {zonaEntrega.codigo_postal} - {zonaEntrega.colonia}, {zonaEntrega.municipio}
+                          </span>
+                        </div>
+                      ) : profile.codigoPostal ? (
+                        <span className="text-gray-900">CP {profile.codigoPostal}</span>
+                      ) : (
+                        <span className="text-gray-400">No especificado</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Dirección
+                    Dirección (calle y número)
                   </label>
                   {editing ? (
                     <input
@@ -326,12 +495,62 @@ export default function PerfilPage() {
                       value={editedProfile.address || ''}
                       onChange={(e) => handleInputChange('address', e.target.value)}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-verde-principal focus:border-transparent"
-                      placeholder="Colonia, Ciudad"
+                      placeholder="Ej: Av. Insurgentes Sur 1234"
                     />
                   ) : (
                     <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg">{profile.address || 'No especificado'}</p>
                   )}
                 </div>
+
+                {zonaEntrega && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Día favorito de entrega
+                    </label>
+                    {editing ? (
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { key: 'lunes', label: 'Lunes' },
+                          { key: 'martes', label: 'Martes' },
+                          { key: 'miercoles', label: 'Miércoles' },
+                          { key: 'jueves', label: 'Jueves' },
+                          { key: 'viernes', label: 'Viernes' },
+                          { key: 'sabado', label: 'Sábado' },
+                          { key: 'domingo', label: 'Domingo' },
+                        ].map(({ key, label }) => {
+                          const disponible = zonaEntrega[key as keyof ZonaEntrega] as boolean
+                          const seleccionado = editedProfile.diaFavoritoEntrega === key
+                          return (
+                            <button
+                              key={key}
+                              type="button"
+                              disabled={!disponible}
+                              onClick={() => handleInputChange('diaFavoritoEntrega', key)}
+                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                !disponible
+                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                  : seleccionado
+                                  ? 'bg-verde-principal text-white'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                            >
+                              {label}
+                              {!disponible && ' (No disponible)'}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                        {profile.diaFavoritoEntrega ? (
+                          <span className="text-gray-900 capitalize">{profile.diaFavoritoEntrega}</span>
+                        ) : (
+                          <span className="text-gray-400">No especificado</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -371,23 +590,32 @@ export default function PerfilPage() {
                 <div>
                   <p className="font-medium text-gray-900 mb-2">Restricciones dietéticas</p>
                   <div className="flex flex-wrap gap-2">
-                    {['vegetariano', 'vegano', 'sin gluten', 'sin lactosa'].map((dietary) => (
-                      <label key={dietary} className="flex items-center gap-2">
+                    {[
+                      { key: 'vegetarian', label: 'Vegetariano' },
+                      { key: 'vegan', label: 'Vegano' },
+                      { key: 'glutenFree', label: 'Sin Gluten' },
+                      { key: 'lactoseFree', label: 'Sin Lactosa' }
+                    ].map((item) => (
+                      <label key={item.key} className="flex items-center gap-2">
                         <input
                           type="checkbox"
-                          checked={editedProfile.preferences?.dietary?.includes(dietary) || false}
+                          checked={editedProfile.preferences?.dietaryRestrictions?.[item.key as keyof typeof editedProfile.preferences.dietaryRestrictions] || false}
                           onChange={(e) => {
-                            const current = editedProfile.preferences?.dietary || []
-                            if (e.target.checked) {
-                              handlePreferenceChange('dietary', [...current, dietary])
-                            } else {
-                              handlePreferenceChange('dietary', current.filter(d => d !== dietary))
+                            const current = editedProfile.preferences?.dietaryRestrictions || {
+                              vegetarian: false,
+                              vegan: false,
+                              glutenFree: false,
+                              lactoseFree: false
                             }
+                            handlePreferenceChange('dietaryRestrictions', {
+                              ...current,
+                              [item.key]: e.target.checked
+                            })
                           }}
                           disabled={!editing}
                           className="h-4 w-4 text-verde-principal focus:ring-verde-principal border-gray-300 rounded"
                         />
-                        <span className="text-sm text-gray-700 capitalize">{dietary}</span>
+                        <span className="text-sm text-gray-700">{item.label}</span>
                       </label>
                     ))}
                   </div>

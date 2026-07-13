@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { API_URL } from '@/lib/api';
 
 // Hook para manejar el carrito de compras
 export function useCart() {
@@ -113,8 +114,21 @@ export function useCartIntegration() {
     }
   };
 
-  const removeFromCart = (itemId: string) => {
+  const removeFromCart = async (itemId: string) => {
     try {
+      // 1. Eliminar del backend
+      const session = await fetch('/api/auth/session').then(r => r.json());
+      
+      if (session?.user) {
+        await fetch(`${API_URL}/api/cart/remove/${itemId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${session.accessToken || session.user.id}`
+          }
+        });
+      }
+
+      // 2. Eliminar de localStorage
       const savedCart = localStorage.getItem('arcaTierraCart');
       if (savedCart) {
         const cartItems = JSON.parse(savedCart);

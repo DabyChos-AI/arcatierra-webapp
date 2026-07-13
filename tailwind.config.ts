@@ -16,6 +16,7 @@ const config: Config = {
           'principal': '#B15543',
           'medio': '#BA6440',
           'oscuro': '#975543',
+          'dark': '#8A3F30',
         },
         'verde': {
           DEFAULT: '#33503E',
@@ -23,12 +24,27 @@ const config: Config = {
           'principal': '#33503E',
           'claro': '#475A52',
           'suave': '#748880',
+          'dark': '#1F3024',
         },
         'neutro': {
           'crema': '#E3DBCB',
           'beige': '#CCBB9A',
           'calido': '#DCB584',
           'gris': '#C1CCCE',
+          'light': '#F5F1EA',
+          'borde': '#E5E0D6',
+        },
+        'amarillo': {
+          DEFAULT: '#F59E0B',
+          'bg': '#FEF3C7',
+        },
+        'azul': {
+          DEFAULT: '#0369A1',
+          'bg': '#F0F9FF',
+        },
+        'rojo': {
+          DEFAULT: '#DC2626',
+          'bg': '#FEE2E2',
         },
         // VARIABLES SHADCN/UI PERSONALIZADAS
         background: 'var(--background)',
@@ -73,8 +89,16 @@ const config: Config = {
         }
       },
       fontFamily: {
-        'sans': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        'display': ['Playfair Display', 'Georgia', 'serif'],
+        // TIPOGRAFÍAS OFICIALES ARCA TIERRA - Manual de Identidad
+        // Akkurat: Tipografía secundaria para CUERPOS DE TEXTO
+        'sans': ['var(--font-akkurat)', 'Inter', '-apple-system', 'sans-serif'],
+        'body': ['var(--font-akkurat)', 'Inter', 'sans-serif'],
+        // Mendoza: Tipografía primaria para TÍTULOS
+        'display': ['var(--font-mendoza)', 'Georgia', 'serif'],
+        'heading': ['var(--font-mendoza)', 'Georgia', 'serif'],
+        // Aliases directos
+        'mendoza': ['var(--font-mendoza)', 'Georgia', 'serif'],
+        'akkurat': ['var(--font-akkurat)', 'Inter', 'sans-serif'],
       },
       fontSize: {
         'hero': ['3.5rem', { lineHeight: '1.1', fontWeight: '700' }],

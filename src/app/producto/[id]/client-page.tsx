@@ -6,9 +6,10 @@ import Link from 'next/link'
 import { Heart, ShoppingCart, Check, Leaf, Droplets, PackageOpen, Star, MapPin, ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { productos, Product } from '@/data/productos'
+import { Product } from '@/data/productos'
 import { useToast } from '@/components/ui/Toast'
 import ProductTraceability from '@/components/ProductTraceability'
+import { API_URL } from '@/lib/api'
 
 // Helper: imagen de canastas por nombre
 function getCanastaImage(nombre: string, original?: string): string {
@@ -32,16 +33,59 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
   const [carrito, setCarrito] = useState<any[]>([])
   const toast = useToast() // Usar el sistema global de toast
   const [imagenSeleccionada, setImagenSeleccionada] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Buscar el producto por ID
-    const foundProduct = productos.find((p: Product) => p.id === id)
-    if (foundProduct) {
-      setProducto(foundProduct)
-    } else {
-      // Redirigir a 404 o tienda si no se encuentra el producto
-      router.push('/tienda')
+    // Cargar producto desde la API usando el itemcode
+    const fetchProduct = async () => {
+      setIsLoading(true)
+      try {
+        const apiUrl = API_URL
+        const response = await fetch(`${apiUrl}/api/products/${id}`)
+        
+        if (response.ok) {
+          const apiProduct = await response.json()
+          
+          // Mapear producto de la API al formato local
+          const mappedProduct: Product = {
+            id: apiProduct.itemcode,
+            nombre: apiProduct.nombre,
+            categoria: apiProduct.categoria || 'sin-categoria',
+            precio: parseFloat(apiProduct.precio_unitario),
+            imagen: apiProduct.imagen_url || '',
+            descripcion: apiProduct.descripcion || '',
+            stock: apiProduct.stock_actual,
+            unidad: apiProduct.unidad_medida || '',
+            productor: apiProduct.productor || 'Agricultor Local',
+            ubicacion: apiProduct.ubicacion || 'México',
+            // Solo mostrar badge "Agotado" cuando stock = 0, no mostrar "Disponible"
+            badges: apiProduct.stock_actual === 0 ? ['Agotado'] : [],
+            rating: apiProduct.rating || 4.5,
+            reviews: apiProduct.reviews || 0,
+            metricas: {
+              co2: '0kg CO2',
+              agua: '0L',
+              plastico: '0% plástico'
+            },
+            storytelling: apiProduct.descripcion || 'Producto fresco y local',
+            ctaType: 'add' as const
+          }
+          
+          setProducto(mappedProduct)
+          console.log(`Producto ${id} cargado desde la API`)
+        } else {
+          console.error(`Producto ${id} no encontrado en la API`)
+          router.push('/tienda')
+        }
+      } catch (error) {
+        console.error('Error cargando producto desde la API:', error)
+        router.push('/tienda')
+      } finally {
+        setIsLoading(false)
+      }
     }
+
+    fetchProduct()
 
     // Cargar favoritos y carrito desde localStorage
     try {
@@ -84,48 +128,73 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
   }
 
   // Función para añadir al carrito
-  const addToCart = () => {
+  const addToCart = async () => {
     if (!producto) return
 
     const cartItem = {
       id: producto.id,
+      itemcode: producto.id, // El ID es el itemcode
       name: producto.nombre,
       price: producto.precio,
       quantity: cantidad,
       image: producto.imagen,
-      unit: producto.unidad
+      unit: producto.unidad,
+      tipo: 'producto'
     }
 
-    // Usar la misma clave de localStorage que la página principal
-    const existingCart = JSON.parse(localStorage.getItem('arcaTierraCart') || '[]')
-    const existingItemIndex = existingCart.findIndex((item: any) => item.id === cartItem.id)
-
-    if (existingItemIndex >= 0) {
-      // Actualizar cantidad si ya existe
-      existingCart[existingItemIndex].quantity += cantidad
-    } else {
-      // Agregar nuevo item
-      existingCart.push(cartItem)
-    }
-
-    // Guardar en localStorage con la clave correcta
     try {
+      // 1. Guardar en backend (PostgreSQL)
+      const session = await fetch('/api/auth/session').then(r => r.json())
+      
+      if (session?.user) {
+        const payload = {
+          tipo: 'producto',
+          producto_id: producto.id,
+          cantidad: cantidad
+        };
+        
+        const response = await fetch('/api/cart/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        })
+
+        if (!response.ok) {
+          const error = await response.json()
+          throw new Error(error.detail || 'Error al agregar al carrito')
+        }
+      }
+
+      // 2. Guardar en localStorage (para UI)
+      const existingCart = JSON.parse(localStorage.getItem('arcaTierraCart') || '[]')
+      const existingItemIndex = existingCart.findIndex((item: any) => item.id === cartItem.id)
+
+      if (existingItemIndex >= 0) {
+        existingCart[existingItemIndex].quantity += cantidad
+      } else {
+        existingCart.push(cartItem)
+      }
+
       localStorage.setItem('arcaTierraCart', JSON.stringify(existingCart))
       setCarrito(existingCart)
 
-      // Disparar evento para notificar al header que actualice el contador
+      // 3. Disparar evento para actualizar UI
       window.dispatchEvent(new Event('cartUpdated'))
 
-      // Usar el sistema global de toast igual que la página principal
-      toast.cart(`${cantidad} x ${producto.nombre} agregado al carrito`, {
-        title: '¡Excelente elección!',
-        action: {
-          label: 'Ver carrito',
-          onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
-        }
-      })
+      // Toast deshabilitado - era molesto al agregar múltiples productos
+      // toast.cart(`${cantidad} x ${producto.nombre} agregado al carrito`, {
+      //   title: '¡Excelente elección!',
+      //   action: {
+      //     label: 'Ver carrito',
+      //     onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
+      //   }
+      // })
     } catch (error) {
       console.error('Error al guardar carrito:', error)
+      // Mostrar error al usuario
+      alert('Error al agregar al carrito. Por favor intenta de nuevo.')
     }
   }
 
@@ -198,9 +267,7 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
           <div>
             <div className="flex items-baseline">
               <span className="text-3xl font-bold">${producto.precio.toFixed(2)}</span>
-              {productos.filter((p: Product) => p.categoria === producto.categoria && p.id !== producto.id).slice(0, 1).map((productoRelacionado: Product) => (
-                <span key={productoRelacionado.id} className="ml-2 text-lg text-gray-400 line-through">${(productoRelacionado.precio * 1.2).toFixed(2)}</span>
-              ))}
+              <span className="ml-2 text-sm text-gray-500">/ {producto.unidad}</span>
             </div>
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-2 ${
               producto.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -258,11 +325,21 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
             </div>
           </div>
 
-          {/* Trazabilidad */}
+          {/* 
+          ========================================
+          TRAZABILIDAD COMENTADA - Sección completa
+          ========================================
+          PARA REACTIVAR:
+          1. Descomentar el bloque de código abajo
+          2. Asegurarse de que ProductTraceability esté importado
+          3. Asegurarse de que el producto tenga datos de trazabilidad
+          
           <div>
             <h2 className="text-xl font-semibold mb-4 text-gray-800">Trazabilidad del Producto</h2>
             <ProductTraceability product={producto} compact={false} />
           </div>
+          ========================================
+          */}
 
           {/* Etiquetas */}
           <div className="flex flex-wrap gap-2">
@@ -329,7 +406,7 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
             </div>
             <div className="flex items-center text-sm text-gray-600">
               <PackageOpen className="h-4 w-4 mr-2 text-amber-600" />
-              Envío gratuito para pedidos superiores a $50
+              Costo de envío: $100 | GRATIS en compras mayores a $1,000
             </div>
             <div className="flex items-center text-sm text-gray-600">
               <MapPin className="h-4 w-4 mr-2 text-red-600" />

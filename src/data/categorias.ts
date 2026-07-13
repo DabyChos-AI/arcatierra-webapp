@@ -7,27 +7,19 @@ export interface CategoriaSEO {
 }
 
 const categorySlugs = [
-  "canastas-de-frutas-y-verduras-agroecologicas",
-  "aceites-naturales",
-  "granos-y-cereales-integrales",
-  "proteinas-regenerativas",
-  "endulzantes",
-  "proteina-animal",
-  "granos-semillas-y-cereales",
-  "cafe-cacao-y-chocolate",
-  "especias",
-  "abarrotes",
-  "mermeladas-y-untables",
-  "pastas",
-  "infusiones-y-te",
-  "galletas-harinas-y-pan",
-  "huevo-y-lacteos",
-  "aceites-y-grasas",
-  "condimentos",
-  "cacao-y-chocolate",
-  "te-y-hierbas-medicinales",
+  "canastas-agroecologicas",
+  "cafe-cacao-chocolate",
+  "especias-condimentos",
+  "endulzantes-naturales",
+  "frutas-verduras",
+  "granos-cereales",
+  "huevo-lacteos",
+  "infusiones-naturales",
   "maiz",
-  "frutas-y-verduras-a-granel"
+  "mermeladas-untables",
+  "harinas-pastas",
+  "pan-galletas",
+  "proteinas-regenerativas"
 ];
 
 // Helper to convert slug to Title Case

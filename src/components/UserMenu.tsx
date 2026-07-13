@@ -2,17 +2,44 @@
 
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { useState } from 'react'
-import { User, LogOut, Settings, ShoppingBag, Calendar, ChefHat } from 'lucide-react'
+import React from 'react'
+import { User, LogOut, Settings, ShoppingBag, Calendar, ChefHat, LayoutDashboard, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { API_URL } from '@/lib/api'
 
 export default function UserMenu() {
   const { data: session, status } = useSession()
   const [isOpen, setIsOpen] = useState(false)
+  const [isEmployee, setIsEmployee] = useState(false)
+  const [checkingEmployee, setCheckingEmployee] = useState(false)
 
   if (status === 'loading') {
     return (
       <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
     )
+  }
+
+  // Verificar si es empleado cuando hay sesión
+  React.useEffect(() => {
+    if (session?.user?.email && !checkingEmployee) {
+      checkIfEmployee()
+    }
+  }, [session])
+
+  const checkIfEmployee = async () => {
+    setCheckingEmployee(true)
+    try {
+      const response = await fetch(`${API_URL}/api/auth/check-employee?email=${encodeURIComponent(session?.user?.email || '')}`)
+      if (response.ok) {
+        const data = await response.json()
+        setIsEmployee(data.is_employee)
+      }
+    } catch (error) {
+      console.error('Error checking employee status:', error)
+      setIsEmployee(false)
+    } finally {
+      setCheckingEmployee(false)
+    }
   }
 
   if (!session) {
@@ -97,13 +124,24 @@ export default function UserMenu() {
                 <ChefHat className="w-4 h-4" />
                 Mis Catering
               </a>
-              {(session.user as any)?.role === 'admin' && (
+              
+              {/* NUEVO: Mi Dashboard - Para todos los usuarios */}
+              <a
+                href="/usuario/dashboard"
+                className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Mi Dashboard
+              </a>
+
+              {/* NUEVO: Panel de Administración - Solo empleados */}
+              {isEmployee && (
                 <a
-                  href="/dashboard"
-                  className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  href="/admin"
+                  className="flex items-center gap-3 px-3 py-2 text-sm text-[#B15543] hover:bg-orange-50 rounded-lg transition-colors border-t border-gray-100 mt-2 pt-2"
                 >
-                  <Settings className="w-4 h-4" />
-                  Dashboard Admin
+                  <Shield className="w-4 h-4" />
+                  Panel de Administración
                 </a>
               )}
             </div>

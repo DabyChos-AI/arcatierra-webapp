@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Eye, EyeOff, CheckCircle, XCircle, User, Mail, Lock } from 'lucide-react'
 import Link from 'next/link'
+import { API_URL } from '@/lib/api'
 
 export default function CreateAccountContent() {
   const router = useRouter()
@@ -72,24 +73,44 @@ export default function CreateAccountContent() {
     setError('')
 
     try {
-      const response = await fetch('/api/auth/create-account', {
+      // Validación adicional
+      if (!email) {
+        setError('Email no válido')
+        return
+      }
+
+      // Llamada DIRECTA a FastAPI (más rápido y eficiente)
+      const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          token,
           email,
           password,
+          nombre: email.split('@')[0], // Nombre temporal del email
+          apellidos: '',
+          telefono: '',
+          nombre_completo: email.split('@')[0]
         }),
       })
 
       const result = await response.json()
 
-      if (result.success) {
+      if (response.ok) {
         setAccountCreated(true)
+        
+        // Opcional: Guardar token si el backend lo devuelve
+        if (result.access_token) {
+          localStorage.setItem('token', result.access_token)
+        }
       } else {
-        setError(result.error || 'Error creando la cuenta')
+        // Manejo de errores de FastAPI
+        if (result.detail?.includes('ya está registrado')) {
+          setError('Ya existe una cuenta con este email')
+        } else {
+          setError(result.detail || 'Error creando la cuenta')
+        }
       }
     } catch (error) {
       console.error('Error:', error)

@@ -4,7 +4,9 @@ import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import CountryCodeSelector from '@/components/ui/CountryCodeSelector'
 import { MapPin, CreditCard, Truck, User, Phone, Mail } from 'lucide-react'
+import { API_URL } from '@/lib/api'
 
 interface CheckoutFormProps {
   cartItems: any[]
@@ -17,9 +19,11 @@ export default function CheckoutForm({ cartItems, onOrderComplete }: CheckoutFor
   const [step, setStep] = useState(1)
   
   const [customerData, setCustomerData] = useState({
-    name: session?.user?.name || '',
+    nombre: session?.user?.name?.split(' ')[0] || '',
+    apellido: session?.user?.name?.split(' ').slice(1).join(' ') || '',
     email: session?.user?.email || '',
-    phone: '',
+    telefono: '',
+    codigo_pais: '+52', // Default México
     rfc: '',
   })
 
@@ -34,9 +38,24 @@ export default function CheckoutForm({ cartItems, onOrderComplete }: CheckoutFor
   const [paymentMethod, setPaymentMethod] = useState('mercado_pago')
   const [createAccount, setCreateAccount] = useState(false)
 
-  // Calcular totales
+  // Calcular totales - Envío solo se basa en productos (no experiencias)
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-  const shipping = subtotal > 500 ? 0 : 50 // Envío gratis arriba de $500
+  // LÓGICA NEGATIVA: Todo lo que NO es experiencia, es producto
+  const subtotalProductos = cartItems
+    .filter(item => item.tipo !== 'experiencia')
+    .reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  // Productos de prueba (contienen "test" en nombre o descripción, o son Acedera) - no generan costo de envío
+  const subtotalProductosParaEnvio = cartItems
+    .filter(item => {
+      if (item.tipo === 'experiencia') return false
+      const nombre = item.name?.toLowerCase() || ''
+      const descripcion = (item.description || item.descripcion || '')?.toLowerCase()
+      const esProductoTest = nombre.includes('test') || descripcion.includes('test') || nombre.includes('acedera')
+      return !esProductoTest
+    })
+    .reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  // Solo cobrar envío si HAY productos (no test) Y son menos de $1000
+  const shipping = (subtotalProductosParaEnvio > 0 && subtotalProductosParaEnvio < 1000) ? 100 : 0
   const total = subtotal + shipping
 
   const handleSubmitOrder = async () => {
@@ -47,44 +66,110 @@ export default function CheckoutForm({ cartItems, onOrderComplete }: CheckoutFor
       return
     }
 
+    // Validar campos requeridos
+    if (!customerData.nombre || !customerData.apellido || !customerData.telefono) {
+      alert('Por favor completa todos los campos requeridos')
+      return
+    }
+
     setLoading(true)
     
     try {
-      const orderData = {
-        items: cartItems,
-        customer: customerData,
-        delivery: deliveryData,
-        totals: {
-          subtotal,
-          shipping,
-          total,
-        },
-        payment_method: paymentMethod,
-        create_account: createAccount && !session?.user?.email,
+      console.log('🔄 PASO 1: Sincronizando y validando carrito con backend...')
+      
+      // ===== PASO 1: Sincronizar localStorage → Backend + Validar =====
+      // Usa proxy local que inyecta JWT desde la sesion (anti-IDOR + auth obligatoria)
+      const syncResponse = await fetch(`/api/cart/sync-and-validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          items: cartItems  // Items directamente de localStorage
+        })
+      })
+      
+      if (!syncResponse.ok) {
+        const error = await syncResponse.json()
+        alert(`❌ Error: ${error.detail || 'No se pudo validar el carrito'}`)
+        setLoading(false)
+        return
+      }
+      
+      const syncResult = await syncResponse.json()
+      const { validated_items, total, _guest_token } = syncResult
+
+      console.log('✅ PASO 1 Completado - Items validados:', validated_items)
+      console.log('💰 Total validado (precios de BD):', total)
+
+      // ===== PASO 2: Usar items VALIDADOS (con precios reales de BD) =====
+      const items = validated_items
+
+      // Agregar costo de envío si corresponde
+      const itemsConEnvio = [...items]
+      if (shipping > 0) {
+        itemsConEnvio.push({
+          id: 'shipping',
+          name: 'Costo de envío',
+          price: shipping,
+          quantity: 1,
+          unit: 'servicio'
+        })
       }
 
-      const response = await fetch('/api/orders', {
+      // Datos para crear preferencia de pago
+      const paymentData: any = {
+        items: itemsConEnvio,  // Items validados + envío
+        email: email,
+        nombre: customerData.nombre,
+        apellido: customerData.apellido,
+        telefono: customerData.telefono,
+        codigo_pais: customerData.codigo_pais,
+        // Metadatos adicionales para referencia
+        delivery_address: deliveryData.address,
+        delivery_postal_code: deliveryData.postal_code,
+        delivery_notes: deliveryData.notes
+      }
+
+      // Si fue guest checkout, pasar el token al siguiente paso
+      if (_guest_token) {
+        paymentData._guest_token = _guest_token
+      }
+
+      console.log('🚀 Enviando datos a MercadoPago:', paymentData)
+
+      // Usa proxy local que inyecta JWT desde la sesion
+      const response = await fetch(`/api/crear-preferencia-pago`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(orderData),
+        body: JSON.stringify(paymentData),
       })
 
       const result = await response.json()
 
-      if (result.success) {
-        // Redirigir a la URL de pago de Mercado Pago
-        if (result.payment_url) {
-          window.location.href = result.payment_url
-        } else {
-          onOrderComplete(result.order_id)
-        }
+      console.log('✅ Respuesta de MercadoPago:', result)
+
+      if (result.init_point || result.payment_url) {
+        // Guardar datos de la orden en localStorage para recuperar después
+        localStorage.setItem('pendingOrder', JSON.stringify({
+          customer: customerData,
+          delivery: deliveryData,
+          items: cartItems,
+          total: total,
+          preference_id: result.id,
+          created_at: new Date().toISOString()
+        }))
+
+        // Redirigir a MercadoPago
+        const paymentUrl = result.payment_url || result.init_point
+        console.log('🔗 Redirigiendo a:', paymentUrl)
+        window.location.href = paymentUrl
       } else {
-        throw new Error(result.error || 'Error procesando la orden')
+        throw new Error(result.detail || 'Error creando preferencia de pago')
       }
     } catch (error) {
-      console.error('Error:', error)
+      console.error('❌ Error:', error)
       alert('Error procesando la orden. Por favor intenta de nuevo.')
     } finally {
       setLoading(false)
@@ -133,13 +218,37 @@ export default function CheckoutForm({ cartItems, onOrderComplete }: CheckoutFor
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre completo *
+                Nombre *
               </label>
               <Input
-                value={customerData.name}
-                onChange={(e) => setCustomerData({...customerData, name: e.target.value})}
-                placeholder="Tu nombre completo"
+                value={customerData.nombre}
+                onChange={(e) => setCustomerData({...customerData, nombre: e.target.value})}
+                placeholder="Tu nombre"
                 required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Apellido *
+              </label>
+              <Input
+                value={customerData.apellido}
+                onChange={(e) => setCustomerData({...customerData, apellido: e.target.value})}
+                placeholder="Tu apellido"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Código de país *
+              </label>
+              <CountryCodeSelector
+                value={customerData.codigo_pais}
+                onChange={(dialCode) => setCustomerData({...customerData, codigo_pais: dialCode})}
               />
             </div>
             
@@ -148,9 +257,10 @@ export default function CheckoutForm({ cartItems, onOrderComplete }: CheckoutFor
                 Teléfono *
               </label>
               <Input
-                value={customerData.phone}
-                onChange={(e) => setCustomerData({...customerData, phone: e.target.value})}
-                placeholder="55 1234 5678"
+                value={customerData.telefono}
+                onChange={(e) => setCustomerData({...customerData, telefono: e.target.value.replace(/\D/g, '')})}
+                placeholder="1234567890"
+                maxLength={10}
                 required
               />
             </div>
@@ -193,7 +303,7 @@ export default function CheckoutForm({ cartItems, onOrderComplete }: CheckoutFor
 
           <Button
             onClick={() => setStep(2)}
-            disabled={!customerData.name || !customerData.phone}
+            disabled={!customerData.nombre || !customerData.apellido || !customerData.telefono || !customerData.email}
             className="w-full bg-[#B15543] hover:bg-[#9a4a3a] text-white"
           >
             Continuar

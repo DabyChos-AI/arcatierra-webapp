@@ -7,6 +7,7 @@ import OptimizedImage from '@/components/ui/OptimizedImage';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { shouldHaveTransparentHeader } from './HeaderDetector';
+import { API_URL } from '@/lib/api';
 // import { useCart } from '@/context/CartContext'; // Revertido a lógica original
 
 // Hook para detectar el tamaño de la ventana con seguridad SSR/CSR
@@ -45,7 +46,7 @@ function useWindowSize() {
 const styles = {
   header: (isTransparent: boolean, isScrolled: boolean) => ({
     position: 'fixed' as const,
-    top: 0,
+    top: '28px',
     left: 0,
     right: 0,
     zIndex: 1000,
@@ -187,7 +188,7 @@ const styles = {
     right: 0,
     bottom: 0,
     backgroundColor: 'white',
-    zIndex: 2000,
+    zIndex: 10001,
     display: 'flex',
     flexDirection: 'column' as const,
     overflowY: 'auto' as const,
@@ -222,7 +223,8 @@ const styles = {
     background: 'var(--arcatierra-terracota-principal)',
     border: 'none',
     color: 'white',
-    fontSize: '1.2rem',
+    fontSize: '1.5rem',
+    fontWeight: 'bold' as const,
     cursor: 'pointer',
     padding: '0.5rem',
     borderRadius: '50%',
@@ -232,6 +234,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'all 0.2s ease',
+    lineHeight: '1',
   },
   mobileMenuContent: {
     padding: '1.5rem',
@@ -289,22 +292,26 @@ const styles = {
     top: '100%',
     left: '0',
     minWidth: '220px',
+    maxWidth: '350px',
+    maxHeight: '70vh',
+    overflowY: 'auto' as const,
     backgroundColor: 'white',
     border: '1px solid var(--arcatierra-crema-principal)',
     borderRadius: '4px',
     boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-    zIndex: 100,
+    zIndex: 1002,
     marginTop: '0.5rem',
     padding: '0.5rem 0',
   },
   submenuItem: {
     display: 'block',
     padding: '0.75rem 1.5rem',
-    color: 'white',
+    color: 'var(--arcatierra-verde-tipografia)',
     textDecoration: 'none',
-    textAlign: 'center' as const,
+    textAlign: 'left' as const,
     transition: 'background-color 0.2s',
     whiteSpace: 'nowrap' as const,
+    fontSize: '0.9rem',
   },
   cartSidebar: {
     position: 'fixed' as const,
@@ -355,8 +362,11 @@ const TransparentHeader: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isEmployee, setIsEmployee] = useState(false);
+  const [checkingEmployee, setCheckingEmployee] = useState(false);
   
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
+  const [submenuCloseTimer, setSubmenuCloseTimer] = useState<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
   const isTransparent = shouldHaveTransparentHeader(pathname);
   const windowSize = useWindowSize();
@@ -446,21 +456,40 @@ const TransparentHeader: React.FC = () => {
 
   // Navegación principal actualizada
   const mainNav = [
-    { name: 'Experiencias', href: '/experiencias', hasSubmenu: true, submenuItems: [
-      { name: 'Calendario Experiencias', href: '/experiencias/calendario' },
-      { name: 'Galería de Experiencias', href: '/experiencias/galeria' },
-      { name: 'Experiencias (versión antigua)', href: '/experiencias-antigua' }
-    ] },
-    { name: 'Catering', href: '/catering' },
-    { name: 'Prensa', href: '/prensa' },
-    { name: 'Restaurantes', href: '/restaurantes' },
-    { name: 'Baldío Restaurante', href: '/baldio' },
     { name: 'Tienda', href: '/tienda', hasSubmenu: true, submenuItems: [
-      { name: 'Productos', href: '/tienda/productos' },
-      { name: 'Canastas Agroecológicas', href: '/tienda/canastas' }
+      { name: 'Todas las categorías', href: '/tienda' },
+      { name: 'Frutas y Verduras', href: '/tienda?categoria=Frutas y Verduras' },
+      { name: 'Granos y Cereales', href: '/tienda?categoria=Granos y Cereales' },
+      { name: 'Proteínas Regenerativas', href: '/tienda?categoria=Proteínas Regenerativas' },
+      { name: 'Endulzantes naturales', href: '/tienda?categoria=Endulzantes naturales' },
+      { name: 'Café, cacao y chocolate', href: '/tienda?categoria=Café, cacao y chocolate' },
+      { name: 'Canastas agroecológicas', href: '/tienda?categoria=Canastas agroecológicas' },
+      { name: 'Especias y Condimentos', href: '/tienda?categoria=Especias y Condimentos' },
+      { name: 'Mermeladas y untables naturales', href: '/tienda?categoria=Mermeladas y untables naturales' },
+      { name: 'Harinas y pastas orgánicas', href: '/tienda?categoria=Harinas y pastas orgánicas' },
+      { name: 'Infusiones Naturales', href: '/tienda?categoria=Infusiones Naturales' },
+      { name: 'Huevo y lácteos', href: '/tienda?categoria=Huevo y lácteos' },
+      { name: 'Maíz', href: '/tienda?categoria=Maíz' },
+      { name: 'Recetas', href: '/recetas' },
     ] },
-    { name: 'Recetas', href: '/recetas' },
-    { name: 'Nosotros', href: '/nosotros' },
+    { name: 'Experiencias', href: '/experiencias', hasSubmenu: true, submenuItems: [
+      { name: 'Públicas', href: '/experiencias?tipo=publica' },
+      { name: 'Privadas', href: '/experiencias?tipo=privada' },
+      { name: 'Calendario Experiencias', href: '/calendario' }
+    ] },
+    { name: 'Baldío', href: '/baldio' },
+    { name: 'Catering', href: '/catering' },
+    { name: 'Nosotros', href: '/nosotros', hasSubmenu: true, submenuItems: [
+      { name: 'Sobre Nosotros', href: '/nosotros' },
+      { name: 'Prensa', href: '/prensa' },
+      { name: 'Restaurantes', href: '/restaurantes' },
+      { name: 'Impacto Ambiental', href: '/impacto' },
+      { name: 'Favoritos', href: '/favoritos' },
+      { name: 'Contacto', href: '/contacto' },
+      { name: 'Blog', href: '/blog' },
+      { name: 'Términos y Condiciones', href: '/terminos' },
+      { name: 'Política de Privacidad', href: '/privacidad' }
+    ] },
   ];
   
   // Iconos de navegación
@@ -470,11 +499,47 @@ const TransparentHeader: React.FC = () => {
     { name: 'Contacto', href: '/contacto', icon: 'fa-phone' },
   ];
 
-  // Opciones del menú de usuario
+  // Verificar si es empleado cuando hay sesión
+  useEffect(() => {
+    console.log('🔍 TransparentHeader useEffect - Status:', status, 'Email:', session?.user?.email);
+    if (status === 'authenticated' && session?.user?.email && !checkingEmployee && !isEmployee) {
+      console.log('✅ Llamando checkIfEmployee...');
+      checkIfEmployee();
+    }
+  }, [session, status]);
+
+  const checkIfEmployee = async () => {
+    console.log('🚀 checkIfEmployee iniciado para:', session?.user?.email);
+    setCheckingEmployee(true);
+    try {
+      const url = `${API_URL}/api/auth/check-employee?email=${encodeURIComponent(session?.user?.email || '')}`;
+      console.log('📡 Fetching:', url);
+      const response = await fetch(url);
+      console.log('📥 Response status:', response.status);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Employee data:', data);
+        setIsEmployee(data.is_employee);
+        console.log('🎯 isEmployee set to:', data.is_employee);
+      } else {
+        console.error('❌ Response not OK:', response.status);
+      }
+    } catch (error) {
+      console.error('❌ Error checking employee status:', error);
+      setIsEmployee(false);
+    } finally {
+      setCheckingEmployee(false);
+      console.log('🏁 checkIfEmployee finalizado');
+    }
+  };
+
+  // Opciones del menú de usuario (dinámicas según rol)
   const userMenuItems = [
     { name: 'Mi Perfil', href: '/usuario/perfil' },
     { name: 'Mis Reservas', href: '/usuario/reservas' },
     { name: 'Favoritos', href: '/usuario/favoritos' },
+    { name: 'Mi Dashboard', href: '/usuario/dashboard' },
+    ...(isEmployee ? [{ name: 'Panel de Administración', href: '/admin', isAdmin: true }] : []),
   ];
 
   // Para el menú móvil
@@ -509,6 +574,24 @@ const TransparentHeader: React.FC = () => {
     // Sólo detenemos la propagación para evitar conflictos de eventos
     e.stopPropagation();
     setActiveSubmenu(activeSubmenu === name ? null : name);
+  };
+
+  // Funciones para manejar submenu con delay
+  const handleSubmenuMouseEnter = (name: string) => {
+    // Cancelar timer de cierre si existe
+    if (submenuCloseTimer) {
+      clearTimeout(submenuCloseTimer);
+      setSubmenuCloseTimer(null);
+    }
+    setActiveSubmenu(name);
+  };
+
+  const handleSubmenuMouseLeave = () => {
+    // Esperar 300ms antes de cerrar
+    const timer = setTimeout(() => {
+      setActiveSubmenu(null);
+    }, 300);
+    setSubmenuCloseTimer(timer);
   };
   
   // Ya no necesitamos estas funciones ya que usamos el contexto
@@ -602,18 +685,26 @@ const TransparentHeader: React.FC = () => {
         {/* Desktop Navigation */}
         <nav style={styles.nav} className="header-desktop-nav">
           {mainNav.map((item) => (
-            <div key={item.name} style={{ position: 'relative' }}>
+            <div 
+              key={item.name} 
+              style={{ position: 'relative' }}
+              onMouseEnter={() => item.hasSubmenu && handleSubmenuMouseEnter(item.name)}
+              onMouseLeave={() => item.hasSubmenu && handleSubmenuMouseLeave()}
+            >
               {item.hasSubmenu ? (
                 <a
                   href={item.href}
                   style={styles.link(isTransparent, isScrolled)}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    window.location.href = item.href;
-                  }}
+                  onClick={(e) => toggleSubmenu(e, item.name)}
                 >
                   {item.name}
-                  <i className="fas fa-chevron-down ml-1" style={{ fontSize: '0.7rem', marginLeft: '5px' }}></i>
+                  <span style={{ 
+                    marginLeft: '4px', 
+                    fontSize: '0.7rem',
+                    opacity: 0.7,
+                    display: 'inline-block',
+                    transition: 'transform 0.2s'
+                  }}>▼</span>
                   {pathname.startsWith(item.href) && (
                     <motion.div
                       style={styles.underline}
@@ -660,6 +751,14 @@ const TransparentHeader: React.FC = () => {
                       key={subItem.name}
                       href={subItem.href}
                       style={styles.submenuItem}
+                      onMouseEnter={() => {
+                        // Mantener submenu abierto
+                        if (submenuCloseTimer) {
+                          clearTimeout(submenuCloseTimer);
+                          setSubmenuCloseTimer(null);
+                        }
+                      }}
+                      className="submenu-item-hover"
                     >
                       {subItem.name}
                     </Link>
@@ -674,10 +773,9 @@ const TransparentHeader: React.FC = () => {
 
         {/* User Section - Solo elementos esenciales en móvil */}
         <div style={{...styles.userSection, display: 'flex', alignItems: 'center', gap: windowSize.width && windowSize.width < 2000 ? '0.3rem' : '0.7rem'}}>
-          {/* Iconos solo en desktop - Ocultos completamente en móvil */}
+          {/* ICONOS DESHABILITADOS - No deben aparecer nunca (causaban problemas con zoom)
           {windowSize.width && windowSize.width >= 2000 && (
             <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-              {/* Impacto ambiental */}
               <a 
                 href="javascript:void(0)" 
                 style={{...styles.iconButton(isTransparent, isScrolled)}}
@@ -689,7 +787,6 @@ const TransparentHeader: React.FC = () => {
                 <span className="sr-only">Impacto Ambiental</span>
               </a>
               
-              {/* Favoritos */}
               <a 
                 href="javascript:void(0)" 
                 style={{...styles.iconButton(isTransparent, isScrolled)}}
@@ -701,7 +798,6 @@ const TransparentHeader: React.FC = () => {
                 <span className="sr-only">Favoritos</span>
               </a>
               
-              {/* Contacto */}
               <Link href="/contacto" style={{...styles.iconButton(isTransparent, isScrolled)}}>
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                   <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
@@ -710,6 +806,7 @@ const TransparentHeader: React.FC = () => {
               </Link>
             </div>
           )}
+          */}
           
           {/* Elementos esenciales para móvil y desktop */}
           <div style={{display: 'flex', alignItems: 'center', gap: '0.4rem'}}>
@@ -799,15 +896,27 @@ const TransparentHeader: React.FC = () => {
                     transition={{ duration: 0.2 }}
                     style={styles.userDropdown}
                   >
-                    {userMenuItems.map((item) => (
-                      <Link 
-                        key={item.name} 
-                        href={item.href}
-                        style={styles.dropdownItem}
-                        onClick={() => setDropdownOpen(false)}
-                      >
-                        {item.name}
-                      </Link>
+                    {userMenuItems.map((item, index) => (
+                      <React.Fragment key={item.name}>
+                        {/* Separador antes de Panel de Administración */}
+                        {(item as any).isAdmin && (
+                          <hr style={{ margin: '0.5rem 0', border: 'none', borderTop: '1px solid var(--arcatierra-crema-principal)' }} />
+                        )}
+                        <Link 
+                          href={item.href}
+                          style={{
+                            ...styles.dropdownItem,
+                            ...((item as any).isAdmin && {
+                              color: 'var(--arcatierra-terracota-principal)',
+                              fontWeight: 600,
+                              backgroundColor: 'rgba(177, 85, 67, 0.05)'
+                            })
+                          }}
+                          onClick={() => setDropdownOpen(false)}
+                        >
+                          {(item as any).isAdmin && '🛡️ '}{item.name}
+                        </Link>
+                      </React.Fragment>
                     ))}
                     <hr style={{ margin: '0.5rem 0', border: 'none', borderTop: '1px solid var(--arcatierra-crema-principal)' }} />
                     <a 
@@ -840,7 +949,7 @@ const TransparentHeader: React.FC = () => {
             onClick={toggleMobileMenu} 
             className="header-mobile-button"
             style={{
-              display: windowSize.width && windowSize.width < 2000 ? 'flex' : 'none',
+              display: windowSize.width && windowSize.width < 1024 ? 'flex' : 'none',
               alignItems: 'center',
               justifyContent: 'center',
               background: 'none',
@@ -891,7 +1000,7 @@ const TransparentHeader: React.FC = () => {
                 right: 0,
                 bottom: 0,
                 backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                zIndex: 1999,
+                zIndex: 10000,
               }}
               onClick={toggleMobileMenu}
             />
@@ -934,7 +1043,7 @@ const TransparentHeader: React.FC = () => {
                   onClick={toggleMobileMenu}
                   style={styles.mobileMenuCloseButton}
                 >
-                  <i className="fas fa-times" aria-hidden="true"></i>
+                  ✕
                 </button>
               </div>
               <div style={styles.mobileMenuContent}>

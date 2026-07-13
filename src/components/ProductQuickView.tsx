@@ -42,11 +42,11 @@ export default function ProductQuickView({
       />
       
       {/* Modal */}
-      <div className="fixed inset-0 flex items-center justify-center z-[950] p-4">
-        <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-          <div className="flex h-full">
+      <div className="fixed inset-0 flex items-start justify-center z-[950] pt-36 px-4 pb-8 overflow-y-auto">
+        <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
+          <div className="flex flex-col md:flex-row">
             {/* Imagen del producto */}
-            <div className="w-2/5 relative">
+            <div className="w-full md:w-2/5 relative h-48 md:h-auto">
               <img 
                 src={product.imagen || '/placeholder-product.jpg'} 
                 alt={product.nombre}
@@ -79,7 +79,7 @@ export default function ProductQuickView({
             </div>
             
             {/* Información del producto */}
-            <div className="w-3/5 p-6 flex flex-col h-full relative">
+            <div className="w-full md:w-3/5 p-6 flex flex-col relative">
               {/* Botón de cerrar */}
               <button
                 onClick={onClose}
@@ -88,7 +88,12 @@ export default function ProductQuickView({
                 <X className="w-5 h-5" />
               </button>
               
-              {/* Ubicación del productor */}
+              {/* 
+              ========================================
+              TRAZABILIDAD COMENTADA - Ubicación del productor
+              ========================================
+              PARA REACTIVAR: Descomentar el bloque de código abajo
+              
               <div className="flex items-center gap-2 text-[#33503E] mb-2">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -96,6 +101,8 @@ export default function ProductQuickView({
                 </svg>
                 <span className="text-sm font-medium">{product.productor}, {product.ubicacion}</span>
               </div>
+              ========================================
+              */}
               
               {/* Nombre del producto */}
               <h2 className="text-2xl font-bold text-gray-900 mb-2">{product.nombre}</h2>
@@ -120,13 +127,23 @@ export default function ProductQuickView({
                 <p className="text-gray-500 text-xs mt-1">- {product.productor}</p>
               </div>
               
-              {/* Trazabilidad (FASE 3) - Solo si el producto tiene datos de trazabilidad */}
+              {/* 
+              ========================================
+              TRAZABILIDAD COMENTADA - Componente ProductTraceability
+              ========================================
+              PARA REACTIVAR:
+              1. Descomentar el bloque de código abajo
+              2. Asegurarse de que el producto tenga datos en 'trazabilidad'
+              3. El componente ProductTraceability ya está importado
+              
               {product.trazabilidad && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-900 mb-3">Trazabilidad:</h3>
                   <ProductTraceability product={product} compact={true} />
                 </div>
               )}
+              ========================================
+              */}
               
               {/* Características */}
               <div className="mb-6">
@@ -151,7 +168,12 @@ export default function ProductQuickView({
                 </div>
               </div>
               
-              {/* Métricas ambientales con iconos */}
+              {/* 
+              ========================================
+              TRAZABILIDAD COMENTADA - Métricas ambientales
+              ========================================
+              PARA REACTIVAR: Descomentar el bloque de código abajo
+              
               <div className="flex items-center justify-between mb-6 bg-[#F5F2E8] rounded-lg p-3">
                 <div className="flex items-center gap-1">
                   <span className="text-green-600">🌱</span>
@@ -166,6 +188,8 @@ export default function ProductQuickView({
                   <span className="text-sm">{product.metricas.plastico}</span>
                 </div>
               </div>
+              ========================================
+              */}
               
               {/* Precio y botones */}
               <div className="mt-auto">

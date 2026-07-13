@@ -34,33 +34,61 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const [itemCount, setItemCount] = useState(0);
   const [cartItems, setCartItems] = useState<any[]>([])
 
+  // Cargar carrito desde localStorage (DESHABILITAR BACKEND TEMPORALMENTE PARA DEMO)
   useEffect(() => {
-    const savedCart = localStorage.getItem('arcaTierraCart')
-    if (savedCart) {
-      const parsedCart = JSON.parse(savedCart);
-      setCartItems(parsedCart)
-      // Calcular el total de items para el botón flotante
-      setItemCount(parsedCart.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0))
+    const loadCartFromLocalStorage = () => {
+      try {
+        // SOLO usar localStorage - NO leer del backend
+        const savedCart = localStorage.getItem('arcaTierraCart')
+        if (savedCart) {
+          const parsedCart = JSON.parse(savedCart)
+          setCartItems(parsedCart)
+          setItemCount(parsedCart.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0))
+        } else {
+          setCartItems([])
+          setItemCount(0)
+        }
+      } catch (error) {
+        console.error('Error cargando carrito:', error)
+        setCartItems([])
+        setItemCount(0)
+      }
+    }
+    
+    if (isOpen) {
+      loadCartFromLocalStorage()
     }
   }, [isOpen])
   
-  // Escuchar eventos de actualización del carrito para actualizar el contador
+  // Escuchar eventos de actualización del carrito desde localStorage SOLAMENTE
   useEffect(() => {
     const handleCartUpdate = () => {
-      const savedCart = localStorage.getItem('arcaTierraCart')
-      if (savedCart) {
-        const parsedCart = JSON.parse(savedCart);
-        setItemCount(parsedCart.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0))
-      } else {
-        setItemCount(0);
+      try {
+        // SOLO leer de localStorage - NO backend
+        const savedCart = localStorage.getItem('arcaTierraCart')
+        if (savedCart) {
+          const parsedCart = JSON.parse(savedCart)
+          setCartItems(parsedCart)
+          setItemCount(parsedCart.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0))
+        } else {
+          setCartItems([])
+          setItemCount(0)
+        }
+      } catch (error) {
+        console.error('Error actualizando contador:', error)
+        setCartItems([])
+        setItemCount(0)
       }
-    };
+    }
     
-    window.addEventListener('cartUpdated', handleCartUpdate);
+    window.addEventListener('cartUpdated', handleCartUpdate)
+    
+    // También cargar al inicio
+    handleCartUpdate()
     
     return () => {
-      window.removeEventListener('cartUpdated', handleCartUpdate);
-    };
+      window.removeEventListener('cartUpdated', handleCartUpdate)
+    }
   }, [])
   
   // Un efecto separado para escuchar el evento toggleCartSidebar
@@ -97,16 +125,16 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     // Disparar evento para actualizar el header
     window.dispatchEvent(new Event('cartUpdated'))
     
-    // Mostrar notificación
-    if (itemToUpdate) {
-      toast.cart(`${itemToUpdate.name}`, {
-        title: 'Cantidad actualizada',
-        action: {
-          label: 'Ver carrito',
-          onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
-        }
-      });
-    }
+    // Toast deshabilitado - era molesto al modificar múltiples productos
+    // if (itemToUpdate) {
+    //   toast.cart(`${itemToUpdate.name}`, {
+    //     title: 'Cantidad actualizada',
+    //     action: {
+    //       label: 'Ver carrito',
+    //       onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
+    //     }
+    //   });
+    // }
   }
 
   const removeItem = (id: string) => {
@@ -120,23 +148,22 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     // Disparar evento para actualizar el header
     window.dispatchEvent(new Event('cartUpdated'))
     
-    // Mostrar notificación
-    if (itemToRemove) {
-      toast.error(`${itemToRemove.name} eliminado del carrito`, {
-        title: 'Producto eliminado',
-        action: {
-          label: 'Deshacer',
-          onClick: () => {
-            // Restaurar el item eliminado
-            const restoredCart = [...updatedCart, itemToRemove];
-            setCartItems(restoredCart);
-            localStorage.setItem('arcaTierraCart', JSON.stringify(restoredCart));
-            window.dispatchEvent(new Event('cartUpdated'));
-            toast.success(`${itemToRemove.name} restaurado al carrito`);
-          }
-        }
-      });
-    }
+    // Toast deshabilitado - era molesto al eliminar múltiples productos
+    // if (itemToRemove) {
+    //   toast.error(`${itemToRemove.name} eliminado del carrito`, {
+    //     title: 'Producto eliminado',
+    //     action: {
+    //       label: 'Deshacer',
+    //       onClick: () => {
+    //         const restoredCart = [...updatedCart, itemToRemove];
+    //         setCartItems(restoredCart);
+    //         localStorage.setItem('arcaTierraCart', JSON.stringify(restoredCart));
+    //         window.dispatchEvent(new Event('cartUpdated'));
+    //         toast.success(`${itemToRemove.name} restaurado al carrito`);
+    //       }
+    //     }
+    //   });
+    // }
   }
 
   const clearCart = () => {
@@ -149,23 +176,44 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     // Disparar evento para actualizar el header
     window.dispatchEvent(new Event('cartUpdated'))
     
-    // Mostrar notificación
-    toast.warning('Se ha vaciado el carrito', {
-      title: 'Carrito vacío',
-      action: {
-        label: 'Deshacer',
-        onClick: () => {
-          // Restaurar el carrito previo
-          setCartItems(previousCart);
-          localStorage.setItem('arcaTierraCart', JSON.stringify(previousCart));
-          window.dispatchEvent(new Event('cartUpdated'));
-          toast.success('Carrito restaurado');
-        }
-      }
-    });
+    // Toast deshabilitado - era molesto
+    // toast.warning('Se ha vaciado el carrito', {
+    //   title: 'Carrito vacío',
+    //   action: {
+    //     label: 'Deshacer',
+    //     onClick: () => {
+    //       setCartItems(previousCart);
+    //       localStorage.setItem('arcaTierraCart', JSON.stringify(previousCart));
+    //       window.dispatchEvent(new Event('cartUpdated'));
+    //       toast.success('Carrito restaurado');
+    //     }
+    //   }
+    // });
   }
 
-  const total = cartItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0)
+  // Separar productos de experiencias
+  // LÓGICA NEGATIVA: Todo lo que NO es experiencia, es producto
+  const experiencias = cartItems.filter(item => item.tipo === 'experiencia')
+  const productos = cartItems.filter(item => item.tipo !== 'experiencia')
+  
+  // Productos de prueba (contienen "test" en nombre o descripción, o son Acedera) - no generan costo de envío
+  const productosParaEnvio = productos.filter(item => {
+    const nombre = item.name?.toLowerCase() || ''
+    const descripcion = (item.description || item.descripcion || '')?.toLowerCase()
+    const esProductoTest = nombre.includes('test') || descripcion.includes('test') || nombre.includes('acedera')
+    return !esProductoTest
+  })
+  
+  // Calcular subtotales
+  const subtotalProductos = productos.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0)
+  const subtotalProductosParaEnvio = productosParaEnvio.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0)
+  const subtotalExperiencias = experiencias.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0)
+  const subtotal = subtotalProductos + subtotalExperiencias
+  
+  // Envío SOLO se basa en productos (excluyendo productos de prueba)
+  // Solo cobrar envío si HAY productos Y son menos de $1000
+  const shipping = (subtotalProductosParaEnvio > 0 && subtotalProductosParaEnvio < 1000) ? 100 : 0
+  const total = subtotal + shipping
 
   return (
     <>
@@ -185,10 +233,10 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
         </button>
       )}
       
-      {/* Overlay - Solo visible cuando el sidebar está abierto */}
+      {/* Overlay de fondo oscuro - Solo visible cuando isOpen es true */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-[9998]"
+          className="fixed inset-0 bg-black/50 z-[9998]"
           onClick={onClose}
         />
       )}
@@ -274,7 +322,32 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
         {/* Footer fijo */}
         {cartItems.length > 0 && (
           <div className="p-6 border-t border-white/20 bg-[#33503E] flex-shrink-0">
-            <div className="flex justify-between items-center mb-4">
+            <div className="space-y-2 mb-4 text-white/90 text-sm">
+              <div className="flex justify-between">
+                <span>Subtotal:</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Envío:</span>
+                <span>{shipping === 0 ? 'GRATIS' : `$${shipping.toFixed(2)}`}</span>
+              </div>
+              {subtotalProductos > 0 && subtotalProductos < 1000 && (
+                <div className="text-xs text-amber-300 bg-amber-900/30 p-2 rounded">
+                  💰 Te faltan ${(1000 - subtotalProductos).toFixed(2)} en productos para envío GRATIS
+                </div>
+              )}
+              {subtotalProductos >= 1000 && (
+                <div className="text-xs text-green-300 bg-green-900/30 p-2 rounded">
+                  🎉 ¡Felicidades! Tu envío es GRATIS
+                </div>
+              )}
+              {subtotalProductos === 0 && subtotalExperiencias > 0 && (
+                <div className="text-xs text-green-300 bg-green-900/30 p-2 rounded">
+                  ✨ Las experiencias no tienen costo de envío
+                </div>
+              )}
+            </div>
+            <div className="flex justify-between items-center mb-4 border-t border-white/20 pt-3">
               <span className="text-white font-medium text-lg">Total:</span>
               <span className="text-2xl font-bold text-white">${total.toFixed(2)}</span>
             </div>

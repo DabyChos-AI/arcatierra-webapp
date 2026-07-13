@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import bcrypt from 'bcryptjs'
+import { API_URL } from '@/lib/api'
 
+/**
+ * Proxy a FastAPI para registro de usuarios
+ * 
+ * ACTUALIZADO: Ya no usa n8n, ahora guarda directo en BD via FastAPI
+ */
 export async function POST(request: NextRequest) {
   try {
     const { token, email, password } = await request.json()
 
     // Validar datos requeridos
-    if (!token || !email || !password) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: 'Token, email y contraseña son requeridos' },
+        { error: 'Email y contraseña son requeridos' },
         { status: 400 }
       )
     }
@@ -30,63 +35,46 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // En un entorno de producción, aquí verificarías el token contra una base de datos
-    // Por ahora, validamos que el token tenga el formato correcto
-    if (!token.startsWith('ACC-') || token.length < 20) {
-      return NextResponse.json(
-        { error: 'Token inválido o expirado' },
-        { status: 400 }
-      )
-    }
-
-    // Hash de la contraseña
-    const hashedPassword = await bcrypt.hash(password, 12)
-
-    // Preparar datos para enviar a n8n (sistema de usuarios)
-    const userData = {
-      type: 'create_user_account',
-      email,
-      password_hash: hashedPassword,
-      token,
-      created_from: 'guest_checkout',
-      timestamp: new Date().toISOString(),
-    }
-
-    // Enviar a n8n para crear usuario
-    const n8nUrl = process.env.N8N_WEBHOOK_URL
-    if (!n8nUrl) {
-      return NextResponse.json(
-        { error: 'Configuración de sistema no disponible' },
-        { status: 500 }
-      )
-    }
-
-    const n8nResponse = await fetch(n8nUrl, {
+    // Enviar a FastAPI backend
+    const backendUrl = API_URL
+    const response = await fetch(`${backendUrl}/api/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(userData),
+      body: JSON.stringify({
+        email,
+        password,
+        nombre: email.split('@')[0], // Nombre temporal del email
+        apellidos: '',
+        telefono: '',
+        nombre_completo: email.split('@')[0]
+      }),
     })
 
-    if (!n8nResponse.ok) {
-      // Si el usuario ya existe, retornar mensaje específico
-      if (n8nResponse.status === 409) {
+    const result = await response.json()
+
+    if (!response.ok) {
+      // Si el usuario ya existe
+      if (response.status === 400 && result.detail?.includes('ya está registrado')) {
         return NextResponse.json(
           { error: 'Ya existe una cuenta con este email' },
           { status: 409 }
         )
       }
-      throw new Error(`Error en sistema: ${n8nResponse.status}`)
+      
+      return NextResponse.json(
+        { error: result.detail || 'Error creando la cuenta' },
+        { status: response.status }
+      )
     }
-
-    const result = await n8nResponse.json()
 
     // Responder con éxito
     return NextResponse.json({
       success: true,
       message: 'Cuenta creada exitosamente',
       user_id: result.user_id,
+      access_token: result.access_token
     })
 
   } catch (error) {

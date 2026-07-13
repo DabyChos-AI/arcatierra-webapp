@@ -13,6 +13,7 @@ export interface Experiencia {
   tipo: 'publica' | 'privada';
   precio: {
     base: number;
+    nino?: number | null;
     adicional?: number;
     capacidad: string;
   };
@@ -21,11 +22,13 @@ export interface Experiencia {
     description: string;
   };
   imagen: string;
+  galeria_imagenes?: string[];
   badges: Badge[];
   descripcionCorta: string;
   descripcionCompleta: string;
   duracion: string;
   incluye: string[];
+  informacion_importante?: string[];
   categoria: 'gastronomica' | 'familiar' | 'educativa' | 'recorrido';
 }
 

@@ -1,14 +1,137 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import HeroCarousel from '@/components/HeroCarousel';
 import ExperienceCard from '@/components/ExperienceCard';
-import { experiencias } from '@/data/experiencias';
+import { Experiencia } from '@/data/experiencias';
+import { API_URL } from '@/lib/api';
 
 type FiltroTipo = 'todas' | 'publica' | 'privada' | 'destacados';
 
-export default function ExperienciasPage() {
-  const [filtroActivo, setFiltroActivo] = useState<FiltroTipo>('todas');
+// Helper: convertir nombres de mayúsculas a sentence case
+function toSentenceCase(text: string): string {
+  if (!text) return text
+  
+  // Convertir a minúsculas y luego capitalizar primera letra de cada palabra importante
+  return text.toLowerCase()
+    .split(' ')
+    .map(word => {
+      // Palabras que deben permanecer en minúsculas (preposiciones, artículos)
+      const lowercaseWords = ['de', 'del', 'la', 'el', 'y', 'en', 'con', 'para', 'por', 'a', 'al']
+      if (lowercaseWords.includes(word)) {
+        return word
+      }
+      // Capitalizar primera letra
+      return word.charAt(0).toUpperCase() + word.slice(1)
+    })
+    .join(' ')
+    // Asegurar que la primera palabra siempre esté capitalizada
+    .replace(/^\w/, c => c.toUpperCase())
+}
+
+// Helper: mapear tipo de experiencia (ya viene correcto desde API)
+function mapearTipoExperiencia(tipo: string): 'publica' | 'privada' {
+  // La API ya devuelve 'publica' o 'privada' correctamente
+  if (tipo === 'publica') return 'publica'
+  if (tipo === 'privada') return 'privada'
+  // Fallback para otros tipos
+  return tipo.toLowerCase().includes('publica') ? 'publica' : 'privada'
+}
+
+function ExperienciasPageContent() {
+  const searchParams = useSearchParams();
+  const tipoParam = searchParams.get('tipo') as FiltroTipo | null;
+  
+  const [filtroActivo, setFiltroActivo] = useState<FiltroTipo>(tipoParam || 'todas');
+  const [experiencias, setExperiencias] = useState<Experiencia[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Aplicar filtro desde URL al cargar y hacer scroll a experiencias
+  useEffect(() => {
+    if (tipoParam && (tipoParam === 'publica' || tipoParam === 'privada')) {
+      setFiltroActivo(tipoParam);
+      
+      // Scroll automático a la sección de experiencias después de aplicar filtro
+      setTimeout(() => {
+        const section = document.getElementById('experiencias-section');
+        if (section) {
+          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 300);
+    }
+  }, [tipoParam]);
+
+  // Cargar experiencias desde la API
+  useEffect(() => {
+    const fetchExperiencias = async () => {
+      setIsLoading(true);
+      try {
+        // Intentar primero con la URL externa, luego con localhost como fallback
+        let response = await fetch(`${API_URL}/api/experiencias?limit=50`);
+        
+        if (!response.ok) {
+          console.log('Intentando con localhost como fallback...');
+          response = await fetch('http://localhost:8000/api/experiencias?limit=50');
+        }
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Mapear experiencias de API a formato local
+          const experienciasMapeadas: Experiencia[] = data.items.map((exp: any) => {
+            // Mapear tipo de experiencia (ya viene correcto desde API)
+            const tipoMapeado = mapearTipoExperiencia(exp.tipo || '')
+            
+            return {
+            id: exp.id,
+            slug: exp.slug,
+            nombre: toSentenceCase(exp.nombre), // Aplicar sentence case
+            tipo: tipoMapeado,
+            precio: {
+              base: exp.precio,
+              nino: exp.precio_nino || null,
+              capacidad: tipoMapeado === 'publica' ? 'por persona' : 'hasta 10 personas'
+            },
+            seo: {
+              title: `${toSentenceCase(exp.nombre)} - Arca Tierra`,
+              description: exp.descripcion || `Experiencia ${tipoMapeado} en Xochimilco`
+            },
+            imagen: exp.imagen_principal || 
+              (exp.nombre.toUpperCase() === 'AMANECER CHINAMPERO CON THE CURIOUS MEXICAN' 
+                ? '/images/experiencias/AMANECERCHINAMPERO.jpg'
+                : exp.nombre.toUpperCase() === 'TALLER DE COCINA CON MARIANA OROZCO'
+                ? '/images/experiencias/TALLERDECOCINACONMARIANAOROZCO.jpg'
+                : exp.nombre.toUpperCase() === 'CHINAMPA EN FAMILIA'
+                ? '/images/experiencias/CHINAMPAENFAMILIA.jpeg'
+                : `/images/experiencias/${exp.nombre.toUpperCase().replace(/\s+/g, '')}.jpg`),
+            badges: exp.disponible ? [
+              { type: tipoMapeado, label: tipoMapeado === 'publica' ? 'Pública' : 'Privada', color: 'text-white', bgColor: tipoMapeado === 'publica' ? 'bg-verde-principal' : 'bg-terracota-principal' }
+            ] : [],
+            descripcionCorta: exp.descripcion ? exp.descripcion.substring(0, 150) + '...' : '',
+            descripcionCompleta: exp.descripcion || '',
+            duracion: `${exp.duracion_horas} horas`,
+            incluye: exp.incluye || ['Experiencia única'],
+            categoria: tipoMapeado === 'publica' ? 'gastronomica' : 'familiar'
+            }
+          });
+          
+          setExperiencias(experienciasMapeadas);
+          console.log(`Cargadas ${experienciasMapeadas.length} experiencias desde la API`);
+        } else {
+          console.error('Error cargando experiencias de la API');
+          // Aquí podrías cargar datos de fallback si es necesario
+        }
+      } catch (error) {
+        console.error('Error conectando con la API de experiencias:', error);
+        // Aquí podrías cargar datos de fallback si es necesario
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchExperiencias();
+  }, []);
 
   // Filtrar experiencias según el filtro activo
   const experienciasFiltradas = experiencias.filter(exp => {
@@ -43,7 +166,8 @@ export default function ExperienciasPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-[88px]">
+      {/* pt-[88px] = 28px banner + 60px header */}
       {/* Hero Carousel */}
       <section className="pt-8">
         <HeroCarousel />
@@ -91,8 +215,18 @@ export default function ExperienciasPage() {
         </div>
       </section>
 
+      {/* Loading state */}
+      {isLoading && (
+        <section className="py-12 px-4 md:px-8">
+          <div className="max-w-7xl mx-auto text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-verde-principal mx-auto mb-4"></div>
+            <p className="text-lg text-gray-600">Cargando experiencias...</p>
+          </div>
+        </section>
+      )}
+
       {/* Mostrar todas las experiencias cuando el filtro es "todas" */}
-      {filtroActivo === 'todas' && (
+      {!isLoading && filtroActivo === 'todas' && (
         <>
           {/* Experiencias Públicas */}
           <section className="py-12 px-4 md:px-8">
@@ -106,7 +240,7 @@ export default function ExperienciasPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:p-8">
                 {experienciasPublicas.map((experiencia, index) => (
                   <div 
                     key={experiencia.id}
@@ -132,7 +266,7 @@ export default function ExperienciasPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:p-8">
                 {experienciasPrivadas.map((experiencia, index) => (
                   <div 
                     key={experiencia.id}
@@ -149,8 +283,8 @@ export default function ExperienciasPage() {
       )}
 
       {/* Mostrar solo experiencias públicas cuando el filtro es "publica" */}
-      {filtroActivo === 'publica' && (
-        <section className="py-12 px-4 md:px-8">
+      {!isLoading && filtroActivo === 'publica' && (
+        <section id="experiencias-section" className="py-12 px-4 md:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
               <h3 className="text-3xl md:text-4xl font-playfair font-bold text-gray-800 mb-4 animate-fade-in-up">
@@ -161,7 +295,7 @@ export default function ExperienciasPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:p-8">
               {experienciasFiltradas.map((experiencia, index) => (
                 <div 
                   key={experiencia.id}
@@ -177,8 +311,8 @@ export default function ExperienciasPage() {
       )}
 
       {/* Mostrar solo experiencias privadas cuando el filtro es "privada" */}
-      {filtroActivo === 'privada' && (
-        <section className="py-12 px-4 md:px-8">
+      {!isLoading && filtroActivo === 'privada' && (
+        <section id="experiencias-section" className="py-12 px-4 md:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
               <h3 className="text-3xl md:text-4xl font-playfair font-bold text-gray-800 mb-4 animate-fade-in-up">
@@ -189,7 +323,7 @@ export default function ExperienciasPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:p-8">
               {experienciasFiltradas.map((experiencia, index) => (
                 <div 
                   key={experiencia.id}
@@ -205,7 +339,7 @@ export default function ExperienciasPage() {
       )}
 
       {/* Mostrar mensaje cuando el filtro destacados no tiene resultados */}
-      {filtroActivo === 'destacados' && experienciasFiltradas.length === 0 && (
+      {!isLoading && filtroActivo === 'destacados' && experienciasFiltradas.length === 0 && (
         <section className="py-12 px-4 md:px-8">
           <div className="max-w-7xl mx-auto text-center">
             <h3 className="text-2xl font-playfair font-bold text-gray-800 mb-4">
@@ -219,7 +353,7 @@ export default function ExperienciasPage() {
       )}
 
       {/* Mostrar experiencias destacadas cuando se filtra por destacados */}
-      {filtroActivo === 'destacados' && experienciasFiltradas.length > 0 && (
+      {!isLoading && filtroActivo === 'destacados' && experienciasFiltradas.length > 0 && (
         <section className="py-12 px-4 md:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
@@ -231,7 +365,7 @@ export default function ExperienciasPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:p-8">
               {experienciasFiltradas.map((experiencia, index) => (
                 <div 
                   key={experiencia.id}
@@ -247,15 +381,15 @@ export default function ExperienciasPage() {
       )}
 
       {/* Sección de información adicional - Solo mostrar en vista completa */}
-      {filtroActivo === 'todas' && (
+      {!isLoading && filtroActivo === 'todas' && (
         <>
           {/* Sección de Testimonios y FAQ */}
-          <section className="py-16 px-4 md:px-8 bg-neutral-50">
+          <section className="py-12 md:py-16 px-4 md:px-8 bg-neutral-50">
             <div className="max-w-6xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:p-8">
                 {/* CTA Testimonios */}
                 <div className="bg-white rounded-2xl shadow-lg border border-neutral-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                  <div className="p-8">
+                  <div className="p-6 sm:p-8">
                     <div className="flex items-center gap-4 mb-6">
                       <div className="w-12 h-12 bg-verde-principal rounded-xl flex items-center justify-center">
                         <span className="text-2xl">💬</span>
@@ -302,7 +436,7 @@ export default function ExperienciasPage() {
 
                 {/* CTA FAQ */}
                 <div className="bg-white rounded-2xl shadow-lg border border-neutral-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                  <div className="p-8">
+                  <div className="p-6 sm:p-8">
                     <div className="flex items-center gap-4 mb-6">
                       <div className="w-12 h-12 bg-terracota-principal rounded-xl flex items-center justify-center">
                         <span className="text-2xl">❓</span>
@@ -347,14 +481,14 @@ export default function ExperienciasPage() {
           </section>
 
           {/* Sección de por qué elegirnos */}
-          <section className="py-16 px-4 md:px-8 bg-gradient-to-b from-red-50 to-white">
+          <section className="py-12 md:py-16 px-4 md:px-8 bg-gradient-to-b from-red-50 to-white">
             <div className="max-w-6xl mx-auto text-center">
               <h3 className="text-3xl md:text-4xl font-playfair font-bold text-gray-800 mb-8 animate-fade-in-up">
                 ¿Por qué elegir Arca Tierra?
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="p-8 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 animate-fade-in-up animation-delay-200">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:p-8">
+                <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 animate-fade-in-up animation-delay-200">
                   <div className="w-16 h-16 bg-terracota-100 rounded-full flex items-center justify-center mx-auto mb-6">
                     <span className="text-2xl">🌱</span>
                   </div>
@@ -362,7 +496,7 @@ export default function ExperienciasPage() {
                   <p className="text-gray-600">Promovemos prácticas sostenibles que restauran y enriquecen el ecosistema de las chinampas.</p>
                 </div>
 
-                <div className="p-8 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 animate-fade-in-up animation-delay-400">
+                <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 animate-fade-in-up animation-delay-400">
                   <div className="w-16 h-16 bg-verde-100 rounded-full flex items-center justify-center mx-auto mb-6">
                     <span className="text-2xl">👨‍🍳</span>
                   </div>
@@ -370,7 +504,7 @@ export default function ExperienciasPage() {
                   <p className="text-gray-600">Nuestros chefs preparan platillos tradicionales con ingredientes frescos de nuestras chinampas.</p>
                 </div>
 
-                <div className="p-8 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 animate-fade-in-up animation-delay-600">
+                <div className="p-6 sm:p-8 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 animate-fade-in-up animation-delay-600">
                   <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
                     <span className="text-2xl">🏞️</span>
                   </div>
@@ -382,7 +516,7 @@ export default function ExperienciasPage() {
           </section>
 
           {/* Sección de catering - VERSIÓN FINAL */}
-          <section className="py-16 px-4 md:px-8 bg-[#2A5D3E] text-center">
+          <section className="py-12 md:py-16 px-4 md:px-8 bg-[#2A5D3E] text-center">
             <div className="max-w-4xl mx-auto">
               {/* Icono central */}
               <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg">
@@ -396,7 +530,7 @@ export default function ExperienciasPage() {
                 Llevamos nuestras experiencias gastronómicas a tu evento especial
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:p-8 mb-12 md:mb-16">
                 {/* Tarjeta 1 */}
                 <div className="bg-white/20 backdrop-blur-sm rounded-xl p-6 hover:bg-white/25 transition-all">
                   <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-5">
@@ -436,7 +570,7 @@ export default function ExperienciasPage() {
               {/* Etiquetas con mejor contraste */}
               <div>
                 <p className="text-white mb-5 font-medium text-lg">Perfecto para:</p>
-                <div className="flex flex-wrap justify-center gap-4 mb-16">
+                <div className="flex flex-wrap justify-center gap-4 mb-12 md:mb-16">
                   <span className="bg-white/15 px-5 py-2 rounded-full text-sm font-medium text-white hover:bg-white/20 transition-all">
                     Bodas
                   </span>
@@ -460,5 +594,13 @@ export default function ExperienciasPage() {
         </>
       )}
     </main>
+  );
+}
+
+export default function ExperienciasPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Cargando...</div>}>
+      <ExperienciasPageContent />
+    </Suspense>
   );
 }

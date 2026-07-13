@@ -18,8 +18,8 @@ import {
   Grid3X3,
   List
 } from 'lucide-react'
-import { experienciasCalendarioCompleto as experienciasCalendario } from '@/data/calendario-completo'
-
+import { useSession } from 'next-auth/react'
+import { API_URL } from '@/lib/api'
 // Días de la semana
 const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
@@ -92,62 +92,270 @@ const categorias = [
 ]
 
 export default function CalendarioPage() {
-  const [fechaActual, setFechaActual] = useState(new Date(2025, 6, 1)) // Julio 2025
-  const [vista, setVista] = useState<'calendario' | 'lista'>('calendario')
+  console.log('🚀 CALENDARIO PAGE LOADED - VERSION 3.0 - ' + new Date().toISOString())
+  
+  const [fechaActual, setFechaActual] = useState(new Date()) // Mes actual
+  const [vista, setVista] = useState<'calendario' | 'lista'>('lista')
   const [fechaSeleccionada, setFechaSeleccionada] = useState<Date | null>(null)
-  const [filtroCategoria, setFiltroCategoria] = useState<string>('')
   const [carrito, setCarrito] = useState<any[]>([])
   const [modalReserva, setModalReserva] = useState<any>(null)
-  const [personasViendo, setPersonasViendo] = useState(13)
+  const [adultos, setAdultos] = useState(1)
+  const [niños, setNiños] = useState(0)
+  const [formData, setFormData] = useState({ nombre: '', email: '', telefono: '', comentarios: '' })
+  const [loading, setLoading] = useState(false)
+  const [experienciasCalendario, setExperienciasCalendario] = useState<any[]>([])
+  const [loadingEventos, setLoadingEventos] = useState(true)
+  const { data: session } = useSession()
 
-  // Evitar error de hidratación usando useEffect
+  // Cargar eventos del calendario desde API existente
   useEffect(() => {
-    setPersonasViendo(Math.floor(Math.random() * 15) + 8)
+    const cargarEventos = async () => {
+      try {
+        setLoadingEventos(true)
+        // Usar el endpoint que YA EXISTE
+        const response = await fetch(`${API_URL}/api/calendario/eventos?limit=100`)
+        
+        if (!response.ok) {
+          console.error('Error al cargar eventos:', response.status)
+          setExperienciasCalendario([])
+          return
+        }
+        
+        const result = await response.json()
+        
+        // Adaptar formato de eventos_calendario al formato esperado
+        const eventos = result.items.map((e: any) => ({
+          id: e.recurso_id,  // ID de la experiencia (para agregar al carrito)
+          evento_id: e.id,   // ID del evento (para referencia)
+          fecha: e.fecha_evento,
+          experiencia: e.nombre_evento,
+          hora: e.hora_inicio,
+          hora_fin: e.hora_fin,
+          precio: e.precio_base || 0,
+          disponibles: e.disponibles || (e.capacidad_maxima - e.capacidad_ocupada),
+          total: e.capacidad_maxima,
+          tipo: e.tipo_evento?.includes('publica') ? 'publica' : 'privada',
+          categoria: e.nombre_evento.toLowerCase().replace(/\s+/g, '_'),
+          icon: '⭐',
+          duracion: '4 horas',
+          rating: 4.8
+        }))
+        
+        console.log(`✅ Eventos cargados desde API: ${eventos.length}`)
+        console.log('🔍 Primeros 3 eventos:', eventos.slice(0, 3).map((e: any) => ({nombre: e.experiencia, fecha: e.fecha})))
+        setExperienciasCalendario(eventos)
+      } catch (error) {
+        console.error('Error cargando eventos:', error)
+        setExperienciasCalendario([])
+      } finally {
+        setLoadingEventos(false)
+      }
+    }
+    
+    cargarEventos()
   }, [])
+
+  // Eliminado: contador de personas viendo
+
+  // Cargar datos del usuario al abrir modal
+  useEffect(() => {
+    if (modalReserva && session?.user) {
+      // Obtener datos completos del usuario desde la API
+      if (session.accessToken) {
+        fetch(`${API_URL}/api/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${session.accessToken}`
+          }
+        })
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to fetch user data')
+          return res.json()
+        })
+        .then(userData => {
+          setFormData({
+            nombre: userData.nombre_completo || userData.nombre || session.user.name || '',
+            email: userData.email || session.user.email || '',
+            telefono: userData.telefono || userData.phone || '',
+            comentarios: ''
+          })
+        })
+        .catch((error) => {
+          console.error('Error fetching user data:', error)
+          // Fallback con datos de la sesión (sin teléfono)
+          setFormData({
+            nombre: session.user.name || '',
+            email: session.user.email || '',
+            telefono: '',
+            comentarios: ''
+          })
+        })
+      } else {
+        setFormData({
+          nombre: session.user.name || '',
+          email: session.user.email || '',
+          telefono: '',
+          comentarios: ''
+        })
+      }
+    }
+  }, [modalReserva, session])
+
+  // Función para agregar experiencia al carrito (SOLO localStorage)
+  const agregarAlCarrito = async () => {
+    if (!session) {
+      alert('Debes iniciar sesión para agregar al carrito')
+      return
+    }
+
+    setLoading(true)
+    try {
+      // Generar ID único para la experiencia
+      const experienciaId = modalReserva.id || `EXP-${modalReserva.experiencia.replace(/\s+/g, '-')}-${modalReserva.fecha}`
+      
+      // Crear item del carrito
+      const cartItem = {
+        id: experienciaId,
+        name: modalReserva.experiencia,
+        price: modalReserva.precio,
+        quantity: adultos + niños,
+        image: '/placeholder-experiencia.jpg',
+        unit: 'personas',
+        tipo: 'experiencia',
+        fecha: modalReserva.fecha,
+        hora: modalReserva.hora,
+        adultos: adultos,
+        ninos: niños,
+        notas: formData.comentarios
+      }
+
+      console.log('Agregando experiencia al carrito:', cartItem)
+
+      // Agregar a localStorage
+      const existingCart = JSON.parse(localStorage.getItem('arcaTierraCart') || '[]')
+      const existingItemIndex = existingCart.findIndex((item: any) => 
+        item.id === cartItem.id && item.fecha === cartItem.fecha && item.hora === cartItem.hora
+      )
+
+      if (existingItemIndex >= 0) {
+        existingCart[existingItemIndex].quantity += cartItem.quantity
+      } else {
+        existingCart.push(cartItem)
+      }
+
+      localStorage.setItem('arcaTierraCart', JSON.stringify(existingCart))
+      
+      // Disparar evento para actualizar header
+      window.dispatchEvent(new Event('cartUpdated'))
+      
+      alert('✅ Experiencia agregada al carrito')
+      setModalReserva(null)
+      
+    } catch (error: any) {
+      console.error('Error al agregar al carrito:', error)
+      alert(`Error al agregar al carrito: ${error.message || 'Error desconocido'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Función para comprar ahora (agregar al carrito + ir a checkout)
+  const comprarAhora = async () => {
+    if (!session) {
+      alert('Debes iniciar sesión para hacer una reserva')
+      return
+    }
+
+    if (!formData.nombre || !formData.email) {
+      alert('Por favor completa nombre y email')
+      return
+    }
+
+    setLoading(true)
+    try {
+      // Agregar al carrito usando localStorage (igual que productos)
+      const savedCart = localStorage.getItem('arcaTierraCart')
+      const cartItems = savedCart ? JSON.parse(savedCart) : []
+      
+      // Crear item de experiencia para el carrito
+      // El ID debe ser el UUID de la experiencia para que el backend lo procese
+      const experienciaItem = {
+        id: modalReserva.id, // UUID completo de la experiencia
+        name: modalReserva.experiencia,
+        price: modalReserva.precio,
+        quantity: adultos + niños,
+        image: modalReserva.imagen || '/images/experiencias/default.jpg',
+        unit: 'persona',
+        tipo: 'experiencia',
+        fecha: modalReserva.fecha,
+        hora: modalReserva.hora,
+        adultos,
+        niños,
+        experiencia_id: modalReserva.id,
+        evento_id: modalReserva.evento_id, // ID del evento en el calendario
+        datos_contacto: {
+          nombre: formData.nombre,
+          email: formData.email,
+          telefono: formData.telefono
+        },
+        notas: formData.comentarios
+      }
+      
+      // Buscar si ya existe esta experiencia+fecha en el carrito
+      const existingIndex = cartItems.findIndex((item: any) => 
+        item.id === experienciaItem.id && item.fecha === experienciaItem.fecha
+      )
+      
+      if (existingIndex >= 0) {
+        // Actualizar cantidad
+        cartItems[existingIndex].quantity = adultos + niños
+        cartItems[existingIndex].adultos = adultos
+        cartItems[existingIndex].niños = niños
+      } else {
+        // Agregar nuevo
+        cartItems.push(experienciaItem)
+      }
+      
+      // Guardar en localStorage
+      localStorage.setItem('arcaTierraCart', JSON.stringify(cartItems))
+      window.dispatchEvent(new Event('cartUpdated'))
+      
+      // Ir al checkout
+      window.location.href = '/checkout'
+    } catch (error) {
+      console.error('Error:', error)
+      alert('Error al agregar al carrito')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Calcular experiencias del mes actual
   const experienciasDelMes = useMemo(() => {
     const año = fechaActual.getFullYear()
-    const mes = fechaActual.getMonth()
+    const mes = fechaActual.getMonth() + 1 // JavaScript mes es 0-11, necesitamos 1-12
     
-    return experienciasCalendario.filter(exp => {
-      const fechaExp = new Date(exp.fecha)
-      return fechaExp.getFullYear() === año && fechaExp.getMonth() === mes
+    const filtradas = experienciasCalendario.filter(exp => {
+      // Extraer año y mes del string YYYY-MM-DD
+      const [expAño, expMes] = exp.fecha.split('-').map(Number)
+      return expAño === año && expMes === mes
     })
-  }, [fechaActual])
+    
+    console.log(`📅 Filtrado calendario: ${año}-${mes.toString().padStart(2, '0')} → ${filtradas.length} eventos`, filtradas.map(e => e.fecha))
+    return filtradas
+  }, [fechaActual, experienciasCalendario])
 
-  // Obtener experiencias filtradas
+  // Usar directamente las experiencias del mes sin filtros adicionales
   const experienciasFiltradas = useMemo(() => {
-    if (!filtroCategoria) return experienciasDelMes
-    
-    return experienciasDelMes.filter(exp => {
-      const nombre = exp.experiencia?.toLowerCase() || ''
-      switch (filtroCategoria) {
-        case 'amanecer-chinampero':
-          return nombre.includes('amanecer chinampero') && !nombre.includes('tcm')
-        case 'amanecer-tcm':
-          return nombre.includes('amanecer') && nombre.includes('tcm')
-        case 'brunch-chinampero':
-          return nombre.includes('brunch')
-        case 'comida-chinampera':
-          return nombre.includes('comida chinampera')
-        case 'taller-plantas':
-          return nombre.includes('taller')
-        case 'cena-chinampas':
-          return nombre.includes('cena')
-        case 'dia-muertos':
-          return nombre.includes('muertos')
-        case 'chinampa-familia':
-          return nombre.includes('familia')
-        default:
-          return false
-      }
-    })
-  }, [experienciasDelMes, filtroCategoria])
+    console.log('🔄 experienciasFiltradas actualizado:', experienciasDelMes.length, 'eventos')
+    return [...experienciasDelMes] // Crear nuevo array para forzar re-render
+  }, [experienciasDelMes])
 
   // Obtener experiencias de una fecha específica
   const getExperienciasDia = (fecha: Date) => {
-    const fechaStr = fecha.toISOString().split('T')[0]
+    const año = fecha.getFullYear()
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0')
+    const dia = String(fecha.getDate()).padStart(2, '0')
+    const fechaStr = `${año}-${mes}-${dia}`
     return experienciasCalendario.filter(exp => exp.fecha === fechaStr)
   }
 
@@ -188,19 +396,19 @@ export default function CalendarioPage() {
 
   const navegarMes = (direccion: 'anterior' | 'siguiente') => {
     setFechaActual(prev => {
-      const nuevaFecha = new Date(prev)
+      const año = prev.getFullYear()
+      const mes = prev.getMonth()
+      
       if (direccion === 'anterior') {
-        nuevaFecha.setMonth(prev.getMonth() - 1)
+        // Crear un nuevo objeto Date para el mes anterior
+        return new Date(año, mes - 1, 1)
       } else {
-        nuevaFecha.setMonth(prev.getMonth() + 1)
+        // Crear un nuevo objeto Date para el mes siguiente
+        return new Date(año, mes + 1, 1)
       }
-      return nuevaFecha
     })
   }
 
-  const agregarAlCarrito = (experiencia: any) => {
-    setCarrito(prev => [...prev, { ...experiencia, id: Date.now() }])
-  }
 
   const abrirModalReserva = (experiencia: any) => {
     setModalReserva(experiencia)
@@ -227,7 +435,7 @@ export default function CalendarioPage() {
             Encuentra y reserva tu experiencia perfecta en las chinampas
           </motion.p>
           
-          <div className="flex justify-center gap-8">
+          <div className="flex justify-center">
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -240,17 +448,6 @@ export default function CalendarioPage() {
               </div>
             </motion.div>
             
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.6 }}
-              className="bg-white/20 backdrop-blur-sm rounded-xl px-6 py-3 border border-white/30"
-            >
-              <div className="flex items-center gap-2 text-[#F5F3F0]">
-                <Eye className="w-5 h-5" />
-                <span className="font-semibold">{personasViendo} personas viendo ahora</span>
-              </div>
-            </motion.div>
           </div>
         </div>
       </div>
@@ -271,7 +468,8 @@ export default function CalendarioPage() {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {categorias.map((categoria, index) => {
-                  const experienciasCategoria = experienciasCalendario.filter(exp => {
+                  // Filtrar experiencias de esta categoría DEL MES ACTUAL VISIBLE
+                  const experienciasCategoriaMes = experienciasDelMes.filter(exp => {
                     const nombre = exp.experiencia?.toLowerCase() || ''
                     switch (categoria.id) {
                       case 'amanecer-chinampero':
@@ -295,22 +493,52 @@ export default function CalendarioPage() {
                     }
                   })
 
-                  // Encontrar la próxima fecha
-                  const proximaExperiencia = experienciasCategoria
-                    .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
-                    .find(exp => new Date(exp.fecha) >= new Date())
+                  // Contar fechas disponibles en el mes actual
+                  const fechasDisponibles = experienciasCategoriaMes.length
                   
-                  const proximaFecha = proximaExperiencia ? new Date(proximaExperiencia.fecha) : null
-                  const proximaFechaTexto = proximaFecha ? 
-                    proximaFecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : 
-                    'Sin fechas'
+                  // Encontrar la próxima fecha disponible GLOBALMENTE (para navegación)
+                  const hoy = new Date()
+                  const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
+                  
+                  const todasExperienciasCategoria = experienciasCalendario.filter(exp => {
+                    const nombre = exp.experiencia?.toLowerCase() || ''
+                    switch (categoria.id) {
+                      case 'amanecer-chinampero':
+                        return nombre.includes('amanecer chinampero') && !nombre.includes('tcm')
+                      case 'amanecer-tcm':
+                        return nombre.includes('amanecer') && nombre.includes('tcm')
+                      case 'brunch-chinampero':
+                        return nombre.includes('brunch')
+                      case 'comida-chinampera':
+                        return nombre.includes('comida chinampera')
+                      case 'taller-plantas':
+                        return nombre.includes('taller')
+                      case 'cena-chinampas':
+                        return nombre.includes('cena')
+                      case 'dia-muertos':
+                        return nombre.includes('muertos')
+                      case 'chinampa-familia':
+                        return nombre.includes('familia')
+                      default:
+                        return false
+                    }
+                  })
+                  
+                  const proximaExperienciaGlobal = todasExperienciasCategoria
+                    .sort((a, b) => a.fecha.localeCompare(b.fecha))
+                    .find(exp => exp.fecha >= hoyStr)
+                  
+                  const proximaFechaTexto = proximaExperienciaGlobal ? (() => {
+                    const [año, mes, dia] = proximaExperienciaGlobal.fecha.split('-').map(Number)
+                    const fecha = new Date(año, mes - 1, dia)
+                    return fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+                  })() : 'Sin fechas'
 
                   const handleClickExperiencia = () => {
-                    if (proximaFecha) {
-                      // Navegar al mes de la próxima fecha
-                      setFechaActual(new Date(proximaFecha.getFullYear(), proximaFecha.getMonth(), 1))
-                      // Opcional: filtrar por esta categoría
-                      setFiltroCategoria(filtroCategoria === categoria.id ? '' : categoria.id)
+                    if (proximaExperienciaGlobal) {
+                      // Solo navegar al mes de la próxima fecha, sin filtros
+                      const [año, mes, dia] = proximaExperienciaGlobal.fecha.split('-').map(Number)
+                      setFechaActual(new Date(año, mes - 1, 1)) // mes - 1 porque JavaScript usa 0-11
                     }
                   }
 
@@ -320,11 +548,7 @@ export default function CalendarioPage() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className={`relative p-3 rounded-lg border transition-all duration-300 cursor-pointer ${
-                        filtroCategoria === categoria.id 
-                          ? 'border-[#B15543] bg-gradient-to-r from-[#B15543]/10 to-[#D4735E]/10' 
-                          : 'border-[#CCBB9A]/30 bg-gradient-to-r from-[#F5F3F0] to-white hover:border-[#B15543]/50'
-                      }`}
+                      className="relative p-3 rounded-lg border transition-all duration-300 cursor-pointer border-[#CCBB9A]/30 bg-gradient-to-r from-[#F5F3F0] to-white hover:border-[#B15543]/50"
                       onClick={handleClickExperiencia}
                     >
                       {/* Badge */}
@@ -336,7 +560,7 @@ export default function CalendarioPage() {
                         <div className="text-lg flex-shrink-0">{categoria.emoji}</div>
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-[#3A4741] text-sm leading-tight">{categoria.nombre}</h3>
-                          <p className="text-xs text-[#475A52] mb-1">{experienciasCategoria.length} fechas disponibles</p>
+                          <p className="text-xs text-[#475A52] mb-1">{fechasDisponibles} fechas disponibles</p>
                           <div className="flex items-center gap-1">
                             <Calendar className="w-3 h-3 text-[#B15543]" />
                             <span className="text-xs font-medium text-[#B15543]">
@@ -375,31 +599,6 @@ export default function CalendarioPage() {
                     className="p-2 rounded-xl bg-[#F5F3F0] hover:bg-[#E8E4DF] text-[#3A4741] transition-colors"
                   >
                     <ChevronRight className="w-5 h-5" />
-                  </button>
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setVista('calendario')}
-                    className={`px-4 py-2 rounded-xl font-medium transition-all ${
-                      vista === 'calendario'
-                        ? 'bg-[#B15543] text-white'
-                        : 'bg-[#F5F3F0] text-[#3A4741] hover:bg-[#E8E4DF]'
-                    }`}
-                  >
-                    <Grid3X3 className="w-4 h-4 inline mr-2" />
-                    Vista Calendario
-                  </button>
-                  <button
-                    onClick={() => setVista('lista')}
-                    className={`px-4 py-2 rounded-xl font-medium transition-all ${
-                      vista === 'lista'
-                        ? 'bg-[#B15543] text-white'
-                        : 'bg-[#F5F3F0] text-[#3A4741] hover:bg-[#E8E4DF]'
-                    }`}
-                  >
-                    <List className="w-4 h-4 inline mr-2" />
-                    Vista Lista
                   </button>
                 </div>
               </div>
@@ -502,7 +701,7 @@ export default function CalendarioPage() {
               ) : (
                 <div className="space-y-4">
                   <div className="text-[#475A52] mb-4">
-                    {experienciasFiltradas.length} experiencias {filtroCategoria ? 'filtradas' : 'disponibles'}
+                    {experienciasFiltradas.length} experiencias disponibles
                   </div>
                   
                   {experienciasFiltradas.map((exp, index) => (
@@ -561,7 +760,7 @@ export default function CalendarioPage() {
                         <button
                           onClick={() => {
                             if (exp.experiencia) {
-                              window.location.href = `/experiencias/${exp.experiencia.toLowerCase().replace(/\s+/g, '-').replace(/[áéíóú]/g, (match) => ({ 'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u' }[match] || match))}`;
+                              window.location.href = `/experiencias/${exp.experiencia.toLowerCase().replace(/\s+/g, '-').normalize('NFD').replace(/[\u0300-\u036f]/g, '')}`;
                             }
                           }}
                           className="px-6 py-3 border-2 border-[#B15543] text-[#B15543] rounded-xl font-semibold hover:bg-[#B15543] hover:text-white transition-all duration-300"
@@ -630,7 +829,7 @@ export default function CalendarioPage() {
                           <button
                             onClick={() => {
                               if (exp.experiencia) {
-                                window.location.href = `/experiencias/${exp.experiencia.toLowerCase().replace(/\s+/g, '-').replace(/[áéíóú]/g, (match) => ({ 'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u' }[match] || match))}`;
+                                window.location.href = `/experiencias/${exp.experiencia.toLowerCase().replace(/\s+/g, '-').normalize('NFD').replace(/[\u0300-\u036f]/g, '')}`;
                               }
                             }}
                             className="px-4 py-2 border border-[#B15543] text-[#B15543] rounded-lg text-sm font-medium hover:bg-[#B15543] hover:text-white transition-all duration-300"
@@ -655,14 +854,14 @@ export default function CalendarioPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-start justify-center pt-36 px-4 pb-8 overflow-y-auto"
             onClick={() => setModalReserva(null)}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[calc(100vh-180px)] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-6">
@@ -694,6 +893,8 @@ export default function CalendarioPage() {
                     <label className="block text-sm font-medium text-[#3A4741] mb-2">Nombre completo</label>
                     <input
                       type="text"
+                      value={formData.nombre}
+                      onChange={(e) => setFormData({...formData, nombre: e.target.value})}
                       className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors"
                       placeholder="Tu nombre completo"
                     />
@@ -703,6 +904,8 @@ export default function CalendarioPage() {
                     <label className="block text-sm font-medium text-[#3A4741] mb-2">Email</label>
                     <input
                       type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
                       className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors"
                       placeholder="tu@email.com"
                     />
@@ -712,6 +915,8 @@ export default function CalendarioPage() {
                     <label className="block text-sm font-medium text-[#3A4741] mb-2">Teléfono</label>
                     <input
                       type="tel"
+                      value={formData.telefono}
+                      onChange={(e) => setFormData({...formData, telefono: e.target.value})}
                       className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors"
                       placeholder="+52 55 1234 5678"
                     />
@@ -721,6 +926,8 @@ export default function CalendarioPage() {
                     <label className="block text-sm font-medium text-[#3A4741] mb-2">Comentarios especiales</label>
                     <textarea
                       rows={4}
+                      value={formData.comentarios}
+                      onChange={(e) => setFormData({...formData, comentarios: e.target.value})}
                       className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors resize-none"
                       placeholder="¿Tienes alguna solicitud especial? Por ejemplo: alergias alimentarias, necesidades de accesibilidad, celebración especial, etc."
                     />
@@ -731,11 +938,17 @@ export default function CalendarioPage() {
                     <div className="flex-1">
                       <label className="block text-sm font-medium text-[#3A4741] mb-2">Adultos</label>
                       <div className="flex items-center gap-3">
-                        <button className="p-2 border border-[#CCBB9A] rounded-lg hover:bg-[#F5F3F0] transition-colors">
+                        <button 
+                          onClick={() => setAdultos(Math.max(1, adultos - 1))}
+                          className="p-2 border border-[#CCBB9A] rounded-lg hover:bg-[#F5F3F0] transition-colors"
+                        >
                           <Minus className="w-4 h-4 text-[#475A52]" />
                         </button>
-                        <span className="font-semibold text-[#3A4741] min-w-[2rem] text-center">1</span>
-                        <button className="p-2 border border-[#CCBB9A] rounded-lg hover:bg-[#F5F3F0] transition-colors">
+                        <span className="font-semibold text-[#3A4741] min-w-[2rem] text-center">{adultos}</span>
+                        <button 
+                          onClick={() => setAdultos(adultos + 1)}
+                          className="p-2 border border-[#CCBB9A] rounded-lg hover:bg-[#F5F3F0] transition-colors"
+                        >
                           <Plus className="w-4 h-4 text-[#475A52]" />
                         </button>
                       </div>
@@ -744,11 +957,17 @@ export default function CalendarioPage() {
                     <div className="flex-1">
                       <label className="block text-sm font-medium text-[#3A4741] mb-2">Niños</label>
                       <div className="flex items-center gap-3">
-                        <button className="p-2 border border-[#CCBB9A] rounded-lg hover:bg-[#F5F3F0] transition-colors">
+                        <button 
+                          onClick={() => setNiños(Math.max(0, niños - 1))}
+                          className="p-2 border border-[#CCBB9A] rounded-lg hover:bg-[#F5F3F0] transition-colors"
+                        >
                           <Minus className="w-4 h-4 text-[#475A52]" />
                         </button>
-                        <span className="font-semibold text-[#3A4741] min-w-[2rem] text-center">0</span>
-                        <button className="p-2 border border-[#CCBB9A] rounded-lg hover:bg-[#F5F3F0] transition-colors">
+                        <span className="font-semibold text-[#3A4741] min-w-[2rem] text-center">{niños}</span>
+                        <button 
+                          onClick={() => setNiños(niños + 1)}
+                          className="p-2 border border-[#CCBB9A] rounded-lg hover:bg-[#F5F3F0] transition-colors"
+                        >
                           <Plus className="w-4 h-4 text-[#475A52]" />
                         </button>
                       </div>
@@ -758,29 +977,19 @@ export default function CalendarioPage() {
 
                 <div className="flex gap-3">
                   <button
-                    onClick={() => setModalReserva(null)}
-                    className="flex-1 px-6 py-3 border-2 border-[#CCBB9A] text-[#475A52] rounded-xl font-semibold hover:bg-[#F5F3F0] transition-all duration-300"
+                    onClick={agregarAlCarrito}
+                    disabled={loading}
+                    className="flex-1 px-6 py-3 border-2 border-[#B15543] text-[#B15543] rounded-xl font-semibold hover:bg-[#B15543] hover:text-white transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    Cancelar
+                    <ShoppingCart className="w-4 h-4" />
+                    {loading ? 'Agregando...' : 'Agregar al Carrito'}
                   </button>
                   <button 
-                    onClick={() => {
-                      // Simulación de envío al checkout
-                      alert('Simulación: Datos enviados al checkout');
-                      console.log('Datos de reserva enviados al checkout:', {
-                        experiencia: modalReserva.experiencia,
-                        fecha: modalReserva.fecha,
-                        hora: modalReserva.hora,
-                        precio: modalReserva.precio,
-                        // Aquí se incluirían los valores de los campos del formulario
-                        // en una implementación real
-                      });
-                      // Cerrar modal después de simular envío
-                      setModalReserva(null);
-                    }}
-                    className="flex-1 bg-gradient-to-r from-[#B15543] to-[#D4735E] text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
+                    onClick={comprarAhora}
+                    disabled={loading}
+                    className="flex-1 bg-gradient-to-r from-[#B15543] to-[#D4735E] text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50"
                   >
-                    Completar Reserva
+                    {loading ? 'Procesando...' : 'Comprar Ahora'}
                   </button>
                 </div>
               </div>

@@ -6,10 +6,25 @@ const nextConfig: NextConfig = {
   // Configuración para Docker
   output: 'standalone',
   
-  // Configuración de imágenes
+  // Configuración de imágenes - OPTIMIZACIÓN ACTIVADA
   images: {
-    domains: ['localhost'],
-    unoptimized: true
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'arcatierra.dabychos.com',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: 'flagcdn.com',
+      },
+    ],
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   
   // Configuración para desarrollo - permitir acceso desde red local
@@ -20,6 +35,16 @@ const nextConfig: NextConfig = {
     CUSTOM_KEY: 'arcatierra',
   },
   
+  // Rewrite para servir uploads desde el backend
+  async rewrites() {
+    return [
+      {
+        source: '/uploads/:path*',
+        destination: 'http://arca-api:8000/uploads/:path*',
+      },
+    ];
+  },
+
   // Configuración de headers para seguridad
   async headers() {
     return [

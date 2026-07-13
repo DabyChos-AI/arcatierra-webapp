@@ -6,7 +6,8 @@ import CateringContact from '@/components/catering/Contact';
 
 export default function Catering() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen pt-[88px]">
+      {/* pt-[88px] = 28px banner + 60px header */}
       <div id="hero">
         <CateringHero />
       </div>

@@ -1,0 +1,9 @@
+# IMÁGENES SIN RESPONSIVE
+# Generado: Tue Oct 21 01:42:41 UTC 2025
+# Problema: <Image sin className o width/height fijos
+
+app/restaurantes/page.tsx:189:        <ImageCarousel />
+components/turismo-regenerativo/TurismoRegenerativoModular.tsx:122:const ImageCard: React.FC<ImageCardProps> = ({ src, alt, title, subtitle }) => {
+components/turismo-regenerativo/TurismoRegenerativoModular.tsx:149:const ImageCardsSection: React.FC<ImageCardsSectionProps> = ({ cards }) => {
+components/turismo-regenerativo/TurismoRegenerativoModular.tsx:153:        <ImageCard 
+components/turismo-regenerativo/TurismoRegenerativoModular.tsx:288:      <ImageCardsSection cards={imageCardsData} />

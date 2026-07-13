@@ -11,7 +11,7 @@ import { fadeIn, staggerContainer } from '@/lib/animations';
 import HeroBanner from './components/HeroBanner';
 import ServiceDescription from './components/ServiceDescription';
 import ClientLogos from './components/ClientLogos';
-import MenuPackages from './components/MenuPackages';
+// import MenuPackages from './components/MenuPackages'; // Temporal fix
 import ServiciosAdicionales from './components/ServiciosAdicionales';
 import Testimonials from './components/Testimonials';
 import RequestQuote from './components/RequestQuote';
@@ -29,7 +29,7 @@ export default function CateringPage() {
       <ClientLogos />
       
       {/* Paquetes de menú */}
-      <MenuPackages />
+        {/* <MenuPackages /> */}
       
       {/* Servicios adicionales */}
       <ServiciosAdicionales />

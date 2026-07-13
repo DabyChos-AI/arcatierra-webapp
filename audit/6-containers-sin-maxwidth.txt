@@ -1,0 +1,23 @@
+# CONTAINERS SIN MAX-WIDTH
+# Generado: Tue Oct 21 01:42:41 UTC 2025
+# Problema: divs sin max-w-
+
+app/catering/page.tsx
+app/catering2/page.tsx
+app/blog/page.tsx
+app/experiencias-premium/page.tsx
+app/baldio/page.tsx
+app/receta/[id]/page.tsx
+app/examples/hero-parallax/page.tsx
+app/privacidad/page.tsx
+app/admin/gamificacion/page.tsx
+app/admin/page.tsx
+app/admin/alertas/page.tsx
+app/admin/configuracion/page.tsx
+app/admin/reportes/page.tsx
+app/admin/carritos-abandonados/page.tsx
+app/recetas/page.tsx
+app/producto/[id]/page.tsx
+app/impacto/page.tsx
+app/terminos/page.tsx
+app/crear-cuenta/page.tsx

@@ -4,9 +4,9 @@ import React from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signIn, signOut, useSession } from 'next-auth/react';
-import { useHeaderState } from './hooks/useHeaderState';
+import { useHeaderState } from './hooks/HeaderStateContext';
 import { useCart } from './hooks/useCart';
-import { getActionIcons, getUserMenuItems } from './NavigationConfig';
+import { getActionIcons, useUserMenuItems } from './NavigationConfig';
 
 // Estilos para la sección de acciones
 const actionStyles = {
@@ -227,7 +227,7 @@ const UserSection: React.FC = () => {
     toggleUserDropdown 
   } = useHeaderState();
   
-  const userMenuItems = getUserMenuItems();
+  const userMenuItems = useUserMenuItems(); // Hook dinámico con verificación empleado
   const isSmall = breakpoint === 'mobile' || breakpoint === 'tablet';
 
   const handleSignOut = async (e: React.MouseEvent) => {

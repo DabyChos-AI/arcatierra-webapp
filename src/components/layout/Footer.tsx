@@ -44,7 +44,7 @@ const Footer: React.FC = () => {
                   href="/tienda" 
                   className="footer-section a hover:text-white transition-colors"
                 >
-                  Productos Orgánicos
+                  Tienda de Alimentos
                 </Link>
               </li>
               <li>
@@ -52,7 +52,7 @@ const Footer: React.FC = () => {
                   href="/experiencias" 
                   className="footer-section a hover:text-white transition-colors"
                 >
-                  Experiencias Culinarias
+                  Experiencias de Turismo Rural y Gastronómicas
                 </Link>
               </li>
               <li>
@@ -68,7 +68,7 @@ const Footer: React.FC = () => {
                   href="/nosotros" 
                   className="footer-section a hover:text-white transition-colors"
                 >
-                  Nuestros Productores
+                  Nuestra Red Agrícola
                 </Link>
               </li>
               <li>

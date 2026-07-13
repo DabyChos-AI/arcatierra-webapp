@@ -16,7 +16,7 @@ export default function ContactoPage() {
 
   return (
     <>
-      <section className="relative bg-arcatierra-crema-principal py-16">
+      <section className="relative bg-arcatierra-crema-principal py-12 md:py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-arcatierra-verde-principal">Contacto</h1>
@@ -27,11 +27,11 @@ export default function ContactoPage() {
         </div>
       </section>
 
-      <main className="bg-white py-16">
+      <main className="bg-white py-12 md:py-16">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
             {/* Formulario de contacto */}
-            <div className="bg-arcatierra-crema-principal rounded-2xl p-8 shadow-lg">
+            <div className="bg-arcatierra-crema-principal rounded-2xl p-6 sm:p-8 shadow-lg">
               <h2 className="text-3xl font-bold mb-6 text-arcatierra-verde-principal">Envíanos un mensaje</h2>
               
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -186,7 +186,7 @@ export default function ContactoPage() {
         </div>
       </main>
 
-      <section className="bg-arcatierra-verde-principal text-white py-16">
+      <section className="bg-arcatierra-verde-principal text-white py-12 md:py-16">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">¿Prefieres hablar personalmente?</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto">

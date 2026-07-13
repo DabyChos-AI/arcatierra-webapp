@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useHeaderState } from './hooks/useHeaderState';
+import { useHeaderState } from './hooks/HeaderStateContext';
 import { getMainNavigation } from './NavigationConfig';
 
 // Estilos para la navegación principal
@@ -46,7 +46,7 @@ const navigationStyles = {
     border: '1px solid var(--arcatierra-crema-principal)',
     borderRadius: '4px',
     boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-    zIndex: 100,
+    zIndex: 1002,
     marginTop: '0.5rem',
     padding: '0.5rem 0',
     overflowY: 'auto' as const,

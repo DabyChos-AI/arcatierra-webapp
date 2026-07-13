@@ -1,0 +1,54 @@
+# SPACING EXCESIVO SIN RESPONSIVE
+# Generado: Tue Oct 21 01:42:41 UTC 2025
+# Problema: px-20, py-16, etc sin md:/lg:
+
+app/components/HomePage.tsx:46:      <section className="py-16 px-4">
+app/components/HomePage.tsx:67:      <section className="py-16 px-4 bg-neutro-crema/30">
+app/contacto/page.tsx:19:      <section className="relative bg-arcatierra-crema-principal py-16">
+app/contacto/page.tsx:30:      <main className="bg-white py-16">
+app/contacto/page.tsx:189:      <section className="bg-arcatierra-verde-principal text-white py-16">
+app/favoritos/page.tsx:136:          <div className="text-center py-16 bg-white rounded-xl shadow-sm">
+app/page.tsx:115:        <section id="canastas" className="py-20 bg-neutro-claro">
+app/page.tsx:166:        {/* <section id="experiencias" className="py-20 bg-white">
+app/page.tsx:191:        <section className="py-20 bg-neutro-claro">
+app/page.tsx:242:        <section className="py-20 bg-verde text-white text-center">
+app/catering2/components/Testimonials.tsx:102:    <section id="testimonios" className="py-16 bg-beige-bg">
+app/catering2/components/ServiciosAdicionales.tsx:67:    <section className="py-20 bg-white">
+app/catering2/components/ClientLogos.tsx:22:    <section className="py-16 bg-white">
+app/catering2/components/RequestQuote.tsx:105:    <section id="request-quote" className="py-24 bg-verde-principal">
+app/suscripciones/page.tsx:430:      <div className="bg-[#33503E] text-white py-16">
+app/baldio/equipo/page.tsx:25:      <div className="py-28 px-4 bg-[#3A4741] text-center">
+app/baldio/sostenibilidad/page.tsx:43:      <section className="py-16 bg-white">
+app/baldio/chinampas/page.tsx:43:      <section className="py-16 bg-white">
+app/baldio/reservas/page.tsx:24:      <div className="py-28 px-4 bg-[#3A4741] text-center">
+app/baldio/menu/page.tsx:269:      <div className="py-28 px-4 bg-[#3A4741] text-center">
+app/experiencias-privadas/page.tsx:102:      <div className="bg-gradient-to-r from-[#B15543] via-[#A0493A] to-[#8B3E31] text-white py-20">
+app/experiencias-privadas/page.tsx:154:      <div className="max-w-7xl mx-auto px-4 py-16">
+app/experiencias-privadas/page.tsx:242:      <div className="bg-[#3A4741] text-white py-16">
+app/entregas/page.tsx:47:      <div className="bg-[#33503E] text-white py-16">
+app/calendario/page.tsx:402:      <div className="bg-gradient-to-r from-[#B15543] via-[#A0493A] to-[#8B3E31] text-white py-16">
+app/xochimilco/page.tsx:31:      <div className="relative bg-[#33503E] text-white py-20">
+app/examples/hero-parallax/page.tsx:43:      <section className="bg-white py-16 px-4">
+app/recetas/client-page.tsx:277:      <section className="py-20" style={{ backgroundColor: '#33503E' }}>
+app/recetas/client-page.tsx:751:      <section className="py-20" style={{ backgroundColor: '#CCBB9A' }}>
+app/restaurantes/page.tsx:175:      <section className="container mx-auto px-4 py-16">
+app/restaurantes/page.tsx:206:        className="py-16"
+app/restaurantes/page.tsx:243:      <section className="py-16">
+app/restaurantes/page.tsx:286:        className="py-16"
+app/restaurantes/page.tsx:318:      <section id="contacto-formulario" className="py-16">
+app/restaurantes/page.tsx:428:        className="py-16"
+app/tienda/page.tsx:1467:      <section className="py-16 bg-gradient-to-br from-[#F5F2E8] to-white">
+app/tienda/page.tsx:1515:      <section className="py-16 bg-white">
+app/tienda/page.tsx:1597:      <section className="py-16 bg-[#F5F2E8]">
+app/tienda/page.tsx:1697:      <section className="py-20 bg-gradient-to-br from-[#B15543] to-[#9d4a39] text-white">
+app/tienda/page.tsx:1743:      <section className="py-16 bg-white">
+app/tienda/page.tsx:1813:      <section className="py-16 bg-[#F5F2E8]">
+app/experiencias/testimonios/page.tsx:63:      <div className="bg-gradient-to-r from-verde-600 via-verde-700 to-verde-800 text-white py-20">
+app/experiencias/testimonios/page.tsx:239:      <div className="bg-gradient-to-r from-verde-600 to-verde-700 text-white py-16">
+app/experiencias/faq/page.tsx:22:      <div className="bg-gradient-to-r from-terracota-600 via-terracota-700 to-terracota-800 text-white py-20">
+app/experiencias/faq/page.tsx:168:      <div className="bg-gradient-to-r from-terracota-600 to-terracota-700 text-white py-16">
+components/catering/Clients.tsx:104:    <section className="py-20 cream-section bg-neutral-light">
+components/catering/About.tsx:13:    <section ref={ref} className="py-20 bg-neutral-light cream-section">
+components/catering/Footer.tsx:8:    <footer className="bg-verde-dark text-white py-16">
+components/catering/Services.tsx:69:    <section id="servicios" className="py-20 bg-white">
+components/catering/Contact.tsx:62:    <section className="py-20 bg-neutral-light">

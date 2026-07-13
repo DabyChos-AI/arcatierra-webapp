@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import OptimizedImage from '@/components/ui/OptimizedImage';
-import { useHeaderState } from './hooks/useHeaderState';
+import { useHeaderState } from './hooks/HeaderStateContext';
 import { getHamburgerMenuItems, getMobileUserMenuItems } from './NavigationConfig';
 
 // Estilos para el menú móvil
@@ -17,7 +17,7 @@ const mobileMenuStyles = {
     right: 0,
     bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    zIndex: 1999,
+    zIndex: 10000,
   },
   
   menu: {
@@ -27,7 +27,7 @@ const mobileMenuStyles = {
     right: 0,
     bottom: 0,
     backgroundColor: 'white',
-    zIndex: 2000,
+    zIndex: 10001,
     display: 'flex',
     flexDirection: 'column' as const,
     overflowY: 'auto' as const,

@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Instalar dependencias basadas en el gestor de paquetes preferido
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm install
 
 # Reconstruir el código fuente solo cuando sea necesario
 FROM base AS builder
@@ -27,6 +27,9 @@ WORKDIR /app
 
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
+
+# Instalar wget para health checks + tzdata para timezone
+RUN apk add --no-cache wget tzdata
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs

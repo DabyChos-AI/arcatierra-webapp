@@ -75,14 +75,22 @@ const carouselImages = [
 export default function HeroCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(true); // Cambiar a true para primera carga
 
   useEffect(() => {
     if (!isAutoPlaying) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % carouselImages.length);
+      setCurrentIndex((prev) => {
+        const next = (prev + 1) % carouselImages.length;
+        // Precargar siguiente imagen
+        const img = new Image();
+        img.src = carouselImages[next].src;
+        return next;
+      });
       setImageLoaded(false);
+      // Dar tiempo para cargar
+      setTimeout(() => setImageLoaded(true), 100);
     }, 6000);
 
     return () => clearInterval(interval);
@@ -158,7 +166,7 @@ export default function HeroCarousel() {
             </Link>
             
             <Link 
-              href="/experiencias-privadas"
+              href="/experiencias?tipo=privada"
               className="group bg-white/20 hover:bg-white/30 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-lg transition-all duration-300 border border-white/50"
             >
               <span>

@@ -2,8 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* IMPORTAR TIPOGRAFÍA OFICIAL */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap');
+/* TIPOGRAFÍAS OFICIALES ARCA TIERRA - Manual de Identidad */
+/* Mendoza Roman: Tipografía primaria para TÍTULOS (José Mendoza y Almeida) */
+/* Akkurat: Tipografía secundaria para CUERPOS DE TEXTO (Laurenz Brunner) */
+/* Las fuentes se cargan localmente vía next/font/local en layout.tsx */
 
 /* VARIABLES CSS OFICIALES ARCA TIERRA */
 :root {
@@ -26,9 +28,13 @@
   --arcatierra-gris-azulado: #C1CCCE;
   --arcatierra-beige-bg: #F9F4E8;
   
-  /* TIPOGRAFÍA Y ESPACIADO */
-  --font-heading: 'Playfair Display', serif;
-  --font-body: 'Open Sans', sans-serif;
+  /* TIPOGRAFÍAS OFICIALES DEL MANUAL DE IDENTIDAD */
+  /* Mendoza Roman - Tipografía PRIMARIA para TÍTULOS */
+  --font-heading: var(--font-mendoza), Georgia, serif;
+  --font-display: var(--font-mendoza), Georgia, serif;
+  /* Akkurat - Tipografía SECUNDARIA para CUERPOS DE TEXTO */
+  --font-body: var(--font-akkurat), Inter, sans-serif;
+  --font-text: var(--font-akkurat), Inter, sans-serif;
   --line-height-tight: 1.2;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.8;
@@ -80,22 +86,20 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* TIPOGRAFÍA OFICIAL MEJORADA */
-h1, h2, h3 {
+/* TIPOGRAFÍA OFICIAL SEGÚN MANUAL DE IDENTIDAD */
+/* MENDOZA ROMAN - Solo para TÍTULOS */
+h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   color: var(--arcatierra-verde-tipografia);
-  font-weight: 700;
+  font-weight: 500; /* Medium weight de Mendoza */
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-tight);
   margin-bottom: 1.25rem;
 }
 
-h4, h5, h6 {
-  font-family: var(--font-heading);
-  color: var(--arcatierra-verde-tipografia);
-  font-weight: 500;
-  line-height: var(--line-height-tight);
-  margin-bottom: 1rem;
+/* AKKURAT - Para CUERPOS DE TEXTO */
+p, span, div, li, a, button, input, textarea, label {
+  font-family: var(--font-body);
 }
 
 h1 {
@@ -386,7 +390,7 @@ a.animated-link:hover::after {
   background-color: var(--arcatierra-terracota-principal);
   color: #ffffff;
   padding: 3rem 5% 1rem;
-  margin-top: 4rem;
+  margin-top: 0; /* Cambiado de 4rem a 0 para juntar con banner verde */
 }
 
 .footer-content {
@@ -479,16 +483,13 @@ a.animated-link:hover::after {
   }
   
   .footer-content {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+    padding: 0 1rem;
   }
 }
 
-/* AJUSTES MÓVILES Y RESPONSIVE */
 @media (max-width: 768px) {
   .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding: 0 1rem;
   }
   
   .hero h1 {
@@ -504,6 +505,16 @@ a.animated-link:hover::after {
     width: 100%;
     margin-bottom: 0.5rem;
   }
+}
+
+/* FIX: Quitar línea verde decorativa del panel admin */
+main {
+  border-left: none !important;
+}
+
+main::before,
+main::after {
+  display: none !important;
 }
 
 /* MOBILE BUTTON - Estado por defecto (oculto en desktop) */
@@ -683,3 +694,72 @@ a.animated-link:hover::after {
   }
 }
 
+/* Hover para items de submenu en header */
+.submenu-item-hover:hover {
+  background-color: var(--arcatierra-crema-principal) !important;
+  color: var(--arcatierra-verde-tipografia) !important;
+}
+
+/* ============================================
+   MODAL GLOBAL STYLES - FIX OVERFLOW ISSUE
+   ============================================ */
+
+/* 
+ * IMPORTANTE: Los modales deben empezar DEBAJO del header
+ * Header altura: ~120px (banner + nav)
+ * Usar pt-32 (128px) o pt-36 (144px) para asegurar visibilidad
+ */
+
+/* Clase utilitaria para contenedores de modal scrolleables */
+.modal-container {
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+  margin-top: 140px; /* Espacio para el header */
+}
+
+/* Asegurar que modales con fixed inset-0 permitan scroll */
+.modal-scrollable {
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+  margin-top: 140px;
+}
+
+/* Fix para modales que usan flex items-center justify-center */
+.modal-wrapper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 140px; /* Espacio para header */
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-bottom: 2rem;
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+/* Contenido del modal con scroll interno */
+.modal-content {
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+}
+
+/* Asegurar que el botón X siempre sea visible */
+.modal-close-btn {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Media query para mobile - modales más pequeños */
+@media (max-width: 640px) {
+  .modal-container,
+  .modal-content,
+  .modal-scrollable {
+    max-height: calc(100vh - 140px);
+    margin-top: 120px;
+  }
+  
+  .modal-wrapper {
+    padding-top: 120px;
+  }
+}

@@ -169,11 +169,13 @@ export default function RecipeDetailClient({ recipe }: RecipeDetailClientProps) 
         } else {
           const cartItem = {
             id: matchedProduct.id,
+            itemcode: matchedProduct.id, // Agregar itemcode
             name: matchedProduct.nombre,
             price: matchedProduct.precio,
             quantity: 1,
             image: matchedProduct.imagen,
-            unit: matchedProduct.unidad
+            unit: matchedProduct.unidad,
+            tipo: 'producto' // Agregar tipo
           };
           existingCart.push(cartItem);
         }

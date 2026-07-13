@@ -1,22 +1,47 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
-import HeaderContainer from "@/components/header/HeaderContainer";
+// import HeaderContainer from "@/components/header/HeaderContainer"; // COMENTADO - No se usa
+import TransparentHeader from "@/components/layout/TransparentHeader";
 import Footer from "@/components/layout/Footer";
 import AuthProvider from '@/components/AuthProvider'
 import { NotificationProvider } from '@/components/NotificationSystem'
 import WhatsAppChat from '@/components/WhatsAppChat'
 import ClientLayout from './client-layout'
+import AnnouncementBanner from '@/components/AnnouncementBanner'
 
-const inter = Inter({ 
-  subsets: ["latin"],
-  variable: "--font-inter",
+// TIPOGRAFÍAS OFICIALES ARCA TIERRA - Manual de Identidad
+
+// Mendoza Roman - Tipografía PRIMARIA para TÍTULOS
+// Diseñador: José Mendoza y Almeida
+const mendozaRoman = localFont({
+  src: [
+    {
+      path: '../../public/fonts/MendozaRomanITCStd-Medium.otf',
+      weight: '500',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-mendoza',
   display: 'swap',
 });
 
-const playfair = Playfair_Display({ 
-  subsets: ["latin"],
-  variable: "--font-playfair",
+// Akkurat - Tipografía SECUNDARIA para CUERPOS DE TEXTO
+// Diseñador: Laurenz Brunner
+const akkurat = localFont({
+  src: [
+    {
+      path: '../../public/fonts/akkurat.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../../public/fonts/akkurat-bold.ttf',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-akkurat',
   display: 'swap',
 });
 
@@ -94,7 +119,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={`${inter.variable} ${playfair.variable}`}>
+    <html lang="es" className={`${mendozaRoman.variable} ${akkurat.variable}`}>
       <head>
         {/* Preload recursos críticos */}
         <link rel="preload" href="/logo-arcatierra.png" as="image" />
@@ -185,11 +210,15 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.className} antialiased bg-neutro-crema text-verde-tipografia min-h-screen flex flex-col`}>
+      <body className={`${akkurat.className} antialiased bg-neutro-crema text-verde-tipografia min-h-screen flex flex-col`}>
         <AuthProvider>
           <NotificationProvider>
+            {/* Banner Rotativo Superior */}
+            <AnnouncementBanner />
+            
             {/* Header Transparente */}
-            <HeaderContainer />
+            {/* <HeaderContainer /> */} {/* COMENTADO - No se usa */}
+            <TransparentHeader />
             
             {/* Contenido Principal envuelto en ClientLayout */}
             <ClientLayout>

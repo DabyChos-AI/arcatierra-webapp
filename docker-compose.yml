@@ -1,39 +1,34 @@
-version: '3.8'
+#version: '3.8'
 
 services:
   arcatierra-webapp:
-    build: .
-    ports:
-      - "3000:3000"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: arcatierra-webapp-new
+    restart: unless-stopped
     environment:
       - NODE_ENV=production
       - NEXT_TELEMETRY_DISABLED=1
-    volumes:
-      # Opcional: montar código para desarrollo
-      - .:/app
-      - /app/node_modules
-      - /app/.next
+      - TZ=America/Mexico_City
+    env_file:
+      - .env.production
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
     networks:
-      - arcatierra-net
-
-  # Opcional: Base de datos PostgreSQL para futuro
-  # postgres:
-  #   image: postgres:15-alpine
-  #   environment:
-  #     POSTGRES_DB: arcatierra
-  #     POSTGRES_USER: arcatierra
-  #     POSTGRES_PASSWORD: arcatierra123
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  #   networks:
-  #     - arcatierra-net
+      - vps-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.arcatierra.rule=Host(`arcatierra.dabychos.com`)"
+      - "traefik.http.routers.arcatierra.entrypoints=websecure"
+      - "traefik.http.routers.arcatierra.tls=true"
+      - "traefik.http.routers.arcatierra.tls.certresolver=letsencrypt"
+      - "traefik.http.services.arcatierra.loadbalancer.server.port=3000"
 
 networks:
-  arcatierra-net:
-    driver: bridge
-
-# volumes:
-#   postgres_data:
-
+  vps-net:
+    external: true

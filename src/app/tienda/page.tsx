@@ -1,82 +1,209 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
-import { Search, Heart, ShoppingCart, Grid3X3, LayoutGrid, Star, Filter, Eye, MapPin, ChevronDown, ChevronRight, X } from 'lucide-react'
+import { Search, Heart, ShoppingCart, Grid3X3, LayoutGrid, Star, Filter, Eye, MapPin, ChevronDown, ChevronRight, ChevronLeft, X, Mic, MicOff } from 'lucide-react'
+import { useVoiceSearch } from '@/hooks/useVoiceSearch'
 import { useToast } from '@/components/ui/Toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import Link from 'next/link'
+import Image from 'next/image'
 import ProductQuickView from '@/components/ProductQuickView'
-import { productos, Product } from '@/data/productos'
+import { VoiceSearchIndicator } from '@/components/VoiceSearchIndicator'
+import { productos as productosLocal, Product } from '@/data/productos'
 import { categoriasSEO, getSEODataByName } from '@/data/categorias'
 import { destacadosSemana } from '@/data/destacados'
+import { useFavoritos } from '@/hooks/useFavoritos'
+import { API_URL } from '@/lib/api'
 
 // TIPOS DEFINIDOS
+interface ApiProduct {
+  itemcode: string
+  nombre: string
+  descripcion: string
+  categoria?: string
+  precio_unitario: string
+  stock_actual: number
+  unidad_medida?: string
+  imagen_url?: string
+  productor?: string
+  ubicacion?: string
+  rating?: number
+  reviews?: number
+}
 
 interface SearchSuggestionsProps {
   searchTerm: string
   onSelectProduct: (product: { nombre: string }) => void
+  productos: Product[]
 }
 
 // Helper: imagen de canastas por nombre
 function getCanastaImage(nombre: string, original?: string): string {
+  // Si tiene imagen en BD, usarla primero
+  if (original && original.trim() !== '') return original
+  
+  // Fallback para canastas sin imagen en BD
   const n = nombre.toLowerCase()
-  if (n.includes('canasta individual')) return '/images/canastas/canastaindividual.jpg'
-  if (n.includes('canasta media')) return '/images/canastas/canastamedia.jpg'
-  if (n.includes('canasta completa')) return '/images/canastas/canastacompleta.jpg'
-  if (n.includes('canasta familiar')) return '/images/canastas/canastafamiliar.jpg'
-  return original && original.trim() !== '' ? original : '/placeholder-product.jpg'
+  if (n.includes('canasta basica individual')) return '/images/tienda/CANASTA_BASICA_INDIVIDUAL.jpg'
+  if (n.includes('canasta basica media')) return '/images/tienda/CANASTA_BASICA_MEDIA.png'
+  if (n.includes('canasta basica familiar')) return '/images/tienda/CANASTA_BASICA_FAMILIAR.png'
+  if (n.includes('canasta individual')) return '/images/tienda/canasta-individual-tienda-arca-tierra.jpg'
+  if (n.includes('canasta media')) return '/images/tienda/canasta-media-tienda-arca-tierra.jpg'
+  if (n.includes('canasta completa')) return '/images/tienda/canasta-completa-tienda-arca-tierra.jpg'
+  if (n.includes('canasta familiar')) return '/images/tienda/canasta-familiar-tienda-arca-tierra.jpg'
+  
+  return '/placeholder-product.jpg'
+}
+
+// MAPEO: Itemcodes de BD a IDs de suscripción
+const CANASTA_MAP: Record<string, string> = {
+  // Canastas normales
+  '1885': 'individual',
+  '1886': 'media',
+  '1887': 'completa',
+  '1888': 'familiar',
+  // Canastas básicas
+  '1889': 'basica-individual',
+  '1890': 'basica-media',
+  '1891': 'basica-familiar'
+}
+
+// Helper: detectar si un producto es canasta
+function esCanasta(itemcode: string): boolean {
+  // Detecta: 1885, 1886, 1887, 1888, 1889, 1890, 1891 (con o sin U)
+  return /^188[5-9]U?$/.test(itemcode) || /^189[0-1]U?$/.test(itemcode)
+}
+
+// Helper: obtener itemcode de suscripción (sin U)
+function obtenerItemcodeSuscripcion(itemcode: string): string {
+  return itemcode.replace('U', '')
+}
+
+// Helper: obtener itemcode de compra única (con U)
+function obtenerItemcodeCompraUnica(itemcode: string): string {
+  return itemcode.endsWith('U') ? itemcode : itemcode + 'U'
+}
+
+// Helper: convertir nombres de mayúsculas a sentence case
+function toSentenceCase(text: string): string {
+  if (!text) return text
+  
+  // Convertir a minúsculas y luego capitalizar primera letra de cada palabra importante
+  return text.toLowerCase()
+    .split(' ')
+    .map(word => {
+      // Palabras que deben permanecer en minúsculas (preposiciones, artículos)
+      const lowercaseWords = ['de', 'del', 'la', 'el', 'y', 'en', 'con', 'para', 'por', 'a', 'al']
+      if (lowercaseWords.includes(word)) {
+        return word
+      }
+      // Capitalizar primera letra
+      return word.charAt(0).toUpperCase() + word.slice(1)
+    })
+    .join(' ')
+    // Asegurar que la primera palabra siempre esté capitalizada
+    .replace(/^\w/, c => c.toUpperCase())
 }
 
 // Componente para las sugerencias de búsqueda
-const SearchSuggestions = ({ searchTerm, onSelectProduct }: SearchSuggestionsProps) => {
-  // Productos filtrados basados en el término de búsqueda
+const SearchSuggestions = ({ searchTerm, onSelectProduct, productos }: SearchSuggestionsProps) => {
+  const [apiSuggestions, setApiSuggestions] = useState<any[]>([])
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false)
+
+  // 🎯 MEJORA: Cargar sugerencias inteligentes desde API
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (searchTerm.length >= 2) {
+        setLoadingSuggestions(true)
+        try {
+          const response = await fetch(`${API_URL}/api/products/search/suggestions?q=${encodeURIComponent(searchTerm)}`)
+          if (response.ok) {
+            const suggestions = await response.json()
+            setApiSuggestions(suggestions)
+          }
+        } catch (error) {
+          console.error('Error fetching suggestions:', error)
+        } finally {
+          setLoadingSuggestions(false)
+        }
+      } else {
+        setApiSuggestions([])
+      }
+    }
+
+    const timeoutId = setTimeout(fetchSuggestions, 300) // Debounce 300ms
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm])
+
+  // Fallback: productos locales si API no disponible
   const filteredProducts = productos.filter(product =>
     product.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.categoria.toLowerCase().includes(searchTerm.toLowerCase())
   ).slice(0, 5)
 
-  const recentSearches = ['espinacas', 'jitomate', 'aguacate']
-  const popularSearches = ['orgánico', 'verduras frescas', 'frutas de temporada']
+  const recentSearches = ['jitomate', 'aguacate', 'espinacas', 'chía', 'quinoa']
+  const popularSearches = ['orgánico', 'verduras frescas', 'frutas de temporada', 'granos integrales', 'aceites naturales']
 
   return (
     <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
-      {/* Productos encontrados */}
-      {searchTerm && filteredProducts.length > 0 && (
+      {/* Sugerencias inteligentes desde API */}
+      {searchTerm && (
         <div className="p-3 border-b border-gray-100">
           <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
             <Search className="w-4 h-4" />
-            Productos encontrados
+            {loadingSuggestions ? 'Buscando...' : 'Sugerencias inteligentes'}
           </h4>
-          <div className="space-y-2">
-            {filteredProducts.map((product) => (
-              <button
-                key={product.id}
-                onClick={() => onSelectProduct(product)}
-                className="w-full flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors text-left"
-              >
-                <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
-                  <img
-                    src={getCanastaImage(product.nombre, product.imagen)}
-                    alt={product.nombre}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 truncate">
-                    {product.nombre}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    ${product.precio.toFixed(2)} / {product.unidad}
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
+          
+          {loadingSuggestions && (
+            <div className="flex items-center justify-center py-4">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#33503E]"></div>
+            </div>
+          )}
+          
+          {!loadingSuggestions && apiSuggestions.length > 0 && (
+            <div className="space-y-2">
+              {apiSuggestions.map((suggestion, index) => (
+                <button
+                  key={index}
+                  onClick={() => onSelectProduct({ nombre: suggestion.texto })}
+                  className="w-full flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors text-left"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    {suggestion.tipo === 'producto' ? '🥬' : '📂'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">
+                      {suggestion.texto}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {suggestion.tipo === 'producto' && suggestion.precio > 0 ? 
+                        `$${suggestion.precio.toFixed(2)} • ${suggestion.categoria}` : 
+                        suggestion.categoria
+                      }
+                    </p>
+                  </div>
+                  {suggestion.tipo === 'categoria' && (
+                    <div className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                      Categoría
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {!loadingSuggestions && searchTerm.length >= 2 && apiSuggestions.length === 0 && (
+            <div className="text-center py-4">
+              <p className="text-sm text-gray-500">
+                No se encontraron sugerencias para "{searchTerm}"
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -146,58 +273,42 @@ function slugToTitle(slug: string): string {
     .join(' ');
 }
 
-// Define a mapping from category slug to emoji
+// Define a mapping from category name/slug to emoji
 const categoryEmojiMap: { [key: string]: string } = {
-  'canastas-de-frutas-y-verduras-agroecologicas': '🧺',
-  'aceites-naturales': '🫒',
-  'granos-y-cereales-integrales': '🌾',
+  // Por nombre completo (como vienen de la BD)
+  'Canastas agroecológicas': '🧺',
+  'Café, cacao y chocolate': '☕',
+  'Especias y Condimentos': '🌶️',
+  'Endulzantes naturales': '🍯',
+  'Frutas y Verduras': '🥕',
+  'Granos y Cereales': '🌾',
+  'Huevo y lácteos': '🥚',
+  'Infusiones Naturales': '🍵',
+  'Maíz': '🌽',
+  'Mermeladas y untables naturales': '🍓',
+  'Harinas y pastas orgánicas': '🍝',
+  'Pan y galletas artesanales': '🥖',
+  'Proteínas Regenerativas': '🥩',
+  // Por slug (para URLs)
+  'canastas-agroecologicas': '🧺',
+  'cafe-cacao-chocolate': '☕',
+  'especias-condimentos': '🌶️',
+  'endulzantes-naturales': '🍯',
+  'frutas-verduras': '🥕',
+  'granos-cereales': '🌾',
+  'huevo-lacteos': '🥚',
+  'infusiones-naturales': '🍵',
+  'maiz': '🌽',
+  'mermeladas-untables': '🍓',
+  'harinas-pastas': '🍝',
+  'pan-galletas': '🥖',
   'proteinas-regenerativas': '🥩',
-  'cafe-cacao-y-chocolate': '☕',
-  'endulzantes': '🍯',
-  'especias': '🌶️',
-  'frutas-y-verduras-a-granel': '🥕',
-  'mermeladas-y-untables': '🍓',
-  'huevo-y-lacteos': '🥚',
-  'infusiones-y-te': '🍵',
-  'harinas-y-pastas-organicas': '🍝',
-  'pan-y-galletas-artesanales': '🍞',
-  // Add other mappings here as needed
+  'verduras': '🥬',
+  'frutas': '🍎',
+  'sin-categoria': '📦'
 };
 
-// Dynamically generate categories from the `productos.ts` data source
-const categorySlugs = [...new Set(productos.map(p => p.categoria))];
-const categories = [
-  { id: 'all', name: 'Todas las categorías', emoji: '🌱', active: true, seoData: null },
-  ...categorySlugs.map(slug => {
-    const name = slugToTitle(slug);
-    return {
-      id: slug,
-      name: name,
-      emoji: categoryEmojiMap[slug] || '🛒', // Use mapped emoji or a default one
-      active: false,
-      seoData: getSEODataByName(name)
-    };
-  })
-];
-
-const productores = [
-  'Cooperativa Las Flores',
-  'Don Roberto Hernández',
-  'Familia García',
-  'Apiario Las Abejas Felices',
-  'Granja Sustentable CDMX',
-  'Huerto Urbano Verde'
-]
-
-const certificaciones = [
-  'Orgánico Certificado',
-  'Comercio Justo',
-  'Sin Pesticidas',
-  'Hidropónico',
-  'Biodinámico'
-]
-
-// Los productos se cargan desde el layout de servidor
+// Productores se generarán dinámicamente de los productos reales
 
 // Schema.org JSON-LD para rich snippets
 const storeStructuredData = {
@@ -324,8 +435,9 @@ const organizationStructuredData = {
   }
 };
 
-export default function TiendaPage() {
+function TiendaPageContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [searchTerm, setSearchTerm] = useState('')
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -333,9 +445,7 @@ export default function TiendaPage() {
   const [precioMin, setPrecioMin] = useState('')
   const [precioMax, setPrecioMax] = useState('')
   const [selectedProductores, setSelectedProductores] = useState<string[]>([])
-  const [selectedCertificaciones, setSelectedCertificaciones] = useState<string[]>([])
   const [viewMode, setViewMode] = useState<'1' | '2' | '3'>('2')
-  const [favorites, setFavorites] = useState<string[]>([])
   const [cartItems, setCartItems] = useState<any[]>([])
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
   const [productoQuickView, setProductoQuickView] = useState<Product | null>(null)
@@ -344,14 +454,165 @@ export default function TiendaPage() {
   const [showFavorites, setShowFavorites] = useState(false)
   const [showMobileFilters, setShowMobileFilters] = useState(false)
   const [isDesktopFiltersCollapsed, setIsDesktopFiltersCollapsed] = useState(false)
+  
+  // Hook de favoritos conectado al backend
+  const { favoritos: favorites, toggleFavorito: toggleFavoritoHook, esFavorito } = useFavoritos()
+  
+  // 🎤 NUEVO: Hook de búsqueda por voz
+  const {
+    isListening,
+    transcript,
+    isSupported: voiceSupported,
+    startListening,
+    stopListening,
+    resetTranscript
+  } = useVoiceSearch((voiceText: string) => {
+    console.log('🔍 Búsqueda por voz completada:', voiceText)
+    setSearchTerm(voiceText)
+    setShowSearchSuggestions(true)
+    toast.success(`Buscando "${voiceText}"`, {
+      title: '🎤 Búsqueda por voz'
+    })
+  })
+  
+  // NUEVO: Estado para productos de la API
+  const [productos, setProductos] = useState<Product[]>(productosLocal)
+  const [isLoading, setIsLoading] = useState(true)
+  const [apiCategories, setApiCategories] = useState<any[]>([])
+  const [preciosCompraUnica, setPreciosCompraUnica] = useState<Record<string, number>>({})
 
-  // Cargar favoritos y carrito desde localStorage al iniciar
+  // NUEVO: Cargar productos desde la API
   useEffect(() => {
-    const savedFavorites = localStorage.getItem('arcaTierraFavoritos')
-    if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites))
+    const fetchProducts = async () => {
+      setIsLoading(true)
+      try {
+        const apiUrl = API_URL
+        
+        // Cargar productos
+        const response = await fetch(`${apiUrl}/api/products?limit=200`)
+        if (response.ok) {
+          const data = await response.json()
+          
+          // Mapear productos de la API al formato local
+          const mappedProducts: Product[] = data.items.map((item: ApiProduct) => ({
+            id: item.itemcode,
+            nombre: toSentenceCase(item.nombre),
+            categoria: item.categoria || 'sin-categoria',
+            precio: parseFloat(item.precio_unitario),
+            imagen: item.imagen_url || '',
+            descripcion: item.descripcion || '',
+            stock: item.stock_actual,
+            unidad: item.unidad_medida || '',
+            productor: item.productor || 'Agricultor Local',
+            ubicacion: item.ubicacion || 'México',
+            // Solo mostrar badge "Agotado" cuando stock = 0, no mostrar "Disponible"
+            badges: item.stock_actual === 0 ? ['Agotado'] : [],
+            rating: item.rating || 4.5,
+            reviews: item.reviews || 0,
+            metricas: {
+              co2: '0kg CO2',
+              agua: '0L',
+              plastico: '0% plástico'
+            },
+            storytelling: item.descripcion || 'Producto fresco y local',
+            ctaType: 'add' as const
+          }))
+          
+          // Separar canastas: crear mapa de precios de compra única
+          const preciosCompraUnicaMap: Record<string, number> = {}
+          const productosFiltrados: Product[] = []
+          
+          mappedProducts.forEach(product => {
+            if (esCanasta(product.id)) {
+              if (product.id.endsWith('U')) {
+                // Es versión de compra única - guardar precio
+                const itemcodeSusc = product.id.replace('U', '')
+                preciosCompraUnicaMap[itemcodeSusc] = product.precio
+              } else {
+                // Es versión de suscripción - agregar a la lista
+                productosFiltrados.push(product)
+              }
+            } else {
+              // No es canasta - agregar directamente
+              productosFiltrados.push(product)
+            }
+          })
+          
+          setPreciosCompraUnica(preciosCompraUnicaMap)
+          setProductos(productosFiltrados)
+          console.log(`Cargados ${mappedProducts.length} productos desde la API`)
+        } else {
+          console.error('Error cargando productos de la API, usando productos locales')
+          setProductos(productosLocal)
+        }
+
+        // Cargar categorías
+        const catResponse = await fetch(`${apiUrl}/api/products/categories`)
+        if (catResponse.ok) {
+          const catData = await catResponse.json()
+          setApiCategories(catData.categories || [])
+        }
+        
+      } catch (error) {
+        console.error('Error conectando con la API:', error)
+        setProductos(productosLocal)
+      } finally {
+        setIsLoading(false)
+      }
     }
 
+    fetchProducts()
+  }, [])
+
+  // Leer parámetro 'categoria' de URL y aplicar filtro automáticamente
+  useEffect(() => {
+    const categoriaParam = searchParams.get('categoria')
+    if (categoriaParam) {
+      // Aplicar filtro de categoría desde URL
+      setSelectedCategory(categoriaParam)
+      console.log('✅ Filtro de categoría aplicado desde URL:', categoriaParam)
+    }
+  }, [searchParams])
+
+  // Generar categorías dinámicamente basado en productos actuales
+  const categorySlugs = [...new Set(
+    productos
+      .map(p => p.categoria)
+      .filter(c => {
+        // Filtrar nulls, vacíos y cualquier variante de "sin categoría"
+        if (!c || c === 'null' || c.trim() === '') return false;
+        const lower = c.toLowerCase().trim();
+        return lower !== 'sin categoría' && 
+               lower !== 'sin categoria' && 
+               lower !== 'sin-categoria' &&
+               lower !== 'sin categoria';
+      })
+  )];
+  
+  const categories = [
+    { id: 'all', name: 'Todas las categorías', emoji: '🌱', active: true, seoData: null },
+    ...categorySlugs.map(categoryName => {
+      // Buscar emoji por nombre completo primero, luego por slug
+      const emoji = categoryEmojiMap[categoryName] || categoryEmojiMap[slugToTitle(categoryName)] || '🛒';
+      return {
+        id: categoryName,
+        name: categoryName,
+        emoji: emoji,
+        active: false,
+        seoData: getSEODataByName(categoryName)
+      };
+    })
+  ];
+
+  // Generar productores dinámicamente de los productos reales
+  const productores = [...new Set(
+    productos
+      .map(p => p.productor)
+      .filter(p => p && p.trim() !== '')
+  )].sort();
+
+  // Cargar carrito desde localStorage al iniciar
+  useEffect(() => {
     const savedCart = localStorage.getItem('arcaTierraCart')
     if (savedCart) {
       setCartItems(JSON.parse(savedCart))
@@ -395,7 +656,6 @@ export default function TiendaPage() {
         if (typeof f.precioMin === 'string') setPrecioMin(f.precioMin)
         if (typeof f.precioMax === 'string') setPrecioMax(f.precioMax)
         if (Array.isArray(f.selectedProductores)) setSelectedProductores(f.selectedProductores)
-        if (Array.isArray(f.selectedCertificaciones)) setSelectedCertificaciones(f.selectedCertificaciones)
         if (f.sortBy) setSortBy(f.sortBy)
       }
     } catch {}
@@ -409,7 +669,6 @@ export default function TiendaPage() {
         precioMin,
         precioMax,
         selectedProductores,
-        selectedCertificaciones,
         sortBy,
       }
       localStorage.setItem('arcaTierraFilters', JSON.stringify(data))
@@ -441,7 +700,19 @@ export default function TiendaPage() {
         </div>
       </div>
 
-      {/* Rango de precios */}
+      {/* FILTROS DESHABILITADOS - Ahora usamos filtros horizontales arriba */}
+      {/* 
+      RANGO DE PRECIO Y AGRICULTORES COMENTADOS
+      Estos filtros fueron reemplazados por filtros horizontales tipo pills
+      ubicados arriba de los productos para mejor UX.
+      
+      Si deseas reactivarlos:
+      1. Descomentar este bloque completo
+      2. Restaurar los estados precioMin, precioMax, selectedProductores en el filtrado
+      3. Considerar si quieres tener ambos (horizontal + lateral) o solo uno
+      */}
+      
+      {/*
       <div>
         <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Rango de Precio</h3>
         <div className="space-y-2 sm:space-y-3">
@@ -462,7 +733,6 @@ export default function TiendaPage() {
         </div>
       </div>
 
-      {/* Productores */}
       <div>
         <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Agricultores</h3>
         <div className="space-y-1 sm:space-y-2 max-h-32 sm:max-h-40 overflow-y-auto">
@@ -484,33 +754,12 @@ export default function TiendaPage() {
           ))}
         </div>
       </div>
+      */}
 
-      {/* Certificaciones */}
-      <div>
-        <h3 className="text-white font-semibold mb-2 lg:mb-3 text-sm sm:text-base">Certificaciones</h3>
-        <div className="space-y-1 sm:space-y-2 max-h-32 sm:max-h-40 overflow-y-auto">
-          {certificaciones.map((cert) => (
-            <label key={cert} className="flex items-center space-x-2 text-white/90 hover:text-white cursor-pointer">
-              <Checkbox
-                checked={selectedCertificaciones.includes(cert)}
-                onCheckedChange={(checked: boolean) => {
-                  if (checked) {
-                    setSelectedCertificaciones([...selectedCertificaciones, cert])
-                  } else {
-                    setSelectedCertificaciones(selectedCertificaciones.filter(c => c !== cert))
-                  }
-                }}
-                className="border-white/30 data-[state=checked]:bg-[#B15543] data-[state=checked]:border-[#B15543]"
-              />
-              <span className="text-xs sm:text-sm text-white/90 truncate">{cert}</span>
-            </label>
-          ))}
-        </div>
-      </div>
     </>
   )
 
-  // Filtros funcionales
+  // Filtros funcionales - AHORA USA productos del estado
   const filteredProducts = productos.filter(product => {
     // Si estamos mostrando favoritos, solo mostrar productos favoritos
     if (showFavorites) {
@@ -519,17 +768,13 @@ export default function TiendaPage() {
     const matchesSearch = product.nombre.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = selectedCategory === 'all' || product.categoria === selectedCategory
     
-    // Filtro de precio funcional
-    const minPrice = precioMin ? parseFloat(precioMin) : 0
-    const maxPrice = precioMax ? parseFloat(precioMax) : 999999
-    const matchesPrice = product.precio >= minPrice && product.precio <= maxPrice
+    // Filtros de precio y productor DESHABILITADOS (ahora usamos ordenamiento en filtros horizontales)
+    // const minPrice = precioMin ? parseFloat(precioMin) : 0
+    // const maxPrice = precioMax ? parseFloat(precioMax) : 999999
+    // const matchesPrice = product.precio >= minPrice && product.precio <= maxPrice
+    // const matchesProductor = selectedProductores.length === 0 || selectedProductores.includes(product.productor)
     
-    const matchesProductor = selectedProductores.length === 0 || selectedProductores.includes(product.productor)
-    const matchesCertificaciones = selectedCertificaciones.length === 0 || 
-      selectedCertificaciones.some(cert => product.badges.includes(cert) || 
-        (cert === 'Orgánico Certificado' && product.badges.includes('100% Orgánico')))
-    
-    return matchesSearch && matchesCategory && matchesPrice && matchesProductor && matchesCertificaciones
+    return matchesSearch && matchesCategory
   })
 
   // Ordenamiento funcional
@@ -541,6 +786,8 @@ export default function TiendaPage() {
         return b.precio - a.precio
       case 'nombre-az':
         return a.nombre.localeCompare(b.nombre)
+      case 'nombre-za':
+        return b.nombre.localeCompare(a.nombre)
       case 'mas-recientes':
       default:
         return 0
@@ -554,14 +801,18 @@ export default function TiendaPage() {
   // Función para obtener la clase de badge según el tipo
   const getBadgeClass = (badge: string) => {
     switch (badge) {
-      case 'NUEVO':
+      case 'Nuevo':
         return 'bg-[#B15543] hover:bg-[#9d4a39]'
-      case '100% Orgánico':
+      case 'Orgánico':
         return 'bg-[#33503E] hover:bg-[#2a4234]'
       case 'Destacado':
         return 'bg-amber-500 hover:bg-amber-600'
       case 'Artesanal':
         return 'bg-purple-600 hover:bg-purple-700'
+      case 'Disponible':
+        return 'bg-green-600 hover:bg-green-700'
+      case 'Agotado':
+        return 'bg-red-600 hover:bg-red-700'
       default:
         return 'bg-gray-500 hover:bg-gray-600'
     }
@@ -572,15 +823,38 @@ export default function TiendaPage() {
     router.push(`/producto/${productId}`)
   }
 
-  // Marcar/desmarcar favoritos y persistir en localStorage
-  const toggleFavorite = (productId: string, e?: any) => {
+  // Marcar/desmarcar favoritos con backend API y notificaciones
+  const toggleFavorite = async (productId: string, e?: any) => {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation()
-    setFavorites(prev => {
-      const exists = prev.includes(productId)
-      const next = exists ? prev.filter(id => id !== productId) : [...prev, productId]
-      localStorage.setItem('arcaTierraFavoritos', JSON.stringify(next))
-      return next
-    })
+    
+    // Obtener nombre del producto para las notificaciones
+    const producto = productos.find(p => p.id === productId)
+    const nombreProducto = producto?.nombre || 'Producto'
+    
+    const { agregado, exito } = await toggleFavoritoHook(productId)
+    
+    if (exito) {
+      if (agregado) {
+        // Agregado a favoritos
+        toast.success(`${nombreProducto} agregado a favoritos`, {
+          title: '¡Agregado!',
+          action: {
+            label: 'Ver favoritos',
+            onClick: () => router.push('/favoritos')
+          }
+        })
+      } else {
+        // Eliminado de favoritos
+        toast.error(`${nombreProducto} eliminado de favoritos`, {
+          title: 'Favorito eliminado'
+        })
+      }
+    } else {
+      // Error
+      toast.error('No se pudo actualizar favoritos. Inténtalo de nuevo.', {
+        title: 'Error'
+      })
+    }
   }
 
   // Abrir vista rápida
@@ -592,13 +866,17 @@ export default function TiendaPage() {
   // Agregar al carrito y mostrar toast
   const addToCart = (product: Product, e?: any) => {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation()
+    
+    // CRÍTICO: Usar itemcode real de BD (no UUID)
     const cartItem = {
-      id: product.id,
+      id: product.id,        // itemcode de BD (ej: "1887", "MAZ-TOR-BLA-12P")
+      itemcode: product.id,  // Mismo valor para compatibilidad
       name: product.nombre,
       price: product.precio,
       quantity: 1,
       image: product.imagen,
-      unit: product.unidad
+      unit: product.unidad,
+      tipo: 'producto'       // Si no es experiencia, es producto
     }
     const existingCart = JSON.parse(localStorage.getItem('arcaTierraCart') || '[]')
     const existingItemIndex = existingCart.findIndex((item: any) => item.id === cartItem.id)
@@ -610,16 +888,37 @@ export default function TiendaPage() {
     localStorage.setItem('arcaTierraCart', JSON.stringify(existingCart))
     setCartItems(existingCart)
     window.dispatchEvent(new Event('cartUpdated'))
-    toast.cart(`${product.nombre} agregado al carrito`, {
-      title: '¡Excelente elección!',
-      action: {
-        label: 'Ver carrito',
-        onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
-      }
-    })
+    // Toast deshabilitado - era molesto al agregar múltiples productos
+    // toast.cart(`${product.nombre} agregado al carrito`, {
+    //   title: '¡Excelente elección!',
+    //   action: {
+    //     label: 'Ver carrito',
+    //     onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
+    //   }
+    // })
   }
 
-  // Productos destacados de la semana (IDs definidos en src/data/destacados.ts)
+  // Manejar redirección a suscripciones con pre-carga
+  const handleSuscripcion = (product: Product) => {
+    const itemcodeSuscripcion = obtenerItemcodeSuscripcion(product.id)
+    const canastaId = CANASTA_MAP[itemcodeSuscripcion]
+    
+    if (canastaId) {
+      // Construir URL con parámetros
+      const params = new URLSearchParams({
+        canasta: canastaId,
+        itemcode: itemcodeSuscripcion,
+        precarga: 'true'
+      })
+      
+      router.push(`/suscripciones?${params.toString()}`)
+    } else {
+      // Fallback: redirigir sin parámetros
+      router.push('/suscripciones')
+    }
+  }
+
+  // Productos destacados de la semana - ahora usando productos del estado
   const featuredProducts = destacadosSemana
     .map(id => productos.find(p => p.id === id))
     .filter((p): p is Product => Boolean(p))
@@ -644,19 +943,35 @@ export default function TiendaPage() {
         <div className="container mx-auto px-4 py-8">
 
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-white mb-4">Tienda de alimentos</h1>
-            <p className="text-white text-lg mb-8 max-w-3xl mx-auto">
+            <h1 className="text-3xl font-semibold text-white mb-4">Tienda de alimentos</h1>
+            <p className="text-white text-base mb-8 max-w-3xl mx-auto">
               Alimentos agroecológicos 100% mexicanos — compra directa o por suscripción
             </p>
             
-            {/* CTA para Canastas Agroecológicas */}
-            <div className="mb-8">
+            {/* Indicador de carga desde API */}
+            {isLoading && (
+              <div className="mb-4 text-white/80">
+                <span>Cargando productos frescos...</span>
+              </div>
+            )}
+            
+            {/* CTAs para Canastas Agroecológicas y Recetas */}
+            <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/suscripciones">
                 <Button 
                   size="lg" 
-                  className="bg-terracota hover:bg-terracota-dark text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  className="bg-terracota hover:bg-terracota-dark text-white px-8 py-4 text-base font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 >
                   🌱 Canastas Agroecológicas
+                </Button>
+              </Link>
+              
+              <Link href="/recetas">
+                <Button 
+                  size="lg" 
+                  className="bg-verde-principal hover:bg-verde-dark text-white border-2 border-white px-8 py-4 text-base font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                >
+                  📖 Ver Recetas
                 </Button>
               </Link>
             </div>
@@ -665,15 +980,46 @@ export default function TiendaPage() {
             <div className="relative max-w-7xl mx-auto">
               <div className="relative max-w-2xl mx-auto">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                
                 <Input
                   type="text"
-                  placeholder="Busca alimentos frescos, agricultores..."
-                  value={searchTerm}
+                  placeholder={isListening ? "Escuchando... 🎤" : transcript ? transcript : "Busca alimentos frescos, agricultores..."}
+                  value={isListening ? transcript : searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onFocus={() => setShowSearchSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
-                  className="pl-12 pr-4 py-4 text-lg bg-white border-0 rounded-xl shadow-lg focus:ring-2 focus:ring-white focus:ring-opacity-50 text-black placeholder:text-gray-500 caret-black"
+                  className={`pl-12 pr-16 py-4 text-base bg-white border-0 rounded-xl shadow-lg focus:ring-2 focus:ring-white focus:ring-opacity-50 text-black placeholder:text-gray-500 caret-black ${
+                    isListening ? 'ring-2 ring-red-400 bg-red-50' : ''
+                  }`}
                 />
+
+                {/* 🎤 NUEVO: Botón de micrófono */}
+                {voiceSupported && (
+                  <button
+                    onClick={isListening ? stopListening : startListening}
+                    className={`absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-lg transition-all duration-200 ${
+                      isListening 
+                        ? 'bg-red-500 text-white animate-pulse hover:bg-red-600' 
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                    title={isListening ? 'Detener grabación' : 'Búsqueda por voz'}
+                  >
+                    {isListening ? (
+                      <MicOff className="w-4 h-4" />
+                    ) : (
+                      <Mic className="w-4 h-4" />
+                    )}
+                  </button>
+                )}
+
+                {/* Indicador visual de escucha */}
+                {isListening && (
+                  <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
+                    <div className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium animate-bounce">
+                      🔴 Escuchando...
+                    </div>
+                  </div>
+                )}
               </div>
               {showSearchSuggestions && (
                 <SearchSuggestions 
@@ -682,6 +1028,7 @@ export default function TiendaPage() {
                     setSearchTerm(product.nombre)
                     setShowSearchSuggestions(false)
                   }}
+                  productos={productos}
                 />
               )}
             </div>
@@ -702,12 +1049,13 @@ export default function TiendaPage() {
           </button>
         )}
 
-        {/* Botón flotante desktop cuando colapsado */}
+        {/* Botón flotante desktop cuando colapsado - para ABRIR filtros */}
         {isDesktopFiltersCollapsed && (
           <button
             onClick={() => setIsDesktopFiltersCollapsed(false)}
-            className="hidden lg:flex fixed left-0 top-1/2 -translate-y-1/2 bg-[#33503E] text-white px-2 py-5 rounded-r-lg shadow-lg z-[9990] flex-col items-center gap-2"
+            className="hidden lg:flex fixed left-0 top-1/2 -translate-y-1/2 bg-[#33503E] text-white px-2 py-5 rounded-r-lg shadow-lg z-[9990] flex-col items-center gap-2 hover:bg-[#2a4032] transition-colors"
             aria-label="Mostrar filtros"
+            title="Abrir filtros"
           >
             <ChevronRight className="w-5 h-5" />
             <span className="font-medium [writing-mode:vertical-lr] rotate-180 my-2">Filtros</span>
@@ -723,7 +1071,7 @@ export default function TiendaPage() {
             />
             <div className="fixed left-0 top-0 h-screen w-80 bg-[#33503E] shadow-xl z-[9999] lg:hidden flex flex-col">
               <div className="flex items-center justify-between p-4 border-b border-white/20">
-                <h2 className="text-white text-lg font-bold flex items-center gap-2"><Filter className="w-5 h-5"/>Filtros</h2>
+                <h2 className="text-white text-base font-semibold flex items-center gap-2"><Filter className="w-5 h-5"/>Filtros</h2>
                 <div className="flex items-center gap-2">
                   <Button onClick={() => saveFilters(true)} size="sm" className="bg-[#B15543] hover:bg-[#9d4a39] text-white px-3 py-1.5">
                     Guardar
@@ -743,17 +1091,19 @@ export default function TiendaPage() {
           </>
         )}
 
-        <div className="flex gap-2 sm:gap-4 lg:gap-8 max-w-7xl mx-auto">
+        <div className="flex gap-2 sm:gap-4 lg:gap-6 sm:p-8 max-w-7xl mx-auto">
           {/* Sidebar de filtros - oculto en móvil, colapsable en desktop */}
           {!isDesktopFiltersCollapsed && (
             <div className="hidden lg:block w-44 sm:w-52 lg:w-80 bg-[#33503E] rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-6 h-fit max-h-[calc(100vh-8rem)] overflow-y-auto lg:sticky lg:top-6 shadow-lg flex-shrink-0 relative">
               {/* Botón minimizar estilo pestaña vertical */}
+              {/* Botón para CERRAR filtros (cuando están abiertos) */}
               <button
                 onClick={() => setIsDesktopFiltersCollapsed(true)}
-                className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 bg-[#33503E] text-white px-2 py-5 rounded-l-lg shadow-lg z-[10000] flex-col items-center gap-2 border border-white/10"
+                className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 bg-[#33503E] text-white px-2 py-5 rounded-l-lg shadow-lg z-[10000] flex-col items-center gap-2 border border-white/10 hover:bg-[#2a4032] transition-colors"
                 aria-label="Minimizar filtros"
+                title="Cerrar filtros"
               >
-                <ChevronRight className="w-5 h-5" />
+                <ChevronLeft className="w-5 h-5" />
                 <span className="font-medium [writing-mode:vertical-lr] rotate-180 my-2">Filtros</span>
               </button>
 
@@ -762,7 +1112,7 @@ export default function TiendaPage() {
               </div>
               <div className="space-y-3 sm:space-y-4 lg:space-y-6">
                 <div className="text-center">
-                  <h2 className="text-sm sm:text-lg lg:text-xl font-bold text-white mb-1 lg:mb-2">Filtros</h2>
+                  <h2 className="text-sm sm:text-base lg:text-lg font-semibold text-white mb-1 lg:mb-2">Filtros</h2>
                   <p className="text-white/70 text-xs sm:text-sm hidden sm:block">Encuentra tus alimentos</p>
                 </div>
                 <FiltersBody />
@@ -793,29 +1143,65 @@ export default function TiendaPage() {
               </div>
               
               <div className="text-center lg:text-left order-1 lg:order-2">
-                <h2 className="text-xl sm:text-2xl font-bold text-[#33503E] mb-1">
+                <h2 className="text-lg sm:text-xl font-semibold text-[#33503E] mb-1">
                   {showFavorites ? 'Mis Favoritos' : activeCategory?.name || 'Productos'}
                 </h2>
                 <p className="text-sm sm:text-base text-gray-600">
                   {sortedProducts.length} alimentos encontrados
+                  {!isLoading && productos.length > 0 && productos[0].id.startsWith('P') && (
+                    <span className="text-xs text-green-600 ml-2">(desde tu base de datos)</span>
+                  )}
                 </p>
               </div>
               
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 order-3">
-                {/* Filtros de ordenamiento */}
-                <div className="relative w-full sm:w-auto">
+              {/* FILTROS HORIZONTALES - Nuevo diseño tipo pills */}
+              <div className="flex flex-wrap gap-2 sm:gap-3 order-3 w-full lg:w-auto">
+                {/* Filtro: Categorías */}
+                <div className="relative">
                   <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full sm:w-auto appearance-none bg-white border border-gray-300 rounded-lg px-3 sm:px-4 py-2 pr-8 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#B15543]"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="appearance-none bg-white border border-gray-300 rounded-full px-4 py-2 pr-8 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#B15543] hover:border-[#B15543] transition-colors cursor-pointer"
                   >
-                    <option value="mas-recientes">Más recientes</option>
-                    <option value="precio-menor">Precio: menor a mayor</option>
-                    <option value="precio-mayor">Precio: mayor a menor</option>
-                    <option value="nombre-az">Nombre A-Z</option>
+                    <option value="all">📂 Todas las categorías</option>
+                    {categories.filter(c => c.id !== 'all').map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
                   </select>
-                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-gray-400 pointer-events-none" />
+                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 </div>
+
+                {/* Filtro: Precio */}
+                <div className="relative">
+                  <select
+                    value={sortBy.startsWith('precio') ? sortBy : ''}
+                    onChange={(e) => e.target.value && setSortBy(e.target.value)}
+                    className="appearance-none bg-white border border-gray-300 rounded-full px-4 py-2 pr-8 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#B15543] hover:border-[#B15543] transition-colors cursor-pointer"
+                  >
+                    <option value="">💵 Precio</option>
+                    <option value="precio-menor">Menor a mayor</option>
+                    <option value="precio-mayor">Mayor a menor</option>
+                  </select>
+                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
+
+                {/* Filtro: Nombre */}
+                <div className="relative">
+                  <select
+                    value={sortBy.startsWith('nombre') ? sortBy : ''}
+                    onChange={(e) => e.target.value && setSortBy(e.target.value)}
+                    className="appearance-none bg-white border border-gray-300 rounded-full px-4 py-2 pr-8 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#B15543] hover:border-[#B15543] transition-colors cursor-pointer"
+                  >
+                    <option value="">🔤 Nombre</option>
+                    <option value="nombre-az">A-Z</option>
+                    <option value="nombre-za">Z-A</option>
+                  </select>
+                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Selector de vista */}
+              <div className="flex items-center gap-3 order-4">
                 
                 <div className="flex items-center gap-1 sm:gap-2 bg-white rounded-lg p-1 shadow-sm w-full sm:w-auto justify-center">
                   <Button
@@ -846,12 +1232,20 @@ export default function TiendaPage() {
               </div>
             </div>
 
+            {/* Estado de carga */}
+            {isLoading && (
+              <div className="text-center py-12">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#B15543]"></div>
+                <p className="mt-4 text-gray-600">Cargando productos desde la API...</p>
+              </div>
+            )}
+
             {/* Mensaje cuando no hay favoritos */}
-            {showFavorites && sortedProducts.length === 0 && (
-              <div className="w-full p-8 text-center bg-white rounded-xl shadow-md">
+            {!isLoading && showFavorites && sortedProducts.length === 0 && (
+              <div className="w-full p-6 sm:p-8 text-center bg-white rounded-xl shadow-md">
                 <div className="flex flex-col items-center justify-center space-y-4">
                   <Heart size={64} className="text-gray-300" />
-                  <h3 className="text-xl font-medium text-gray-700">No tienes productos favoritos</h3>
+                  <h3 className="text-lg font-medium text-gray-700">No tienes productos favoritos</h3>
                   <p className="text-gray-500">Explora nuestra tienda y marca productos como favoritos para verlos aquí</p>
                   <Button 
                     onClick={() => setShowFavorites(false)} 
@@ -864,7 +1258,7 @@ export default function TiendaPage() {
             )}
             
             {/* Grid de productos */}
-            {(!showFavorites || (showFavorites && sortedProducts.length > 0)) && (
+            {!isLoading && (!showFavorites || (showFavorites && sortedProducts.length > 0)) && (
               <div className={`grid gap-4 sm:gap-6 ${
                 viewMode === '1' 
                   ? 'grid-cols-1 sm:grid-cols-1 lg:grid-cols-1' 
@@ -882,10 +1276,13 @@ export default function TiendaPage() {
                 >
                   {/* Imagen del producto */}
                   <div className="relative aspect-square overflow-hidden">
-                    <img
-                      src={getCanastaImage(product.nombre, product.imagen)}
+                    <Image
+                      src={getCanastaImage(product.nombre, product.imagen) || '/placeholder-product.jpg'}
                       alt={product.nombre}
+                      width={400}
+                      height={400}
                       className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
                     />
                     
                     {/* Badges */}
@@ -932,17 +1329,30 @@ export default function TiendaPage() {
 
                   {/* Información del producto */}
                   <div className="p-4">
-                    {/* Ubicación del productor */}
+                    {/* 
+                    ========================================
+                    TRAZABILIDAD COMENTADA - Ubicación del productor
+                    ========================================
+                    Esta sección muestra la ubicación del productor.
+                    Está comentada temporalmente porque no tenemos toda la información.
+                    
+                    PARA REACTIVAR:
+                    1. Descomentar el bloque de código abajo
+                    2. Asegurarse de que los productos tengan datos de 'productor' y 'ubicacion'
+                    3. El icono MapPin ya está importado en lucide-react
+                    
                     <div className="flex items-center gap-1 text-[#33503E] mb-2">
                       <MapPin className="w-3 h-3" />
                       <span className="text-xs font-medium">
                         {product.productor}, {product.ubicacion}
                       </span>
                     </div>
+                    ========================================
+                    */}
 
                     {/* Nombre del producto */}
-                    <h3 className="font-semibold text-[#33503E] mb-1 line-clamp-2">
-                      {product.nombre}
+                    <h3 className="font-medium text-[#33503E] mb-1 line-clamp-2">
+                      {product.nombre.replace(/SUSCRIPCIÓN|SUSCRIPCION|COMPRA ÚNICA/gi, '').trim()}
                     </h3>
 
                     {/* Descripción */}
@@ -957,7 +1367,19 @@ export default function TiendaPage() {
                       <span className="text-gray-500 text-sm">({product.reviews})</span>
                     </div>
 
-                    {/* Métricas ambientales */}
+                    {/* 
+                    ========================================
+                    TRAZABILIDAD COMENTADA - Métricas ambientales
+                    ========================================
+                    Esta sección muestra CO2, agua y plástico ahorrado.
+                    Está comentada temporalmente porque no tenemos datos reales.
+                    
+                    PARA REACTIVAR:
+                    1. Descomentar el bloque de código abajo
+                    2. Asegurarse de que los productos tengan datos en 'metricas'
+                       con las propiedades: co2, agua, plastico
+                    3. Los emojis 🌱💧♻️ se usan como iconos
+                    
                     <div className="flex items-center justify-between text-xs text-gray-600 mb-3 bg-[#F5F2E8] rounded-lg p-2">
                       <div className="flex items-center gap-1">
                         <span>🌱</span>
@@ -972,38 +1394,102 @@ export default function TiendaPage() {
                         <span>{product.metricas.plastico}</span>
                       </div>
                     </div>
+                    ========================================
+                    */}
 
-                    {/* Precio y botón agregar - Botón terracota */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <span className="text-2xl font-bold text-[#B15543]">
-                          ${product.precio.toFixed(2)}
-                        </span>
-                        <span className="text-gray-500 text-sm ml-1">/ {product.unidad}</span>
+                    {/* Precio y botones - DUAL PRICING para canastas */}
+                    {esCanasta(product.id) ? (
+                      /* CANASTA: Mostrar dos opciones (Compra Única + Suscripción) */
+                      <div className="space-y-3 border-t border-gray-200 pt-3">
+                        {/* Opción 1: Compra Única */}
+                        <div className="bg-white border border-gray-200 rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <div>
+                              <div className="text-xs text-gray-600 font-medium">Compra Única</div>
+                              <div className="flex items-baseline gap-1">
+                                <span className="text-xl font-bold text-[#B15543]">
+                                  ${(preciosCompraUnica[product.id] || product.precio).toFixed(2)}
+                                </span>
+                                <span className="text-xs text-gray-500">/ {product.unidad}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              // Crear producto con itemcode de compra única (con U)
+                              const productCompraUnica = {
+                                ...product,
+                                id: obtenerItemcodeCompraUnica(product.id),
+                                precio: preciosCompraUnica[product.id] || product.precio
+                              }
+                              addToCart(productCompraUnica, e)
+                            }}
+                            className="w-full bg-[#B15543] hover:bg-[#9d4a39] text-white"
+                            size="sm"
+                            disabled={product.stock === 0}
+                          >
+                            <ShoppingCart className="w-4 h-4 mr-1" />
+                            {product.stock > 0 ? 'Agregar al Carrito' : 'Agotado'}
+                          </Button>
+                        </div>
+
+                        {/* Opción 2: Suscripción */}
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs text-green-700 font-medium">Suscripción</span>
+                                <Badge className="bg-green-600 text-white text-xs px-2 py-0">Ahorra 5%</Badge>
+                              </div>
+                              <div className="flex items-baseline gap-1">
+                                <span className="text-lg font-bold text-green-800">
+                                  ${product.precio.toFixed(2)}
+                                </span>
+                                <span className="text-xs text-green-600">/ semana</span>
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleSuscripcion(product)
+                            }}
+                            variant="outline"
+                            className="w-full border-green-600 text-green-700 hover:bg-green-100"
+                            size="sm"
+                          >
+                            📅 Suscribirme
+                          </Button>
+                        </div>
                       </div>
-                      {product.ctaType === 'subscription' ? (
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            window.location.href = '/suscripciones'
-                          }}
-                          className="bg-[#B15543] hover:bg-[#9d4a39] text-white px-4 py-2"
-                          size="sm"
-                        >
-                          <ShoppingCart className="w-4 h-4 mr-1" />
-                          Suscribirse
-                        </Button>
-                      ) : (
+                    ) : (
+                      /* PRODUCTO NORMAL: Botón único */
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <span className="text-xl font-semibold text-[#B15543]">
+                            ${product.precio.toFixed(2)}
+                          </span>
+                          <span className="text-gray-500 text-sm ml-1">/ {product.unidad}</span>
+                        </div>
                         <Button
                           onClick={(e) => addToCart(product, e)}
                           className="bg-[#B15543] hover:bg-[#9d4a39] text-white px-4 py-2"
                           size="sm"
+                          disabled={product.stock === 0}
                         >
                           <ShoppingCart className="w-4 h-4 mr-1" />
-                          Agregar
+                          {product.stock > 0 ? 'Agregar' : 'Agotado'}
                         </Button>
-                      )}
-                    </div>
+                      </div>
+                    )}
+
+                    {/* Stock disponible (si viene de la API) */}
+                    {product.stock !== undefined && product.stock > 0 && product.stock < 10 && (
+                      <p className="text-xs text-orange-600 mb-2">
+                        ¡Solo quedan {product.stock} disponibles!
+                      </p>
+                    )}
 
                     {/* Storytelling al final con línea */}
                     <div className="border-t border-gray-200 pt-3">
@@ -1029,11 +1515,13 @@ export default function TiendaPage() {
           onAddToCart={(product: Product) => {
             const cartItem = {
               id: product.id,
+              itemcode: product.id, // Agregar itemcode
               name: product.nombre,
               price: product.precio,
               quantity: 1,
               image: product.imagen,
-              unit: product.unidad
+              unit: product.unidad,
+              tipo: 'producto' // Agregar tipo
             }
             
             const existingCart = JSON.parse(localStorage.getItem('arcaTierraCart') || '[]')
@@ -1051,51 +1539,44 @@ export default function TiendaPage() {
             // Disparar evento para notificar al header que actualice el contador
             window.dispatchEvent(new Event('cartUpdated'))
             
-            // Usar el sistema global de toast
-            toast.cart(`${product.nombre} agregado al carrito`, {
-              title: '¡Excelente elección!',
-              action: {
-                label: 'Ver carrito',
-                onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
-              }
-            })
-            
-            // Ya no abrimos el carrito automáticamente para no tapar los toasts y mejorar UX
-            // window.dispatchEvent(new Event('toggleCartSidebar'))
+            // Toast deshabilitado - era molesto al agregar múltiples productos
+            // toast.cart(`${product.nombre} agregado al carrito`, {
+            //   title: '¡Excelente elección!',
+            //   action: {
+            //     label: 'Ver carrito',
+            //     onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
+            //   }
+            // })
           }}
           isFavorite={favorites.includes(productoQuickView.id)}
           onToggleFavorite={(productId: string, event: React.MouseEvent) => toggleFavorite(productId, event)}
         />
       )}
 
-      {/* Los toasts ahora se muestran a través del sistema global */}
-
-      {/* SECCIONES CRÍTICAS - Contenido del dueño + Trazabilidad */}
-      
       {/* 1. DESTACADOS DE LA SEMANA */}
-      <section className="py-16 bg-gradient-to-br from-[#F5F2E8] to-white">
+      <section className="py-12 md:py-16 bg-gradient-to-br from-[#F5F2E8] to-white">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#33503E] mb-4">
+            <h2 className="text-2xl md:text-3xl font-semibold text-[#33503E] mb-4">
               Destacados de la semana
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Productos frescos seleccionados por nuestros agricultores de Huasca de Ocampo, Amanalco y Xochimilco
+              Productos frescos seleccionados por nuestros agricultores de Huasca de Ocampo (Hidalgo), Amanalco (Estado de México), Xochimilco (CDMX) y Valles Centrales (Oaxaca)
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-6 sm:p-8">
             {featuredProducts.length > 0 ? (
               featuredProducts.map((product) => (
                 <div key={product.id} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300">
                   <div className="w-16 h-16 bg-[#B15543]/10 rounded-full flex items-center justify-center mb-4 overflow-hidden">
                     {product.imagen ? (
-                      <img src={product.imagen} alt={product.nombre} className="w-full h-full object-cover rounded-full" />
+                      <Image src={product.imagen} alt={product.nombre} width={64} height={64} className="w-full h-full object-cover rounded-full" />
                     ) : (
                       <span className="text-2xl">🌱</span>
                     )}
                   </div>
-                  <h3 className="font-bold text-lg mb-2 text-[#33503E]">{product.nombre}</h3>
+                  <h3 className="font-semibold text-base mb-2 text-[#33503E]">{product.nombre}</h3>
                   {(product.productor || product.ubicacion) ? (
                     <p className="text-gray-600 text-sm mb-3">
                       {[product.productor, product.ubicacion].filter(Boolean).join(' · ')}
@@ -1104,7 +1585,7 @@ export default function TiendaPage() {
                     <p className="text-gray-600 text-sm mb-3">{product.categoria.replaceAll('-', ' ')}</p>
                   )}
                   <div className="flex items-center justify-between">
-                    <span className="text-[#B15543] font-bold">
+                    <span className="text-[#B15543] font-semibold">
                       {product.precio > 0 ? `$${product.precio}${product.unidad ? `/${product.unidad}` : ''}` : '—'}
                     </span>
                     <button onClick={() => goToProductDetail(product.id)} className="bg-[#B15543] text-white px-4 py-2 rounded-lg hover:bg-[#9d4a39] transition-colors">
@@ -1121,90 +1602,27 @@ export default function TiendaPage() {
       </section>
 
       {/* 2. ¿POR QUÉ COMPRAR EN ARCATIERRA.COM? */}
-      <section className="py-16 bg-white">
+      <section className="py-12 md:py-16 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#33503E] mb-4">
-              ¿Por qué comprar en arcatierra.com?
+            <h2 className="text-2xl md:text-3xl font-semibold text-[#33503E] mb-4">
+              ¿Por qué comprar en Arca Tierra?
             </h2>
             <p className="text-gray-600 max-w-3xl mx-auto">
-              Conectamos directamente con agricultores de México para llevarte la mejor calidad a tu mesa
+              Cada compra alimenta tu salud, apoya al campo y ayuda a regenerar la tierra. Comer bien también puede cambiar el futuro.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-[#B15543] to-[#9d4a39] rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl text-white">🌱</span>
-              </div>
-              <h3 className="text-xl font-bold text-[#33503E] mb-4">Frescura que se nota</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Nuestras hortalizas llegan desde Xochimilco en menos de 24 horas. 
-                Frutas y vegetales 100% agroecológicas que se cosechan cada semana directamente en el campo mexicano.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-[#B15543] to-[#9d4a39] rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl text-white">📋</span>
-              </div>
-              <h3 className="text-xl font-bold text-[#33503E] mb-4">Curaduría pensada para ti</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Elegimos alimentos de temporada, nutritivos y versátiles,
-                para que cocinar en casa sea más fácil y disfrutable.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-[#B15543] to-[#9d4a39] rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl text-white">💰</span>
-              </div>
-              <h3 className="text-xl font-bold text-[#33503E] mb-4">Ahorro inteligente</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Invertir en calidad desde el origen te rinde más:
-                mejores ingredientes, menos desperdicio, más sabor.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-[#B15543] to-[#9d4a39] rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl text-white">🌿</span>
-              </div>
-              <h3 className="text-xl font-bold text-[#33503E] mb-4">Salud que se cultiva</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Alimentos agroecológicos, diversos y llenos de vida.
-                Variedad, colores y texturas que nutren tu cuerpo cada semana.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-[#B15543] to-[#9d4a39] rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl text-white">🚚</span>
-              </div>
-              <h3 className="text-xl font-bold text-[#33503E] mb-4">Logística responsable, impacto real</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Nuestros viajes suman menos de 500 km semanales
-                y conectan directamente con productores de Amanalco, Puebla, Huasca y Xochimilco.
-                Hablamos de hiperlocalidad regenerativa.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-[#B15543] to-[#9d4a39] rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl text-white">🌱</span>
-              </div>
-              <h3 className="text-xl font-bold text-[#33503E] mb-4">Cada compra siembra futuro</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Con tu compra apoyas a más de 60 familias campesinas
-                y formas parte de una red que cuida la tierra y el alimento desde la raíz.
-              </p>
-            </div>
+          {/* SECCIÓN COMENTADA - 6 cards de beneficios
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:p-8">
+            ...Frescura, Curaduría, Ahorro, Salud, Logística, Cada compra...
           </div>
+          */}
         </div>
       </section>
 
       {/* 3. INFORMACIÓN DE ENTREGA / LOGÍSTICA */}
-      <section className="py-16 bg-[#F5F2E8]">
+      <section className="py-12 md:py-16 bg-[#F5F2E8]">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-[#33503E] mb-4">
@@ -1215,8 +1633,8 @@ export default function TiendaPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-white rounded-xl p-8 shadow-lg">
+          <div className="grid md:grid-cols-2 gap-6 sm:p-8">
+            <div className="bg-white rounded-xl p-6 sm:p-8 shadow-lg">
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-[#B15543] rounded-lg flex items-center justify-center mr-4">
                   <span className="text-white text-xl">📅</span>
@@ -1229,7 +1647,7 @@ export default function TiendaPage() {
               </p>
             </div>
 
-            <div className="bg-white rounded-xl p-8 shadow-lg">
+            <div className="bg-white rounded-xl p-6 sm:p-8 shadow-lg">
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-[#B15543] rounded-lg flex items-center justify-center mr-4">
                   <span className="text-white text-xl">⏰</span>
@@ -1251,7 +1669,7 @@ export default function TiendaPage() {
               </div>
             </div>
 
-            <div className="md:col-span-2 bg-white rounded-xl p-8 shadow-lg">
+            <div className="md:col-span-2 bg-white rounded-xl p-6 sm:p-8 shadow-lg">
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-[#B15543] rounded-lg flex items-center justify-center mr-4">
                   <span className="text-white text-xl">📦</span>
@@ -1264,93 +1682,25 @@ export default function TiendaPage() {
             </div>
           </div>
 
-          {/* Regiones de origen */}
-          <div className="mt-12 bg-white rounded-xl p-8 shadow-lg">
+          {/* SECCIÓN COMENTADA - Regiones de origen
+          <div className="mt-12 bg-white rounded-xl p-6 sm:p-8 shadow-lg">
             <h3 className="text-xl font-bold text-[#33503E] mb-6 text-center">
               Nuestras regiones productoras
             </h3>
-            <div className="grid md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <span className="text-2xl">🌾</span>
-                </div>
-                <h4 className="font-semibold text-[#33503E] mb-1">Huasca de Ocampo</h4>
-                <p className="text-sm text-gray-600">Hidalgo - Verduras</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <span className="text-2xl">🥬</span>
-                </div>
-                <h4 className="font-semibold text-[#33503E] mb-1">Xochimilco</h4>
-                <p className="text-sm text-gray-600">CDMX - Hortalizas</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <span className="text-2xl">🍎</span>
-                </div>
-                <h4 className="font-semibold text-[#33503E] mb-1">Amanalco</h4>
-                <p className="text-sm text-gray-600">Edo. Méx. - Frutas</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <span className="text-2xl">☕</span>
-                </div>
-                <h4 className="font-semibold text-[#33503E] mb-1">Puebla</h4>
-                <p className="text-sm text-gray-600">Café y Cacao</p>
-              </div>
-            </div>
+            ...
           </div>
+          */}
         </div>
       </section>
 
-      {/* 4. CTA SUSCRIPCIÓN */}
-      <section className="py-20 bg-gradient-to-br from-[#B15543] to-[#9d4a39] text-white">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Suscríbete y simplifica tu alimentación
-          </h2>
-          <p className="text-xl mb-8 opacity-90">
-            Ahorra tiempo y dinero con una suscripción a tu canasta:
-          </p>
-          
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
-            <div className="bg-white/10 backdrop-blur rounded-xl p-6">
-              <div className="text-3xl mb-4">💰</div>
-              <h3 className="text-xl font-bold mb-2">5% de descuento siempre</h3>
-              <p className="opacity-90">Precio preferencial en todas tus canastas</p>
-            </div>
-            
-            <div className="bg-white/10 backdrop-blur rounded-xl p-6">
-              <div className="text-3xl mb-4">📅</div>
-              <h3 className="text-xl font-bold mb-2">Recibe automáticamente</h3>
-              <p className="opacity-90">Cada semana o quincena, sin preocuparte por pedir</p>
-            </div>
-            
-            <div className="bg-white/10 backdrop-blur rounded-xl p-6">
-              <div className="text-3xl mb-4">➕</div>
-              <h3 className="text-xl font-bold mb-2">Agrega fácilmente</h3>
-              <p className="opacity-90">Productos adicionales desde la tienda</p>
-            </div>
-            
-            <div className="bg-white/10 backdrop-blur rounded-xl p-6">
-              <div className="text-3xl mb-4">❤️</div>
-              <h3 className="text-xl font-bold mb-2">Dona si sales</h3>
-              <p className="opacity-90">¿Vacaciones? Dona tu canasta a Gastromotiva</p>
-            </div>
-          </div>
-          
-          <p className="text-lg mb-8 opacity-90">
-            Tus alimentos llegan sin que tengas que pensar demasiado —y con mucho sentido.
-          </p>
-          
-          <button className="bg-white text-[#B15543] px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors shadow-lg">
-            Comenzar suscripción
-          </button>
-        </div>
+      {/* SECCIÓN COMENTADA - 4. CTA SUSCRIPCIÓN
+      <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-[#B15543] to-[#9d4a39] text-white">
+        ...Suscríbete y simplifica tu alimentación...
       </section>
+      */}
 
-      {/* 5. TESTIMONIOS */}
-      <section className="py-16 bg-white">
+      {/* SECCIÓN COMENTADA - 5. TESTIMONIOS
+      <section className="py-12 md:py-16 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-[#33503E] mb-4">
@@ -1361,8 +1711,8 @@ export default function TiendaPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-[#F5F2E8] rounded-xl p-8">
+          <div className="grid md:grid-cols-3 gap-6 sm:p-8">
+            <div className="bg-[#F5F2E8] rounded-xl p-6 sm:p-8">
               <div className="flex mb-4">
                 <div className="text-[#B15543]">★★★★★</div>
               </div>
@@ -1380,7 +1730,7 @@ export default function TiendaPage() {
               </div>
             </div>
 
-            <div className="bg-[#F5F2E8] rounded-xl p-8">
+            <div className="bg-[#F5F2E8] rounded-xl p-6 sm:p-8">
               <div className="flex mb-4">
                 <div className="text-[#B15543]">★★★★★</div>
               </div>
@@ -1398,7 +1748,7 @@ export default function TiendaPage() {
               </div>
             </div>
 
-            <div className="bg-[#F5F2E8] rounded-xl p-8">
+            <div className="bg-[#F5F2E8] rounded-xl p-6 sm:p-8">
               <div className="flex mb-4">
                 <div className="text-[#B15543]">★★★★★</div>
               </div>
@@ -1418,9 +1768,10 @@ export default function TiendaPage() {
           </div>
         </div>
       </section>
+      */}
 
-      {/* 6. FAQs ESPECÍFICOS */}
-      <section className="py-16 bg-[#F5F2E8]">
+      {/* SECCIÓN COMENTADA - 6. FAQs ESPECÍFICOS
+      <section className="py-12 md:py-16 bg-[#F5F2E8]">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-[#33503E] mb-4">
@@ -1498,7 +1849,30 @@ export default function TiendaPage() {
           </div>
         </div>
       </section>
+      */}
+
+      {/* 🎤 NUEVO: Indicador de búsqueda por voz */}
+      <VoiceSearchIndicator 
+        isListening={isListening}
+        transcript={transcript}
+        isSupported={voiceSupported}
+      />
     </div>
   )
 }
 
+// Wrapper con Suspense para useSearchParams
+export default function TiendaPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B15543] mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando tienda...</p>
+        </div>
+      </div>
+    }>
+      <TiendaPageContent />
+    </Suspense>
+  )
+}

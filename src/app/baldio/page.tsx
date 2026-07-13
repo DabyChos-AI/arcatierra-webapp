@@ -3,7 +3,6 @@ import BaldioHero from '@/components/baldio/BaldioHero'
 import BaldioMainContent from '@/components/baldio/BaldioMainContent'
 import BaldioGallery from '@/components/baldio/BaldioGallery'
 import BaldioSustainabilityStory from '@/components/baldio/BaldioSustainabilityStory'
-import BaldioChinampasJourney from '@/components/baldio/BaldioChinampasJourney'
 import BaldioCallToAction from '@/components/baldio/BaldioCallToAction'
 
 export const metadata: Metadata = {
@@ -102,13 +101,13 @@ export const metadata: Metadata = {
 
 export default function BaldioPage() {
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen pt-[88px]">
+      {/* pt-[88px] = 28px banner + 60px header */}
       <BaldioHero />
       <BaldioMainContent />
       <BaldioSustainabilityStory />
-      <BaldioChinampasJourney />
       <BaldioGallery />
       <BaldioCallToAction />
-    </main>
+    </div>
   )
 }

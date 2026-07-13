@@ -5,7 +5,7 @@ import { MessageCircle, X, Send, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-const WHATSAPP_NUMBER = '+5255123456789' // Número de WhatsApp de Arca Tierra
+const WHATSAPP_NUMBER = '+525510515525' // Número de WhatsApp de Arca Tierra
 
 const QUICK_MESSAGES = [
   '¡Hola! Me interesa conocer más sobre sus productos orgánicos',

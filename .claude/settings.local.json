@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(audit-website)",
+      "Bash(rm:*)",
+      "Bash(openssl rand:*)",
+      "Bash(sudo cp:*)",
+      "Bash(docker run:*)",
+      "Bash(docker compose:*)",
+      "Bash(cp:*)",
+      "Bash(docker exec:*)"
+    ]
+  }
+}

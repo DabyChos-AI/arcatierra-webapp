@@ -1,0 +1,22 @@
+# TEXTOS GRANDES SIN BREAKPOINTS
+# Generado: Tue Oct 21 01:42:41 UTC 2025
+# Problema: text-4xl, text-5xl, etc sin sm:/md:/lg:
+
+app/page.tsx:244:            <h2 className="text-4xl font-bold mb-6 text-amber-200">
+app/catering2/components/ClientLogos.tsx:70:            <p className="text-4xl font-bold text-terracota-principal">10+</p>
+app/catering2/components/ClientLogos.tsx:74:            <p className="text-4xl font-bold text-terracota-principal">500+</p>
+app/catering2/components/ClientLogos.tsx:78:            <p className="text-4xl font-bold text-terracota-principal">100%</p>
+app/catering2/components/ClientLogos.tsx:82:            <p className="text-4xl font-bold text-terracota-principal">50+</p>
+app/suscripciones/page.tsx:434:            <h1 className="text-4xl font-bold mb-4 text-white">Canastas Agroecológicas de Temporada</h1>
+app/experiencias-privadas/page.tsx:167:                  <div className="text-6xl">{experiencia.icon}</div>
+app/entregas/page.tsx:51:            <h1 className="text-4xl font-bold mb-4">Entregas Sustentables</h1>
+app/calendario/page.tsx:407:            className="text-5xl font-bold mb-4 text-white"
+app/calendario/page.tsx:929:                        <span className="font-semibold text-[#3A4741] min-w-[2rem] text-center">{adultos}</span>
+app/calendario/page.tsx:948:                        <span className="font-semibold text-[#3A4741] min-w-[2rem] text-center">{niños}</span>
+app/recetas/client-page.tsx:630:              <h2 className="text-4xl font-bold mb-4" style={{ color: '#33503E' }}>
+app/recetas/client-page.tsx:649:                    <div className="text-4xl">{tip.icon}</div>
+app/recetas/client-page.tsx:684:              <h2 className="text-4xl font-bold mb-4" style={{ color: '#33503E' }}>
+app/recetas/client-page.tsx:760:            <h2 className="text-4xl font-bold" style={{ color: '#3A4741' }}>
+app/experiencias-antigua/page.tsx:179:          <h1 className="text-4xl font-bold mb-4">Experiencias Arca Tierra</h1>
+app/experiencias/page.tsx:521:                <span className="text-4xl">🍽️</span>
+components/turismo-regenerativo/TurismoRegenerativoModular.tsx:16:      <h1 className="text-4xl font-bold text-gray-800">{subtitle}</h1>

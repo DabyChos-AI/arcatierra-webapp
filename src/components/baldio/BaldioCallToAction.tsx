@@ -118,13 +118,15 @@ export default function BaldioCallToAction() {
                 Tenemos disponibilidad limitada, así que te recomendamos hacer tu reservación con anticipación.
               </p>
               <div className="space-y-4">
-                <Link 
-                  href="/baldio/reservas" 
+                <a 
+                  href="https://www.baldio.mx/reservaciones/" 
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="bg-[#B15543] hover:bg-[#B15543]/90 transition-colors text-white px-8 py-3 rounded-md text-lg font-medium inline-flex items-center justify-center w-full"
                 >
                   <Calendar className="mr-2 h-5 w-5" />
                   Hacer reservación
-                </Link>
+                </a>
                 <Link 
                   href="/baldio/menu" 
                   className="bg-white/10 hover:bg-white/20 transition-colors text-white px-8 py-3 rounded-md text-lg font-medium inline-block w-full"

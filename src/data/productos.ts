@@ -36,7 +36,7 @@ export interface Product {
 export const productos: Product[] = [
   {
     "id": "1885",
-    "nombre": "CANASTA INDIVIDUAL SUSCRIPCIÓN",
+    "nombre": "Canasta individual suscripción",
     "precio": 290,
     "unidad": "3.5 kg",
     "imagen": "/images/tienda/Acelga_closeup_individual.jpg",
@@ -62,7 +62,7 @@ export const productos: Product[] = [
   },
   {
     "id": "1885u",
-    "nombre": "CANASTA INDIVIDUAL COMPRA UNICA",
+    "nombre": "Canasta individual compra única",
     "precio": 305,
     "unidad": "",
     "imagen": "/images/tienda/Acelga_closeup_individual.jpg",
@@ -88,7 +88,7 @@ export const productos: Product[] = [
   },
   {
     "id": "1886",
-    "nombre": "CANASTA MEDIA SUSCRIPCION",
+    "nombre": "Canasta media suscripción",
     "precio": 350,
     "unidad": "5 kg",
     "imagen": "/images/tienda/canasta-media-tienda-arca-tierra.jpg",
@@ -115,7 +115,7 @@ export const productos: Product[] = [
   },
   {
     "id": "1886u",
-    "nombre": "CANASTA MEDIA COMPRA UNICA",
+    "nombre": "Canasta media compra única",
     "precio": 367,
     "unidad": "",
     "imagen": "/images/tienda/canasta-media-tienda-arca-tierra.jpg",
@@ -141,7 +141,7 @@ export const productos: Product[] = [
   },
   {
     "id": "1887",
-    "nombre": "CANASTA COMPLETA SUSCRIPCION",
+    "nombre": "Canasta completa suscripción",
     "precio": 510,
     "unidad": "7.5 kg",
     "imagen": "/images/tienda/canasta-completa-tienda-arca-tierra.jpg",
@@ -168,7 +168,7 @@ export const productos: Product[] = [
   },
   {
     "id": "1887u",
-    "nombre": "CANASTA COMPLETA COMPRA UNICA",
+    "nombre": "Canasta completa compra única",
     "precio": 535,
     "unidad": "",
     "imagen": "/images/tienda/canasta-completa-tienda-arca-tierra.jpg",
@@ -194,7 +194,7 @@ export const productos: Product[] = [
   },
   {
     "id": "1888",
-    "nombre": "CANASTA FAMILIAR SUSCRIPCION",
+    "nombre": "Canasta familiar suscripción",
     "precio": 670,
     "unidad": "10 kg",
     "imagen": "/images/tienda/Bodegon_Invierno_Canasta_Completa.jpg",
@@ -221,7 +221,7 @@ export const productos: Product[] = [
   },
   {
     "id": "1888u",
-    "nombre": "CANASTA FAMILIAR COMPRA UNICA",
+    "nombre": "Canasta familiar compra única",
     "precio": 703,
     "unidad": "",
     "imagen": "/images/tienda/Bodegon_Invierno_Canasta_Completa.jpg",
@@ -406,7 +406,7 @@ export const productos: Product[] = [
   },
   {
     "id": "P-WEB-ACE-005",
-    "nombre": "ACEITE DE AJONJOLI REFINADO",
+    "nombre": "Aceite de ajonjolí refinado",
     "precio": 159,
     "unidad": "",
     "imagen": "/images/tienda/Aceite_Ajonjoli_Refinado.jpg",
@@ -458,7 +458,7 @@ export const productos: Product[] = [
   },
   {
     "id": "MAZ-TOR-BLA-12P",
-    "nombre": "ACEITE DE AGUACATE",
+    "nombre": "Aceite de aguacate",
     "precio": 279,
     "unidad": "",
     "imagen": "/images/tienda/aceite-aguacate-tienda-arca-tierra.jpg",
@@ -3563,7 +3563,7 @@ export const productos: Product[] = [
     "reviews": 0,
     "stock": 100,
     "badges": [],
-    "descripcion": "¿Por qué es carne regenerativa?\n\n-No se añaden químicos a la dieta del animal.\n-No se usan granos en la dieta del animal.\n-No se usan hormonas, antigarrapaticidas, desparasitantes, antibióticos u otras sustancias químicas para el cuidado de la vida del animal que afectan nuestra salud momento de consumo.\n-No se usan agroquímicos en el suelo donde pastan libremente los animales.\n\nBeneficios de la carne de origen regenerativo:\n-Consumos de carne a base de celulosa vegetal (libre pastoreo) y no carbohidratos y azúcares que se dan en la alimentación a base de granos concentrados.\n-Mayor concentración de vitaminas y minerales.\n-Contribución a la captura de carbono a través del libre pastoreo.\n-Regeneración de la capa fértil del suelo a través del libre pastoreo.\n-Conservación de flora y fauna silvestre.\n-Creación de un ecosistema natural protegido.\n-Comercio local.\n-Pago justo.",
+    "descripcion": "Apio fresco y crujiente, perfecto para ensaladas, sopas y jugos. Rico en vitaminas, minerales y fibra. Cultivado de manera sustentable en nuestras chinampas de Xochimilco. Ideal para una alimentación saludable.",
     "storytelling": "",
     "metricas": {
       "co2": "-- kg CO₂",
@@ -3572,7 +3572,7 @@ export const productos: Product[] = [
     },
     "seoData": {
       "metaTitle": "APIO 1PZA",
-      "metaDescription": "¿Por qué es carne regenerativa?\n\n-No se añaden químicos a la dieta del animal.\n-No se usan granos en la dieta del animal.\n-No se usan hormonas, antigarrapaticidas, desparasitantes, antibióticos u otras sustancias químicas para el cuidado de la vida del animal que afectan nuestra salud momento de consumo.\n-No se usan agroquímicos en el suelo donde pastan libremente los animales.\n\nBeneficios de la carne de origen regenerativo:\n-Consumos de carne a base de celulosa vegetal (libre pastoreo) y no carbohidratos y azúcares que se dan en la alimentación a base de granos concentrados.\n-Mayor concentración de vitaminas y minerales.\n-Contribución a la captura de carbono a través del libre pastoreo.\n-Regeneración de la capa fértil del suelo a través del libre pastoreo.\n-Conservación de flora y fauna silvestre.\n-Creación de un ecosistema natural protegido.\n-Comercio local.\n-Pago justo.",
+      "metaDescription": "Apio fresco y crujiente de Arcatierra. Cultivado sustentablemente en chinampas de Xochimilco. Rico en vitaminas y minerales para una alimentación saludable.",
       "keywords": []
     }
   },

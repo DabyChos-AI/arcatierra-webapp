@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useHeaderState } from './hooks/useHeaderState';
+import { HeaderStateProvider, useHeaderState } from './hooks/HeaderStateContext';
 import LogoSection from './LogoSection';
 import MainNavigation from './MainNavigation';
 import ActionSection from './ActionSection';
@@ -11,7 +11,7 @@ import MobileMenu from './MobileMenu';
 const headerStyles = {
   header: (isTransparent: boolean, isScrolled: boolean) => ({
     position: 'fixed' as const,
-    top: 0,
+    top: '28px',
     left: 0,
     right: 0,
     zIndex: 1000,
@@ -29,7 +29,8 @@ const headerStyles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '1rem 5%',
+    padding: '0 5%',
+    height: '60px',
     maxWidth: '1400px',
     margin: '0 auto',
   }
@@ -40,7 +41,8 @@ interface HeaderContainerProps {
   style?: React.CSSProperties;
 }
 
-const HeaderContainer: React.FC<HeaderContainerProps> = ({ 
+// Componente interno que usa el contexto
+const HeaderContent: React.FC<HeaderContainerProps> = ({ 
   className,
   style 
 }) => {
@@ -70,6 +72,15 @@ const HeaderContainer: React.FC<HeaderContainerProps> = ({
       {/* Menú móvil */}
       <MobileMenu />
     </>
+  );
+};
+
+// Componente principal que provee el contexto
+const HeaderContainer: React.FC<HeaderContainerProps> = (props) => {
+  return (
+    <HeaderStateProvider>
+      <HeaderContent {...props} />
+    </HeaderStateProvider>
   );
 };
 

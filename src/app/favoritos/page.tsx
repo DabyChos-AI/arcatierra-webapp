@@ -8,107 +8,73 @@ import { Button } from '@/components/ui/button'
 import { productos, Product } from '@/data/productos'
 import { recipesData, Recipe } from '@/data/recetas'
 import { useToast } from '@/components/ui/Toast'
+import { useFavoritos } from '@/hooks/useFavoritos'
 
 export default function FavoritosPage() {
-  const [favoritos, setFavoritos] = useState<string[]>([])
   const [productosFavoritos, setProductosFavoritos] = useState<Product[]>([])
   const [recetasFavoritas, setRecetasFavoritas] = useState<Recipe[]>([])
   const toast = useToast()
+  
+  // Hook de favoritos conectado al backend
+  const { favoritos, eliminarFavorito: eliminarFavoritoHook, count } = useFavoritos()
 
   useEffect(() => {
-    // Cargar favoritos desde localStorage
-    const cargarFavoritos = () => {
-      try {
-        const favoritosGuardados = localStorage.getItem('arcaTierraFavoritos')
-        const listaFavoritos = favoritosGuardados ? JSON.parse(favoritosGuardados) : []
-        setFavoritos(listaFavoritos)
-        
-        // Separar productos y recetas
-        const productIds = listaFavoritos.filter((id: string) => !id.startsWith('recipe-'))
-        const recipeIds = listaFavoritos.filter((id: string) => id.startsWith('recipe-')).map((id: string) => parseInt(id.replace('recipe-', '')))
-        
-        // Filtrar productos que están en favoritos
-        const productosFiltrados = productos.filter((p: Product) => productIds.includes(p.id))
-        setProductosFavoritos(productosFiltrados)
-        
-        // Filtrar recetas que están en favoritos
-        const recetasFiltradas = recipesData.filter((r: Recipe) => recipeIds.includes(r.id))
-        setRecetasFavoritas(recetasFiltradas)
-      } catch (error) {
-        console.error('Error al cargar favoritos:', error)
-        setFavoritos([])
-        setProductosFavoritos([])
-        setRecetasFavoritas([])
-      }
+    // Cargar productos y recetas favoritos cuando cambien los favoritos
+    if (favoritos.length > 0) {
+      // Separar productos y recetas
+      const productIds = favoritos.filter((id: string) => !id.startsWith('recipe-'))
+      const recipeIds = favoritos
+        .filter((id: string) => id.startsWith('recipe-'))
+        .map((id: string) => id.replace('recipe-', '')) // Mantener como string
+      
+      // Filtrar productos que están en favoritos
+      const productosFiltrados = productos.filter((p: Product) => productIds.includes(p.id))
+      setProductosFavoritos(productosFiltrados)
+      
+      // Filtrar recetas que están en favoritos
+      const recetasFiltradas = recipesData.filter((r: Recipe) => recipeIds.includes(r.id))
+      setRecetasFavoritas(recetasFiltradas)
+    } else {
+      setProductosFavoritos([])
+      setRecetasFavoritas([])
     }
-    
-    cargarFavoritos()
-    
-    // Escuchar cambios en localStorage (para actualizar si se modifican favoritos en otra pestaña)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'arcaTierraFavoritos') {
-        cargarFavoritos()
-      }
-    }
-    
-    window.addEventListener('storage', handleStorageChange)
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange)
-    }
-  }, [])
+  }, [favoritos])
 
-  const eliminarFavorito = (producto: Product) => {
-    const nuevosFavoritos = favoritos.filter(id => id !== producto.id)
-    setFavoritos(nuevosFavoritos)
+  const eliminarFavorito = async (producto: Product) => {
+    const exito = await eliminarFavoritoHook(producto.id)
     
-    // Actualizar productos mostrados
-    setProductosFavoritos(prev => prev.filter(p => p.id !== producto.id))
-    
-    // Guardar en localStorage
-    localStorage.setItem('arcaTierraFavoritos', JSON.stringify(nuevosFavoritos))
-    
-    // Mostrar toast con opción de deshacer
-    toast.error(`${producto.nombre} eliminado de favoritos`, {
-      title: 'Favorito eliminado',
-      action: {
-        label: 'Deshacer',
-        onClick: () => {
-          const restaurarFavoritos = [...nuevosFavoritos, producto.id]
-          setFavoritos(restaurarFavoritos)
-          setProductosFavoritos(prev => [...prev, producto])
-          localStorage.setItem('arcaTierraFavoritos', JSON.stringify(restaurarFavoritos))
-          toast.success(`${producto.nombre} restaurado a favoritos`)
-        }
-      }
-    })
+    if (exito) {
+      // Actualizar productos mostrados optimísticamente
+      setProductosFavoritos(prev => prev.filter(p => p.id !== producto.id))
+      
+      // Mostrar toast
+      toast.error(`${producto.nombre} eliminado de favoritos`, {
+        title: 'Favorito eliminado'
+      })
+    } else {
+      toast.error('No se pudo eliminar el favorito. Inténtalo de nuevo.', {
+        title: 'Error'
+      })
+    }
   }
 
-  const eliminarRecetaFavorita = (receta: Recipe) => {
+  const eliminarRecetaFavorita = async (receta: Recipe) => {
     const recipeId = `recipe-${receta.id}`
-    const nuevosFavoritos = favoritos.filter(id => id !== recipeId)
-    setFavoritos(nuevosFavoritos)
+    const exito = await eliminarFavoritoHook(recipeId)
     
-    // Actualizar recetas mostradas
-    setRecetasFavoritas(prev => prev.filter(r => r.id !== receta.id))
-    
-    // Guardar en localStorage
-    localStorage.setItem('arcaTierraFavoritos', JSON.stringify(nuevosFavoritos))
-    
-    // Mostrar toast con opción de deshacer
-    toast.error(`${receta.title} eliminada de favoritos`, {
-      title: 'Receta eliminada',
-      action: {
-        label: 'Deshacer',
-        onClick: () => {
-          const restaurarFavoritos = [...nuevosFavoritos, recipeId]
-          setFavoritos(restaurarFavoritos)
-          setRecetasFavoritas(prev => [...prev, receta])
-          localStorage.setItem('arcaTierraFavoritos', JSON.stringify(restaurarFavoritos))
-          toast.success(`${receta.title} restaurada a favoritos`)
-        }
-      }
-    })
+    if (exito) {
+      // Actualizar recetas mostradas optimísticamente
+      setRecetasFavoritas(prev => prev.filter(r => r.id !== receta.id))
+      
+      // Mostrar toast
+      toast.error(`${receta.title} eliminada de favoritos`, {
+        title: 'Receta eliminada'
+      })
+    } else {
+      toast.error('No se pudo eliminar el favorito. Inténtalo de nuevo.', {
+        title: 'Error'
+      })
+    }
   }
 
   const agregarAlCarrito = (producto: Product) => {
@@ -141,14 +107,14 @@ export default function FavoritosPage() {
       // Notificar actualización del carrito
       window.dispatchEvent(new CustomEvent('cartUpdated'))
       
-      // Mostrar notificación
-      toast.cart(`${producto.nombre} agregado al carrito`, {
-        title: '¡Excelente elección!',
-        action: {
-          label: 'Ver carrito',
-          onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
-        }
-      })
+      // Toast deshabilitado - era molesto al agregar múltiples productos
+      // toast.cart(`${producto.nombre} agregado al carrito`, {
+      //   title: '¡Excelente elección!',
+      //   action: {
+      //     label: 'Ver carrito',
+      //     onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
+      //   }
+      // })
     } catch (error) {
       console.error('Error al agregar al carrito:', error)
       toast.error('No se pudo agregar el producto al carrito.')

@@ -44,7 +44,7 @@ export default function EntregasPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-[#33503E] text-white py-16">
+      <div className="bg-[#33503E] text-white py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <Truck className="w-16 h-16 mx-auto mb-4 text-[#CCBB9A]" />
@@ -58,7 +58,7 @@ export default function EntregasPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Validador de Código Postal */}
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-12">
+        <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 mb-12">
           <div className="text-center mb-8">
             <Calculator className="w-12 h-12 text-[#B15543] mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-[#33503E] mb-2">
@@ -176,9 +176,9 @@ export default function EntregasPage() {
         </div>
 
         {/* Información de Entregas */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:p-8 mb-12">
           {/* Zonas de Entrega */}
-          <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-6">
               <MapPin className="w-6 h-6 text-[#B15543]" />
               <h3 className="text-xl font-bold text-[#33503E]">Zonas de Entrega</h3>
@@ -212,7 +212,7 @@ export default function EntregasPage() {
           </div>
 
           {/* Horarios y Políticas */}
-          <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-6">
               <Clock className="w-6 h-6 text-[#B15543]" />
               <h3 className="text-xl font-bold text-[#33503E]">Horarios y Políticas</h3>
@@ -252,7 +252,7 @@ export default function EntregasPage() {
         </div>
 
         {/* CTA Section */}
-        <div className="bg-[#33503E] text-white rounded-lg p-8 text-center">
+        <div className="bg-[#33503E] text-white rounded-lg p-6 sm:p-8 text-center">
           <h3 className="text-2xl font-bold mb-4">¿Listo para tu primera entrega?</h3>
           <p className="text-[#CCBB9A] mb-6">
             Descubre nuestros productos frescos y orgánicos

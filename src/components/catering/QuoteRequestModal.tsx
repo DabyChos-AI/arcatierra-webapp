@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, Users, Clock, MapPin, Send, CheckCircle } from 'lucide-react';
+import { X, Users, Clock, Send, CheckCircle } from 'lucide-react';
+import { API_URL } from '@/lib/api';
 
 interface QuoteRequestModalProps {
   isOpen: boolean;
@@ -22,22 +23,82 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
   });
   
   const [submitted, setSubmitted] = useState(false);
-  
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormState(prev => ({ ...prev, [name]: value }));
   };
-  
-  const handleSubmit = (e: React.FormEvent) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Aquí se implementaría la lógica de envío del formulario a un API
-    console.log('Formulario enviado:', formState);
-    
-    // Simulamos el envío exitoso
-    setTimeout(() => {
+
+    // Validacion cliente basica
+    const nombre = formState.name.trim();
+    const email = formState.email.trim();
+    if (!nombre) {
+      setError('Por favor ingresa tu nombre completo.');
+      return;
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError('Por favor ingresa un correo electrónico válido.');
+      return;
+    }
+
+    const guests = formState.guestCount ? Number(formState.guestCount) : NaN;
+    const numeroPersonas = Number.isFinite(guests) && guests > 0 ? Math.floor(guests) : null;
+    const mensaje =
+      [
+        formState.eventLocation ? `Ubicación: ${formState.eventLocation}` : '',
+        formState.message,
+      ]
+        .filter(Boolean)
+        .join('\n') || null;
+
+    const body = {
+      nombre,
+      email,
+      telefono: formState.phone || null,
+      tipo_evento: formState.eventType || null,
+      fecha_evento: formState.eventDate || null,
+      numero_personas: numeroPersonas,
+      mensaje,
+    };
+
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_URL}/api/catering/solicitud`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const data: unknown = await res.json().catch(() => null);
+        const detail =
+          data && typeof data === 'object' && 'detail' in data
+            ? (data as { detail?: unknown }).detail
+            : null;
+        throw new Error(
+          typeof detail === 'string'
+            ? detail
+            : 'No se pudo enviar la solicitud, intenta de nuevo.',
+        );
+      }
+      const data = (await res.json()) as { success?: boolean; message?: string };
+      setSuccessMessage(data.message ?? null);
       setSubmitted(true);
-    }, 500);
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message
+          ? err.message
+          : 'No se pudo enviar la solicitud, intenta de nuevo.',
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
   
   const closeModal = () => {
@@ -45,6 +106,8 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
     // Retraso para resetear el estado después de que se cierre la animación
     setTimeout(() => {
       if (submitted) setSubmitted(false);
+      setError(null);
+      setSuccessMessage(null);
     }, 300);
   };
   
@@ -77,9 +140,9 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.3 }}
-            className="relative min-h-screen flex items-center justify-center p-4"
+            className="relative min-h-screen flex items-start justify-center pt-36 px-4 pb-8"
           >
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl mx-auto overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl mx-auto max-h-[calc(100vh-180px)] overflow-y-auto">
               {/* Header */}
               <div className="bg-gradient-to-r from-verde-medium to-verde-dark p-6 text-white relative">
                 <button 
@@ -116,6 +179,15 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
               <div className="p-6" style={{ color: '#1F2937' }}>
                 {!submitted ? (
                   <form onSubmit={handleSubmit} className="space-y-6">
+                    {error && (
+                      <div
+                        role="alert"
+                        className="rounded-lg border px-4 py-3 text-sm"
+                        style={{ backgroundColor: '#FEE2E2', borderColor: '#DC2626', color: '#991B1B' }}
+                      >
+                        {error}
+                      </div>
+                    )}
                     {/* Información personal */}
                     <div className="space-y-4">
                       <h4 className="text-lg font-semibold" style={{ color: 'white', fontWeight: '700' }}>Tu información</h4>
@@ -264,10 +336,6 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
                           <span>Respuesta en 24h</span>
                         </div>
                         <div className="flex items-center gap-2" style={{ color: '#1F2937', fontWeight: '600' }}>
-                          <Calendar className="w-5 h-5" style={{ color: '#B15543' }} />
-                          <span>Cotización sin compromiso</span>
-                        </div>
-                        <div className="flex items-center gap-2" style={{ color: '#1F2937', fontWeight: '600' }}>
                           <Users className="w-5 h-5" style={{ color: '#B15543' }} />
                           <span>Evento a tu medida</span>
                         </div>
@@ -275,6 +343,7 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
                       
                       <button
                         type="submit"
+                        disabled={submitting}
                         style={{
                           backgroundColor: '#B15543', /* terracota principal */
                           color: 'white',
@@ -288,13 +357,14 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
                           gap: '0.5rem',
                           transition: 'background-color 0.3s',
                           border: 'none',
-                          cursor: 'pointer',
+                          cursor: submitting ? 'not-allowed' : 'pointer',
+                          opacity: submitting ? 0.6 : 1,
                         }}
-                        onMouseOver={(e) => {e.currentTarget.style.backgroundColor = '#975543'}} /* terracota oscuro */
+                        onMouseOver={(e) => {if (!submitting) e.currentTarget.style.backgroundColor = '#975543'}} /* terracota oscuro */
                         onMouseOut={(e) => {e.currentTarget.style.backgroundColor = '#B15543'}} /* terracota principal */
                       >
                         <Send className="w-5 h-5" />
-                        Solicitar cotización gratuita
+                        {submitting ? 'Enviando…' : 'Solicitar cotización gratuita'}
                       </button>
                     </div>
                   </form>
@@ -305,7 +375,8 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
                     </div>
                     <h4 className="text-2xl font-bold mb-2" style={{ color: '#33503E' }}>¡Gracias por contactarnos!</h4>
                     <p className="mb-6" style={{ color: '#1F2937', fontWeight: '500' }}>
-                      Hemos recibido tu solicitud de cotización. Nuestro equipo te contactará en menos de 24 horas con una propuesta personalizada.
+                      {successMessage ??
+                        'Hemos recibido tu solicitud de cotización. Nuestro equipo te contactará en menos de 24 horas con una propuesta personalizada.'}
                     </p>
                     <button
                       onClick={closeModal}

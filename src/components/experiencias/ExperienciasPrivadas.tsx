@@ -1,9 +1,11 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import OptimizedImage from '@/components/ui/OptimizedImage'
 import ExperienceCard from '@/components/experiencias/ExperienceCard'
+import { experiencias as experienciasLocal } from '@/data/experiencias'
+import { API_URL } from '@/lib/api'
 
 // Tipos
 type PrivateExperience = {
@@ -19,8 +21,22 @@ type PrivateExperience = {
   highlights: string[];
 };
 
-// Datos de ejemplo
-const privateExperiences: PrivateExperience[] = [
+// Función para mapear API data a formato frontend
+const mapApiToFrontend = (apiExp: any): PrivateExperience => ({
+  id: apiExp.id,
+  title: apiExp.nombre,
+  description: apiExp.descripcion,
+  price: `Desde $${apiExp.precio?.toLocaleString() || '0'}`,
+  duration: `${apiExp.duracion_horas || 3} horas`,
+  minParticipants: 1,
+  maxParticipants: apiExp.capacidad_maxima || 10,
+  image: apiExp.imagen_principal || '/images/experiencias/experiencias_arca_tierra.jpg',
+  slug: apiExp.slug,
+  highlights: apiExp.incluye || ['Experiencia única en chinampa']
+});
+
+// Datos de fallback
+const privateExperiencesFallback: PrivateExperience[] = [
   {
     id: "priv-001",
     title: "Recorrido corporativo team building",
@@ -92,6 +108,59 @@ const privateExperiences: PrivateExperience[] = [
 ];
 
 const ExperienciasPrivadas = () => {
+  const [experiencias, setExperiencias] = useState<PrivateExperience[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchExperiencias = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Intentar cargar desde API
+        const response = await fetch(`${API_URL}/api/experiencias?tipo=privada`);
+        
+        if (response.ok) {
+          const apiData = await response.json();
+          // Mapear datos de API a formato frontend
+          const mappedExperiences = apiData.items?.map(mapApiToFrontend) || [];
+          setExperiencias(mappedExperiences);
+          console.log(`✅ Experiencias privadas cargadas desde API: ${mappedExperiences.length}`);
+        } else {
+          throw new Error(`API error: ${response.status}`);
+        }
+      } catch (error) {
+        console.warn('⚠️ API no disponible, usando datos de fallback:', error);
+        // Fallback a datos estáticos
+        setExperiencias(privateExperiencesFallback);
+        setError('Mostrando datos locales');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExperiencias();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="py-16 px-4 md:px-8 bg-neutro-crema">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-300 rounded w-64 mx-auto mb-4"></div>
+            <div className="h-12 bg-gray-300 rounded w-96 mx-auto mb-6"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="h-96 bg-gray-300 rounded-lg"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="experiencias-privadas" className="py-16 px-4 md:px-8 bg-neutro-crema">
       <div className="max-w-7xl mx-auto">
@@ -188,7 +257,7 @@ const ExperienciasPrivadas = () => {
         
         {/* Tarjetas de experiencias */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-          {privateExperiences.map(experience => (
+          {experiencias.map(experience => (
             <motion.div
               key={experience.id}
               initial={{ opacity: 0, y: 20 }}

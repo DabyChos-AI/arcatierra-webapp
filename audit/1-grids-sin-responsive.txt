@@ -1,0 +1,30 @@
+# GRIDS SIN BREAKPOINTS RESPONSIVE
+# Generado: Tue Oct 21 01:42:41 UTC 2025
+# Problema: grid-cols-X sin sm:/md:/lg:
+
+app/usuario/dashboard/page.tsx:605:                  <div className="grid grid-cols-2 gap-2">
+app/catering2/components/QuoteSidebar.tsx:236:              <div className="grid grid-cols-2 gap-2">
+app/calendario/page.tsx:591:                  <div className="grid grid-cols-7 gap-2 mb-4">
+app/calendario/page.tsx:600:                  <div className="grid grid-cols-7 gap-2">
+app/admin/productos/page.tsx:1492:                    <div className="grid grid-cols-2 gap-3">
+app/admin/calendario/page.tsx:387:                <div className="grid grid-cols-2 gap-4">
+app/admin/calendario/page.tsx:417:                <div className="grid grid-cols-2 gap-4">
+app/admin/calendario/page.tsx:457:                <div className="grid grid-cols-2 gap-4">
+app/admin/empleados/page.tsx:414:                <div className="grid grid-cols-2 gap-4">
+app/admin/empleados/page.tsx:450:                  <div className="grid grid-cols-3 gap-2 text-sm">
+app/admin/empleados/page.tsx:552:                <div className="grid grid-cols-2 gap-4">
+app/experiencias-antigua/page.tsx:354:                      <div className="grid grid-cols-2 gap-2">
+app/experiencias/[slug]/page.tsx:534:                <div className="grid grid-cols-2 gap-4">
+app/experiencias/[slug]/page.tsx:590:            <div className="grid grid-cols-2 gap-4">
+components/experiencias-premium/PublicExperiencesNew.tsx:300:                        <div className="grid grid-cols-2 gap-y-2 text-sm">
+components/experiencias-premium/ExperienceCard.tsx:71:        <div className="grid grid-cols-2 gap-y-2 text-sm mb-4">
+components/experiencias-premium/ExperienceCalendar.tsx:148:      <div className="grid grid-cols-7 gap-1">
+components/experiencias-premium/CalendarPro.tsx:275:              className="grid grid-cols-7 gap-0 p-4 justify-items-center"
+components/ProductQuickView.tsx:134:                <div className="grid grid-cols-2 gap-2">
+components/CheckoutFormSingleStep.tsx:446:              <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+components/experiencias/ExperienceCalendar.tsx:129:      <div className="grid grid-cols-7 gap-1 mb-2">
+components/experiencias/ExperienceCalendar.tsx:137:      <div className="grid grid-cols-7 gap-1">
+components/experiencias/CalendarPro.tsx:84:    return <div className="grid grid-cols-7 gap-1 mb-2">{days}</div>;
+components/experiencias/CalendarPro.tsx:134:        <div className="grid grid-cols-7 gap-1" key={day.toString()}>
+components/experiencias/ExperienceCardPro.tsx:113:              <ul className="grid grid-cols-2 gap-x-2 gap-y-1">
+components/experiencias/ExperienceCarousel.tsx:123:                      <ul className="grid grid-cols-2 gap-x-2 gap-y-1">

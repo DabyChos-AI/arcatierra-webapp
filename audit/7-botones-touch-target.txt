@@ -1,0 +1,22 @@
+# BOTONES SIN TOUCH TARGET (min 44x44px)
+# Generado: Tue Oct 21 01:42:41 UTC 2025
+# Buscar: button con padding muy pequeño
+
+app/usuario/perfil/page.tsx:284:                    <button className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-md border">
+app/user-dashboard/page.tsx:454:                            <button className="absolute top-2 right-2 bg-white/80 p-1.5 rounded-full">
+app/user-dashboard/page.tsx:500:                              <button className="absolute top-2 right-2 bg-white/80 p-1.5 rounded-full">
+app/experiencias-privadas/page.tsx:231:                  <button className="px-4 py-2 border border-[#B15543] text-[#B15543] rounded-lg text-sm font-semibold hover:bg-[#B15543] hover:text-white transition-all duration-300">
+app/receta/[id]/client-page.tsx:528:                        <button className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+app/qr/[id]/page.tsx:221:            <button className="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">
+app/admin/components/AdminHeader.tsx:49:          <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg">
+app/admin/components/AdminHeader.tsx:55:          <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg">
+app/admin/components/AdminHeader.tsx:87:          <button className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg">
+app/admin/configuracion/page.tsx:16:        <button className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+app/admin/productos/page.tsx:1414:                      <button className="p-2 rounded-full bg-white shadow-lg hover:bg-gray-50">
+app/admin/productos/page.tsx:1544:                        <button className="p-2 hover:bg-gray-50">-</button>
+app/admin/productos/page.tsx:1546:                        <button className="p-2 hover:bg-gray-50">+</button>
+app/recetas/client-page.tsx:592:                            <button className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all">
+app/tienda/page.tsx:1501:                    <button onClick={() => goToProductDetail(product.id)} className="bg-[#B15543] text-white px-4 py-2 rounded-lg hover:bg-[#9d4a39] transition-colors">
+components/layout/Header.tsx:296:                    <button className="flex items-center space-x-1 ml-2 lg:ml-4 text-verde-tipografia hover:text-terracota group p-1.5 lg:p-2">
+components/layout/Header.tsx:340:                  <button className="p-1.5 text-verde-tipografia hover:text-terracota rounded-md">
+components/CateringCTA.tsx:60:              <button className="group inline-flex items-center gap-4 bg-white text-terracota-600 px-10 py-5 rounded-full font-bold text-xl shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105 hover:-translate-y-1">

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import { signIn, signOut, useSession } from 'next-auth/react';
-import { Menu, X, ShoppingCart, User, Phone, Heart } from 'lucide-react';
+import { Menu, X, ShoppingCart, User } from 'lucide-react';
 import LogoutButton from '../auth/LogoutButton';
 
 interface User {
@@ -37,10 +37,19 @@ const Header: React.FC = () => {
       }
     };
 
+    // Escuchar evento cartUpdated (mismo tab)
+    const handleCartUpdate = () => {
+      console.log('🛒 CARRITO ACTUALIZADO - Header escuchó evento cartUpdated');
+      loadCartFromStorage();
+    };
+
+    console.log('✅ Header.tsx montado - Escuchando cartUpdated');
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('cartUpdated', handleCartUpdate);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('cartUpdated', handleCartUpdate);
     };
   }, []);
 
@@ -119,7 +128,7 @@ const Header: React.FC = () => {
                 </div>
 
               {/* Desktop Navigation */}
-              <nav className="hidden min-[2000px]:flex min-[2000px]:items-center min-[2000px]:justify-center flex-1 mx-auto" role="navigation" aria-label="Navegación principal">
+              <nav className="hidden lg:flex lg:items-center lg:justify-center flex-1 mx-auto" role="navigation" aria-label="Navegación principal">
                 <ul className="flex items-center space-x-3 lg:space-x-6" role="menubar">
                   {/* Inicio eliminado, ahora solo el logo funciona como enlace a inicio */}
                   <li role="none">
@@ -185,23 +194,72 @@ const Header: React.FC = () => {
                       </Link>
                     </div>
                   </li>
-                  <li role="none">
-                    <Link 
-                      href="/nosotros" 
+                  <li role="none" className="relative group">
+                    <button 
                       role="menuitem"
-                      className="nav-link text-xs lg:text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2 whitespace-nowrap"
+                      className="nav-link text-xs lg:text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2 flex items-center whitespace-nowrap bg-transparent border-0 cursor-pointer"
                     >
                       Nosotros
-                    </Link>
-                  </li>
-                  <li role="none">
-                    <Link 
-                      href="/contacto" 
-                      role="menuitem"
-                      className="nav-link text-xs lg:text-sm font-medium text-verde-tipografia hover:text-terracota transition-colors py-2 whitespace-nowrap"
-                    >
-                      Contacto
-                    </Link>
+                      <svg className="ml-1 h-3 w-3 lg:h-4 lg:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    <div className="absolute left-0 z-10 mt-1 w-56 origin-top-left rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden group-hover:block">
+                      <Link 
+                        href="/nosotros" 
+                        className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-gray-100"
+                      >
+                        Sobre Nosotros
+                      </Link>
+                      <Link 
+                        href="/prensa" 
+                        className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-gray-100"
+                      >
+                        Prensa
+                      </Link>
+                      <Link 
+                        href="/restaurantes" 
+                        className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-gray-100"
+                      >
+                        Restaurantes
+                      </Link>
+                      <Link 
+                        href="/impacto" 
+                        className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-gray-100"
+                      >
+                        Impacto Ambiental
+                      </Link>
+                      <Link 
+                        href="/favoritos" 
+                        className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-gray-100"
+                      >
+                        Favoritos
+                      </Link>
+                      <Link 
+                        href="/contacto" 
+                        className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-gray-100"
+                      >
+                        Contacto
+                      </Link>
+                      <Link 
+                        href="/blog" 
+                        className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-gray-100"
+                      >
+                        Blog
+                      </Link>
+                      <Link 
+                        href="/terminos" 
+                        className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-gray-100"
+                      >
+                        Términos y Condiciones
+                      </Link>
+                      <Link 
+                        href="/privacidad" 
+                        className="block px-4 py-2 text-sm text-verde-tipografia hover:bg-gray-100"
+                      >
+                        Política de Privacidad
+                      </Link>
+                    </div>
                   </li>
                   <li role="none">
                     <Link 
@@ -216,14 +274,7 @@ const Header: React.FC = () => {
               </nav>
 
               {/* Desktop User/Cart Actions */}
-              <div className="hidden min-[2000px]:flex min-[2000px]:items-center space-x-1 lg:space-x-2">
-                {/* Contact Button */}
-                <a href="tel:+527225471091" aria-label="Llámanos" className="group p-1.5 lg:p-2 relative text-verde-tipografia hover:text-terracota focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-terracota rounded-md">
-                  <Phone className="h-4 w-4 lg:h-5 lg:w-5" />
-                  <span className="sr-only">Contacto telefónico</span>
-                  <span className="absolute bottom-0 right-0 transform translate-x-1 translate-y-1 h-1.5 w-1.5 lg:h-2 lg:w-2 rounded-full bg-terracota"></span>
-                </a>
-
+              <div className="hidden lg:flex lg:items-center space-x-1 lg:space-x-2">
                 {/* Cart Button */}
                 <button 
                   onClick={handleCartClick}
@@ -269,7 +320,7 @@ const Header: React.FC = () => {
               </div>
 
               {/* Mobile menu button - Solo elementos esenciales */}
-              <div className="min-[2000px]:hidden flex items-center gap-1.5">
+              <div className="lg:hidden flex items-center gap-1.5">
                 {/* Cart Icon for Mobile - Ultra minimalista */}
                 <button 
                   onClick={handleCartClick}
@@ -329,7 +380,7 @@ const Header: React.FC = () => {
 
         {/* Mobile Navigation */}
         <div
-          className={`min-[2000px]:hidden transition-all duration-300 ease-in-out overflow-hidden ${
+          className={`lg:hidden transition-all duration-300 ease-in-out overflow-hidden ${
             isMenuOpen 
               ? 'max-h-screen opacity-100 visible' 
               : 'max-h-0 opacity-0 invisible'
@@ -379,20 +430,74 @@ const Header: React.FC = () => {
             >
               Baldío Restaurante
             </Link>
-            <Link
-              href="/nosotros"
-              className="block mx-4 px-4 py-3 rounded-lg text-base font-medium text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors duration-200 border-b border-gray-100 last:border-b-0"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Nosotros
-            </Link>
-            <Link
-              href="/contacto"
-              className="block mx-4 px-4 py-3 rounded-lg text-base font-medium text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors duration-200 border-b border-gray-100 last:border-b-0"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Contacto
-            </Link>
+            <div className="mx-4 rounded-lg border-b border-gray-100">
+              <div className="px-4 py-3 text-base font-semibold text-verde-oscuro">
+                Nosotros
+              </div>
+              <Link
+                href="/nosotros"
+                className="block pl-8 pr-4 py-2 text-sm text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Sobre Nosotros
+              </Link>
+              <Link
+                href="/prensa"
+                className="block pl-8 pr-4 py-2 text-sm text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Prensa
+              </Link>
+              <Link
+                href="/restaurantes"
+                className="block pl-8 pr-4 py-2 text-sm text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Restaurantes
+              </Link>
+              <Link
+                href="/impacto"
+                className="block pl-8 pr-4 py-2 text-sm text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Impacto Ambiental
+              </Link>
+              <Link
+                href="/favoritos"
+                className="block pl-8 pr-4 py-2 text-sm text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Favoritos
+              </Link>
+              <Link
+                href="/contacto"
+                className="block pl-8 pr-4 py-2 text-sm text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Contacto
+              </Link>
+              <Link
+                href="/blog"
+                className="block pl-8 pr-4 py-2 text-sm text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Blog
+              </Link>
+              <Link
+                href="/terminos"
+                className="block pl-8 pr-4 py-2 text-sm text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Términos y Condiciones
+              </Link>
+              <Link
+                href="/privacidad"
+                className="block pl-8 pr-4 py-2 pb-3 text-sm text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Política de Privacidad
+              </Link>
+            </div>
             <Link
               href="/entregas"
               className="block mx-4 px-4 py-3 rounded-lg text-base font-medium text-verde-tipografia hover:bg-gray-50 hover:text-terracota transition-colors duration-200 border-b border-gray-100 last:border-b-0"
