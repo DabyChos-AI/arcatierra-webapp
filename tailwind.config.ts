@@ -46,6 +46,14 @@ const config: Config = {
           DEFAULT: '#DC2626',
           'bg': '#FEE2E2',
         },
+        'morado': {
+          DEFAULT: '#7C3AED',
+          'bg': '#EDE9FE',
+        },
+        'rosa': {
+          DEFAULT: '#DB2777',
+          'bg': '#FCE7F3',
+        },
         // VARIABLES SHADCN/UI PERSONALIZADAS
         background: 'var(--background)',
         foreground: 'var(--foreground)',

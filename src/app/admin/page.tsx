@@ -1,118 +1,213 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
-} from 'recharts'
 import {
-  TrendingUp, Users, ShoppingCart, AlertTriangle,
-  Package, Activity, Award, RefreshCw, Crown
+  Calendar,
+  TrendingUp,
+  Clock,
+  Users,
+  Inbox,
+  CreditCard,
+  AlertTriangle,
 } from 'lucide-react'
-import { formatFechaHoraMexico } from '@/lib/dates'
+import { API_URL } from '@/lib/api'
+import { formatFechaMexico, formatFechaHoraMexico } from '@/lib/dates'
 
-interface DashboardMetrics {
-  resumen: {
-    pedidos_hoy: number;
-    ventas_hoy: number;
-    checkins_hoy: number;
-    alertas_criticas: number;
-    total_usuarios: number;
-    total_productos: number;
-  };
-  top_empleados: Array<{
-    nombre: string;
-    puntos_mes_actual: number;
-    nivel: number;
-    titulo_actual: string;
-  }>;
-  actividad_reciente: Array<{
-    tipo: string;
-    timestamp: string;
-    usuario: string;
-    descripcion: string;
-  }>;
+import LiveClock from './components/dashboard/LiveClock'
+import KpiCard from './components/dashboard/KpiCard'
+import ChartIngresos, {
+  type IngresoMes,
+} from './components/dashboard/ChartIngresos'
+import ChartReservasPorExperiencia, {
+  type ReservaPorExperiencia,
+} from './components/dashboard/ChartReservasPorExperiencia'
+import TopVendedorasList, {
+  type Vendedora,
+} from './components/dashboard/TopVendedorasList'
+import ProximosEventosList, {
+  type EventoProximo,
+} from './components/dashboard/ProximosEventosList'
+import Heatmap, {
+  type HeatmapDia,
+} from './components/dashboard/Heatmap'
+
+// ─── Types (contrato de endpoints /api/admin/dashboard/*) ─────────────
+
+interface Kpis {
+  reservas_activas: { value: number; trend_pct: number }
+  ingresos_mes: { value: number; proyeccion: number; trend_pct: number }
+  anticipos_pendientes: { monto: number; reservas_count: number }
+  manifest_manana: { reservas_count: number; invitados_count: number }
+  leads_sin_procesar: { value: number; nuevos_hoy: number }
+  tasa_conversion: { value_pct: number; trend_pct: number }
+  generated_at: string
 }
 
-export default function AdminDashboard() {
+interface VendedoraApi {
+  vendedor_id: string
+  nombre: string
+  reservas_count: number
+  ingresos: number
+}
+
+interface HeatmapResp {
+  mes: string
+  dias_en_mes: number
+  dias: HeatmapDia[]
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────
+
+/** $312K / $95K / $0 — formato compacto en miles para dinero. */
+function fmtK(n: number): string {
+  if (Math.abs(n) >= 1000) return `$${Math.round(n / 1000)}K`
+  return `$${Math.round(n)}`
+}
+
+function saludoPorHora(d: Date): string {
+  const h = parseInt(
+    new Intl.DateTimeFormat('es-MX', {
+      timeZone: 'America/Mexico_City',
+      hour: '2-digit',
+      hour12: false,
+    }).format(d),
+    10,
+  )
+  if (h >= 5 && h < 12) return 'Buenos días'
+  if (h >= 12 && h < 19) return 'Buenas tardes'
+  return 'Buenas noches'
+}
+
+function capitalizar(s: string): string {
+  return s.length ? s.charAt(0).toUpperCase() + s.slice(1) : s
+}
+
+// ─── Component ────────────────────────────────────────────────────────
+
+export default function AdminDashboardEjecutivo() {
   const { data: session } = useSession()
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
+
+  const [kpis, setKpis] = useState<Kpis | null>(null)
+  const [ingresosMes, setIngresosMes] = useState<IngresoMes[]>([])
+  const [reservasPorExp, setReservasPorExp] = useState<ReservaPorExperiencia[]>([])
+  const [topVendedoras, setTopVendedoras] = useState<Vendedora[]>([])
+  const [proximosEventos, setProximosEventos] = useState<EventoProximo[]>([])
+  const [heatmap, setHeatmap] = useState<HeatmapResp | null>(null)
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isFundador, setIsFundador] = useState(false)
-  const [carritosAbandonados, setCarritosAbandonados] = useState<any>(null)
+  const [now, setNow] = useState<Date | null>(null)
 
+  // Reloj/saludo: se resuelve post-montaje para evitar hydration mismatch.
   useEffect(() => {
-    if (session?.user?.email) {
-      const fundadores = ['pablo@arcatierra.com', 'luh@arcatierra.com']
-      const superAdmin = ['ing.davidabraham@gmail.com']
-      // Super admin también ve vistas de fundadores
-      setIsFundador(fundadores.includes(session.user.email) || superAdmin.includes(session.user.email))
-    }
-  }, [session])
-
-  const fetchMetrics = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch('/api/admin/dashboard/metricas')
-      
-      if (!response.ok) {
-        throw new Error('Error cargando métricas')
-      }
-      
-      const data = await response.json()
-      setMetrics(data)
-      setError(null)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchCarritosAbandonados = async () => {
-    try {
-      const response = await fetch('/api/admin/carritos/abandonados?dias=7&limit=5')
-      if (response.ok) {
-        const data = await response.json()
-        setCarritosAbandonados(data)
-      }
-    } catch (err) {
-      console.error('Error cargando carritos abandonados:', err)
-    }
-  }
-
-  useEffect(() => {
-    fetchMetrics()
-    fetchCarritosAbandonados()
-    // Actualizar cada 30 segundos
-    const interval = setInterval(() => {
-      fetchMetrics()
-      fetchCarritosAbandonados()
-    }, 30000)
-    return () => clearInterval(interval)
+    setNow(new Date())
+    const id = setInterval(() => setNow(new Date()), 60_000)
+    return () => clearInterval(id)
   }, [])
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <RefreshCw className="h-8 w-8 animate-spin text-green-600" />
-        <span className="ml-2 text-lg">Cargando métricas...</span>
-      </div>
-    )
-  }
+  const load = useCallback(
+    async (signal: AbortSignal, first: boolean) => {
+      const token = session?.accessToken
+      if (!token) return
+      const headers = { Authorization: `Bearer ${token}` }
+      const base = `${API_URL}/api/admin/dashboard`
+      const mes = new Date().toISOString().slice(0, 7)
 
-  if (error) {
+      const getJson = async <T,>(path: string): Promise<T> => {
+        const res = await fetch(`${base}${path}`, { headers, signal })
+        if (!res.ok) throw new Error(`HTTP ${res.status} en ${path}`)
+        return res.json() as Promise<T>
+      }
+
+      const results = await Promise.allSettled([
+        getJson<Kpis>('/kpis').then(setKpis),
+        getJson<IngresoMes[]>('/ingresos-mes?n=6').then(setIngresosMes),
+        getJson<ReservaPorExperiencia[]>(
+          `/reservas-por-experiencia?mes=${mes}`,
+        ).then(setReservasPorExp),
+        getJson<VendedoraApi[]>('/top-vendedoras?limite=5').then((d) =>
+          setTopVendedoras(
+            d.map((v) => ({
+              id: v.vendedor_id,
+              nombre: v.nombre,
+              reservas_count: v.reservas_count,
+              ingresos: v.ingresos,
+            })),
+          ),
+        ),
+        getJson<EventoProximo[]>('/proximos-eventos?dias=3').then(
+          setProximosEventos,
+        ),
+        getJson<HeatmapResp>(`/heatmap?mes=${mes}`).then(setHeatmap),
+      ])
+
+      if (signal.aborted) return
+
+      if (first) {
+        const ok = results.filter((r) => r.status === 'fulfilled').length
+        setError(
+          ok === 0 ? 'No se pudieron cargar los datos del dashboard.' : null,
+        )
+        setLoading(false)
+      }
+    },
+    [session?.accessToken],
+  )
+
+  useEffect(() => {
+    const controller = new AbortController()
+    load(controller.signal, true)
+    const id = setInterval(() => load(controller.signal, false), 60_000)
+    return () => {
+      controller.abort()
+      clearInterval(id)
+    }
+  }, [load])
+
+  const reload = useCallback(() => {
+    const controller = new AbortController()
+    setLoading(true)
+    load(controller.signal, true)
+  }, [load])
+
+  // ─── Derived ────────────────────────────────────────────────────────
+
+  const primerNombre = session?.user?.name?.split(' ')[0] ?? 'Sof'
+  const saludo = now ? saludoPorHora(now) : 'Hola'
+  const fechaHoy = now
+    ? capitalizar(
+        formatFechaMexico(now, {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }),
+      )
+    : ''
+  const manifestCount = kpis?.manifest_manana.reservas_count ?? 0
+  const leadsCount = kpis?.leads_sin_procesar.value ?? 0
+  const mesActual = new Date().toISOString().slice(0, 7)
+
+  // ─── Error total (primer load, todo falló) ──────────────────────────
+
+  if (error && !loading) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <div className="flex">
-          <AlertTriangle className="h-5 w-5 text-red-400" />
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error</h3>
-            <div className="mt-2 text-sm text-red-700">{error}</div>
+      <div className="p-6">
+        <div className="bg-rojo-bg border border-rojo/30 rounded-lg p-6 flex items-start gap-3 max-w-xl">
+          <AlertTriangle
+            className="h-5 w-5 text-rojo flex-shrink-0 mt-0.5"
+            aria-hidden="true"
+          />
+          <div>
+            <h1 className="text-lg font-semibold text-rojo">
+              No se pudo cargar el dashboard
+            </h1>
+            <p className="text-sm text-verde-tipografia mt-1">{error}</p>
             <button
-              onClick={fetchMetrics}
-              className="mt-2 text-sm bg-red-100 text-red-800 px-3 py-1 rounded hover:bg-red-200"
+              type="button"
+              onClick={reload}
+              className="mt-3 text-sm bg-terracota text-white px-4 py-2 rounded-lg hover:bg-terracota-dark"
             >
               Reintentar
             </button>
@@ -122,208 +217,139 @@ export default function AdminDashboard() {
     )
   }
 
-  if (!metrics) return null
-
-  const kpiCards = [
-    {
-      title: 'Ventas Hoy',
-      value: `$${metrics.resumen.ventas_hoy?.toLocaleString() || 0}`,
-      icon: TrendingUp,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50'
-    },
-    {
-      title: 'Pedidos Hoy',
-      value: metrics.resumen.pedidos_hoy || 0,
-      icon: ShoppingCart,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
-    },
-    {
-      title: 'Check-ins Hoy',
-      value: metrics.resumen.checkins_hoy || 0,
-      icon: Activity,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
-    },
-    {
-      title: 'Alertas Críticas',
-      value: metrics.resumen.alertas_criticas || 0,
-      icon: AlertTriangle,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50'
-    },
-    {
-      title: 'Total Usuarios',
-      value: metrics.resumen.total_usuarios || 0,
-      icon: Users,
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-50'
-    },
-    {
-      title: 'Total Productos',
-      value: metrics.resumen.total_productos || 0,
-      icon: Package,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-50'
-    }
-  ]
+  // ─── Render ─────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
-      {/* Header con mensaje especial para fundadores */}
-      <div className="flex justify-between items-center">
-        <div>
-          {isFundador ? (
-            <>
-              <div className="flex items-center space-x-3">
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-800 bg-clip-text text-transparent">
-                  Dashboard Ejecutivo
-                </h1>
-                <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-3 py-1 rounded-full flex items-center space-x-1">
-                  <Crown className="h-4 w-4" />
-                  <span className="text-sm font-semibold">Fundador</span>
-                </div>
-              </div>
-              <p className="text-gray-600 mt-1">Vista ejecutiva - Métricas clave del negocio</p>
-            </>
-          ) : (
-            <>
-              <h1 className="text-3xl font-bold text-gray-900">Panel de Administración</h1>
-              <p className="text-gray-600 mt-1">Gestión integral de operaciones Arcatierra</p>
-            </>
-          )}
+    <div className="p-4 md:p-6 space-y-4">
+      <h1 className="sr-only">Dashboard ejecutivo — Arca Tierra</h1>
+
+      {/* 1 · Welcome banner */}
+      <section className="relative overflow-hidden rounded-xl p-6 md:p-7 text-white bg-gradient-to-br from-verde to-terracota">
+        <div
+          className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/5"
+          aria-hidden="true"
+        />
+        <div className="relative flex justify-between items-start flex-wrap gap-3">
+          <div>
+            <h2 className="text-2xl font-bold text-white">
+              {saludo}, {primerNombre}
+            </h2>
+            <p className="text-sm opacity-90 mt-1">
+              {now ? (
+                <>
+                  Hoy es <strong>{fechaHoy}</strong>. Tienes{' '}
+                  <strong>{manifestCount} eventos</strong> mañana y{' '}
+                  <strong>{leadsCount} leads</strong> sin procesar.
+                </>
+              ) : (
+                'Cargando resumen del día…'
+              )}
+            </p>
+          </div>
+          <LiveClock />
         </div>
-        <button
-          onClick={fetchMetrics}
-          className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-        >
-          <RefreshCw className="h-4 w-4" />
-          <span>Actualizar</span>
-        </button>
-      </div>
+      </section>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {kpiCards.map((kpi, index) => (
-          <div key={index} className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className={`p-2 rounded-lg ${kpi.bgColor}`}>
-                <kpi.icon className={`h-6 w-6 ${kpi.color}`} />
+      {/* 2 · KPI grid */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {loading || !kpis
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-xl border border-neutro-borde p-4 animate-pulse"
+              >
+                <div className="w-9 h-9 rounded-lg bg-neutral-200 mb-3" />
+                <div className="h-2.5 bg-neutral-200 rounded w-24 mb-2" />
+                <div className="h-6 bg-neutral-200 rounded w-16 mb-2" />
+                <div className="h-2.5 bg-neutral-200 rounded w-20" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">{kpi.title}</p>
-                <p className="text-2xl font-bold text-gray-900">{kpi.value}</p>
-              </div>
-            </div>
+            ))
+          : [
+              <KpiCard
+                key="reservas"
+                icon={Calendar}
+                iconColor="terracota"
+                title="Reservas activas"
+                value={kpis.reservas_activas.value}
+                trend={kpis.reservas_activas.trend_pct}
+                detail="vs mes anterior"
+              />,
+              <KpiCard
+                key="ingresos"
+                icon={TrendingUp}
+                iconColor="verde"
+                title="Ingresos del mes"
+                value={fmtK(kpis.ingresos_mes.value)}
+                trend={kpis.ingresos_mes.trend_pct}
+                detail={`proyección ${fmtK(kpis.ingresos_mes.proyeccion)}`}
+              />,
+              <KpiCard
+                key="anticipos"
+                icon={Clock}
+                iconColor="amarillo"
+                title="Anticipos pendientes"
+                value={fmtK(kpis.anticipos_pendientes.monto)}
+                detail={`${kpis.anticipos_pendientes.reservas_count} reservas tentativas`}
+              />,
+              <KpiCard
+                key="manifest"
+                icon={Users}
+                iconColor="azul"
+                title="Manifest mañana"
+                value={kpis.manifest_manana.reservas_count}
+                detail={`${kpis.manifest_manana.invitados_count} invitados`}
+              />,
+              <KpiCard
+                key="leads"
+                icon={Inbox}
+                iconColor="morado"
+                title="Leads sin procesar"
+                value={kpis.leads_sin_procesar.value}
+                detail={`${kpis.leads_sin_procesar.nuevos_hoy} nuevos hoy`}
+              />,
+              <KpiCard
+                key="conversion"
+                icon={CreditCard}
+                iconColor="rosa"
+                title="Tasa de conversión"
+                value={`${kpis.tasa_conversion.value_pct}%`}
+                trend={kpis.tasa_conversion.trend_pct}
+              />,
+            ]}
+      </section>
+
+      {/* 3 · Charts */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ChartIngresos data={ingresosMes} loading={loading} />
+        <ChartReservasPorExperiencia data={reservasPorExp} loading={loading} />
+      </section>
+
+      {/* 4 · Widgets */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <TopVendedorasList items={topVendedoras} loading={loading} />
+        <ProximosEventosList items={proximosEventos} loading={loading} />
+      </section>
+
+      {/* 5 · Heatmap */}
+      <section>
+        {loading ? (
+          <div className="bg-white rounded-xl border border-neutro-borde p-5 shadow-soft">
+            <div className="h-4 bg-neutral-200 rounded w-56 mb-4 animate-pulse" />
+            <div className="h-16 bg-neutral-200 rounded animate-pulse" />
           </div>
-        ))}
-
-        {/* Widget Carritos Abandonados */}
-        {carritosAbandonados && (
-          <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg border-2 border-amber-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <ShoppingCart className="h-5 w-5 text-amber-600 mr-2" />
-                Carritos Abandonados
-              </h3>
-            </div>
-            
-            <div className="space-y-2 mb-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Total carritos:</span>
-                <span className="text-2xl font-bold text-amber-600">
-                  {carritosAbandonados.total_carritos}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Valor potencial:</span>
-                <span className="text-xl font-bold text-green-600">
-                  ${carritosAbandonados.valor_total_abandonado.toFixed(2)}
-                </span>
-              </div>
-            </div>
-
-            <button 
-              onClick={() => window.location.href = '/admin/carritos-abandonados'}
-              className="w-full mt-4 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-sm font-medium"
-            >
-              Ver todos los detalles →
-            </button>
-          </div>
+        ) : (
+          <Heatmap
+            data={heatmap?.dias ?? []}
+            mes={heatmap?.mes ?? mesActual}
+          />
         )}
-      </div>
+      </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Empleados - Filtrado para fundadores */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <Award className="h-5 w-5 text-yellow-500 mr-2" />
-            {isFundador ? 'Ranking Empleados Competitivos' : 'Top Empleados del Mes'}
-          </h3>
-          <div className="space-y-3">
-            {metrics.top_empleados.length > 0 ? (
-              metrics.top_empleados
-                .filter(emp => !emp.titulo_actual.includes('FUNDADOR'))
-                .map((emp, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center">
-                    <div className="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
-                      #{index + 1}
-                    </div>
-                    <div className="ml-3">
-                      <p className="font-medium text-gray-900">{emp.nombre}</p>
-                      <p className="text-sm text-gray-600">{emp.titulo_actual} • Nivel {emp.nivel}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-green-600">{emp.puntos_mes_actual}</p>
-                    <p className="text-xs text-gray-500">puntos</p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500 text-center py-4">No hay datos de empleados</p>
-            )}
-          </div>
-        </div>
-
-        {/* Actividad Reciente */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <Activity className="h-5 w-5 text-blue-500 mr-2" />
-            Actividad Reciente
-          </h3>
-          <div className="space-y-3">
-            {metrics.actividad_reciente.length > 0 ? (
-              metrics.actividad_reciente.map((activity, index) => (
-                <div key={index} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="bg-blue-100 p-1 rounded-full">
-                    <Activity className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">{activity.descripcion}</p>
-                    <p className="text-sm text-gray-600">por {activity.usuario}</p>
-                    <p className="text-xs text-gray-500">
-                      {formatFechaHoraMexico(activity.timestamp)}
-                    </p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500 text-center py-4">No hay actividad reciente</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Footer Info */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <div className="flex items-center justify-between text-sm text-gray-600">
-          <p>Última actualización: {formatFechaHoraMexico(new Date())}</p>
-          <p>Panel Admin v1.0.0 • Datos en tiempo real</p>
-        </div>
-      </div>
+      {kpis && (
+        <p className="text-[11px] text-verde-suave text-right">
+          Actualizado: {formatFechaHoraMexico(kpis.generated_at)}
+        </p>
+      )}
     </div>
   )
 }

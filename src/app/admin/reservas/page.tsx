@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, Suspense } from 'react'
 import dynamic from 'next/dynamic'
+import { useSearchParams } from 'next/navigation'
 import { Plus, FileText, Calendar as CalendarIcon, Table as TableIcon, Phone } from 'lucide-react'
 import AdminTopbar from '../components/AdminTopbar'
 import ReservasKPIs from './components/ReservasKPIs'
@@ -41,11 +42,19 @@ function SkeletonBlock({ label }: { label: string }) {
   )
 }
 
-export default function ReservasPage() {
+function ReservasPageInner() {
   const [tab, setTab] = useState<TabActiva>('tabla')
   const [showNueva, setShowNueva] = useState(false)
   const [detalleId, setDetalleId] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
+
+  // C33: apertura directa del modal de detalle vía ?reserva_id=<uuid>
+  // (deep-link desde el dashboard ejecutivo → Próximos eventos).
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    const rid = searchParams.get('reserva_id')
+    if (rid) setDetalleId(rid)
+  }, [searchParams])
 
   const handleCreated = useCallback((id: string, bookingId: string) => {
     setShowNueva(false)
@@ -146,6 +155,15 @@ export default function ReservasPage() {
         />
       )}
     </div>
+  )
+}
+
+// useSearchParams() en Next.js 15 exige un boundary <Suspense> o el build falla.
+export default function ReservasPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Cargando…</div>}>
+      <ReservasPageInner />
+    </Suspense>
   )
 }
 
