@@ -52,8 +52,8 @@ const CateringFooter = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <Mail size={16} className="text-terracota-light" />
-                <a href="mailto:sofia@arcatierra.com" className="text-neutral-light hover:text-white transition-colors text-sm">
-                  sofia@arcatierra.com
+                <a href="mailto:catering@arcatierra.com" className="text-neutral-light hover:text-white transition-colors text-sm">
+                  catering@arcatierra.com
                 </a>
               </div>
               <div className="flex items-center space-x-2">
