@@ -33,10 +33,16 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
   })
 
   // Fecha por defecto: pasado mañana (para dar tiempo de preparación)
+  // Entregamos de lunes a viernes y necesitamos un día hábil de preparación.
+  // El backend valida lo mismo (services/dias_habiles.py); esto solo propone un
+  // default sensato para que el cliente no elija un sábado y reciba un error.
   const getDefaultDate = () => {
-    const defaultDate = new Date()
-    defaultDate.setDate(defaultDate.getDate() + 2)
-    return defaultDate.toISOString().split('T')[0]
+    const d = new Date()
+    d.setDate(d.getDate() + 1)
+    while (d.getDay() === 0 || d.getDay() === 6) {
+      d.setDate(d.getDate() + 1)
+    }
+    return d.toISOString().split('T')[0]
   }
 
   const [deliveryData, setDeliveryData] = useState({
@@ -285,7 +291,11 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
         delivery_postal_code: tipoEntrega === 'recoger_almacen' ? '11850' : deliveryData.postal_code,
         delivery_notes: deliveryData.notes,
         tipo_entrega: tipoEntrega,
-        costo_envio: costoEnvio
+        costo_envio: costoEnvio,
+        // Sin esta fecha el pedido no aparece en el corte del día ni en las
+        // etiquetas: el selector ya existía en el formulario pero nunca se
+        // enviaba al backend.
+        fecha_entrega: deliveryData.preferred_date,
       }
 
       // Si fue guest checkout, pasar el token al siguiente paso para reusarlo

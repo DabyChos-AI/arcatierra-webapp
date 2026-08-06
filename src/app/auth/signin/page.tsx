@@ -10,6 +10,7 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const [isSignUp, setIsSignUp] = useState(false)
+  const [errorLogin, setErrorLogin] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -21,11 +22,62 @@ export default function SignIn() {
     const checkSession = async () => {
       const session = await getSession()
       if (session) {
-        router.push('/dashboard')
+        router.push(destinoTrasLogin())
       }
     }
     checkSession()
   }, [router])
+
+  /**
+   * A dónde mandar al usuario después de entrar.
+   * El middleware agrega ?callbackUrl=… cuando rebota a alguien de una ruta
+   * protegida, así que respetarlo devuelve a la persona a donde iba (por
+   * ejemplo /admin/reportes) en vez de tirarla siempre al dashboard.
+   */
+  const destinoTrasLogin = () => {
+    if (typeof window === 'undefined') return '/dashboard'
+    const cb = new URLSearchParams(window.location.search).get('callbackUrl')
+    if (!cb) return '/dashboard'
+    try {
+      // Solo rutas de este mismo sitio: un callbackUrl externo sería un
+      // redirect abierto.
+      const url = new URL(cb, window.location.origin)
+      return url.origin === window.location.origin ? url.pathname + url.search : '/dashboard'
+    } catch {
+      return '/dashboard'
+    }
+  }
+
+  /**
+   * Login con correo y contraseña.
+   *
+   * El proveedor `credentials` de NextAuth ya existía y funciona (llama a
+   * /api/auth/login del backend), pero NINGUNA pantalla lo usaba: el formulario
+   * solo se renderizaba en modo "Crear Cuenta". Resultado: quien no tuviera
+   * Google no podía entrar al panel de administración.
+   */
+  const handleCredentialsSignIn = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setErrorLogin(null)
+    setLoading(true)
+    try {
+      const res = await signIn('credentials', {
+        email: formData.email.trim(),
+        password: formData.password,
+        redirect: false,
+      })
+      if (res?.ok) {
+        router.push(destinoTrasLogin())
+        router.refresh()
+      } else {
+        setErrorLogin('Correo o contraseña incorrectos.')
+      }
+    } catch {
+      setErrorLogin('No se pudo conectar. Inténtalo de nuevo.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleGoogleSignIn = async () => {
     setLoading(true)
@@ -110,6 +162,63 @@ export default function SignIn() {
         </div>
 
         <div className="space-y-4">
+          {/* Login con correo y contraseña — es la única vía para las cuentas
+              de staff que no usan Google (el panel admin depende de esto). */}
+          {!isSignUp && (
+            <form onSubmit={handleCredentialsSignIn} className="space-y-4 mb-6">
+              <div>
+                <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Correo
+                </label>
+                <input
+                  id="login-email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#33503E] focus:border-transparent"
+                  placeholder="tu@correo.com"
+                />
+              </div>
+              <div>
+                <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Contraseña
+                </label>
+                <input
+                  id="login-password"
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#33503E] focus:border-transparent"
+                  placeholder="••••••••"
+                />
+              </div>
+
+              {errorLogin && (
+                <p role="alert" className="text-sm text-[#DC2626] bg-[#FEE2E2] rounded-lg px-3 py-2">
+                  {errorLogin}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#33503E] text-white rounded-lg py-2.5 font-medium transition-colors hover:bg-[#2D4536] disabled:opacity-60"
+              >
+                {loading ? 'Entrando…' : 'Iniciar sesión'}
+              </button>
+
+              <div className="flex items-center gap-3 pt-2">
+                <span className="h-px flex-1 bg-gray-200" />
+                <span className="text-xs text-gray-500">o continúa con</span>
+                <span className="h-px flex-1 bg-gray-200" />
+              </div>
+            </form>
+          )}
+
           {/* Formulario Manual - Solo en modo Signup */}
           {isSignUp && (
             <form onSubmit={handleSignUp} className="space-y-4 mb-6">

@@ -98,6 +98,43 @@ const nextConfig = {
     
     return config
   },
+
+  // ── Headers de seguridad ─────────────────────────────────────────────
+  // OJO: estos headers vivían en `next.config.ts`, pero Next da precedencia
+  // a `.js` sobre `.ts`, así que NUNCA se aplicaron en producción (verificado
+  // el 2026-08-04: la respuesta de arcatierra.dabychos.com no traía ninguno).
+  // Por eso están aquí y no allá. Si algún día se unifica en un solo archivo,
+  // este bloque tiene que viajar con él.
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          // Nadie puede meter el sitio en un iframe (anti-clickjacking).
+          { key: 'X-Frame-Options', value: 'DENY' },
+          // Equivalente moderno de lo anterior; lo respetan navegadores que
+          // ya ignoran X-Frame-Options.
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
+          // El navegador no adivina el tipo de archivo (anti MIME-sniffing).
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          // No filtrar la URL completa a terceros.
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          // Solo HTTPS durante 2 años. Sin `preload` a propósito: eso es una
+          // decisión difícil de revertir y hay que pedirla explícitamente.
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains',
+          },
+          // `microphone=(self)` porque la búsqueda por voz lo usa
+          // (src/hooks/useVoiceSearch.ts). Cerrarlo la rompería en silencio.
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(self), geolocation=(self), payment=(self)',
+          },
+        ],
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig
