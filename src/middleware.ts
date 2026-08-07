@@ -15,12 +15,19 @@ export default withAuth(
     const isAdminRoute = pathname.startsWith('/admin')
     
     if (isAdminRoute) {
-      const userEmail = token?.email || ''
-      
-      // Verificar si es empleado consultando la API
+      // Verificar si es empleado consultando la API.
+      //
+      // Se manda el token del backend, NO el correo. Antes se pasaba el correo
+      // como parametro y el endpoint contestaba sin pedir credencial: cualquiera
+      // desde internet podia enumerar la plantilla. Ahora el endpoint responde
+      // solo sobre quien llama, asi que la identidad va en el Authorization.
+      const accessToken = (token as { accessToken?: string } | null)?.accessToken
+
       try {
-        const response = await fetch(`${API_URL}/api/auth/check-employee?email=${encodeURIComponent(userEmail)}`)
-        
+        const response = await fetch(`${API_URL}/api/auth/check-employee`, {
+          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+        })
+
         if (response.ok) {
           const data = await response.json()
           

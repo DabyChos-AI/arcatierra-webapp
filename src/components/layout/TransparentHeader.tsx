@@ -512,9 +512,15 @@ const TransparentHeader: React.FC = () => {
     console.log('🚀 checkIfEmployee iniciado para:', session?.user?.email);
     setCheckingEmployee(true);
     try {
-      const url = `${API_URL}/api/auth/check-employee?email=${encodeURIComponent(session?.user?.email || '')}`;
+      // El endpoint responde solo sobre quien llama: la identidad va en el
+      // Authorization, no en un parametro de correo (ver middleware.ts).
+      const url = `${API_URL}/api/auth/check-employee`;
       console.log('📡 Fetching:', url);
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: session?.accessToken
+          ? { Authorization: `Bearer ${session.accessToken}` }
+          : {},
+      });
       console.log('📥 Response status:', response.status);
       if (response.ok) {
         const data = await response.json();

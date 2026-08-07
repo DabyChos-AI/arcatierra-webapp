@@ -27,7 +27,10 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [rolActivo, setRolActivo] = useState<RolActivo | null>(null)
   const [roles, setRoles] = useState<RolUsuario[]>([])
-  const [permisosActivos, setPermisosActivos] = useState<string[]>([])
+  // undefined mientras cargan; [] significa "ya cargaron y no tiene ninguno".
+  // El sidebar distingue los dos casos: con undefined pinta todo para no
+  // parpadear, con [] no pinta nada. Ver AdminSidebar.tsx::filterItems.
+  const [permisosActivos, setPermisosActivos] = useState<string[] | undefined>(undefined)
 
   // Fetch roles del usuario al montar
   useEffect(() => {

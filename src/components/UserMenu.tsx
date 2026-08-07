@@ -29,7 +29,13 @@ export default function UserMenu() {
   const checkIfEmployee = async () => {
     setCheckingEmployee(true)
     try {
-      const response = await fetch(`${API_URL}/api/auth/check-employee?email=${encodeURIComponent(session?.user?.email || '')}`)
+      // El endpoint responde solo sobre quien llama: la identidad va en el
+      // Authorization, no en un parametro de correo (ver middleware.ts).
+      const response = await fetch(`${API_URL}/api/auth/check-employee`, {
+        headers: session?.accessToken
+          ? { Authorization: `Bearer ${session.accessToken}` }
+          : {},
+      })
       if (response.ok) {
         const data = await response.json()
         setIsEmployee(data.is_employee)

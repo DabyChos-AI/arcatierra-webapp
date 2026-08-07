@@ -214,9 +214,20 @@ export default function AdminSidebar({ isOpen, onClose, permisosActivos }: Admin
     onClose()
   }, [pathname, onClose])
 
-  // Filtrar items por permisos (si se proporcionan)
+  // Filtrar items por permisos.
+  //
+  // `undefined` = todavia no cargan (se muestra todo un instante para no
+  // parpadear). `[]` = ya cargaron y esta persona no tiene permisos, asi que
+  // NO se muestra nada.
+  //
+  // Antes las dos cosas se trataban igual y la lista vacia mostraba TODO el
+  // menu. Combinado con que el backend tampoco validaba permisos, "sin rol"
+  // acababa siendo acceso maximo en las dos capas. Desde el 2026-08-07 el
+  // backend deniega por defecto (core/dependencies.py::requiere_permiso); si
+  // aqui se siguiera mostrando todo, el menu ofreceria pantallas que la API
+  // va a rechazar con 403.
   const filterItems = (items: NavItem[]) => {
-    if (!permisosActivos || permisosActivos.length === 0) return items
+    if (permisosActivos === undefined) return items
     return items.filter((item) => permisosActivos.includes(item.permiso))
   }
 
