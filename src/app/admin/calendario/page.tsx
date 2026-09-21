@@ -153,8 +153,9 @@ export default function CalendarioPage() {
           <h1 className="text-3xl font-bold text-gray-900 flex items-center">
             <Calendar className="h-8 w-8 text-purple-600 mr-3" />
             Calendario de Eventos
-            {usingAPI && <span className="ml-2 text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full">API Real</span>}
-            {!usingAPI && <span className="ml-2 text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Simulado</span>}
+            {/* El caso normal —datos de verdad— no necesita anunciarse: solo se
+                avisa cuando lo que se ve NO es real, y en castellano. */}
+            {!usingAPI && <span className="ml-2 text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Datos de ejemplo</span>}
           </h1>
           <p className="text-gray-600 mt-1">Programa y gestiona eventos y actividades</p>
           {error && (

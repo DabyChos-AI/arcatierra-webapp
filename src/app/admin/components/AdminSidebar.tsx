@@ -64,7 +64,10 @@ const NAV_SECTIONS: NavSection[] = [
     label: 'Principal',
     items: [
       { href: '/admin', label: 'Dashboard', icon: Home, permiso: 'dashboard' },
-      { href: '/admin/mi-dia', label: 'Mi dia (vista guia)', icon: Clock, permiso: 'mi_dia', badgeKey: 'misEventosHoy' },
+      // 'Mi dia (vista guia)' sale del menu hasta que la Fase K la construya: hoy
+      // la pantalla solo dice "En construccion" y la gente entra por curiosidad.
+      // Para devolverla, basta descomentar esta linea.
+      // { href: '/admin/mi-dia', label: 'Mi dia (vista guia)', icon: Clock, permiso: 'mi_dia', badgeKey: 'misEventosHoy' },
     ],
   },
   {

@@ -674,11 +674,6 @@ export default function ExperienciasAdminPage({
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className="font-medium text-gray-900 truncate max-w-[200px]">{exp.nombre}</p>
-                            {exp.nombre === 'DEL CAMPO A LA BARRA' && (
-                              <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-[#B15543]/10 text-[#B15543] whitespace-nowrap">
-                                TODO rename
-                              </span>
-                            )}
                           </div>
                           <p className="text-xs text-gray-500 flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
