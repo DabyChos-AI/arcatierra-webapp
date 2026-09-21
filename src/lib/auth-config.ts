@@ -34,8 +34,17 @@ async function refreshAccessToken(token: any) {
     }
   } catch (error) {
     console.error('❌ Error en refreshAccessToken:', error)
+    // Un token muerto NO debe sobrevivir a su renovacion fallida.
+    // Antes se devolvia `{...token, error}` y el accessToken vencido seguia
+    // ahi: la sesion se veia viva, el proxy lo mandaba al backend y este
+    // respondia 401 "No se pudieron validar las credenciales" — en el ultimo
+    // clic de la compra. El `error` se conserva solo para trazabilidad en los
+    // logs; quien resuelve el caso es la AUSENCIA del token.
     return {
       ...token,
+      accessToken: undefined,
+      refreshToken: undefined,
+      accessTokenExpires: 0,
       error: 'RefreshTokenError',
     }
   }
@@ -101,6 +110,12 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
+    // La cookie no puede vivir mas que el refresh token del backend
+    // (REFRESH_TOKEN_EXPIRE_DAYS=7). Antes duraba 30 dias por el default de
+    // NextAuth: entre el dia 7 y el 30 la sesion se veia viva con un token que
+    // ya no se podia renovar. Como el refresh ROTA en cada renovacion exitosa,
+    // esto son 7 dias de INACTIVIDAD, no de sesion.
+    maxAge: 7 * 24 * 60 * 60,
   },
   callbacks: {
     async redirect({ url, baseUrl }) {
@@ -220,8 +235,15 @@ export const authOptions: NextAuthOptions = {
         return refreshAccessToken(token)
       }
 
-      // No hay refresh token, no podemos renovar
+      // No hay refresh token, no podemos renovar.
+      // Si el access token ya vencio, se va con la misma regla de arriba: sin
+      // forma de renovarlo, conservarlo solo sirve para que el backend lo
+      // rechace mas tarde y en peor momento. (Es el caso de Google OAuth
+      // cuando /api/auth/oauth-token falla en el callback de signIn.)
       console.error('⚠️ No hay refresh token disponible')
+      if (token.accessTokenExpires && Date.now() >= (token.accessTokenExpires as number)) {
+        return { ...token, accessToken: undefined, refreshToken: undefined, error: 'RefreshTokenError' }
+      }
       return token
     },
     async session({ session, token }) {

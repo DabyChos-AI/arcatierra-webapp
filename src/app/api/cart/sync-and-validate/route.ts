@@ -28,6 +28,19 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     const body = await request.json();
 
+    // Sesion viva pero sin token: la renovacion fallo y auth-config lo borro.
+    // Se corta aqui, con un mensaje para el cliente. Mandar la peticion al
+    // backend solo conseguiria un 401 con texto de desarrollador ("No se
+    // pudieron validar las credenciales"), y dejarla caer a la rama de
+    // invitado daria un 409 todavia mas confuso, porque el correo SI tiene
+    // cuenta. Mismo patron que `adminProxy()` en src/lib/admin-api-helper.ts.
+    if (session?.user?.email && !(session as any).accessToken) {
+      return NextResponse.json(
+        { detail: 'Tu sesión expiró. Vuelve a iniciar sesión para continuar.' },
+        { status: 401 }
+      );
+    }
+
     let bearerToken: string | null = null;
     let userEmail: string;
 

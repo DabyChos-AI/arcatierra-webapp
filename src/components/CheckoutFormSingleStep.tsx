@@ -215,6 +215,17 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
     return cpNum >= 1000 && cpNum <= 16999
   }
 
+  /**
+   * La sesión venció (401 de nuestras propias rutas). Se avisa en español y se
+   * lleva al login, que volverá aquí por el `callbackUrl`. El carrito NO hay
+   * que salvarlo: vive en `localStorage.arcaTierraCart` y esta redirección no
+   * lo toca. Nunca se le muestra al cliente el texto del backend.
+   */
+  const volverAIniciarSesion = () => {
+    alert('Tu sesión expiró. Te llevamos a iniciar sesión — tu carrito se conserva.')
+    window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent('/checkout')}`
+  }
+
   const handleSubmitOrder = async () => {
     const email = session?.user?.email || customerData.email
     if (!email) {
@@ -259,6 +270,10 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
       
       if (!syncResponse.ok) {
         const error = await syncResponse.json()
+        if (syncResponse.status === 401) {
+          volverAIniciarSesion()
+          return
+        }
         alert(`❌ Error: ${error.detail || 'No se pudo validar el carrito'}`)
         setLoading(false)
         return
@@ -304,6 +319,12 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
 
       const result = await response.json()
       console.log('✅ Respuesta de MercadoPago:', result)
+
+      // La sesión pudo morir entre la validación del carrito y el pago.
+      if (response.status === 401) {
+        volverAIniciarSesion()
+        return
+      }
 
       // Pedido sin costo: el backend no llamó a MercadoPago porque el total es
       // $0 y MP no procesa importes de cero. El pedido ya quedó 'pagado', así

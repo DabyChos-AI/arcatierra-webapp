@@ -28,6 +28,15 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     const body = await request.json();
 
+    // Mismo corte que en /api/cart/sync-and-validate: sesion viva sin token =
+    // renovacion fallida. Aqui importa aun mas, porque es el paso del pago.
+    if (session?.user?.email && !(session as any).accessToken) {
+      return NextResponse.json(
+        { detail: 'Tu sesión expiró. Vuelve a iniciar sesión para continuar.' },
+        { status: 401 }
+      );
+    }
+
     let bearerToken: string | null = null;
     let userEmail: string;
 
