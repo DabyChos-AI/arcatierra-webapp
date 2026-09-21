@@ -30,17 +30,39 @@ export default withAuth(
 
         if (response.ok) {
           const data = await response.json()
-          
+
           if (data.is_employee) {
             // Usuario es empleado, permitir acceso
             return NextResponse.next()
           }
+          // Respuesta clara y negativa: no es empleado. Cae al redirect.
+        } else if (response.status !== 401 && response.status !== 403) {
+          // La respuesta NO dice nada sobre quien llama: 429 porque se agoto la
+          // cuota, 5xx, la API reiniciandose. Antes esto se trataba igual que un
+          // "no eres empleado" y se expulsaba al panel con ?error=access_denied
+          // — con la sesion viva y con token. El mensaje mentia: no era falta de
+          // permiso, era falta de cuota.
+          //
+          // Se deja pasar a proposito. El candado de verdad esta en el backend:
+          // `requiere_permiso()` cuelga de 17 routers (114 endpoints) y sin rol
+          // asignado deniega, asi que lo peor que puede ver alguien sin permiso
+          // es un panel vacio — mientras que expulsar a quien SI tiene permiso
+          // le rompe el trabajo y ademas le miente.
+          console.warn(
+            `[middleware] check-employee no fue concluyente (HTTP ${response.status}); ` +
+              'se permite el paso y el backend decide por endpoint'
+          )
+          return NextResponse.next()
         }
       } catch (error) {
-        console.error('Error verificando empleado:', error)
+        // Ni siquiera hubo respuesta HTTP (red, DNS, la API caida). Mismo
+        // criterio que arriba: no sabemos, asi que no afirmamos.
+        console.error('[middleware] no se pudo verificar el acceso:', error)
+        return NextResponse.next()
       }
-      
-      // No es empleado o hubo error, redirigir
+
+      // Llegar aqui significa que el backend dijo explicitamente que NO:
+      // o `is_employee: false`, o 401/403 sobre la identidad de quien llama.
       const homeUrl = new URL('/', req.url)
       homeUrl.searchParams.set('error', 'access_denied')
       return NextResponse.redirect(homeUrl)
