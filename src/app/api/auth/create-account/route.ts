@@ -8,7 +8,7 @@ import { API_URL } from '@/lib/api'
  */
 export async function POST(request: NextRequest) {
   try {
-    const { token, email, password } = await request.json()
+    const { token, email, password, nombre } = await request.json()
 
     // Validar datos requeridos
     if (!email || !password) {
@@ -45,10 +45,12 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         email,
         password,
-        nombre: email.split('@')[0], // Nombre temporal del email
-        apellidos: '',
+        // El formulario pide el nombre completo: si viene, se usa. Antes se
+        // tiraba y toda cuenta nacia llamandose como la parte local del correo.
+        nombre: (nombre || '').trim().split(' ')[0] || email.split('@')[0],
+        apellidos: (nombre || '').trim().split(' ').slice(1).join(' '),
         telefono: '',
-        nombre_completo: email.split('@')[0]
+        nombre_completo: (nombre || '').trim() || email.split('@')[0]
       }),
     })
 

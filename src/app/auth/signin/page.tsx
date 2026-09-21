@@ -108,12 +108,33 @@ export default function SignIn() {
       return
     }
     setLoading(true)
-    // Simular registro
-    setTimeout(() => {
+    // Antes esto era un setTimeout que anunciaba "¡Cuenta creada!" sin llamar a
+    // nadie: la persona leia el exito, intentaba entrar y no podia. La ruta
+    // /api/auth/create-account ya existia y hace el alta contra el backend.
+    try {
+      const res = await fetch('/api/auth/create-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          nombre: formData.name,
+        }),
+      })
+      const datos = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        alert(datos.error || 'No se pudo crear la cuenta. Intenta de nuevo.')
+        return
+      }
+
       alert('🎉 ¡Cuenta creada! Ahora puedes iniciar sesión')
       setIsSignUp(false)
+    } catch {
+      alert('Sin conexión con el servidor. Revisa tu internet e intenta de nuevo.')
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   return (

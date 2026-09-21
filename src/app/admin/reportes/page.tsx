@@ -19,6 +19,7 @@ import {
   Users,
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { ErrorPanel, pedirAlPanel, volverAlLoginDelPanel } from '@/lib/fetchPanel'
 import ModalImportarCorte from './components/ModalImportarCorte'
 import ModalPreviewReporte from './components/ModalPreviewReporte'
 import type {
@@ -86,10 +87,12 @@ export default function ReportesPage() {
   const cargarHistorial = useCallback(async () => {
     if (!token) return
     try {
-      const res = await fetch(`${API_URL}/api/admin/reportes/historial?per_page=10`, {
-        headers: cabecera(),
-      })
-      if (res.ok) setHistorial(await res.json())
+      setHistorial(
+        await pedirAlPanel<HistorialResponse>(
+          `${API_URL}/api/admin/reportes/historial?per_page=10`,
+          { headers: cabecera() }
+        )
+      )
     } catch {
       /* el historial es accesorio: si falla, la página sigue sirviendo */
     }
@@ -99,10 +102,12 @@ export default function ReportesPage() {
     async (fecha: string) => {
       if (!token) return
       try {
-        const res = await fetch(`${API_URL}/api/admin/reportes/corte/import/${fecha}`, {
-          headers: cabecera(),
-        })
-        if (res.ok) setEstadoImport(await res.json())
+        setEstadoImport(
+          await pedirAlPanel<EstadoImport>(
+            `${API_URL}/api/admin/reportes/corte/import/${fecha}`,
+            { headers: cabecera() }
+          )
+        )
       } catch {
         /* idem */
       }
@@ -116,14 +121,21 @@ export default function ReportesPage() {
     const cargar = async () => {
       setError(null)
       try {
-        const res = await fetch(`${API_URL}/api/admin/reportes`, { headers: cabecera() })
-        const data = await res.json()
+        const data = await pedirAlPanel<CatalogoResponse>(`${API_URL}/api/admin/reportes`, {
+          headers: cabecera(),
+        })
         if (cancelado) return
-        if (!res.ok) throw new Error(data?.detail || 'No se pudo cargar el catálogo')
         setCatalogo(data)
         setFiltros((f) => ({ ...f, fecha_entrega: data.proximo_dia_habil || f.fecha_entrega }))
       } catch (e) {
-        if (!cancelado) setError(e instanceof Error ? e.message : 'Error desconocido')
+        if (cancelado) return
+        if (e instanceof ErrorPanel && e.sesionExpirada) {
+          volverAlLoginDelPanel()
+          return
+        }
+        setError(
+          e instanceof ErrorPanel ? e.mensaje : 'No se pudo cargar el catálogo. Reintenta.'
+        )
       } finally {
         if (!cancelado) setCargando(false)
       }

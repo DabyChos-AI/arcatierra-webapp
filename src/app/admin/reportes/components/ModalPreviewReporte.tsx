@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { Download, FileSpreadsheet, FileText, Loader2, X } from 'lucide-react'
+import { Download, FileSpreadsheet, FileText, Loader2, RefreshCw, X } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { ErrorPanel, pedirAlPanel, volverAlLoginDelPanel } from '@/lib/fetchPanel'
 import type {
   FiltrosGlobales,
   FormatoReporte,
@@ -53,6 +54,8 @@ export default function ModalPreviewReporte({
   const [preview, setPreview] = useState<PreviewResponse | null>(null)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  // Cambiarlo vuelve a disparar la carga: es lo que hace el boton Reintentar.
+  const [intento, setIntento] = useState(0)
   const [exportando, setExportando] = useState<FormatoReporte | null>(null)
   const [incluirAdicionales, setIncluirAdicionales] = useState(false)
   const [meses, setMeses] = useState(6)
@@ -106,16 +109,23 @@ export default function ModalPreviewReporte({
       // Silent refetch: no desmontar la tabla mientras recarga (patrón sesión 24)
       setError(null)
       try {
-        const res = await fetch(
+        const data = await pedirAlPanel<PreviewResponse>(
           `${API_URL}/api/admin/reportes/${reporte.key}/preview?${queryFiltros()}`,
           { headers: { Authorization: `Bearer ${token}` } }
         )
-        const data = await res.json()
         if (cancelado) return
-        if (!res.ok) throw new Error(data?.detail || 'No se pudo cargar la vista previa')
         setPreview(data)
       } catch (e) {
-        if (!cancelado) setError(e instanceof Error ? e.message : 'Error desconocido')
+        // `pedirAlPanel` ya distingue red, tiempo agotado, sesion vencida y
+        // error del servidor: aqui solo se pinta lo que devuelve.
+        if (cancelado) return
+        if (e instanceof ErrorPanel && e.sesionExpirada) {
+          volverAlLoginDelPanel()
+          return
+        }
+        setError(
+          e instanceof ErrorPanel ? e.mensaje : 'No se pudo cargar la vista previa. Reintenta.'
+        )
       } finally {
         if (!cancelado) setCargando(false)
       }
@@ -124,7 +134,7 @@ export default function ModalPreviewReporte({
     return () => {
       cancelado = true
     }
-  }, [token, reporte.key, queryFiltros])
+  }, [token, reporte.key, queryFiltros, intento])
 
   const exportar = async (formato: FormatoReporte) => {
     if (!token) return
@@ -238,7 +248,19 @@ export default function ModalPreviewReporte({
               Cargando vista previa…
             </div>
           ) : error && !preview ? (
-            <p className="py-12 text-center text-sm text-rojo">{error}</p>
+            <div className="flex flex-col items-center gap-3 py-12">
+              <p className="text-center text-sm text-rojo">{error}</p>
+              <button
+                onClick={() => {
+                  setCargando(true)
+                  setIntento((n) => n + 1)
+                }}
+                className="flex items-center gap-1.5 rounded-lg border border-neutro-borde px-3 py-2 text-xs font-semibold text-verde-tipografia transition hover:bg-neutro-light"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                Reintentar
+              </button>
+            </div>
           ) : preview && preview.filas.length === 0 ? (
             <p className="py-12 text-center text-sm text-verde-suave">
               No hay datos para los filtros seleccionados. Puedes cambiar la fecha o el rango
