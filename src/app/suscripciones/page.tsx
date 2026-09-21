@@ -213,6 +213,50 @@ const SUBSCRIPTION_PLANS = [
     ],
     precioKg: 0,
     popular: false
+  },
+  // ─── Planes de prueba ─────────────────────────────────────────────────────
+  // Visibles en público por decisión de David (2026-08-31). Cuestan $0 y no
+  // cobran: `crear_suscripcion` detecta el importe cero, se salta MercadoPago y
+  // deja la suscripción activa con su primera entrega programada.
+  {
+    id: 'test-01',
+    codigo: 'QA-01',
+    name: 'Test 01 — Canasta de prueba',
+    description: 'Producto de prueba del sistema. No es un producto real y no se surte.',
+    price: 0,
+    weight: '3.5 kg',
+    ideal: 'Pruebas internas',
+    tipo: 'prueba',
+    categoria: 'Pruebas',
+    emoji: '🧪',
+    features: [
+      'PRODUCTO DE PRUEBA — no es una canasta real',
+      'Sin costo y sin cobro',
+      'No genera costo de envío',
+      'Sirve para validar el sistema de punta a punta'
+    ],
+    precioKg: 0,
+    popular: false
+  },
+  {
+    id: 'test-02',
+    codigo: 'QA-02',
+    name: 'Test 02 — Canasta básica de prueba',
+    description: 'Producto de prueba del sistema. No es un producto real y no se surte.',
+    price: 0,
+    weight: '7.5 kg',
+    ideal: 'Pruebas internas',
+    tipo: 'prueba',
+    categoria: 'Pruebas',
+    emoji: '🧪',
+    features: [
+      'PRODUCTO DE PRUEBA — no es una canasta real',
+      'Sin costo y sin cobro',
+      'No genera costo de envío',
+      'Sirve para validar el sistema de punta a punta'
+    ],
+    precioKg: 0,
+    popular: false
   }
 ]
 
@@ -622,6 +666,21 @@ function SuscripcionesContent() {
 
                   if (!response.ok || !result.success) {
                     throw new Error(result.error || result.detail || 'Error creando suscripción')
+                  }
+
+                  // Suscripción sin costo: el backend no llamó a MercadoPago
+                  // (no autoriza un preapproval de $0). Ya quedó activa y con
+                  // su primera entrega programada, así que no hay nada que pagar.
+                  if (!result.init_point && result.subscription_id) {
+                    localStorage.setItem('pendingSubscription', JSON.stringify({
+                      subscription_id: result.subscription_id,
+                      plan_name: plan.name,
+                      frequency: selectedFrequency,
+                      email: formData.email,
+                      sin_costo: true
+                    }))
+                    window.location.href = '/suscripciones/confirmacion?sin_costo=1'
+                    return
                   }
 
                   // Redirigir al checkout de MercadoPago

@@ -19,6 +19,7 @@ import { categoriasSEO, getSEODataByName } from '@/data/categorias'
 import { destacadosSemana } from '@/data/destacados'
 import { useFavoritos } from '@/hooks/useFavoritos'
 import { API_URL } from '@/lib/api'
+import { precioLegible, esGratuito } from '@/lib/precio'
 
 // TIPOS DEFINIDOS
 interface ApiProduct {
@@ -181,8 +182,8 @@ const SearchSuggestions = ({ searchTerm, onSelectProduct, productos }: SearchSug
                       {suggestion.texto}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {suggestion.tipo === 'producto' && suggestion.precio > 0 ? 
-                        `$${suggestion.precio.toFixed(2)} • ${suggestion.categoria}` : 
+                      {suggestion.tipo === 'producto' ?
+                        `${suggestion.precio > 0 ? `$${suggestion.precio.toFixed(2)}` : 'GRATIS'} • ${suggestion.categoria}` :
                         suggestion.categoria
                       }
                     </p>
@@ -1408,9 +1409,11 @@ function TiendaPageContent() {
                               <div className="text-xs text-gray-600 font-medium">Compra Única</div>
                               <div className="flex items-baseline gap-1">
                                 <span className="text-xl font-bold text-[#B15543]">
-                                  ${(preciosCompraUnica[product.id] || product.precio).toFixed(2)}
+                                  {precioLegible(preciosCompraUnica[product.id] || product.precio)}
                                 </span>
-                                <span className="text-xs text-gray-500">/ {product.unidad}</span>
+                                {!esGratuito(preciosCompraUnica[product.id] || product.precio) && (
+                                  <span className="text-xs text-gray-500">/ {product.unidad}</span>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -1444,9 +1447,11 @@ function TiendaPageContent() {
                               </div>
                               <div className="flex items-baseline gap-1">
                                 <span className="text-lg font-bold text-green-800">
-                                  ${product.precio.toFixed(2)}
+                                  {precioLegible(product.precio)}
                                 </span>
-                                <span className="text-xs text-green-600">/ semana</span>
+                                {!esGratuito(product.precio) && (
+                                  <span className="text-xs text-green-600">/ semana</span>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -1468,9 +1473,11 @@ function TiendaPageContent() {
                       <div className="flex items-center justify-between mb-3">
                         <div>
                           <span className="text-xl font-semibold text-[#B15543]">
-                            ${product.precio.toFixed(2)}
+                            {precioLegible(product.precio)}
                           </span>
-                          <span className="text-gray-500 text-sm ml-1">/ {product.unidad}</span>
+                          {!esGratuito(product.precio) && (
+                            <span className="text-gray-500 text-sm ml-1">/ {product.unidad}</span>
+                          )}
                         </div>
                         <Button
                           onClick={(e) => addToCart(product, e)}
@@ -1586,7 +1593,7 @@ function TiendaPageContent() {
                   )}
                   <div className="flex items-center justify-between">
                     <span className="text-[#B15543] font-semibold">
-                      {product.precio > 0 ? `$${product.precio}${product.unidad ? `/${product.unidad}` : ''}` : '—'}
+                      {precioLegible(product.precio, product.unidad)}
                     </span>
                     <button onClick={() => goToProductDetail(product.id)} className="bg-[#B15543] text-white px-4 py-2 rounded-lg hover:bg-[#9d4a39] transition-colors">
                       Ver producto

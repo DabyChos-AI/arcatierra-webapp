@@ -10,6 +10,11 @@ import { formatFechaMexico, formatFechaHoraMexico } from '@/lib/dates'
 
 // ─── Types ───────────────────────────────────────────────
 
+const ORIGEN_BADGE: Record<string, { bg: string; text: string; label: string }> = {
+  suscripcion: { bg: 'bg-[#E4EBE4]', text: 'text-[#33503E]', label: 'Suscripción' },
+  pedido:      { bg: 'bg-[#F6E9E4]', text: 'text-[#B15543]', label: 'Tienda' },
+}
+
 interface EntregaUsuario {
   id: string | null
   nombre: string | null
@@ -27,6 +32,13 @@ interface EntregaSuscripcion {
 
 interface Entrega {
   id: string
+  // FASE 5: la lista ya no es solo de suscripciones. `origen` dice de donde
+  // viene la fila y `estado_origen` conserva el estado crudo de su tabla —
+  // un pedido dice 'pagado' donde la entrega dice 'programada'.
+  origen: 'suscripcion' | 'pedido'
+  folio: string | null
+  estado_origen: string | null
+  pedido_id: string | null
   fecha_entrega: string | null
   estado: string
   tipo_canasta: string | null
@@ -98,6 +110,7 @@ export default function AdminEntregasPage() {
   const [totalCount, setTotalCount] = useState(0)
 
   // Filters
+  const [filtroOrigen, setFiltroOrigen] = useState<string>('todos')
   const [filtroEstado, setFiltroEstado] = useState('todos')
   const [filtroFechaDesde, setFiltroFechaDesde] = useState('')
   const [filtroFechaHasta, setFiltroFechaHasta] = useState('')
@@ -142,6 +155,7 @@ export default function AdminEntregasPage() {
       setLoading(true)
       const params = new URLSearchParams({ page: String(page), limit: '20' })
       if (filtroEstado !== 'todos') params.set('estado', filtroEstado)
+      if (filtroOrigen !== 'todos') params.set('origen', filtroOrigen)
       if (filtroFechaDesde) params.set('fecha_desde', filtroFechaDesde)
       if (filtroFechaHasta) params.set('fecha_hasta', filtroFechaHasta)
       if (filtroColonia) params.set('colonia', filtroColonia)
@@ -159,7 +173,7 @@ export default function AdminEntregasPage() {
     } finally {
       setLoading(false)
     }
-  }, [page, filtroEstado, filtroFechaDesde, filtroFechaHasta, filtroColonia, busqueda])
+  }, [page, filtroEstado, filtroOrigen, filtroFechaDesde, filtroFechaHasta, filtroColonia, busqueda])
 
   const fetchCalendario = useCallback(async () => {
     try {
@@ -392,6 +406,16 @@ export default function AdminEntregasPage() {
                 ))}
               </select>
 
+              <select
+                value={filtroOrigen}
+                onChange={e => { setFiltroOrigen(e.target.value); setPage(1) }}
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#33503E] focus:border-[#33503E]"
+              >
+                <option value="todos">Todos los orígenes</option>
+                <option value="suscripcion">Suscripción</option>
+                <option value="pedido">Tienda</option>
+              </select>
+
               <input
                 type="date"
                 value={filtroFechaDesde}
@@ -465,6 +489,7 @@ export default function AdminEntregasPage() {
                     <tr className="bg-gray-50 border-b border-gray-200">
                       <th className="text-left px-4 py-3 font-medium text-gray-600">Fecha entrega</th>
                       <th className="text-left px-4 py-3 font-medium text-gray-600">Cliente</th>
+                      <th className="text-left px-4 py-3 font-medium text-gray-600">Origen</th>
                       <th className="text-left px-4 py-3 font-medium text-gray-600">Colonia</th>
                       <th className="text-center px-4 py-3 font-medium text-gray-600">Estado</th>
                       <th className="text-right px-4 py-3 font-medium text-gray-600">Precio</th>
@@ -478,16 +503,35 @@ export default function AdminEntregasPage() {
                       return (
                         <tr
                           key={entrega.id}
+                          data-folio={entrega.folio || entrega.id}
+                          data-origen={entrega.origen}
                           className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
                           onClick={() => openDetalle(entrega.id)}
                         >
                           <td className="px-4 py-3">
                             <div className="font-medium text-gray-900">{formatDate(entrega.fecha_entrega)}</div>
-                            <div className="text-xs text-gray-400 font-mono">{entrega.id.slice(0, 8)}...</div>
+                            <div className="text-xs text-gray-400 font-mono">
+                              {entrega.origen === 'pedido'
+                                ? entrega.folio
+                                : entrega.suscripcion?.nombre || entrega.folio}
+                            </div>
                           </td>
                           <td className="px-4 py-3">
                             <div className="font-medium text-gray-900">{entrega.usuario?.nombre || 'Sin nombre'}</div>
                             <div className="text-xs text-gray-500">{entrega.usuario?.email || '-'}</div>
+                          </td>
+                          <td className="px-4 py-3">
+                            {(() => {
+                              const o = ORIGEN_BADGE[entrega.origen] || ORIGEN_BADGE.suscripcion
+                              return (
+                                <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${o.bg} ${o.text}`}>
+                                  {o.label}
+                                </span>
+                              )
+                            })()}
+                            {entrega.origen === 'pedido' && entrega.estado_origen && (
+                              <div className="text-[11px] text-gray-400 mt-0.5">{entrega.estado_origen}</div>
+                            )}
                           </td>
                           <td className="px-4 py-3 text-gray-700 text-sm">{entrega.suscripcion?.colonia || '-'}</td>
                           <td className="px-4 py-3 text-center">
@@ -780,7 +824,14 @@ export default function AdminEntregasPage() {
                   {activeTab === 'datos' && (
                     <div className="space-y-6">
                       {/* Estado badge */}
-                      <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-4 flex-wrap">
+                        <span className="text-sm text-gray-500">Origen:</span>
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          (ORIGEN_BADGE[detalle.origen] || ORIGEN_BADGE.suscripcion).bg
+                        } ${(ORIGEN_BADGE[detalle.origen] || ORIGEN_BADGE.suscripcion).text}`}>
+                          {(ORIGEN_BADGE[detalle.origen] || ORIGEN_BADGE.suscripcion).label}
+                          {detalle.folio ? ` · ${detalle.folio}` : ''}
+                        </span>
                         <span className="text-sm text-gray-500">Estado:</span>
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                           ESTADO_BADGE[detalle.estado]?.bg || 'bg-gray-100'

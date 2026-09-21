@@ -259,16 +259,27 @@ export default function ReportesPage() {
 
       {estadoImport && (
         <p className="mt-2 text-xs text-verde-suave">
-          {estadoImport.hay_corte ? (
+          {(estadoImport.total_entregas ?? estadoImport.filas) > 0 ? (
             <>
-              El {estadoImport.fecha_entrega} tiene <strong>{estadoImport.filas} entregas</strong>{' '}
-              cargadas
+              El {estadoImport.fecha_entrega} tiene{' '}
+              <strong>
+                {estadoImport.total_entregas ?? estadoImport.filas} entregas
+              </strong>
+              {': '}
+              {[
+                estadoImport.de_tienda ? `${estadoImport.de_tienda} de la tienda` : null,
+                estadoImport.de_suscripcion ? `${estadoImport.de_suscripcion} de suscripción` : null,
+                estadoImport.filas ? `${estadoImport.filas} importadas` : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
               {estadoImport.con_avisos > 0 && ` · ${estadoImport.con_avisos} con avisos`}.
             </>
           ) : (
             <>
-              El {estadoImport.fecha_entrega} todavía no tiene corte cargado. Si la venta aún no
-              pasa por la plataforma, súbelo con el botón de arriba.
+              El {estadoImport.fecha_entrega} no tiene ninguna entrega: ni pedidos de la tienda, ni
+              suscripciones, ni corte importado. Prueba con otro día, o sube el corte con el botón de
+              arriba si la venta aún no pasa por la plataforma.
             </>
           )}
         </p>

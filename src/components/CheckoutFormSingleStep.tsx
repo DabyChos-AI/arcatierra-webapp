@@ -9,6 +9,7 @@ import DeliveryDatePicker from '@/components/ui/DeliveryDatePicker'
 import PostalCodeSelector from '@/components/ui/PostalCodeSelector'
 import { MapPin, CreditCard, User, Phone, Mail, Edit2, Calendar } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { calcularCostoEnvio, subtotalProductos as calcSubtotalProductos } from '@/lib/envio'
 
 interface CheckoutFormProps {
   cartItems: any[]
@@ -202,22 +203,11 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
 
   // Calcular totales
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-  const subtotalProductos = cartItems
-    .filter(item => item.tipo !== 'experiencia')
-    .reduce((sum, item) => sum + (item.price * item.quantity), 0)
-  // Productos de prueba (contienen "test" en nombre o descripción, o son Acedera) - no generan costo de envío
-  const subtotalProductosParaEnvio = cartItems
-    .filter(item => {
-      if (item.tipo === 'experiencia') return false
-      const nombre = item.name?.toLowerCase() || ''
-      const descripcion = (item.description || item.descripcion || '')?.toLowerCase()
-      const esProductoTest = nombre.includes('test') || descripcion.includes('test') || nombre.includes('acedera')
-      return !esProductoTest
-    })
-    .reduce((sum, item) => sum + (item.price * item.quantity), 0)
-  // Si es recoger en almacén, envío es siempre 0
-  const shipping = tipoEntrega === 'recoger_almacen' ? 0 : 
-    ((subtotalProductosParaEnvio > 0 && subtotalProductosParaEnvio < 1000) ? 100 : 0)
+  // Una sola fórmula, compartida con el resumen del checkout y con el backend
+  // (`services/envio.py`), que es quien manda: recalcula el envío con los
+  // precios que lee de la base.
+  const subtotalProductos = calcSubtotalProductos(cartItems)
+  const shipping = calcularCostoEnvio(subtotalProductos, tipoEntrega)
   const total = subtotal + shipping
 
   const validatePostalCode = (cp: string) => {
@@ -314,6 +304,18 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
 
       const result = await response.json()
       console.log('✅ Respuesta de MercadoPago:', result)
+
+      // Pedido sin costo: el backend no llamó a MercadoPago porque el total es
+      // $0 y MP no procesa importes de cero. El pedido ya quedó 'pagado', así
+      // que no hay a dónde redirigir a pagar — se va directo al comprobante.
+      if (result.sin_costo) {
+        console.log('✅ Pedido sin costo, ya quedó pagado:', result.numero_pedido)
+        localStorage.removeItem('cart')
+        window.dispatchEvent(new Event('cartUpdated'))
+        window.location.href = result.redirect_url
+          || `/pago-exitoso?pedido=${result.numero_pedido}&sin_costo=1`
+        return
+      }
 
       if (result.init_point || result.payment_url) {
         localStorage.setItem('pendingOrder', JSON.stringify({

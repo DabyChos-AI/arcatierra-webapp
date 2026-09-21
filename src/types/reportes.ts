@@ -83,10 +83,18 @@ export interface ImportResponse {
 
 export interface EstadoImport {
   fecha_entrega: string
+  /** ¿Se subió el Excel del cliente para ese día? Sólo eso. */
   hay_corte: boolean
+  /** Filas provenientes del Excel importado. */
   filas: number
   con_avisos: number
   ultima_carga: string | null
+  /** Pedidos de la tienda que se entregan ese día. */
+  de_tienda: number
+  /** Entregas de suscripción de ese día. */
+  de_suscripcion: number
+  /** Todo lo que se entrega ese día, venga de donde venga. */
+  total_entregas: number
 }
 
 /** Origen de la entrega dentro de `v_corte_dia`. '' = todos. */

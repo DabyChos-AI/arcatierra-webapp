@@ -36,6 +36,8 @@ interface ProductCardProps {
 }
 
 // Helper: detectar si un producto es canasta
+import { precioLegible, esGratuito } from '@/lib/precio'
+
 function esCanasta(itemcode: string): boolean {
   return /^188[5-9]U?$/.test(itemcode) || /^189[0-1]U?$/.test(itemcode)
 }
@@ -191,9 +193,11 @@ export default function ProductCard({
                   <div className="text-xs text-gray-600 font-medium">Compra Única</div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-xl font-bold text-[#B15543]">
-                      ${product.precio.toFixed(2)}
+                      {precioLegible(product.precio)}
                     </span>
-                    <span className="text-xs text-gray-500">/ {product.unidad}</span>
+                    {!esGratuito(product.precio) && (
+                      <span className="text-xs text-gray-500">/ {product.unidad}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -245,9 +249,11 @@ export default function ProductCard({
           <div className="flex items-center justify-between mb-3">
             <div>
               <span className="text-xl font-semibold text-[#B15543]">
-                ${product.precio.toFixed(2)}
+                {precioLegible(product.precio)}
               </span>
-              <span className="text-gray-500 text-sm ml-1">/ {product.unidad}</span>
+              {!esGratuito(product.precio) && (
+                <span className="text-gray-500 text-sm ml-1">/ {product.unidad}</span>
+              )}
             </div>
             <Button
               onClick={(e) => {

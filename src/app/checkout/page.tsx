@@ -8,6 +8,7 @@ import DeliveryTypeSelector from '@/components/ui/DeliveryTypeSelector'
 import AddToSubscriptionButton from '@/components/ui/AddToSubscriptionButton'
 import { ShoppingCart, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { calcularCostoEnvio, subtotalProductos as calcSubtotalProductos } from '@/lib/envio'
 
 export default function CheckoutPage() {
   const sessionResult = useSession()
@@ -112,9 +113,7 @@ export default function CheckoutPage() {
               cartItems={cartItems}
               onOrderComplete={handleOrderComplete}
               tipoEntrega={tipoEntrega}
-              costoEnvio={tipoEntrega === 'recoger_almacen' ? 0 : 
-                (cartItems.filter((item: any) => item.tipo !== 'experiencia')
-                  .reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0) >= 1000 ? 0 : 100)}
+              costoEnvio={calcularCostoEnvio(calcSubtotalProductos(cartItems), tipoEntrega)}
             />
           </div>
 
@@ -158,10 +157,8 @@ export default function CheckoutPage() {
                   <span>
                     {(() => {
                       if (tipoEntrega === 'recoger_almacen') return 'Gratis (recoger)'
-                      const subtotalProductos = cartItems
-                        .filter((item: any) => item.tipo !== 'experiencia')
-                        .reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
-                      return (subtotalProductos >= 1000) ? 'Gratis' : '$100.00'
+                      const envio = calcularCostoEnvio(calcSubtotalProductos(cartItems), tipoEntrega)
+                      return envio === 0 ? 'Gratis' : `$${envio.toFixed(2)}`
                     })()}
                   </span>
                 </div>
@@ -206,11 +203,7 @@ export default function CheckoutPage() {
                   <span>
                     ${(() => {
                       const subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
-                      const subtotalProductos = cartItems
-                        .filter((item: any) => item.tipo !== 'experiencia')
-                        .reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
-                      const shipping = tipoEntrega === 'recoger_almacen' ? 0 : 
-                        (subtotalProductos >= 1000 ? 0 : 100)
+                      const shipping = calcularCostoEnvio(calcSubtotalProductos(cartItems), tipoEntrega)
                       return (subtotal + shipping).toFixed(2)
                     })()}
                   </span>

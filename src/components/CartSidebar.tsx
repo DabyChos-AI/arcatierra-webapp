@@ -6,6 +6,7 @@ import { X, Plus, Minus, ShoppingCart, Trash2, ChevronLeft, ChevronRight } from 
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/Toast'
 import { useCart } from '@/context/CartContext' // Importar el hook de contexto
+import { calcularCostoEnvio } from '@/lib/envio'
 
 interface CartSidebarProps {
   isOpen: boolean
@@ -196,23 +197,16 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const experiencias = cartItems.filter(item => item.tipo === 'experiencia')
   const productos = cartItems.filter(item => item.tipo !== 'experiencia')
   
-  // Productos de prueba (contienen "test" en nombre o descripción, o son Acedera) - no generan costo de envío
-  const productosParaEnvio = productos.filter(item => {
-    const nombre = item.name?.toLowerCase() || ''
-    const descripcion = (item.description || item.descripcion || '')?.toLowerCase()
-    const esProductoTest = nombre.includes('test') || descripcion.includes('test') || nombre.includes('acedera')
-    return !esProductoTest
-  })
-  
   // Calcular subtotales
   const subtotalProductos = productos.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0)
-  const subtotalProductosParaEnvio = productosParaEnvio.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0)
   const subtotalExperiencias = experiencias.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0)
   const subtotal = subtotalProductos + subtotalExperiencias
-  
-  // Envío SOLO se basa en productos (excluyendo productos de prueba)
-  // Solo cobrar envío si HAY productos Y son menos de $1000
-  const shipping = (subtotalProductosParaEnvio > 0 && subtotalProductosParaEnvio < 1000) ? 100 : 0
+
+  // Misma fórmula que el checkout y que el backend (services/envio.py). Antes
+  // aquí se excluían por NOMBRE los productos con "test" o "acedera", una
+  // heurística que sólo afectaba a la pantalla: el valor que se mandaba al
+  // backend salía de checkout/page.tsx, que no la tenía.
+  const shipping = calcularCostoEnvio(subtotalProductos, 'envio_domicilio')
   const total = subtotal + shipping
 
   return (
