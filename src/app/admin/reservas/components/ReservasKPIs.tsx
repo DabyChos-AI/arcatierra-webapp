@@ -111,7 +111,7 @@ export default function ReservasKPIs({ refreshKey }: ReservasKPIsProps) {
       <KPICard
         label="Tentativas pendientes"
         value={stats?.tentativas ?? 0}
-        sub={stats ? `${formatMXN(stats.tentativas_monto_anticipos)} anticipos esperados` : null}
+        sub={stats ? `Esperando: ${formatMXN(stats.tentativas_monto_esperado)}` : null}
         icon={<Clock className="h-5 w-5" />}
         accent="amarillo"
         loading={loading}
@@ -136,8 +136,8 @@ export default function ReservasKPIs({ refreshKey }: ReservasKPIsProps) {
         error={error}
       />
       <KPICard
-        label="Manifest manana"
-        value={`${stats?.manifest_manana_eventos ?? 0} eventos`}
+        label="Manifest mañana"
+        value={`${stats?.manifest_manana_eventos ?? 0} ${stats?.manifest_manana_eventos === 1 ? 'evento' : 'eventos'}`}
         sub={stats ? `${stats.manifest_manana_invitados} invitados` : null}
         icon={
           stats && stats.manifest_manana_eventos === 0 ? (

@@ -179,9 +179,12 @@ export interface Reserva {
   cotizacion?: Cotizacion
 }
 
+// Contrato de GET /api/admin/reservas/stats (backend lo alineo el 2026-09-25:
+// antes mandaba otros nombres y la fila de tarjetas decia "undefined" y "$NaN")
 export interface ReservaStats {
   tentativas: number
-  tentativas_monto_anticipos: number
+  // Lo que falta cobrar de las tentativas (suma de monto_balance)
+  tentativas_monto_esperado: number
   confirmadas_mes: number
   delta_pct_confirmadas: number
   ingresos_mes: number
