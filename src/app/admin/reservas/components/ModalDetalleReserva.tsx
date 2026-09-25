@@ -192,7 +192,8 @@ export default function ModalDetalleReserva({
         const arr: ExperienciaCatalogo[] = Array.isArray(data)
           ? data
           : data?.items ?? []
-        setAddonsCat(arr)
+        // "Oculto" en el catalogo de Add-ons = no se ofrece para agregarlo
+        setAddonsCat(arr.filter((a) => a.disponible !== false))
       }
     } catch {
       /* silencioso */

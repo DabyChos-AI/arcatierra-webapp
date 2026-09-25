@@ -147,6 +147,8 @@ export interface Addon {
 export interface AddonListResponse {
   items: Addon[]
   total_count: number
+  /** Ocultos en todo el catalogo (para el encabezado); el backend lo manda desde 2026-09-25 */
+  ocultos_count?: number
   page: number
   per_page: number
   total_pages: number

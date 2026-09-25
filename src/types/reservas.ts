@@ -74,6 +74,7 @@ export interface ExperienciaCatalogo {
   precio_por_persona: number
   precio_persona_adicional?: number
   personas_incluidas?: number
+  disponible?: boolean
   capacidad_maxima: number
   ubicacion?: string
   imagen_principal?: string | null

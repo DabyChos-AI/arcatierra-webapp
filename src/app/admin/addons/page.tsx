@@ -48,7 +48,11 @@ export default function AddonsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const [soloDisponibles, setSoloDisponibles] = useState(true)
+  // Antes arrancaba en true (y el backend tambien filtraba por default): al
+  // apagar un add-on desaparecia y no habia forma de volver a verlo.
+  const [soloDisponibles, setSoloDisponibles] = useState(false)
+  const [ocultosCount, setOcultosCount] = useState(0)
+  const [mensaje, setMensaje] = useState<string | null>(null)
   const [busquedaInput, setBusquedaInput] = useState('')
   const [busqueda, setBusqueda] = useState('')
   const [page, setPage] = useState(1)
@@ -86,6 +90,7 @@ export default function AddonsPage() {
       setItems(data.items)
       setTotalCount(data.total_count)
       setTotalPages(data.total_pages)
+      setOcultosCount(data.ocultos_count ?? 0)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar add-ons')
     } finally {
@@ -194,7 +199,16 @@ export default function AddonsPage() {
         const payload = await res.json().catch(() => null)
         throw new Error(extraerMensajeError(payload, res.status))
       }
-      await fetchAddons()
+      // Se actualiza en su fila, sin recargar: aunque el filtro "Solo
+      // disponibles" este puesto, el add-on no desaparece de golpe.
+      const ahora = !a.disponible
+      setItems((prev) => prev.map((i) => (i.id === a.id ? { ...i, disponible: ahora } : i)))
+      setOcultosCount((n) => Math.max(0, n + (ahora ? -1 : 1)))
+      setMensaje(
+        ahora
+          ? `«${a.nombre}» disponible: ya se ofrece al armar reservas.`
+          : `«${a.nombre}» oculto: ya no se ofrece al armar reservas. Sigue aquí; enciéndelo cuando quieras.`,
+      )
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cambiar disponibilidad')
     } finally {
@@ -204,7 +218,13 @@ export default function AddonsPage() {
 
   const handleEliminar = async (a: Addon) => {
     if (!token) return
-    if (!window.confirm(`¿Eliminar el add-on "${a.nombre}"?`)) return
+    if (
+      !window.confirm(
+        `¿Eliminar el add-on "${a.nombre}"?\n\nSi ya se usó en reservas, esas reservas lo conservan. ` +
+          'Para solo dejar de ofrecerlo, usa el botón Disponible/Oculto.',
+      )
+    )
+      return
     setEliminando(a.id)
     try {
       const res = await fetch(`${API_URL}/api/admin/addons/${a.id}?hard=false`, {
@@ -215,6 +235,8 @@ export default function AddonsPage() {
         const payload = await res.json().catch(() => null)
         throw new Error(extraerMensajeError(payload, res.status))
       }
+      const data = await res.json().catch(() => null)
+      setMensaje(data?.message || `«${a.nombre}» eliminado.`)
       await fetchAddons()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al eliminar')
@@ -238,7 +260,9 @@ export default function AddonsPage() {
               <h1 className="font-display text-3xl text-verde">
                 Catálogo de Add-ons
                 {!loading && (
-                  <span className="ml-2 text-lg text-verde-suave tabular-nums">({totalCount})</span>
+                  <span className="ml-2 text-lg text-verde-suave tabular-nums">
+                    ({totalCount}{ocultosCount > 0 ? ` · ${ocultosCount} oculto${ocultosCount === 1 ? '' : 's'}` : ''})
+                  </span>
                 )}
               </h1>
               <p className="text-sm text-verde-suave mt-1">
@@ -295,6 +319,20 @@ export default function AddonsPage() {
             Actualizar
           </button>
         </div>
+
+        {mensaje && (
+          <div role="status" className="bg-verde/10 border border-verde/30 rounded-lg p-3 flex items-center gap-2 text-sm text-verde">
+            <span>{mensaje}</span>
+            <button
+              type="button"
+              onClick={() => setMensaje(null)}
+              className="ml-auto text-xs px-2 py-1 rounded hover:bg-verde/10"
+              aria-label="Cerrar aviso"
+            >
+              Cerrar
+            </button>
+          </div>
+        )}
 
         {error && (
           <div className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex items-center gap-2 text-sm text-rojo">
@@ -357,7 +395,8 @@ export default function AddonsPage() {
                           type="button"
                           onClick={() => handleToggleDisponible(a)}
                           disabled={toggling === a.id}
-                          aria-label={`${a.disponible ? 'Deshabilitar' : 'Habilitar'} ${a.nombre}`}
+                          aria-label={`${a.disponible ? 'Ocultar' : 'Volver a ofrecer'} ${a.nombre}`}
+                          title={a.disponible ? 'Se ofrece al armar reservas. Clic para ocultarlo.' : 'No se ofrece al armar reservas. Clic para volver a ofrecerlo.'}
                           className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs disabled:opacity-50 ${
                             a.disponible
                               ? 'bg-verde/10 text-verde hover:bg-verde/20'

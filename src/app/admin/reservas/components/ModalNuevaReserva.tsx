@@ -208,7 +208,8 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
           : Array.isArray(data?.items)
           ? data.items
           : []
-        setExperiencias(arr)
+        // El backend rechaza reservar una experiencia inactiva: no ofrecerla
+        setExperiencias(arr.filter((e) => e.disponible !== false))
       }
       if (resAdc.ok) {
         const data = await resAdc.json()
@@ -217,7 +218,8 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
           : Array.isArray(data?.items)
           ? data.items
           : []
-        setAddonsCat(arr)
+        // "Oculto" en el catalogo de Add-ons = no se ofrece (David, 2026-09-25)
+        setAddonsCat(arr.filter((a) => a.disponible !== false))
       }
     } catch {
       /* silencioso */
