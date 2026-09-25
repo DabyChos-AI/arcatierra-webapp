@@ -228,7 +228,7 @@ export default function ExperienciasAdminPage({
         mostrarNotificacion('success', data.message)
         fetchExperiencias()
       } else {
-        mostrarNotificacion('error', data.message || 'Error al cambiar estado')
+        mostrarNotificacion('error', data.detail || data.message || 'Error al cambiar estado')
       }
     } catch (error) {
       mostrarNotificacion('error', 'Error de conexión')
@@ -377,6 +377,8 @@ export default function ExperienciasAdminPage({
       if (data.success) {
         mostrarNotificacion('success', data.message)
         if (selectedExperiencia) fetchEventos(selectedExperiencia.id)
+      } else {
+        mostrarNotificacion('error', data.detail || 'No se pudo cambiar la fecha')
       }
     } catch (error) {
       mostrarNotificacion('error', 'Error de conexión')
@@ -395,6 +397,8 @@ export default function ExperienciasAdminPage({
       if (data.success) {
         mostrarNotificacion('success', data.message)
         if (selectedExperiencia) fetchEventos(selectedExperiencia.id)
+      } else {
+        mostrarNotificacion('error', data.detail || 'No se pudo eliminar la fecha')
       }
     } catch (error) {
       mostrarNotificacion('error', 'Error de conexión')
