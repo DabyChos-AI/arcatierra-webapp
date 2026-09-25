@@ -327,7 +327,7 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
       case 1:
         return wiz.tipoCliente === 'directo'
           ? wiz.clienteNombre.trim().length > 0
-          : !!wiz.resellerId
+          : !!wiz.resellerId && wiz.clienteNombre.trim().length > 0
       case 2:
         return (
           !!wiz.experienciaId &&
@@ -378,6 +378,8 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
                 idioma: wiz.clienteIdioma,
               }
             : undefined,
+        // El cliente se ve siempre en la lista; con reseller es su huesped
+        nombre_cliente: wiz.clienteNombre.trim() || undefined,
         experiencia_id: wiz.experienciaId,
         fecha_experiencia: wiz.fecha,
         hora_inicio: wiz.horaInicio,
@@ -675,6 +677,26 @@ function Paso1Cliente({
               </option>
             ))}
           </select>
+          <label
+            htmlFor="cliente-nombre-reseller"
+            className="block text-sm font-medium text-verde mb-1 mt-4"
+          >
+            Nombre del cliente *
+          </label>
+          <input
+            id="cliente-nombre-reseller"
+            type="text"
+            value={wiz.clienteNombre}
+            onChange={(e) =>
+              dispatch({ type: 'SET_FIELD', field: 'clienteNombre', value: e.target.value })
+            }
+            placeholder="El huésped que manda el reseller"
+            aria-describedby="cliente-nombre-reseller-ayuda"
+            className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
+          />
+          <p id="cliente-nombre-reseller-ayuda" className="mt-1 text-xs text-verde-suave">
+            Solo identifica la reserva. No se le mandan correos: el cliente es del reseller.
+          </p>
         </div>
       ) : (
         <>

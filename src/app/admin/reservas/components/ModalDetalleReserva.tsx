@@ -75,6 +75,7 @@ interface FormDatos {
   chinampa: string
   idioma: IdiomaCliente
   vendedorId: string
+  nombreCliente: string
   notasInternas: string
   notasAlergias: string
   notasCliente: string
@@ -217,6 +218,7 @@ export default function ModalDetalleReserva({
       chinampa: reserva.chinampa_asignada ?? '',
       idioma: reserva.idioma,
       vendedorId: reserva.vendedor_id ?? '',
+      nombreCliente: reserva.cliente_nombre ?? '',
       notasInternas: reserva.notas_internas ?? '',
       notasAlergias: reserva.notas_alergias ?? '',
       notasCliente: reserva.notas_cliente ?? '',
@@ -269,6 +271,7 @@ export default function ModalDetalleReserva({
           chinampa_asignada: form.chinampa || undefined,
           idioma: form.idioma,
           vendedor_id: form.vendedorId || undefined,
+          nombre_cliente: form.nombreCliente.trim() || undefined,
           notas_internas: form.notasInternas,
           notas_alergias: form.notasAlergias,
           notas_cliente: form.notasCliente,
@@ -827,10 +830,19 @@ function TabDatos({
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <ReadOnly label="Cliente" value={reserva.cliente_nombre ?? reserva.usuario_nombre ?? '—'} />
+        <Field label="Cliente" htmlFor="d-nombre-cliente">
+          <input
+            id="d-nombre-cliente"
+            type="text"
+            value={form.nombreCliente}
+            onChange={(e) => updateForm('nombreCliente', e.target.value)}
+            placeholder={reserva.reseller_nombre ? 'El huésped del reseller' : 'Nombre del cliente'}
+            className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
+          />
+        </Field>
         <ReadOnly label="Email" value={reserva.cliente_email ?? reserva.usuario_email ?? '—'} />
         <ReadOnly label="Telefono" value={reserva.cliente_telefono ?? reserva.usuario_telefono ?? '—'} />
-        <ReadOnly label="Reseller" value={reserva.reseller_nombre ?? '—'} />
+        <ReadOnly label="Reseller" value={reserva.reseller_nombre ?? '✕ Venta directa'} />
         <ReadOnly label="Experiencia" value={reserva.experiencia_nombre ?? '—'} />
         <ReadOnly label="Total" value={formatMXN(Number(reserva.monto_total))} />
       </div>

@@ -390,7 +390,10 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
                   Experiencia
                 </th>
                 <th scope="col" className="text-left px-3 py-3 font-medium text-verde">
-                  Cliente / Reseller
+                  Cliente
+                </th>
+                <th scope="col" className="text-left px-3 py-3 font-medium text-verde">
+                  Reseller
                 </th>
                 <th scope="col" className="text-center px-3 py-3 font-medium text-verde">
                   Inv
@@ -427,14 +430,14 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i} className="border-b border-neutro-borde">
-                    <td colSpan={12} className="px-3 py-3">
+                    <td colSpan={13} className="px-3 py-3">
                       <div className="h-5 bg-neutro-light rounded animate-pulse" />
                     </td>
                   </tr>
                 ))
               ) : sortedItems.length === 0 ? (
                 <tr>
-                  <td colSpan={12} className="px-3 py-10 text-center text-verde-suave">
+                  <td colSpan={13} className="px-3 py-10 text-center text-verde-suave">
                     <p className="mb-3">No hay reservas con estos filtros.</p>
                     <button
                       type="button"
@@ -451,7 +454,10 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
                     r.numero_invitados_max && r.numero_invitados_max !== r.numero_invitados_min
                       ? `${r.numero_invitados_min}-${r.numero_invitados_max}`
                       : String(r.numero_invitados_min)
-                  const clienteReseller = r.reseller_nombre ?? r.usuario_nombre ?? '—'
+                  // El cliente sale siempre, la venda quien la venda; el reseller va en su
+                  // columna, con ✕ si fue venta directa (retro del equipo, 2026-09-25).
+                  // Antes se leia reseller_nombre/usuario_nombre, que el backend no mandaba.
+                  const cliente = r.cliente_nombre ?? r.cliente_email ?? null
                   const guias = r.guias ?? []
                   const guiasMostrar = guias.slice(0, 2).map((g) => g.nombre).join(', ')
                   const guiasExtra = guias.length > 2 ? `+${guias.length - 2}` : ''
@@ -482,8 +488,13 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
                       <td className="px-3 py-3 text-verde max-w-[200px] truncate" title={r.experiencia_nombre ?? ''}>
                         {r.experiencia_nombre ?? '—'}
                       </td>
-                      <td className="px-3 py-3 text-verde max-w-[180px] truncate" title={clienteReseller}>
-                        {clienteReseller}
+                      <td className="px-3 py-3 text-verde max-w-[180px] truncate" title={cliente ?? 'Falta el nombre del cliente'}>
+                        {cliente ?? <span className="text-terracota">Falta nombre</span>}
+                      </td>
+                      <td className="px-3 py-3 text-verde max-w-[160px] truncate" title={r.reseller_nombre ?? 'Venta directa, sin reseller'}>
+                        {r.reseller_nombre ?? (
+                          <span className="text-verde-suave" aria-label="Sin reseller">✕</span>
+                        )}
                       </td>
                       <td className="px-3 py-3 text-center text-verde tabular-nums">{invitados}</td>
                       <td className="px-3 py-3 text-verde">{r.vendedor_nombre ?? '—'}</td>

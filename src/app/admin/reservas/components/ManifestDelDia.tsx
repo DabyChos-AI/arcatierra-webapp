@@ -85,10 +85,13 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
       )
       if (!res.ok) throw new Error(`Error ${res.status}`)
       const json = await res.json()
+      // El backend manda los dias agrupados en `dias`. Antes esto tomaba `items`
+      // (plano, sin `reservas`) y con cualquier evento en el rango tronaba en
+      // `[...dia.reservas]` (2026-09-25).
       const arr: ManifestDelDiaType[] = Array.isArray(json)
         ? json
-        : Array.isArray(json?.items)
-        ? json.items
+        : Array.isArray(json?.dias)
+        ? json.dias
         : []
       setData(arr)
     } catch (err) {
@@ -213,7 +216,7 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
       {!loading &&
         !error &&
         data.map((dia) => {
-          const reservasOrdenadas = [...dia.reservas].sort(ordenarPorHora)
+          const reservasOrdenadas = [...(dia.reservas ?? [])].sort(ordenarPorHora)
           return (
             <section
               key={dia.fecha}
@@ -272,7 +275,8 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
                   <tbody>
                     {reservasOrdenadas.map((r) => {
                       const expanded = expandidos[r.id] ?? false
-                      const cliente = r.reseller_nombre ?? r.usuario_nombre ?? '—'
+                      // Antes: reseller_nombre ?? usuario_nombre, que el backend no mandaba -> siempre "—"
+                      const cliente = r.cliente_nombre ?? '—'
                       const invitados =
                         r.numero_invitados_max && r.numero_invitados_max !== r.numero_invitados_min
                           ? `${r.numero_invitados_min}-${r.numero_invitados_max}`
@@ -299,7 +303,12 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
                           <td className="px-3 py-2 text-verde max-w-[180px]">
                             {r.experiencia_nombre ?? '—'}
                           </td>
-                          <td className="px-3 py-2 text-verde">{cliente}</td>
+                          <td className="px-3 py-2 text-verde">
+                            {cliente}
+                            {r.reseller_nombre && (
+                              <span className="block text-xs text-verde-suave">vía {r.reseller_nombre}</span>
+                            )}
+                          </td>
                           <td className="px-3 py-2 text-center text-verde tabular-nums">{invitados}</td>
                           <td className="px-3 py-2">
                             <button
