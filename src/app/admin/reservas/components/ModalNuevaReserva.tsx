@@ -24,7 +24,8 @@ import { extraerMensajeError } from './errores'
 
 interface ModalNuevaReservaProps {
   onClose: () => void
-  onCreated: (id: string, bookingId: string) => void
+  /** `avisos`: lo que el paso 6 no pudo hacer (link MP, envio de la cotizacion). */
+  onCreated: (id: string, bookingId: string, avisos?: string[]) => void
 }
 
 const STEPS: { num: number; label: string }[] = [
@@ -408,7 +409,7 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
         throw new Error(extraerMensajeError(err, res.status))
       }
       const data = await res.json()
-      onCreated(data.id, data.booking_id)
+      onCreated(data.id, data.booking_id, Array.isArray(data.avisos) ? data.avisos : [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al crear reserva')
     } finally {

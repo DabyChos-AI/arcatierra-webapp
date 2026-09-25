@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import { useSearchParams } from 'next/navigation'
-import { Plus, FileText, Calendar as CalendarIcon, Table as TableIcon, Phone } from 'lucide-react'
+import { Plus, FileText, Calendar as CalendarIcon, Table as TableIcon, Phone, AlertTriangle, X } from 'lucide-react'
 import AdminTopbar from '../components/AdminTopbar'
 import ReservasKPIs from './components/ReservasKPIs'
 
@@ -47,6 +47,8 @@ function ReservasPageInner() {
   const [showNueva, setShowNueva] = useState(false)
   const [detalleId, setDetalleId] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
+  // Lo que el paso 6 del wizard no pudo hacer (link MP / envio de cotizacion)
+  const [avisosAlta, setAvisosAlta] = useState<{ bookingId: string; avisos: string[] } | null>(null)
 
   // C33: apertura directa del modal de detalle vía ?reserva_id=<uuid>
   // (deep-link desde el dashboard ejecutivo → Próximos eventos).
@@ -56,10 +58,11 @@ function ReservasPageInner() {
     if (rid) setDetalleId(rid)
   }, [searchParams])
 
-  const handleCreated = useCallback((id: string, bookingId: string) => {
+  const handleCreated = useCallback((id: string, bookingId: string, avisos: string[] = []) => {
     setShowNueva(false)
     setRefreshKey((k) => k + 1)
     setDetalleId(id)
+    setAvisosAlta(avisos.length > 0 ? { bookingId, avisos } : null)
   }, [])
 
   const handleClose = useCallback(() => setShowNueva(false), [])
@@ -93,6 +96,31 @@ function ReservasPageInner() {
             Nueva Reserva
           </button>
         </header>
+
+        {avisosAlta && (
+          <div
+            role="status"
+            className="flex items-start gap-3 rounded-lg border border-amarillo/40 bg-amarillo-bg px-4 py-3 text-sm text-verde"
+          >
+            <AlertTriangle className="h-5 w-5 flex-shrink-0 text-amarillo" aria-hidden="true" />
+            <div className="flex-1">
+              <p className="font-medium">Reserva {avisosAlta.bookingId} creada, con pendientes:</p>
+              <ul className="mt-1 list-disc pl-5">
+                {avisosAlta.avisos.map((a) => (
+                  <li key={a}>{a}</li>
+                ))}
+              </ul>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAvisosAlta(null)}
+              className="text-verde-suave hover:text-verde"
+              aria-label="Cerrar aviso"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
 
         <ReservasKPIs refreshKey={refreshKey} />
 
