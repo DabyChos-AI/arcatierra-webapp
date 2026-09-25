@@ -37,7 +37,7 @@ export default function TopVendedorasList({ items, loading }: TopVendedorasListP
           Top vendedoras del mes
         </h3>
         <span className="text-[10.5px] text-verde-suave font-normal">
-          Por ingresos generados
+          Lo vendido este mes por cada vendedora
         </span>
       </div>
 

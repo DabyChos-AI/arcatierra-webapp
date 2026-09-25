@@ -18,6 +18,8 @@ interface KpiCardProps {
   /** Variación porcentual vs periodo anterior. >0 verde ▲, <0 rojo ▼, undefined omite. */
   trend?: number
   detail?: string
+  /** Que esta sumando la tarjeta, en palabras. Ej: "Lo cobrado de…" vs "Lo vendido…". */
+  leyenda?: string
 }
 
 /**
@@ -42,6 +44,7 @@ export default function KpiCard({
   value,
   trend,
   detail,
+  leyenda,
 }: KpiCardProps) {
   const colors = COLOR_MAP[iconColor]
   const hasTrend = trend !== undefined && !Number.isNaN(trend)
@@ -75,6 +78,11 @@ export default function KpiCard({
           )}
           {detail && <span>{detail}</span>}
         </div>
+      )}
+      {leyenda && (
+        <p className="mt-2 pt-2 border-t border-neutro-borde text-[10.5px] leading-snug text-verde-suave">
+          {leyenda}
+        </p>
       )}
     </div>
   )

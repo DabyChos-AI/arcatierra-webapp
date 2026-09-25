@@ -55,9 +55,14 @@ export default function ChartIngresos({ data, loading }: ChartIngresosProps) {
   return (
     <div className="bg-white rounded-xl border border-neutro-borde p-5 shadow-soft">
       <div className="flex items-center justify-between flex-wrap gap-1 mb-4">
-        <h3 className="text-sm font-semibold text-verde-tipografia">
-          Ingresos últimos 6 meses
-        </h3>
+        <div>
+          <h3 className="text-sm font-semibold text-verde-tipografia">
+            Ingresos últimos 6 meses
+          </h3>
+          <p className="text-[10.5px] text-verde-suave">
+            Lo vendido por mes de la experiencia (confirmadas, pagadas y realizadas)
+          </p>
+        </div>
         {!loading && data.length > 0 && (
           <span className="text-[10.5px] text-verde-suave font-normal">
             Total: ${totalM.toFixed(2)}M MXN

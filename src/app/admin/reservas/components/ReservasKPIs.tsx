@@ -129,7 +129,7 @@ export default function ReservasKPIs({ refreshKey }: ReservasKPIsProps) {
       <KPICard
         label="Ingresos del mes"
         value={stats ? formatMXN(stats.ingresos_mes) : formatMXN(0)}
-        sub="MXN totales este mes"
+        sub="Lo cobrado de las reservas creadas este mes (sin canceladas)"
         icon={<DollarSign className="h-5 w-5" />}
         accent="terracota"
         loading={loading}

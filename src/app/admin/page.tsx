@@ -282,6 +282,7 @@ export default function AdminDashboardEjecutivo() {
                 value={fmtK(kpis.ingresos_mes.value)}
                 trend={kpis.ingresos_mes.trend_pct}
                 detail={`proyección ${fmtK(kpis.ingresos_mes.proyeccion)}`}
+                leyenda="Lo vendido: reservas confirmadas, pagadas o realizadas con experiencia este mes."
               />,
               <KpiCard
                 key="anticipos"
