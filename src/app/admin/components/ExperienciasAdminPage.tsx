@@ -325,7 +325,8 @@ export default function ExperienciasAdminPage({
         setSelectedExperiencia(null)
         fetchExperiencias()
       } else {
-        mostrarNotificacion('error', data.message || 'Error al eliminar')
+        // FastAPI responde los errores en `detail`, no en `message`
+        mostrarNotificacion('error', data.detail || data.message || 'Error al eliminar')
       }
     } catch (error) {
       mostrarNotificacion('error', 'Error de conexión')
@@ -1293,8 +1294,8 @@ export default function ExperienciasAdminPage({
                 ¿Eliminar experiencia?
               </h3>
               <p className="text-center text-gray-500 mb-4">
-                Esta acción eliminará <strong>{selectedExperiencia.nombre}</strong>.
-                {selectedExperiencia.disponible && ' Si tiene reservas, solo se desactivará.'}
+                Se quitará <strong>{selectedExperiencia.nombre}</strong> del panel y de la página.
+                {' '}Si ya tiene reservas, leads o códigos QR, su historial se conserva para los reportes.
               </p>
               
               <div className="flex gap-3">
