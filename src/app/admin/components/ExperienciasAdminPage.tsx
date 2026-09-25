@@ -38,6 +38,7 @@ interface Experiencia {
   duracion_horas: number
   precio_por_persona: number
   precio_persona_adicional: number
+  personas_incluidas: number
   precio_nino: number | null
   capacidad_maxima: number
   ubicacion: string
@@ -113,6 +114,7 @@ export default function ExperienciasAdminPage({
     duracion_horas: 3,
     precio_por_persona: 0,
     precio_persona_adicional: 0,
+    personas_incluidas: 9,
     precio_nino: null as number | null,
     edad_maxima_nino: 12,
     capacidad_maxima: 10,
@@ -169,6 +171,8 @@ export default function ExperienciasAdminPage({
   }
   const theme = colors[colorTema]
   const IconTipo = colorTema === 'green' ? Globe : Lock
+  // "Personas incluidas" es regla de las reservas privadas; las publicas se cobran por persona
+  const esPrivada = tipoExperiencia === 'EXPERIENCIAS PRIVADAS'
 
   const fetchExperiencias = useCallback(async () => {
     setLoading(true)
@@ -417,6 +421,7 @@ export default function ExperienciasAdminPage({
       duracion_horas: 3,
       precio_por_persona: 0,
       precio_persona_adicional: 0,
+      personas_incluidas: 9,
       precio_nino: null,
       edad_maxima_nino: 12,
       capacidad_maxima: 10,
@@ -444,6 +449,7 @@ export default function ExperienciasAdminPage({
       duracion_horas: exp.duracion_horas,
       precio_por_persona: exp.precio_por_persona,
       precio_persona_adicional: exp.precio_persona_adicional || 0,
+      personas_incluidas: exp.personas_incluidas || 9,
       precio_nino: exp.precio_nino,
       edad_maxima_nino: 12,
       capacidad_maxima: exp.capacidad_maxima,
@@ -690,6 +696,9 @@ export default function ExperienciasAdminPage({
                     
                     <td className="px-4 py-4 text-sm font-medium text-gray-900">
                       ${exp.precio_por_persona.toLocaleString()}
+                      {esPrivada && (
+                        <p className="text-xs font-normal text-gray-500">1-{exp.personas_incluidas || 9} personas</p>
+                      )}
                     </td>
                     
                     <td className="px-4 py-4 text-sm text-gray-500">
@@ -942,9 +951,11 @@ export default function ExperienciasAdminPage({
                     Precios y Capacidad
                   </h3>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-1">Precio base 1-9 px (MXN) *</label>
+                      <label className="block text-sm font-medium mb-1">
+                        {esPrivada ? `Precio base 1-${formData.personas_incluidas} px (MXN) *` : 'Precio por persona (MXN) *'}
+                      </label>
                       <input
                         type="number"
                         value={formData.precio_por_persona}
@@ -954,8 +965,28 @@ export default function ExperienciasAdminPage({
                       />
                     </div>
                     
+                    {esPrivada && (
+                      <div>
+                        <label htmlFor="exp-personas-incluidas" className="block text-sm font-medium mb-1">Personas incluidas *</label>
+                        <input
+                          id="exp-personas-incluidas"
+                          type="number"
+                          value={formData.personas_incluidas}
+                          onChange={(e) => setFormData(prev => ({ ...prev, personas_incluidas: Math.max(1, parseInt(e.target.value) || 1) }))}
+                          min="1"
+                          aria-describedby="exp-personas-incluidas-ayuda"
+                          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 ${theme.ring}`}
+                        />
+                        <p id="exp-personas-incluidas-ayuda" className="text-xs text-gray-500 mt-1">
+                          Las que cubre el precio base. También es el mínimo al reservar.
+                        </p>
+                      </div>
+                    )}
+
                     <div>
-                      <label className="block text-sm font-medium mb-1">Persona Adicional</label>
+                      <label className="block text-sm font-medium mb-1">
+                        {esPrivada ? `Persona adicional (desde la ${formData.personas_incluidas + 1})` : 'Persona Adicional'}
+                      </label>
                       <input
                         type="number"
                         value={formData.precio_persona_adicional}

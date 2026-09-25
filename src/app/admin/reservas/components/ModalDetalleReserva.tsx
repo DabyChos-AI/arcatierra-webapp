@@ -26,11 +26,13 @@ import {
   type Reserva,
 } from '@/types/reservas'
 
-// El backend expone en `cotizacion` el precio base 1-9 y el adicional por persona
-// del catalogo. No estan en el tipo Cotizacion base; los leemos con esta extension.
+// El backend expone en `cotizacion` el precio base, el adicional por persona y
+// cuantas personas cubre el base (`invitados_incluidos`, dato de la experiencia).
+// No estan en el tipo Cotizacion base; los leemos con esta extension.
 interface CotizacionConCatalogo extends Cotizacion {
   precio_base_experiencia?: number
   precio_adicional_por_persona?: number
+  invitados_incluidos?: number
 }
 import BadgeEstado from '../../components/BadgeEstado'
 import BadgeEstadoPago from '../../components/BadgeEstadoPago'
@@ -1350,6 +1352,7 @@ function TabManifest({
     invMin: manifestCount,
     precioBase: cot?.precio_base_experiencia ?? 0,
     precioAdicional: cot?.precio_adicional_por_persona ?? 0,
+    personasIncluidas: cot?.invitados_incluidos ?? 9,
     addons: (reserva.addons ?? []).map((a) => ({
       id: a.addon_id,
       nombre: a.nombre,

@@ -73,6 +73,7 @@ export interface ExperienciaCatalogo {
   duracion_horas: number
   precio_por_persona: number
   precio_persona_adicional?: number
+  personas_incluidas?: number
   capacidad_maxima: number
   ubicacion?: string
   imagen_principal?: string | null
@@ -231,6 +232,8 @@ export interface WizardData {
   experienciaNombre?: string
   precioBase: number
   precioAdicional: number
+  // Personas que cubre precioBase; tambien el minimo de invitados (antes 9 fijo)
+  personasIncluidas: number
   fecha: string
   horaInicio: string
   horaFin: string
@@ -258,7 +261,7 @@ export type WizardAction =
   | { type: 'PREV' }
   | { type: 'SET_FIELD'; field: keyof WizardData; value: WizardData[keyof WizardData] }
   | { type: 'SET_TIPO_CLIENTE'; tipo: TipoCliente }
-  | { type: 'SET_EXPERIENCIA'; id: string; nombre: string; precioBase: number; precioAdicional: number; horaFinSugerida?: string }
+  | { type: 'SET_EXPERIENCIA'; id: string; nombre: string; precioBase: number; precioAdicional: number; personasIncluidas: number; horaFinSugerida?: string }
   | { type: 'TOGGLE_ADDON'; addon: WizardAddon }
   | { type: 'UPDATE_ADDON_CANTIDAD'; addonId: string; cantidad: number }
   | { type: 'TOGGLE_GUIA'; guiaId: string }
@@ -278,6 +281,7 @@ export const initialWizardData: WizardData = {
   experienciaNombre: undefined,
   precioBase: 0,
   precioAdicional: 0,
+  personasIncluidas: 9,
   fecha: '',
   horaInicio: '',
   horaFin: '',
@@ -299,10 +303,11 @@ export const initialWizardData: WizardData = {
 }
 
 // Helper de cotizacion (C02 + C03 + C09)
-// IMPORTANTE: precio_base cubre 1-9 personas. Adicional = MAX(0, invitados - 9).
+// IMPORTANTE: precio_base cubre 1..personasIncluidas personas (dato de cada
+// experiencia, antes 9 fijo). Adicional = MAX(0, invitados - personasIncluidas).
 // Propina 15% se aplica SOLO sobre subtotal_experiencia (NO sobre addons).
 export function calcularCotizacion(data: WizardData) {
-  const adicionales = Math.max(0, data.invMin - 9)
+  const adicionales = Math.max(0, data.invMin - (data.personasIncluidas || 9))
   const subtotal_experiencia = data.precioBase + adicionales * data.precioAdicional
   const subtotal_addons = data.addons.reduce(
     (sum, a) => sum + a.cantidad * a.precio_unitario,

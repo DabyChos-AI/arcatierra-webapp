@@ -85,6 +85,13 @@ function wizardReducer(state: WizardData, action: WizardAction): WizardData {
         experienciaNombre: action.nombre,
         precioBase: action.precioBase,
         precioAdicional: action.precioAdicional,
+        personasIncluidas: action.personasIncluidas,
+        // Si los invitados seguian en el minimo anterior (o quedan por debajo del
+        // nuevo), siguen al minimo de ESTA experiencia.
+        invMin:
+          state.invMin === state.personasIncluidas || state.invMin < action.personasIncluidas
+            ? action.personasIncluidas
+            : state.invMin,
         horaFin: action.horaFinSugerida ?? state.horaFin,
       }
     case 'TOGGLE_ADDON': {
@@ -148,11 +155,11 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
 
   const [wiz, dispatch] = useReducer(wizardReducer, initialWizardData)
 
-  // Bug 10: normalizar el default de invitados a 9 al abrir el wizard
-  // (min real para experiencias privadas; el backend rechaza < 9).
+  // Bug 10: normalizar el default de invitados al minimo al abrir el wizard
+  // (el backend rechaza menos de las personas incluidas de la experiencia).
   useEffect(() => {
-    if (wiz.invMin < 9) {
-      dispatch({ type: 'SET_FIELD', field: 'invMin', value: 9 })
+    if (wiz.invMin < wiz.personasIncluidas) {
+      dispatch({ type: 'SET_FIELD', field: 'invMin', value: wiz.personasIncluidas })
     }
     // Solo en el montaje inicial.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -323,7 +330,7 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
           !!wiz.experienciaId &&
           !!wiz.fecha &&
           !!wiz.horaInicio &&
-          wiz.invMin >= 9
+          wiz.invMin >= wiz.personasIncluidas
         )
       case 3:
         return true
@@ -421,6 +428,7 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
       nombre: exp.nombre,
       precioBase: Number(exp.precio_por_persona ?? 0),
       precioAdicional: Number(exp.precio_persona_adicional ?? 0),
+      personasIncluidas: Number(exp.personas_incluidas ?? 9),
       horaFinSugerida,
     })
   }
@@ -832,7 +840,7 @@ function Paso2Experiencia({
         </select>
         {wiz.experienciaId && (
           <p className="mt-1 text-xs text-verde-suave">
-            Precio base 1-9 personas: {formatMXN(wiz.precioBase)} · Adicional:{' '}
+            Precio base 1-{wiz.personasIncluidas} personas: {formatMXN(wiz.precioBase)} · Adicional:{' '}
             {formatMXN(wiz.precioAdicional)}/persona
           </p>
         )}
@@ -898,13 +906,13 @@ function Paso2Experiencia({
           <input
             id="exp-inv-min"
             type="number"
-            min={9}
+            min={wiz.personasIncluidas}
             value={wiz.invMin}
             onChange={(e) =>
               dispatch({
                 type: 'SET_FIELD',
                 field: 'invMin',
-                value: Math.max(9, Number(e.target.value)),
+                value: Math.max(wiz.personasIncluidas, Number(e.target.value)),
               })
             }
             aria-describedby="exp-inv-min-help"
@@ -912,9 +920,9 @@ function Paso2Experiencia({
           />
           <p
             id="exp-inv-min-help"
-            className={`mt-1 text-xs ${wiz.invMin < 9 ? 'text-rojo' : 'text-verde-suave'}`}
+            className={`mt-1 text-xs ${wiz.invMin < wiz.personasIncluidas ? 'text-rojo' : 'text-verde-suave'}`}
           >
-            Mínimo 9 personas para experiencias privadas
+            Mínimo {wiz.personasIncluidas} personas para esta experiencia
           </p>
         </div>
         <div>
@@ -1071,7 +1079,7 @@ function Paso4Cotizacion({
         <div>
           <p className="font-medium text-verde">{wiz.experienciaNombre ?? 'Experiencia'}</p>
           <p className="text-xs text-verde-suave">
-            {wiz.invMin} invitados ({cot.adicionales} adicionales sobre 9)
+            {wiz.invMin} invitados ({cot.adicionales} adicionales sobre {wiz.personasIncluidas})
           </p>
         </div>
         <p className="font-medium text-verde tabular-nums">
