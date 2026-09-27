@@ -16,6 +16,8 @@ export default function CheckoutPage() {
   const router = useRouter()
   const [cartItems, setCartItems] = useState([])
   const [tipoEntrega, setTipoEntrega] = useState<'envio_domicilio' | 'recoger_almacen'>('envio_domicilio')
+  // El código de descuento se aplica en el formulario; aquí solo se refleja.
+  const [cuponAplicado, setCuponAplicado] = useState<{ codigo: string; descuento: number } | null>(null)
 
   useEffect(() => {
     // Cargar items del carrito desde localStorage
@@ -114,6 +116,7 @@ export default function CheckoutPage() {
               onOrderComplete={handleOrderComplete}
               tipoEntrega={tipoEntrega}
               costoEnvio={calcularCostoEnvio(calcSubtotalProductos(cartItems), tipoEntrega)}
+              onCuponChange={setCuponAplicado}
             />
           </div>
 
@@ -198,13 +201,19 @@ export default function CheckoutPage() {
                   }
                   return null
                 })()}
+                {cuponAplicado && (
+                  <div className="flex justify-between text-green-700">
+                    <span>Descuento ({cuponAplicado.codigo})</span>
+                    <span>−${cuponAplicado.descuento.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="border-t pt-2 flex justify-between font-semibold">
                   <span>Total</span>
-                  <span>
+                  <span data-testid="total-pedido">
                     ${(() => {
                       const subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
                       const shipping = calcularCostoEnvio(calcSubtotalProductos(cartItems), tipoEntrega)
-                      return (subtotal + shipping).toFixed(2)
+                      return (subtotal + shipping - (cuponAplicado?.descuento ?? 0)).toFixed(2)
                     })()}
                   </span>
                 </div>

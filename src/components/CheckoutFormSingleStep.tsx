@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import CountryCodeSelector from '@/components/ui/CountryCodeSelector'
 import DeliveryDatePicker from '@/components/ui/DeliveryDatePicker'
 import PostalCodeSelector from '@/components/ui/PostalCodeSelector'
-import { MapPin, CreditCard, User, Phone, Mail, Edit2, Calendar } from 'lucide-react'
+import { MapPin, CreditCard, User, Phone, Mail, Edit2, Calendar, Tag } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { calcularCostoEnvio, subtotalProductos as calcSubtotalProductos } from '@/lib/envio'
 
@@ -16,9 +16,11 @@ interface CheckoutFormProps {
   onOrderComplete: (orderId: string) => void
   tipoEntrega?: 'envio_domicilio' | 'recoger_almacen'
   costoEnvio?: number
+  /** El resumen «Tu pedido» de la página muestra el mismo descuento. */
+  onCuponChange?: (cupon: { codigo: string; descuento: number } | null) => void
 }
 
-export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tipoEntrega = 'envio_domicilio', costoEnvio = 0 }: CheckoutFormProps) {
+export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tipoEntrega = 'envio_domicilio', costoEnvio = 0, onCuponChange }: CheckoutFormProps) {
   const { data: session } = useSession()
   const [loading, setLoading] = useState(false)
   const [loadingUserData, setLoadingUserData] = useState(true)
@@ -57,6 +59,12 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
   const [paymentMethod, setPaymentMethod] = useState('mercado_pago')
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<Date | null>(null)
   const [zonaEntrega, setZonaEntrega] = useState<any>(null)
+  // Código de descuento (N1, 2026-09-27). El backend lo valida con los precios
+  // de la BD al aplicarlo y otra vez al pagar; aquí solo se muestra.
+  const [codigoCupon, setCodigoCupon] = useState('')
+  const [cupon, setCupon] = useState<{ codigo: string; descuento: number; descripcion: string } | null>(null)
+  const [cuponError, setCuponError] = useState<string | null>(null)
+  const [aplicandoCupon, setAplicandoCupon] = useState(false)
 
   // Función para auto-validar código postal contra API de zonas
   const autoValidatePostalCode = async (cp: string) => {
@@ -208,7 +216,51 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
   // precios que lee de la base.
   const subtotalProductos = calcSubtotalProductos(cartItems)
   const shipping = calcularCostoEnvio(subtotalProductos, tipoEntrega)
-  const total = subtotal + shipping
+  const descuento = cupon?.descuento ?? 0
+  const total = subtotal + shipping - descuento
+
+  // Si cambia lo que se compra o el tipo de entrega, el descuento ya no es el
+  // mismo: se quita y el cliente lo vuelve a aplicar.
+  useEffect(() => {
+    setCupon(null)
+  }, [subtotal, shipping])
+
+  useEffect(() => {
+    onCuponChange?.(cupon ? { codigo: cupon.codigo, descuento: cupon.descuento } : null)
+  }, [cupon, onCuponChange])
+
+  const aplicarCupon = async () => {
+    const codigo = codigoCupon.trim()
+    if (!codigo) return
+    setAplicandoCupon(true)
+    setCuponError(null)
+    try {
+      const res = await fetch(`${API_URL}/api/cupones/validar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          codigo,
+          tipo_entrega: tipoEntrega,
+          items: cartItems.map((item) => ({ id: item.id, name: item.name, quantity: item.quantity })),
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setCupon(null)
+        setCuponError(
+          res.status === 429
+            ? 'Demasiados intentos. Espera un minuto y vuelve a probar.'
+            : data.detail || 'No se pudo validar el código.'
+        )
+        return
+      }
+      setCupon({ codigo: data.codigo, descuento: Number(data.descuento) || 0, descripcion: data.descripcion || '' })
+    } catch {
+      setCuponError('No se pudo validar el código. Revisa tu conexión e intenta de nuevo.')
+    } finally {
+      setAplicandoCupon(false)
+    }
+  }
 
   const validatePostalCode = (cp: string) => {
     const cpNum = parseInt(cp)
@@ -301,6 +353,8 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
         // etiquetas: el selector ya existía en el formulario pero nunca se
         // enviaba al backend.
         fecha_entrega: deliveryData.preferred_date,
+        // El backend vuelve a validar el código y calcula el descuento él mismo.
+        codigo_cupon: cupon?.codigo,
       }
 
       // Si fue guest checkout, pasar el token al siguiente paso para reusarlo
@@ -323,6 +377,14 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
       // La sesión pudo morir entre la validación del carrito y el pago.
       if (response.status === 401) {
         volverAIniciarSesion()
+        return
+      }
+
+      // Un 400 trae un mensaje para el cliente (código vencido o ya usado, stock,
+      // fecha de entrega). Si había código, se quita para que vea el total real.
+      if (response.status === 400 && result.detail) {
+        if (cupon) setCupon(null)
+        alert(`No se pudo completar el pago: ${result.detail}`)
         return
       }
 
@@ -622,6 +684,53 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
           {/* Resumen de la orden */}
           <div className="bg-gray-50 rounded-lg p-4 mt-6">
             <h4 className="font-semibold mb-3">Resumen de la orden</h4>
+            <div className="mb-4" data-testid="cupon">
+              {cupon ? (
+                <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm" data-testid="cupon-aplicado">
+                  <span className="flex items-center gap-2 text-green-800">
+                    <Tag className="w-4 h-4" />
+                    Código <strong>{cupon.codigo}</strong> aplicado
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => { setCupon(null); setCodigoCupon('') }}
+                    className="text-gray-600 underline hover:text-gray-800"
+                  >
+                    Quitar
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <label htmlFor="codigo-cupon" className="block text-sm font-medium mb-1">
+                    ¿Tienes un código de descuento?
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="codigo-cupon"
+                      data-testid="cupon-input"
+                      value={codigoCupon}
+                      onChange={(e) => { setCodigoCupon(e.target.value.toUpperCase()); setCuponError(null) }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); aplicarCupon() } }}
+                      placeholder="Escribe tu código"
+                      autoComplete="off"
+                      className="flex-1 bg-white"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      data-testid="cupon-aplicar"
+                      onClick={aplicarCupon}
+                      disabled={aplicandoCupon || !codigoCupon.trim()}
+                    >
+                      {aplicandoCupon ? 'Validando…' : 'Aplicar'}
+                    </Button>
+                  </div>
+                  {cuponError && (
+                    <p className="mt-1 text-sm text-[#B15543]" role="alert" data-testid="cupon-error">{cuponError}</p>
+                  )}
+                </>
+              )}
+            </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>Subtotal ({cartItems.length} productos)</span>
@@ -633,9 +742,15 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
                   {shipping === 0 ? '¡Felicidades! Tu envío es GRATIS' : `$${shipping.toFixed(2)}`}
                 </span>
               </div>
+              {cupon && (
+                <div className="flex justify-between text-green-700" data-testid="cupon-descuento">
+                  <span>Descuento ({cupon.codigo})</span>
+                  <span>−${cupon.descuento.toFixed(2)}</span>
+                </div>
+              )}
               <div className="border-t pt-2 flex justify-between font-semibold text-lg">
                 <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+                <span data-testid="total-orden">${total.toFixed(2)}</span>
               </div>
             </div>
           </div>
