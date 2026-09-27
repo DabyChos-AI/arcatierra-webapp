@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-config';
+import { cabecerasDelCliente } from '@/lib/ip-cliente';
 
 const BACKEND_URL = process.env.INTERNAL_API_URL || 'http://arca-api:8000';
 
-async function getGuestToken(email: string, nombre?: string, apellidos?: string, telefono?: string): Promise<string | null> {
+async function getGuestToken(origen: Headers, email: string, nombre?: string, apellidos?: string, telefono?: string): Promise<string | null> {
   try {
     const response = await fetch(`${BACKEND_URL}/api/auth/guest-token`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      // guest-token tiene límite de 5/min: debe contar por cliente, no por servidor (A13)
+      headers: { 'Content-Type': 'application/json', ...cabecerasDelCliente(origen) },
       body: JSON.stringify({ email, nombre, apellidos, telefono }),
     });
     if (!response.ok) {
@@ -60,6 +62,7 @@ export async function POST(request: NextRequest) {
       }
       userEmail = body.email;
       bearerToken = await getGuestToken(
+        request.headers,
         userEmail,
         body.nombre,
         body.apellido || body.apellidos,

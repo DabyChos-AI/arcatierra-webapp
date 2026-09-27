@@ -7,6 +7,7 @@ import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import { API_URL } from '@/lib/api'
+import { cabecerasDelCliente, cabecerasDelClienteActual } from '@/lib/ip-cliente'
 
 // Función para renovar tokens usando el refresh_token
 async function refreshAccessToken(token: any) {
@@ -62,7 +63,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' }
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           return null
         }
@@ -79,6 +80,8 @@ export const authOptions: NextAuthOptions = {
             method: 'POST',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
+              // El límite de intentos del backend cuenta por la IP del cliente (A13)
+              ...cabecerasDelCliente(req?.headers),
             },
             body: formData
           })
@@ -135,6 +138,7 @@ export const authOptions: NextAuthOptions = {
       if (account?.provider === 'google' && user.email) {
         try {
           const backendUrl = API_URL
+          const delCliente = await cabecerasDelClienteActual()
           
           // Verificar si el usuario ya existe
           const checkResponse = await fetch(`${backendUrl}/api/auth/check-email?email=${encodeURIComponent(user.email)}`)
@@ -143,7 +147,7 @@ export const authOptions: NextAuthOptions = {
             // Usuario no existe, crearlo
             const registerResponse = await fetch(`${backendUrl}/api/auth/register`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'application/json', ...delCliente },
               body: JSON.stringify({
                 email: user.email,
                 nombre: user.name?.split(' ')[0] || user.email.split('@')[0],
@@ -182,12 +186,14 @@ export const authOptions: NextAuthOptions = {
             
             // ✅ NUEVO: Obtener JWT para usuario OAuth existente
             try {
-              const internalSecret = process.env.INTERNAL_API_SECRET || ''
-              // IMPORTANTE: Codificar el secret para URL (caracteres especiales)
-              const encodedSecret = encodeURIComponent(internalSecret)
-              const tokenResponse = await fetch(`${backendUrl}/api/auth/oauth-token?email=${encodeURIComponent(user.email)}&internal_secret=${encodedSecret}`, {
+              // El secreto va en cabecera: en la URL el access log del backend
+              // lo escribía en claro en cada login con Google (A13, 2026-09-27).
+              const tokenResponse = await fetch(`${backendUrl}/api/auth/oauth-token?email=${encodeURIComponent(user.email)}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-Internal-Api-Secret': process.env.INTERNAL_API_SECRET || '',
+                },
               })
               
               if (tokenResponse.ok) {
