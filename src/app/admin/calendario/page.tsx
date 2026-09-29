@@ -234,7 +234,7 @@ export default function CalendarioPage() {
                           <Calendar className="h-5 w-5" aria-hidden="true" />
                         </div>
                         <div className="min-w-0">
-                          <h3 className="font-semibold text-gray-900">{tituloDe(evento)}</h3>
+                          <h3 className="text-base font-semibold text-gray-900 mb-0">{tituloDe(evento)}</h3>
                           <p className="text-sm text-gray-600">
                             {fechaTexto}, {horaCorta(evento.hora_inicio)} · {evento.chinampa || 'Chinampa sin asignar'}
                           </p>
@@ -303,7 +303,7 @@ export default function CalendarioPage() {
             </div>
 
             <div className="mt-6 pt-4 border-t border-gray-200">
-              <h3 className="font-semibold text-gray-900 mb-3">Tipos de eventos</h3>
+              <h3 className="text-base font-semibold text-gray-900 mb-3">Tipos de eventos</h3>
               <div className="space-y-2" data-testid="calendario-tipos">
                 {(
                   [
