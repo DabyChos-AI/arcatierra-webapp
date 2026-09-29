@@ -1,4 +1,4 @@
-// Planeación semanal de experiencias (PS1, sesión 35 · 2026-09-30).
+// Planeación semanal de experiencias (PS1, sesión 35 · 2026-09-29).
 // Contrato con el backend: routers/admin_catalogos.py y routers/admin_eventos.py (etapas 1 y 2).
 // Plan: build-with-agent-team/projects/arcatierra/docs/decisiones/PS1-CONTRATO-ETAPAS-1-2.md
 // Una sola fuente de verdad para el asistente, el detalle, los catálogos y las pantallas de eventos.
