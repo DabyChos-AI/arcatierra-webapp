@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import CountryCodeSelector from '@/components/ui/CountryCodeSelector'
 import DeliveryDatePicker from '@/components/ui/DeliveryDatePicker'
+import type { CanastaExtras } from '@/components/ui/ConMiCanasta'
+import { formatFechaMexico } from '@/lib/dates'
 import PostalCodeSelector from '@/components/ui/PostalCodeSelector'
 import { MapPin, CreditCard, User, Phone, Mail, Edit2, Calendar, Tag } from 'lucide-react'
 import { API_URL } from '@/lib/api'
@@ -18,9 +20,11 @@ interface CheckoutFormProps {
   costoEnvio?: number
   /** El resumen «Tu pedido» de la página muestra el mismo descuento. */
   onCuponChange?: (cupon: { codigo: string; descuento: number } | null) => void
+  /** Extras que viajan con la canasta de una suscripción (SU2): envío $0, sin cupón, fecha de la canasta. */
+  conCanasta?: CanastaExtras | null
 }
 
-export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tipoEntrega = 'envio_domicilio', costoEnvio = 0, onCuponChange }: CheckoutFormProps) {
+export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tipoEntrega = 'envio_domicilio', costoEnvio = 0, onCuponChange, conCanasta = null }: CheckoutFormProps) {
   const { data: session } = useSession()
   const [loading, setLoading] = useState(false)
   const [loadingUserData, setLoadingUserData] = useState(true)
@@ -215,15 +219,17 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
   // (`services/envio.py`), que es quien manda: recalcula el envío con los
   // precios que lee de la base.
   const subtotalProductos = calcSubtotalProductos(cartItems)
-  const shipping = calcularCostoEnvio(subtotalProductos, tipoEntrega)
+  // Con la canasta el envío es gratis (SU2): el camión ya va.
+  const shipping = conCanasta ? 0 : calcularCostoEnvio(subtotalProductos, tipoEntrega)
   const descuento = cupon?.descuento ?? 0
   const total = subtotal + shipping - descuento
 
   // Si cambia lo que se compra o el tipo de entrega, el descuento ya no es el
   // mismo: se quita y el cliente lo vuelve a aplicar.
+  // Los cupones no aplican a los extras de una suscripción (SU2): elegir la canasta también lo quita.
   useEffect(() => {
     setCupon(null)
-  }, [subtotal, shipping])
+  }, [subtotal, shipping, conCanasta])
 
   useEffect(() => {
     onCuponChange?.(cupon ? { codigo: cupon.codigo, descuento: cupon.descuento } : null)
@@ -290,17 +296,17 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
       return
     }
 
-    if (!deliveryData.address) {
+    if (!conCanasta && !deliveryData.address) {
       alert('Por favor completa la dirección de entrega')
       return
     }
 
-    if (!zonaEntrega) {
+    if (!conCanasta && !zonaEntrega) {
       alert('El código postal no tiene cobertura de entrega. Por favor verifica tu código postal.')
       return
     }
 
-    if (!selectedDeliveryDate) {
+    if (!conCanasta && !selectedDeliveryDate) {
       alert('Por favor selecciona una fecha de entrega')
       return
     }
@@ -347,14 +353,16 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
         delivery_address: tipoEntrega === 'recoger_almacen' ? 'RECOGER EN ALMACÉN - Calle Gobernador Antonio Díez de Bonilla #37, San Miguel Chapultepec, CDMX' : deliveryData.address,
         delivery_postal_code: tipoEntrega === 'recoger_almacen' ? '11850' : deliveryData.postal_code,
         delivery_notes: deliveryData.notes,
-        tipo_entrega: tipoEntrega,
-        costo_envio: costoEnvio,
+        tipo_entrega: conCanasta ? conCanasta.tipo_entrega : tipoEntrega,
+        costo_envio: conCanasta ? 0 : costoEnvio,
+        // SU2: el backend pone la fecha, el envío y la dirección de la canasta.
+        con_suscripcion: conCanasta?.suscripcion_id,
         // Sin esta fecha el pedido no aparece en el corte del día ni en las
         // etiquetas: el selector ya existía en el formulario pero nunca se
         // enviaba al backend.
-        fecha_entrega: deliveryData.preferred_date,
+        fecha_entrega: conCanasta ? conCanasta.fecha_entrega : deliveryData.preferred_date,
         // El backend vuelve a validar el código y calcula el descuento él mismo.
-        codigo_cupon: cupon?.codigo,
+        codigo_cupon: conCanasta ? undefined : cupon?.codigo,
       }
 
       // Si fue guest checkout, pasar el token al siguiente paso para reusarlo
@@ -548,7 +556,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
               <MapPin className="w-5 h-5 text-[#B15543]" />
               <h3 className="text-lg font-semibold">Dirección de Entrega</h3>
             </div>
-            {deliveryData.address && !editingAddress && (
+            {deliveryData.address && !editingAddress && !conCanasta && (
               <button
                 onClick={() => setEditingAddress(true)}
                 className="flex items-center gap-1 text-sm text-[#B15543] hover:text-[#9a4a3a]"
@@ -559,7 +567,25 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
             )}
           </div>
 
-          {(!deliveryData.address || editingAddress) ? (
+          {conCanasta ? (
+            // SU2: con la canasta la dirección es la principal del cliente, la misma con la que el
+            // corte manda su canasta (el backend la pone). Pedir otra aquí sería mentirle.
+            <div className="rounded-lg bg-amber-50 p-4 text-sm text-amber-800" data-testid="direccion-canasta">
+              <p className="flex items-center gap-2 font-medium" data-testid="fecha-canasta">
+                <Calendar className="w-5 h-5" />
+                Llega con tu canasta el {formatFechaMexico(conCanasta.fecha_entrega, { weekday: 'long', day: 'numeric', month: 'long', year: undefined })}
+              </p>
+              <p className="mt-1">Se entrega junto con tu canasta, en la misma dirección donde la recibes.</p>
+              <label className="mt-3 block text-sm font-medium text-gray-700">Notas de entrega (opcional)</label>
+              <textarea
+                value={deliveryData.notes}
+                onChange={(e) => setDeliveryData({...deliveryData, notes: e.target.value})}
+                placeholder="Instrucciones especiales para la entrega"
+                className="mt-1 w-full p-2 border border-gray-300 rounded-lg resize-none bg-white text-gray-800"
+                rows={2}
+              />
+            </div>
+          ) : (!deliveryData.address || editingAddress) ? (
             <>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -592,7 +618,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
               </div>
 
               {/* Selector de fecha de entrega - Solo si hay zona seleccionada */}
-              {zonaEntrega && (
+              {zonaEntrega && !conCanasta && (
                 <div className="mt-6 animate-in fade-in slide-in-from-top-2 duration-300">
                   <div className="flex items-center gap-2 mb-3">
                     <Calendar className="w-5 h-5 text-green-700" />
@@ -643,7 +669,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
                   <p><span className="font-medium">CP:</span> {deliveryData.postal_code}</p>
                 )}
                 {deliveryData.preferred_date && (
-                  <p><span className="font-medium">Entrega:</span> {new Date(deliveryData.preferred_date).toLocaleDateString('es-MX', { day: 'numeric', month: 'long' })}</p>
+                  <p><span className="font-medium">Entrega:</span> {formatFechaMexico(deliveryData.preferred_date, { day: 'numeric', month: 'long', year: undefined })}</p>
                 )}
               </div>
               {deliveryData.notes && (
@@ -674,8 +700,10 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
               />
               <div>
                 <div className="font-medium">Mercado Pago</div>
-                <div className="text-sm text-gray-500">
-                  Tarjetas, OXXO, transferencias bancarias
+                <div className="text-sm text-gray-500" data-testid="metodo-pago-detalle">
+                  {conCanasta
+                    ? 'Tarjeta o saldo de Mercado Pago: se paga al momento'
+                    : 'Tarjetas, OXXO, transferencias bancarias'}
                 </div>
               </div>
             </label>
@@ -684,6 +712,11 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
           {/* Resumen de la orden */}
           <div className="bg-gray-50 rounded-lg p-4 mt-6">
             <h4 className="font-semibold mb-3">Resumen de la orden</h4>
+            {conCanasta ? (
+              <p className="mb-4 text-sm text-gray-600" data-testid="cupon-no-aplica">
+                Los cupones no aplican a los extras de tu suscripción.
+              </p>
+            ) : (
             <div className="mb-4" data-testid="cupon">
               {cupon ? (
                 <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm" data-testid="cupon-aplicado">
@@ -731,6 +764,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
                 </>
               )}
             </div>
+            )}
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>Subtotal ({cartItems.length} productos)</span>
@@ -738,8 +772,8 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
               </div>
               <div className="flex justify-between">
                 <span>Envío</span>
-                <span className="text-green-600 font-medium">
-                  {shipping === 0 ? '¡Felicidades! Tu envío es GRATIS' : `$${shipping.toFixed(2)}`}
+                <span className="text-green-600 font-medium" data-testid="envio-orden">
+                  {conCanasta ? 'Gratis: va con tu canasta' : shipping === 0 ? '¡Felicidades! Tu envío es GRATIS' : `$${shipping.toFixed(2)}`}
                 </span>
               </div>
               {cupon && (
@@ -759,8 +793,8 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
         {/* Botón de pago */}
         <Button
           onClick={handleSubmitOrder}
-          disabled={loading || !customerData.nombre || !customerData.apellido || !customerData.telefono || 
-                   !deliveryData.address || !zonaEntrega || !selectedDeliveryDate}
+          disabled={loading || !customerData.nombre || !customerData.apellido || !customerData.telefono ||
+                   (!conCanasta && (!deliveryData.address || !zonaEntrega || !selectedDeliveryDate))}
           className="w-full bg-[#B15543] hover:bg-[#9a4a3a] text-white text-lg py-6"
         >
           {loading ? (

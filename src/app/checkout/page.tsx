@@ -5,13 +5,8 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import CheckoutFormSingleStep from '@/components/CheckoutFormSingleStep'
 import DeliveryTypeSelector from '@/components/ui/DeliveryTypeSelector'
-import AddToSubscriptionButton from '@/components/ui/AddToSubscriptionButton'
-
-// SU2 (2026-09-29): oculto hasta que se decida cómo se cobran los extras de una
-// suscripción. El monto de MercadoPago es fijo y nada los cobraba, aunque el botón
-// prometía "Se cobrarán junto con tu canasta". El endpoint ya está arreglado (SU1):
-// para volver a mostrarlo basta con poner `true`. Lo vigila T32 en qa-front.
-const EXTRAS_EN_SUSCRIPCION = false
+import ConMiCanasta, { type CanastaExtras } from '@/components/ui/ConMiCanasta'
+import { API_URL } from '@/lib/api'
 import { ShoppingCart, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { calcularCostoEnvio, subtotalProductos as calcSubtotalProductos } from '@/lib/envio'
@@ -24,6 +19,28 @@ export default function CheckoutPage() {
   const [tipoEntrega, setTipoEntrega] = useState<'envio_domicilio' | 'recoger_almacen'>('envio_domicilio')
   // El código de descuento se aplica en el formulario; aquí solo se refleja.
   const [cuponAplicado, setCuponAplicado] = useState<{ codigo: string; descuento: number } | null>(null)
+  // SU2 (opción A, decisión de David 2026-09-29): los extras de una suscripción se pagan aquí y
+  // viajan con la próxima canasta — envío gratis, sin cupón, hasta 2 días hábiles antes. Reemplaza
+  // al botón que los agregaba sin cobrarlos.
+  const [canastas, setCanastas] = useState<CanastaExtras[]>([])
+  const [conCanasta, setConCanasta] = useState<CanastaExtras | null>(null)
+  const accessToken = (session as any)?.accessToken as string | undefined
+
+  useEffect(() => {
+    if (!accessToken) { setCanastas([]); setConCanasta(null); return }
+    let vigente = true
+    fetch(`${API_URL}/api/subscriptions/extras-disponibles`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then((r) => (r.ok ? r.json() : { entregas: [] }))
+      .then((d) => { if (vigente) setCanastas(Array.isArray(d?.entregas) ? d.entregas : []) })
+      .catch(() => { if (vigente) setCanastas([]) })
+    return () => { vigente = false }
+  }, [accessToken])
+
+  // El envío de las dos columnas sale de aquí: con la canasta es gratis.
+  const envioPedido = (items: any[]) =>
+    conCanasta ? 0 : calcularCostoEnvio(calcSubtotalProductos(items), tipoEntrega)
 
   useEffect(() => {
     // Cargar items del carrito desde localStorage
@@ -94,18 +111,11 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Formulario de checkout */}
           <div className="lg:col-span-2">
-            {/* Opción de agregar a suscripción existente (oculta: ver EXTRAS_EN_SUSCRIPCION) */}
-            {EXTRAS_EN_SUSCRIPCION && (
-              <AddToSubscriptionButton 
-                cartItems={cartItems}
-                onSuccess={() => {
-                  localStorage.removeItem('arcaTierraCart')
-                  setCartItems([])
-                }}
-              />
-            )}
+            {/* Extras que viajan con la canasta de la suscripción (SU2) */}
+            <ConMiCanasta canastas={canastas} seleccion={conCanasta} onChange={setConCanasta} />
 
-            {/* Selector de tipo de entrega */}
+            {/* Selector de tipo de entrega (con la canasta lo decide la suscripción) */}
+            {!conCanasta && (
             <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
               <DeliveryTypeSelector
                 value={tipoEntrega}
@@ -118,13 +128,15 @@ export default function CheckoutPage() {
                 costoEnvio={100}
               />
             </div>
+            )}
             
             <CheckoutFormSingleStep 
               cartItems={cartItems}
               onOrderComplete={handleOrderComplete}
               tipoEntrega={tipoEntrega}
-              costoEnvio={calcularCostoEnvio(calcSubtotalProductos(cartItems), tipoEntrega)}
+              costoEnvio={envioPedido(cartItems)}
               onCuponChange={setCuponAplicado}
+              conCanasta={conCanasta}
             />
           </div>
 
@@ -165,15 +177,23 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between">
                   <span>Envío</span>
-                  <span>
+                  <span data-testid="envio-pedido">
                     {(() => {
+                      if (conCanasta) return 'Gratis (va con tu canasta)'
                       if (tipoEntrega === 'recoger_almacen') return 'Gratis (recoger)'
-                      const envio = calcularCostoEnvio(calcSubtotalProductos(cartItems), tipoEntrega)
+                      const envio = envioPedido(cartItems)
                       return envio === 0 ? 'Gratis' : `$${envio.toFixed(2)}`
                     })()}
                   </span>
                 </div>
                 {(() => {
+                  if (conCanasta) {
+                    return (
+                      <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
+                        🧺 Llega con tu canasta de suscripción, sin costo de envío
+                      </div>
+                    )
+                  }
                   if (tipoEntrega === 'recoger_almacen') {
                     return (
                       <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
@@ -220,7 +240,7 @@ export default function CheckoutPage() {
                   <span data-testid="total-pedido">
                     ${(() => {
                       const subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
-                      const shipping = calcularCostoEnvio(calcSubtotalProductos(cartItems), tipoEntrega)
+                      const shipping = envioPedido(cartItems)
                       return (subtotal + shipping - (cuponAplicado?.descuento ?? 0)).toFixed(2)
                     })()}
                   </span>
