@@ -9,7 +9,7 @@ declare module "next-auth" {
       image?: string | null
     }
     accessToken?: string
-    refreshToken?: string
+    // Sin refreshToken a propósito: la sesión llega al navegador (R2).
   }
 
   interface User {

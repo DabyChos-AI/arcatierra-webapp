@@ -14,9 +14,12 @@ async function refreshAccessToken(token: any) {
   try {
     const backendUrl = API_URL
     
-    const response = await fetch(`${backendUrl}/api/auth/refresh?refresh_token=${encodeURIComponent(token.refreshToken)}`, {
+    // El token va en el cuerpo, nunca en la URL: el access log del backend la
+    // escribe en claro y el refresh vale 7 dias (R1, 2026-09-29).
+    const response = await fetch(`${backendUrl}/api/auth/refresh`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: token.refreshToken }),
     })
 
     if (!response.ok) {
@@ -255,10 +258,11 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string
-        // Pasar JWT del backend a la sesión
+        // Pasar JWT del backend a la sesión. El refresh token NO: la sesión la
+        // lee el JavaScript del navegador y el refresh vale 7 días. Solo lo usa
+        // el servidor, que lo tiene en el JWT cifrado de la cookie (R2, 2026-09-29).
         if (token.accessToken) {
           session.accessToken = token.accessToken
-          session.refreshToken = token.refreshToken
         }
       }
       return session
