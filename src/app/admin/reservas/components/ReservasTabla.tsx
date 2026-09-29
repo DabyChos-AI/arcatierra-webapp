@@ -1,6 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import FiltroMultiple from './FiltroMultiple'
+import { ESTADO_OPTIONS, ESTADOS_VISIBLES } from './estados'
 import { useSession } from 'next-auth/react'
 import {
   ArrowDown,
@@ -31,7 +33,9 @@ interface ReservasTablaProps {
 
 interface ListResponse {
   items: Reserva[]
-  total: number
+  /** El backend manda `total_count`; `total` se leía y nunca llegaba (el pie decía "0 reservas"). */
+  total_count?: number
+  total?: number
   page: number
   per_page: number
 }
@@ -39,15 +43,6 @@ interface ListResponse {
 type SortKey = 'booking_id' | 'fecha_experiencia' | 'monto_total'
 type SortOrder = 'asc' | 'desc'
 
-const ESTADO_OPTIONS: { value: '' | ReservaEstado; label: string }[] = [
-  { value: '', label: 'Todos los estados' },
-  { value: 'tentativa', label: 'Tentativa' },
-  { value: 'confirmada', label: 'Confirmada' },
-  { value: 'pagada', label: 'Pagada' },
-  { value: 'realizada', label: 'Realizada' },
-  { value: 'cancelada', label: 'Cancelada' },
-  { value: 'reagendada', label: 'Reagendada' },
-]
 
 const PER_PAGE_OPTIONS = [10, 20, 50, 100]
 
@@ -87,8 +82,9 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
   // Filtros
   const [busquedaInput, setBusquedaInput] = useState('')
   const [busqueda, setBusqueda] = useState('')
-  const [estado, setEstado] = useState<'' | ReservaEstado>('')
-  const [vendedorId, setVendedorId] = useState('')
+  // Filtros de opción múltiple (casillas). `vendedorIds` vacío = todas.
+  const [estados, setEstados] = useState<ReservaEstado[]>(ESTADOS_VISIBLES)
+  const [vendedorIds, setVendedorIds] = useState<string[]>([])
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
   const [vendedores, setVendedores] = useState<Personal[]>([])
@@ -115,7 +111,7 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
   // Reset page cuando cambien filtros
   useEffect(() => {
     setPage(1)
-  }, [estado, vendedorId, fechaDesde, fechaHasta, busqueda, perPage])
+  }, [estados, vendedorIds, fechaDesde, fechaHasta, busqueda, perPage])
 
   const token = session?.accessToken as string | undefined
 
@@ -147,8 +143,8 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
         page: String(page),
         per_page: String(perPage),
       })
-      if (estado) params.set('estado', estado)
-      if (vendedorId) params.set('vendedor_id', vendedorId)
+      estados.forEach((e) => params.append('estado', e))
+      vendedorIds.forEach((v) => params.append('vendedor_id', v))
       if (fechaDesde) params.set('fecha_desde', fechaDesde)
       if (fechaHasta) params.set('fecha_hasta', fechaHasta)
       if (busqueda) params.set('busqueda', busqueda)
@@ -159,7 +155,7 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
       if (!res.ok) throw new Error(`Error ${res.status}`)
       const data: ListResponse = await res.json()
       setItems(data.items ?? [])
-      setTotal(data.total ?? 0)
+      setTotal(data.total_count ?? data.total ?? 0)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido')
       setItems([])
@@ -167,7 +163,7 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
     } finally {
       setLoading(false)
     }
-  }, [token, page, perPage, estado, vendedorId, fechaDesde, fechaHasta, busqueda])
+  }, [token, page, perPage, estados, vendedorIds, fechaDesde, fechaHasta, busqueda])
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -187,8 +183,8 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
   const limpiarFiltros = () => {
     setBusquedaInput('')
     setBusqueda('')
-    setEstado('')
-    setVendedorId('')
+    setEstados(ESTADOS_VISIBLES)
+    setVendedorIds([])
     setFechaDesde('')
     setFechaHasta('')
     setPage(1)
@@ -275,43 +271,41 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
             )}
           </div>
 
-          <div>
-            <label htmlFor="filtro-estado" className="block text-xs text-verde-suave mb-1">
-              Estado
-            </label>
-            <select
-              id="filtro-estado"
-              value={estado}
-              onChange={(e) => setEstado(e.target.value as '' | ReservaEstado)}
-              className="border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
-            >
-              {ESTADO_OPTIONS.map((o) => (
-                <option key={o.value || 'all'} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FiltroMultiple
+            id="filtro-estado"
+            etiqueta="Estado"
+            opciones={ESTADO_OPTIONS}
+            seleccion={estados}
+            onChange={(v) => setEstados(v as ReservaEstado[])}
+            minimo={1}
+            resumen={
+              estados.length === ESTADO_OPTIONS.length
+                ? 'Todos los estados'
+                : estados.length === ESTADOS_VISIBLES.length && !estados.includes('cancelada')
+                  ? 'Todos menos canceladas'
+                  : estados.length === 1
+                    ? ESTADO_OPTIONS.find((o) => o.value === estados[0])?.label ?? estados[0]
+                    : `${estados.length} estados`
+            }
+          />
 
-          <div>
-            <label htmlFor="filtro-vendedora" className="block text-xs text-verde-suave mb-1">
-              Vendedora
-            </label>
-            <select
-              id="filtro-vendedora"
-              value={vendedorId}
-              onChange={(e) => setVendedorId(e.target.value)}
-              className="border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
-            >
-              <option value="">Todas</option>
-              {vendedores.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.nombre}
-                  {v.apellidos ? ` ${v.apellidos}` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FiltroMultiple
+            id="filtro-vendedora"
+            etiqueta="Vendedora"
+            opciones={vendedores.map((v) => ({ value: v.id, label: `${v.nombre}${v.apellidos ? ` ${v.apellidos}` : ''}` }))}
+            seleccion={vendedorIds}
+            onChange={setVendedorIds}
+            resumen={
+              vendedorIds.length === 0 || vendedorIds.length === vendedores.length
+                ? 'Todas'
+                : vendedorIds.length === 1
+                  ? (() => {
+                      const v = vendedores.find((x) => x.id === vendedorIds[0])
+                      return v ? `${v.nombre}${v.apellidos ? ` ${v.apellidos}` : ''}` : '1 vendedora'
+                    })()
+                  : `${vendedorIds.length} vendedoras`
+            }
+          />
 
           <div>
             <label htmlFor="filtro-desde" className="block text-xs text-verde-suave mb-1">

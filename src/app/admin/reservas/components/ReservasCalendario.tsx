@@ -12,6 +12,7 @@ import type { DateSelectArg } from '@fullcalendar/core'
 import { Loader2 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { formatMXN, type Reserva, type ReservaEstado } from '@/types/reservas'
+import { ESTADOS_VISIBLES } from './estados'
 
 interface ReservasCalendarioProps {
   refreshKey: number
@@ -68,6 +69,8 @@ export default function ReservasCalendario({
           per_page: '100',
           page: '1',
         })
+        // Las canceladas no se muestran en el calendario (29-sep, pedido de David).
+        ESTADOS_VISIBLES.forEach((e) => params.append('estado', e))
         const res = await fetch(`${API_URL}/api/admin/reservas?${params.toString()}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
@@ -144,36 +147,53 @@ export default function ReservasCalendario({
           border-style: solid !important;
           cursor: pointer;
         }
+        /* Letra NEGRA en todas las tarjetas (29-sep, David: "es difícil de leer"). FullCalendar pinta
+           el texto en .fc-event-main con su propio color (blanco por defecto), así que el color que
+           cada estado ponía en la tarjeta nunca llegaba al texto: blanco sobre amarillo y sobre gris.
+           Cada estado se distingue por su fondo y su borde; todos con contraste >= 4.5 (T34). */
+        .fc .at-evt {
+          --fc-event-text-color: #111827;
+        }
+        .fc .at-evt,
+        .fc .at-evt .fc-event-main,
+        .fc .at-evt .fc-event-main-frame,
+        .fc .at-evt .fc-event-time,
+        .fc .at-evt .fc-event-title {
+          color: #111827 !important;
+        }
         .at-evt-tentativa {
           background-color: #fef3c7 !important;
-          color: #f59e0b !important;
           border-color: #f59e0b !important;
         }
         .at-evt-confirmada {
-          background-color: rgba(51, 80, 62, 0.1) !important;
-          color: #33503e !important;
-          border-color: rgba(51, 80, 62, 0.4) !important;
+          background-color: rgba(51, 80, 62, 0.12) !important;
+          border-color: rgba(51, 80, 62, 0.45) !important;
         }
         .at-evt-pagada {
-          background-color: #33503e !important;
-          color: #ffffff !important;
+          /* Antes verde oscuro con letra blanca: con letra negra el fondo pasa a verde claro. */
+          background-color: #bbf7d0 !important;
           border-color: #33503e !important;
         }
         .at-evt-realizada {
-          background-color: #f0f9ff !important;
-          color: #0369a1 !important;
-          border-color: rgba(3, 105, 161, 0.4) !important;
+          background-color: #e0f2fe !important;
+          border-color: rgba(3, 105, 161, 0.45) !important;
         }
         .at-evt-cancelada {
           background-color: #e5e7eb !important;
-          color: #6b7280 !important;
           text-decoration: line-through;
           border-color: #d1d5db !important;
         }
         .at-evt-reagendada {
           background-color: #ffedd5 !important;
-          color: #c2410c !important;
           border-color: #fdba74 !important;
+        }
+        /* Números de día, días de la semana, horas y "+N más" también en negro. */
+        .fc .fc-col-header-cell-cushion,
+        .fc .fc-daygrid-day-number,
+        .fc .fc-daygrid-more-link,
+        .fc .fc-timegrid-axis-cushion,
+        .fc .fc-timegrid-slot-label-cushion {
+          color: #111827;
         }
         .fc .fc-button-primary {
           background-color: #33503e !important;
