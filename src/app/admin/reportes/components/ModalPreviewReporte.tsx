@@ -42,6 +42,16 @@ const META_ETIQUETAS: Record<string, string> = {
   aprobados: 'Aprobados',
 }
 
+/** Hoy en México como YYYY-MM-DD (en-CA imprime ese formato). */
+function hoyMexico(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Mexico_City',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+}
+
 export default function ModalPreviewReporte({
   reporte,
   filtrosGlobales,
@@ -59,12 +69,15 @@ export default function ModalPreviewReporte({
   const [exportando, setExportando] = useState<FormatoReporte | null>(null)
   const [incluirAdicionales, setIncluirAdicionales] = useState(false)
   const [meses, setMeses] = useState(6)
+  // Planeación semanal: cualquier día de la semana; el backend la lleva a lunes-domingo
+  const [semana, setSemana] = useState(hoyMexico)
 
   const usaDiaEntrega = reporte.filtros.some((f) => f.nombre === 'fecha_entrega')
   const usaMeses = reporte.filtros.some((f) => f.nombre === 'meses')
   const usaRango = reporte.filtros.some((f) => f.nombre === 'desde')
   const usaAdicionales = reporte.filtros.some((f) => f.nombre === 'incluir_adicionales')
   const usaOrigen = reporte.filtros.some((f) => f.nombre === 'origen')
+  const usaSemana = reporte.filtros.some((f) => f.nombre === 'semana')
 
   const queryFiltros = useCallback(() => {
     const q = new URLSearchParams()
@@ -76,9 +89,10 @@ export default function ModalPreviewReporte({
       q.set('hasta', filtrosGlobales.hasta)
     }
     if (usaMeses) q.set('meses', String(meses))
+    if (usaSemana) q.set('semana', semana)
     q.set('limite', '20')
     return q.toString()
-  }, [usaDiaEntrega, usaOrigen, usaRango, usaMeses, filtrosGlobales, meses])
+  }, [usaDiaEntrega, usaOrigen, usaRango, usaMeses, usaSemana, filtrosGlobales, meses, semana])
 
   const cuerpoFiltros = useCallback((): Record<string, unknown> => {
     const f: Record<string, unknown> = {}
@@ -90,6 +104,7 @@ export default function ModalPreviewReporte({
     }
     if (usaMeses) f.meses = meses
     if (usaAdicionales) f.incluir_adicionales = incluirAdicionales
+    if (usaSemana) f.semana = semana
     return f
   }, [
     usaDiaEntrega,
@@ -97,9 +112,11 @@ export default function ModalPreviewReporte({
     usaRango,
     usaMeses,
     usaAdicionales,
+    usaSemana,
     filtrosGlobales,
     meses,
     incluirAdicionales,
+    semana,
   ])
 
   useEffect(() => {
@@ -196,8 +213,25 @@ export default function ModalPreviewReporte({
           </button>
         </div>
 
-        {(usaMeses || usaAdicionales) && (
+        {(usaMeses || usaAdicionales || usaSemana) && (
           <div className="flex flex-wrap items-end gap-4 border-b border-neutro-borde bg-neutro-light px-5 py-3">
+            {usaSemana && (
+              <div className="flex flex-col gap-1">
+                <label htmlFor="semana-reporte" className="text-xs font-semibold text-verde-suave">
+                  Semana (cualquier día)
+                </label>
+                <input
+                  id="semana-reporte"
+                  data-testid="reporte-semana"
+                  type="date"
+                  value={semana}
+                  onChange={(e) => {
+                    if (e.target.value) setSemana(e.target.value)
+                  }}
+                  className="rounded-lg border border-neutro-borde bg-white px-3 py-1.5 text-sm"
+                />
+              </div>
+            )}
             {usaMeses && (
               <div className="flex flex-col gap-1">
                 <label htmlFor="meses-proyeccion" className="text-xs font-semibold text-verde-suave">

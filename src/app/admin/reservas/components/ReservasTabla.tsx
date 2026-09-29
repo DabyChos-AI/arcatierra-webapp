@@ -452,6 +452,13 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
                   // columna, con ✕ si fue venta directa (retro del equipo, 2026-09-25).
                   // Antes se leia reseller_nombre/usuario_nombre, que el backend no mandaba.
                   const cliente = r.cliente_nombre ?? r.cliente_email ?? null
+                  // PS1: niños (de los invitados) y staff (aparte), solo si hay alguno
+                  const ninos = r.ninos ?? 0
+                  const staff = r.staff ?? 0
+                  const extrasPersonas =
+                    ninos > 0 || staff > 0
+                      ? `${ninos} ${ninos === 1 ? 'niño' : 'niños'} · ${staff} staff`
+                      : null
                   const guias = r.guias ?? []
                   const guiasMostrar = guias.slice(0, 2).map((g) => g.nombre).join(', ')
                   const guiasExtra = guias.length > 2 ? `+${guias.length - 2}` : ''
@@ -484,6 +491,11 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
                       </td>
                       <td className="px-3 py-3 text-verde max-w-[180px] truncate" title={cliente ?? 'Falta el nombre del cliente'}>
                         {cliente ?? <span className="text-terracota">Falta nombre</span>}
+                        {extrasPersonas && (
+                          <div className="text-xs text-verde-suave" data-testid="reserva-ninos-staff">
+                            {extrasPersonas}
+                          </div>
+                        )}
                       </td>
                       <td className="px-3 py-3 text-verde max-w-[160px] truncate" title={r.reseller_nombre ?? 'Venta directa, sin reseller'}>
                         {r.reseller_nombre ?? (

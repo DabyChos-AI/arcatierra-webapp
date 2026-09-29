@@ -29,6 +29,9 @@ import {
   AlertTriangle,
   Settings,
   Globe,
+  Tags,
+  CalendarRange,
+  Ticket,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -74,6 +77,12 @@ const NAV_SECTIONS: NavSection[] = [
     label: 'Reservas',
     items: [
       { href: '/admin/reservas', label: 'Reservas Privadas', icon: Calendar, permiso: 'reservas', badgeKey: 'reservasActivas' },
+      // PS1 (30-sep): fuentes, chinampas y cocinas que usan las reservas
+      { href: '/admin/catalogos', label: 'Catálogos de reservas', icon: Tags, permiso: 'reservas' },
+      // PS1 Ola 2: fechas públicas (tickets por canal) y eventos internos
+      { href: '/admin/eventos', label: 'Eventos y fechas públicas', icon: Ticket, permiso: 'reservas' },
+      // PS1 Ola 2: la semana de lunes a domingo + Junta Turismo (guías, cocina, admins)
+      { href: '/admin/planeacion', label: 'Planeación semanal', icon: CalendarRange, permiso: 'planeacion' },
       { href: '/admin/catering', label: 'Catering', icon: Utensils, permiso: 'catering' },
       { href: '/admin/leads', label: 'Leads', icon: Inbox, permiso: 'leads', badgeKey: 'leadsNuevos' },
     ],

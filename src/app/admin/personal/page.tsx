@@ -49,6 +49,8 @@ interface FormPersonal {
   puesto: string
   es_vendedor: boolean
   es_guia: boolean
+  // PS1: guía externo (el Sheet los marca «G.E»)
+  es_externo: boolean
   idiomas: string[]
   notas_internas: string
   activo: boolean
@@ -62,6 +64,7 @@ const FORM_INICIAL: FormPersonal = {
   puesto: '',
   es_vendedor: false,
   es_guia: false,
+  es_externo: false,
   idiomas: [],
   notas_internas: '',
   activo: true,
@@ -78,6 +81,7 @@ export default function PersonalPage() {
 
   const [tab, setTab] = useState<PersonalTab>('todos')
   const [soloActivos, setSoloActivos] = useState(true)
+  const [soloExternos, setSoloExternos] = useState(false)
   const [busquedaInput, setBusquedaInput] = useState('')
   const [busqueda, setBusqueda] = useState('')
   const [page, setPage] = useState(1)
@@ -106,6 +110,7 @@ export default function PersonalPage() {
       })
       if (busqueda) params.set('search', busqueda)
       if (soloActivos) params.set('activo', 'true')
+      if (soloExternos) params.set('es_externo', 'true')
       const res = await fetch(`${API_URL}/api/admin/personal?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -123,11 +128,11 @@ export default function PersonalPage() {
     } finally {
       setLoading(false)
     }
-  }, [token, tab, page, busqueda, soloActivos])
+  }, [token, tab, page, busqueda, soloActivos, soloExternos])
 
   useEffect(() => {
     setPage(1)
-  }, [tab, busqueda, soloActivos])
+  }, [tab, busqueda, soloActivos, soloExternos])
 
   useEffect(() => {
     fetchPersonal()
@@ -157,6 +162,7 @@ export default function PersonalPage() {
       puesto: p.puesto ?? '',
       es_vendedor: p.es_vendedor,
       es_guia: p.es_guia,
+      es_externo: p.es_externo === true,
       idiomas: p.idiomas ?? [],
       notas_internas: p.notas_internas ?? '',
       activo: p.activo,
@@ -206,6 +212,7 @@ export default function PersonalPage() {
         puesto: form.puesto.trim() || null,
         es_vendedor: form.es_vendedor,
         es_guia: form.es_guia,
+        es_externo: form.es_externo,
         idiomas: form.idiomas,
         notas_internas: form.notas_internas.trim() || null,
         activo: form.activo,
@@ -358,6 +365,16 @@ export default function PersonalPage() {
             />
             Solo activos
           </label>
+          <label className="flex items-center gap-2 text-sm text-verde cursor-pointer whitespace-nowrap">
+            <input
+              type="checkbox"
+              checked={soloExternos}
+              onChange={(e) => setSoloExternos(e.target.checked)}
+              data-testid="personal-solo-externos"
+              className="w-4 h-4 text-terracota border-neutro-borde rounded focus:ring-terracota"
+            />
+            Solo externos
+          </label>
           <button
             type="button"
             onClick={fetchPersonal}
@@ -443,6 +460,15 @@ export default function PersonalPage() {
                         <div className="flex gap-1 flex-wrap">
                           {p.es_vendedor && <ChipRol rol="vendedora" />}
                           {p.es_guia && <ChipRol rol="guia" />}
+                          {p.es_externo && (
+                            <span
+                              className="inline-block rounded-full text-xs px-2 py-0.5 font-medium bg-amarillo-bg text-verde"
+                              title="Guía externo (no es de planta)"
+                              data-testid="personal-badge-externo"
+                            >
+                              Externo
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -665,6 +691,30 @@ export default function PersonalPage() {
                 {rolesInvalidos && (
                   <p className="text-xs text-rojo mt-1">Debe ser vendedor o guía</p>
                 )}
+                <label
+                  htmlFor="per-externo"
+                  className="mt-3 flex items-center gap-2 text-sm text-verde cursor-pointer"
+                >
+                  <input
+                    id="per-externo"
+                    type="checkbox"
+                    checked={form.es_externo}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        es_externo: e.target.checked,
+                        // Un guía externo es guía: se marca solo, se puede quitar a mano
+                        es_guia: e.target.checked ? true : form.es_guia,
+                      })
+                    }
+                    data-testid="personal-es-externo"
+                    className="w-4 h-4 text-terracota border-neutro-borde rounded focus:ring-terracota"
+                  />
+                  Guía externo
+                </label>
+                <p className="text-xs text-verde-suave mt-1">
+                  No es de planta (en el Sheet sale como «G.E»).
+                </p>
               </div>
 
               {/* Idiomas */}

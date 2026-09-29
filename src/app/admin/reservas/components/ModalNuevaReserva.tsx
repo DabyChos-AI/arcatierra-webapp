@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { Loader2, Search, X } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { formatFechaMexico } from '@/lib/dates'
+import type { ItemCatalogo, ListaCatalogo, TipoCatalogo } from '@/types/planeacion'
 import {
   calcularCotizacion,
   formatMXN,
@@ -12,7 +14,6 @@ import {
   type IdiomaCliente,
   type Personal,
   type Reseller,
-  type TipoCliente,
   type WizardAction,
   type WizardAddon,
   type WizardData,
@@ -37,7 +38,38 @@ const STEPS: { num: number; label: string }[] = [
   { num: 6, label: 'Confirmacion' },
 ]
 
-const CHINAMPAS = ['', 'Sol', 'Garza', 'Techumbre', 'Otro']
+// Catalogos editables de PS1 (/admin/catalogos). Chinampa se guarda por NOMBRE;
+// fuente y cocina por id.
+const TIPOS_CATALOGO: TipoCatalogo[] = ['fuentes', 'chinampas', 'cocinas']
+
+interface EstadoCatalogo {
+  items: ItemCatalogo[]
+  cargando: boolean
+  error: string | null
+}
+
+type Catalogos = Record<TipoCatalogo, EstadoCatalogo>
+
+const CATALOGOS_INICIALES: Catalogos = {
+  fuentes: { items: [], cargando: true, error: null },
+  chinampas: { items: [], cargando: true, error: null },
+  cocinas: { items: [], cargando: true, error: null },
+}
+
+interface GrupoCatalogo {
+  tipo: string
+  etiqueta: string
+}
+
+const GRUPOS_FUENTE: GrupoCatalogo[] = [
+  { tipo: 'canal', etiqueta: 'Canal' },
+  { tipo: 'persona', etiqueta: 'Persona' },
+]
+
+const GRUPOS_COCINA: GrupoCatalogo[] = [
+  { tipo: 'cocina', etiqueta: 'Cocina' },
+  { tipo: 'chef_invitado', etiqueta: 'Chef invitado' },
+]
 
 const RESELLERS_FALLBACK: Reseller[] = [
   'Journey',
@@ -66,6 +98,13 @@ interface LeadMini {
 }
 
 function wizardReducer(state: WizardData, action: WizardAction): WizardData {
+  const next = aplicarAccion(state, action)
+  // Los niños son parte de los invitados: si los invitados bajan (a mano o al
+  // cambiar de experiencia), los niños se ajustan al nuevo máximo.
+  return next.ninos > next.invMin ? { ...next, ninos: Math.max(0, next.invMin) } : next
+}
+
+function aplicarAccion(state: WizardData, action: WizardAction): WizardData {
   switch (action.type) {
     case 'RESET':
       return initialWizardData
@@ -174,6 +213,7 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
   const [resellers, setResellers] = useState<Reseller[]>(RESELLERS_FALLBACK)
   const [vendedoras, setVendedoras] = useState<Personal[]>([])
   const [guias, setGuias] = useState<Personal[]>([])
+  const [catalogos, setCatalogos] = useState<Catalogos>(CATALOGOS_INICIALES)
 
   // Lead picker
   const [showLeadPicker, setShowLeadPicker] = useState(false)
@@ -273,6 +313,36 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
     }
   }, [token])
 
+  // Fuentes, chinampas y cocinas en paralelo. Si uno falla, su select queda solo
+  // con «—», se avisa, y el paso sigue usable (los tres son opcionales).
+  const fetchCatalogos = useCallback(async () => {
+    if (!token) return
+    await Promise.all(
+      TIPOS_CATALOGO.map(async (tipo) => {
+        let estado: EstadoCatalogo
+        try {
+          const res = await fetch(
+            `${API_URL}/api/admin/catalogos/${tipo}?incluir_inactivos=false`,
+            { headers: { Authorization: `Bearer ${token}` } },
+          )
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            estado = { items: [], cargando: false, error: extraerMensajeError(err, res.status) }
+          } else {
+            const data: unknown = await res.json()
+            const items = (data as Partial<ListaCatalogo> | null)?.items
+            estado = Array.isArray(items)
+              ? { items: items.filter((i) => i.activo !== false), cargando: false, error: null }
+              : { items: [], cargando: false, error: 'respuesta inesperada del servidor' }
+          }
+        } catch {
+          estado = { items: [], cargando: false, error: 'sin conexión con el servidor' }
+        }
+        setCatalogos((prev) => ({ ...prev, [tipo]: estado }))
+      }),
+    )
+  }, [token])
+
   const fetchLeads = useCallback(async () => {
     if (!token) return
     setLeadsLoading(true)
@@ -321,7 +391,8 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
     fetchExperiencias()
     fetchResellers()
     fetchPersonal()
-  }, [token, fetchExperiencias, fetchResellers, fetchPersonal])
+    fetchCatalogos()
+  }, [token, fetchExperiencias, fetchResellers, fetchPersonal, fetchCatalogos])
 
   // === Validacion por paso ===
   const pasoValido = useMemo(() => {
@@ -335,12 +406,16 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
           !!wiz.experienciaId &&
           !!wiz.fecha &&
           !!wiz.horaInicio &&
-          wiz.invMin >= 1
+          wiz.invMin >= 1 &&
+          wiz.ninos >= 0 &&
+          wiz.ninos <= wiz.invMin &&
+          wiz.staff >= 0
         )
       case 3:
         return true
       case 4:
-        return cot.total > 0 && wiz.anticipo <= cot.total
+        // Cortesía: total $0 a propósito
+        return wiz.cortesia || (cot.total > 0 && wiz.anticipo <= cot.total)
       case 5:
         return wiz.vendedorId.trim().length > 0
       case 6:
@@ -382,25 +457,38 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
             : undefined,
         // El cliente se ve siempre en la lista; con reseller es su huesped
         nombre_cliente: wiz.clienteNombre.trim() || undefined,
+        // El idioma es de la experiencia (lo leen los guías en la Junta Turismo), no de
+        // la cuenta: va también con reseller. Sin él, la API guardaba siempre "es".
+        idioma: wiz.clienteIdioma,
         experiencia_id: wiz.experienciaId,
         fecha_experiencia: wiz.fecha,
         hora_inicio: wiz.horaInicio,
         hora_fin: wiz.horaFin || undefined,
         numero_invitados_min: wiz.invMin,
         numero_invitados_max: wiz.invMax || undefined,
-        chinampa_asignada: wiz.chinampa || undefined,
+        // Se guarda el nombre (lo leen PDF, correos y manifest)
+        chinampa_asignada: wiz.chinampa || null,
+        // PS1: niños son de los invitados; staff va aparte y no se cobra
+        ninos: wiz.ninos,
+        staff: wiz.staff,
+        cortesia: wiz.cortesia,
+        codigo_promocional: wiz.codigoPromocional.trim() || null,
+        contacto: wiz.contacto.trim() || null,
+        fuente_id: wiz.fuenteId || null,
+        cocina_id: wiz.cocinaId || null,
         addons: wiz.addons.map((a) => ({ addon_id: a.id, cantidad: a.cantidad })),
         monto_descuento: wiz.descuento,
         motivo_descuento: wiz.motivoDescuento || undefined,
         propina_pct: wiz.propinaPct,
-        monto_anticipo: wiz.anticipo,
+        monto_anticipo: wiz.cortesia ? 0 : wiz.anticipo,
         vendedor_id: wiz.vendedorId,
         guias_ids: wiz.guiasIds,
         notas_internas: wiz.notasInternas || undefined,
         notas_alergias: wiz.notasAlergias || undefined,
         notas_cliente: wiz.notasCliente || undefined,
-        generar_link_mp: wiz.generarLinkMp,
-        enviar_cotizacion_pdf: wiz.enviarCotizacionPdf,
+        generar_link_mp: wiz.cortesia ? false : wiz.generarLinkMp,
+        // Las cortesías no se cotizan (David, 30-sep)
+        enviar_cotizacion_pdf: wiz.cortesia ? false : wiz.enviarCotizacionPdf,
       }
       const res = await fetch(`${API_URL}/api/admin/reservas`, {
         method: 'POST',
@@ -514,6 +602,7 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
               wiz={wiz}
               dispatch={dispatch}
               resellers={resellers}
+              fuentes={catalogos.fuentes}
               onAbrirLeadPicker={abrirLeadPicker}
             />
           )}
@@ -522,6 +611,8 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
               wiz={wiz}
               dispatch={dispatch}
               experiencias={experiencias}
+              chinampas={catalogos.chinampas}
+              cocinas={catalogos.cocinas}
               onSelectExperiencia={selectExperiencia}
             />
           )}
@@ -539,7 +630,13 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
             />
           )}
           {wiz.step === 6 && (
-            <Paso6Confirmacion wiz={wiz} dispatch={dispatch} cot={cot} />
+            <Paso6Confirmacion
+              wiz={wiz}
+              dispatch={dispatch}
+              cot={cot}
+              fuentes={catalogos.fuentes.items}
+              cocinas={catalogos.cocinas.items}
+            />
           )}
         </div>
 
@@ -609,11 +706,13 @@ function Paso1Cliente({
   wiz,
   dispatch,
   resellers,
+  fuentes,
   onAbrirLeadPicker,
 }: {
   wiz: WizardData
   dispatch: React.Dispatch<WizardAction>
   resellers: Reseller[]
+  fuentes: EstadoCatalogo
   onAbrirLeadPicker: () => void
 }) {
   return (
@@ -782,30 +881,7 @@ function Paso1Cliente({
                 className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
               />
             </div>
-            <div>
-              <label
-                htmlFor="cliente-idioma"
-                className="block text-sm font-medium text-verde mb-1"
-              >
-                Idioma
-              </label>
-              <select
-                id="cliente-idioma"
-                value={wiz.clienteIdioma}
-                onChange={(e) =>
-                  dispatch({
-                    type: 'SET_FIELD',
-                    field: 'clienteIdioma',
-                    value: e.target.value as IdiomaCliente,
-                  })
-                }
-                className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
-              >
-                <option value="es">Espanol</option>
-                <option value="en">Ingles</option>
-              </select>
-            </div>
-            <div className="flex items-end">
+            <div className="col-span-2">
               <label className="flex items-center gap-2 text-sm text-verde cursor-pointer">
                 <input
                   type="checkbox"
@@ -825,6 +901,135 @@ function Paso1Cliente({
           </div>
         </>
       )}
+
+      <div className="grid grid-cols-3 gap-3 border-t border-neutro-borde pt-4">
+        <div>
+          <label htmlFor="cliente-idioma" className="block text-sm font-medium text-verde mb-1">
+            Idioma de la experiencia
+          </label>
+          <select
+            id="cliente-idioma"
+            data-testid="wiz-idioma"
+            value={wiz.clienteIdioma}
+            onChange={(e) =>
+              dispatch({
+                type: 'SET_FIELD',
+                field: 'clienteIdioma',
+                value: e.target.value as IdiomaCliente,
+              })
+            }
+            aria-describedby="cliente-idioma-ayuda"
+            className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
+          >
+            <option value="es">Español</option>
+            <option value="en">Inglés</option>
+          </select>
+          <p id="cliente-idioma-ayuda" className="mt-1 text-xs text-verde-suave">
+            Lo leen los guías en la Junta Turismo.
+          </p>
+        </div>
+        <div>
+          <label htmlFor="wiz-contacto" className="block text-sm font-medium text-verde mb-1">
+            Contacto
+          </label>
+          <input
+            id="wiz-contacto"
+            data-testid="wiz-contacto"
+            type="text"
+            maxLength={200}
+            value={wiz.contacto}
+            onChange={(e) =>
+              dispatch({ type: 'SET_FIELD', field: 'contacto', value: e.target.value })
+            }
+            placeholder="Teléfono o correo"
+            aria-describedby="wiz-contacto-ayuda"
+            className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
+          />
+          <p id="wiz-contacto-ayuda" className="mt-1 text-xs text-verde-suave">
+            Texto libre: con quién se coordina la reserva.
+          </p>
+        </div>
+        <SelectCatalogo
+          id="wiz-fuente"
+          etiqueta="Fuente"
+          nombreCatalogo="fuentes"
+          catalogo={fuentes}
+          grupos={GRUPOS_FUENTE}
+          valor={wiz.fuenteId}
+          valorDe={(item) => item.id}
+          onChange={(v) => dispatch({ type: 'SET_FIELD', field: 'fuenteId', value: v })}
+        />
+      </div>
+    </div>
+  )
+}
+
+// ============================================================================
+// Select de un catalogo PS1 (fuentes, chinampas, cocinas). Opcional: la opcion
+// vacia «—» siempre esta, aunque el catalogo no cargue.
+// ============================================================================
+function SelectCatalogo({
+  id,
+  etiqueta,
+  nombreCatalogo,
+  catalogo,
+  grupos,
+  valor,
+  valorDe,
+  onChange,
+}: {
+  id: string
+  etiqueta: string
+  nombreCatalogo: string
+  catalogo: EstadoCatalogo
+  grupos?: GrupoCatalogo[]
+  valor: string
+  valorDe: (item: ItemCatalogo) => string
+  onChange: (valor: string) => void
+}) {
+  const { items, cargando, error } = catalogo
+  const opcion = (item: ItemCatalogo) => (
+    <option key={item.id} value={valorDe(item)}>
+      {item.nombre}
+    </option>
+  )
+  const tiposAgrupados = new Set((grupos ?? []).map((g) => g.tipo))
+  const sueltos = grupos ? items.filter((i) => !tiposAgrupados.has(i.tipo ?? '')) : items
+
+  return (
+    <div>
+      <label htmlFor={id} className="block text-sm font-medium text-verde mb-1">
+        {etiqueta}
+      </label>
+      <select
+        id={id}
+        data-testid={id}
+        value={valor}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
+      >
+        <option value="">—</option>
+        {grupos?.map((g) => {
+          const delGrupo = items.filter((i) => i.tipo === g.tipo)
+          return delGrupo.length > 0 ? (
+            <optgroup key={g.tipo} label={g.etiqueta}>
+              {delGrupo.map(opcion)}
+            </optgroup>
+          ) : null
+        })}
+        {sueltos.map(opcion)}
+      </select>
+      {cargando && <p className="mt-1 text-xs text-verde-suave">Cargando {nombreCatalogo}…</p>}
+      {error && (
+        <p data-testid={`${id}-aviso`} className="mt-1 text-xs text-terracota-dark">
+          No se pudo cargar el catálogo de {nombreCatalogo} ({error}). Puedes seguir sin elegir.
+        </p>
+      )}
+      {!cargando && !error && items.length === 0 && (
+        <p className="mt-1 text-xs text-verde-suave">
+          El catálogo de {nombreCatalogo} está vacío.
+        </p>
+      )}
     </div>
   )
 }
@@ -836,11 +1041,15 @@ function Paso2Experiencia({
   wiz,
   dispatch,
   experiencias,
+  chinampas,
+  cocinas,
   onSelectExperiencia,
 }: {
   wiz: WizardData
   dispatch: React.Dispatch<WizardAction>
   experiencias: ExperienciaCatalogo[]
+  chinampas: EstadoCatalogo
+  cocinas: EstadoCatalogo
   onSelectExperiencia: (id: string) => void
 }) {
   return (
@@ -952,6 +1161,60 @@ function Paso2Experiencia({
           </p>
         </div>
         <div>
+          <label htmlFor="wiz-ninos" className="block text-sm font-medium text-verde mb-1">
+            Niños
+          </label>
+          <input
+            id="wiz-ninos"
+            data-testid="wiz-ninos"
+            type="number"
+            min={0}
+            max={wiz.invMin}
+            step={1}
+            value={wiz.ninos}
+            onChange={(e) =>
+              dispatch({
+                type: 'SET_FIELD',
+                field: 'ninos',
+                value: Math.max(0, Math.min(wiz.invMin, Math.floor(Number(e.target.value) || 0))),
+              })
+            }
+            aria-describedby="wiz-ninos-ayuda"
+            className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
+          />
+          <p id="wiz-ninos-ayuda" className="mt-1 text-xs text-verde-suave">
+            De los invitados, cuántos son niños. Pagan y cuentan igual.
+          </p>
+        </div>
+        <div>
+          <label htmlFor="wiz-staff" className="block text-sm font-medium text-verde mb-1">
+            Staff
+          </label>
+          <input
+            id="wiz-staff"
+            data-testid="wiz-staff"
+            type="number"
+            min={0}
+            step={1}
+            value={wiz.staff}
+            onChange={(e) =>
+              dispatch({
+                type: 'SET_FIELD',
+                field: 'staff',
+                value: Math.max(0, Math.floor(Number(e.target.value) || 0)),
+              })
+            }
+            aria-describedby="wiz-staff-ayuda"
+            className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
+          />
+          <p id="wiz-staff-ayuda" className="mt-1 text-xs text-verde-suave">
+            Aparte: no se cobra ni suma platos ni sillas.
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-3">
+        <div>
           <label htmlFor="exp-inv-max" className="block text-sm font-medium text-verde mb-1">
             Invitados max (opcional)
           </label>
@@ -970,28 +1233,25 @@ function Paso2Experiencia({
             className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
           />
         </div>
-        <div>
-          <label
-            htmlFor="exp-chinampa"
-            className="block text-sm font-medium text-verde mb-1"
-          >
-            Chinampa
-          </label>
-          <select
-            id="exp-chinampa"
-            value={wiz.chinampa}
-            onChange={(e) =>
-              dispatch({ type: 'SET_FIELD', field: 'chinampa', value: e.target.value })
-            }
-            className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
-          >
-            {CHINAMPAS.map((c) => (
-              <option key={c || 'ninguna'} value={c}>
-                {c || 'Ninguna'}
-              </option>
-            ))}
-          </select>
-        </div>
+        <SelectCatalogo
+          id="wiz-chinampa"
+          etiqueta="Chinampa"
+          nombreCatalogo="chinampas"
+          catalogo={chinampas}
+          valor={wiz.chinampa}
+          valorDe={(item) => item.nombre}
+          onChange={(v) => dispatch({ type: 'SET_FIELD', field: 'chinampa', value: v })}
+        />
+        <SelectCatalogo
+          id="wiz-cocina"
+          etiqueta="Cocina / chef"
+          nombreCatalogo="cocinas"
+          catalogo={cocinas}
+          grupos={GRUPOS_COCINA}
+          valor={wiz.cocinaId}
+          valorDe={(item) => item.id}
+          onChange={(v) => dispatch({ type: 'SET_FIELD', field: 'cocinaId', value: v })}
+        />
       </div>
     </div>
   )
@@ -1099,6 +1359,15 @@ function Paso4Cotizacion({
   dispatch: React.Dispatch<WizardAction>
   cot: ReturnType<typeof calcularCotizacion>
 }) {
+  function cambiarCortesia(activa: boolean) {
+    dispatch({ type: 'SET_FIELD', field: 'cortesia', value: activa })
+    // Cortesía: sin anticipo, link de pago ni cotización (no se cotiza). Al quitarla
+    // vuelven a proponerse el link y el envío de la cotización.
+    if (activa) dispatch({ type: 'SET_FIELD', field: 'anticipo', value: 0 })
+    dispatch({ type: 'SET_FIELD', field: 'generarLinkMp', value: !activa })
+    dispatch({ type: 'SET_FIELD', field: 'enviarCotizacionPdf', value: !activa })
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between border-b border-neutro-borde pb-2">
@@ -1178,43 +1447,92 @@ function Paso4Cotizacion({
         />
       </div>
 
-      {/* C09 — Propina sobre subtotal_experiencia */}
-      <div className="bg-terracota/5 border border-terracota/20 rounded-lg p-3 space-y-2">
-        <div className="flex items-center gap-2">
-          <label htmlFor="wiz-propina-pct" className="text-sm text-verde flex-1">
-            Propina (% sobre subtotal experiencia):
-          </label>
-          <input
-            id="wiz-propina-pct"
-            data-testid="wiz-propina-pct"
-            type="number"
-            min={0}
-            max={100}
-            step={0.5}
-            value={wiz.propinaPct}
-            onChange={(e) =>
-              dispatch({
-                type: 'SET_FIELD',
-                field: 'propinaPct',
-                value: Math.max(0, Math.min(100, Number(e.target.value))),
-              })
-            }
-            className="border border-neutro-borde rounded px-2 py-1 w-20 text-sm tabular-nums"
-          />
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-verde">Monto propina:</span>
-          <span
-            data-testid="wiz-propina-monto"
-            className="font-medium text-verde tabular-nums"
-          >
-            {formatMXN(cot.propina_monto)}
-          </span>
-        </div>
-        <p className="text-xs text-terracota italic">
-          * El servicio de propina no es facturable.
-        </p>
+      <div className="flex items-center gap-2">
+        <label htmlFor="wiz-codigo-promocional" className="text-sm text-verde w-32">
+          Código promocional:
+        </label>
+        <input
+          id="wiz-codigo-promocional"
+          data-testid="wiz-codigo-promocional"
+          type="text"
+          maxLength={50}
+          value={wiz.codigoPromocional}
+          onChange={(e) =>
+            dispatch({
+              type: 'SET_FIELD',
+              field: 'codigoPromocional',
+              value: e.target.value,
+            })
+          }
+          placeholder="Opcional"
+          className="border border-neutro-borde rounded px-2 py-1 w-48 text-sm"
+        />
       </div>
+
+      <div className="flex items-center gap-2">
+        <input
+          id="wiz-cortesia"
+          data-testid="wiz-cortesia"
+          type="checkbox"
+          checked={wiz.cortesia}
+          onChange={(e) => cambiarCortesia(e.target.checked)}
+          aria-describedby="wiz-cortesia-ayuda"
+          className="w-4 h-4 text-terracota border-neutro-borde rounded focus:ring-terracota"
+        />
+        <label htmlFor="wiz-cortesia" className="text-sm text-verde font-medium cursor-pointer">
+          Cortesía
+        </label>
+        <span id="wiz-cortesia-ayuda" className="text-xs text-verde-suave">
+          (total $0: sin propina, anticipo, link de pago ni cotización)
+        </span>
+      </div>
+
+      {wiz.cortesia ? (
+        <div
+          data-testid="wiz-cortesia-aviso"
+          className="bg-verde/5 border border-verde/20 rounded-lg p-3 text-sm text-verde font-medium"
+        >
+          Cortesía: no se cobra
+        </div>
+      ) : (
+        // C09 — Propina sobre subtotal_experiencia
+        <div className="bg-terracota/5 border border-terracota/20 rounded-lg p-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <label htmlFor="wiz-propina-pct" className="text-sm text-verde flex-1">
+              Propina (% sobre subtotal experiencia):
+            </label>
+            <input
+              id="wiz-propina-pct"
+              data-testid="wiz-propina-pct"
+              type="number"
+              min={0}
+              max={100}
+              step={0.5}
+              value={wiz.propinaPct}
+              onChange={(e) =>
+                dispatch({
+                  type: 'SET_FIELD',
+                  field: 'propinaPct',
+                  value: Math.max(0, Math.min(100, Number(e.target.value))),
+                })
+              }
+              className="border border-neutro-borde rounded px-2 py-1 w-20 text-sm tabular-nums"
+            />
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-verde">Monto propina:</span>
+            <span
+              data-testid="wiz-propina-monto"
+              className="font-medium text-verde tabular-nums"
+            >
+              {formatMXN(cot.propina_monto)}
+            </span>
+          </div>
+          <p className="text-xs text-terracota italic">
+            * El servicio de propina no es facturable.
+          </p>
+        </div>
+      )}
 
       <div className="flex justify-between border-t border-neutro-borde pt-3 text-lg font-display font-semibold text-verde">
         <span>TOTAL</span>
@@ -1223,43 +1541,47 @@ function Paso4Cotizacion({
         </span>
       </div>
 
-      <div className="flex items-center gap-2">
-        <label htmlFor="cot-anticipo" className="text-sm text-verde w-32">
-          Anticipo (MXN):
-        </label>
-        <input
-          id="cot-anticipo"
-          type="number"
-          min={0}
-          max={cot.total}
-          value={wiz.anticipo}
-          onChange={(e) =>
-            dispatch({
-              type: 'SET_FIELD',
-              field: 'anticipo',
-              value: Math.max(0, Math.min(cot.total, Number(e.target.value))),
-            })
-          }
-          className="border border-neutro-borde rounded px-2 py-1 w-32 text-sm tabular-nums"
-        />
-        <button
-          type="button"
-          onClick={() =>
-            dispatch({
-              type: 'SET_FIELD',
-              field: 'anticipo',
-              value: Math.round(cot.total * 0.5),
-            })
-          }
-          className="text-xs text-terracota underline hover:text-terracota-dark"
-        >
-          Sugerencia 50%
-        </button>
-      </div>
-      <div className="flex justify-between text-sm text-verde-suave">
-        <span>Balance pendiente:</span>
-        <span className="tabular-nums">{formatMXN(cot.balance)}</span>
-      </div>
+      {!wiz.cortesia && (
+        <>
+          <div className="flex items-center gap-2">
+            <label htmlFor="cot-anticipo" className="text-sm text-verde w-32">
+              Anticipo (MXN):
+            </label>
+            <input
+              id="cot-anticipo"
+              type="number"
+              min={0}
+              max={cot.total}
+              value={wiz.anticipo}
+              onChange={(e) =>
+                dispatch({
+                  type: 'SET_FIELD',
+                  field: 'anticipo',
+                  value: Math.max(0, Math.min(cot.total, Number(e.target.value))),
+                })
+              }
+              className="border border-neutro-borde rounded px-2 py-1 w-32 text-sm tabular-nums"
+            />
+            <button
+              type="button"
+              onClick={() =>
+                dispatch({
+                  type: 'SET_FIELD',
+                  field: 'anticipo',
+                  value: Math.round(cot.total * 0.5),
+                })
+              }
+              className="text-xs text-terracota underline hover:text-terracota-dark"
+            >
+              Sugerencia 50%
+            </button>
+          </div>
+          <div className="flex justify-between text-sm text-verde-suave">
+            <span>Balance pendiente:</span>
+            <span className="tabular-nums">{formatMXN(cot.balance)}</span>
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -1400,11 +1722,17 @@ function Paso6Confirmacion({
   wiz,
   dispatch,
   cot,
+  fuentes,
+  cocinas,
 }: {
   wiz: WizardData
   dispatch: React.Dispatch<WizardAction>
   cot: ReturnType<typeof calcularCotizacion>
+  fuentes: ItemCatalogo[]
+  cocinas: ItemCatalogo[]
 }) {
+  const fuente = fuentes.find((f) => f.id === wiz.fuenteId)
+  const cocina = cocinas.find((c) => c.id === wiz.cocinaId)
   return (
     <div className="space-y-4">
       <ResumenSeccion titulo="Cliente">
@@ -1426,16 +1754,29 @@ function Paso6Confirmacion({
                 Telefono: <strong>{wiz.clienteTelefono}</strong>
               </p>
             )}
-            <p>
-              Idioma:{' '}
-              <strong>{wiz.clienteIdioma === 'es' ? 'Espanol' : 'Ingles'}</strong>
-            </p>
           </>
         ) : (
           <p>
             Reseller ID: <strong>{wiz.resellerId ?? '—'}</strong>
           </p>
         )}
+        <p>
+          Idioma:{' '}
+          <strong data-testid="wiz-resumen-idioma">
+            {wiz.clienteIdioma === 'en' ? 'Inglés' : 'Español'}
+          </strong>
+        </p>
+        <p>
+          Contacto: <strong data-testid="wiz-resumen-contacto">{wiz.contacto.trim() || '—'}</strong>
+        </p>
+        <p>
+          Fuente:{' '}
+          <strong data-testid="wiz-resumen-fuente">
+            {fuente
+              ? `${fuente.nombre} (${fuente.tipo === 'persona' ? 'persona' : 'canal'})`
+              : '—'}
+          </strong>
+        </p>
       </ResumenSeccion>
 
       <ResumenSeccion titulo="Experiencia">
@@ -1443,18 +1784,28 @@ function Paso6Confirmacion({
           <strong>{wiz.experienciaNombre ?? '—'}</strong>
         </p>
         <p>
-          {wiz.fecha} · {wiz.horaInicio}
+          {formatFechaMexico(wiz.fecha)} · {wiz.horaInicio}
           {wiz.horaFin ? ` - ${wiz.horaFin}` : ''}
         </p>
         <p>
           {wiz.invMin}
           {wiz.invMax && wiz.invMax > wiz.invMin ? `-${wiz.invMax}` : ''} invitados
         </p>
-        {wiz.chinampa && (
-          <p>
-            Chinampa: <strong>{wiz.chinampa}</strong>
-          </p>
-        )}
+        <p>
+          Niños: <strong data-testid="wiz-resumen-ninos">{wiz.ninos}</strong>{' '}
+          <span className="text-verde-suave">(de los invitados)</span>
+        </p>
+        <p>
+          Staff: <strong data-testid="wiz-resumen-staff">{wiz.staff}</strong>{' '}
+          <span className="text-verde-suave">(aparte, no se cobra)</span>
+        </p>
+        <p>
+          Chinampa: <strong data-testid="wiz-resumen-chinampa">{wiz.chinampa || '—'}</strong>
+        </p>
+        <p>
+          Cocina / chef:{' '}
+          <strong data-testid="wiz-resumen-cocina">{cocina?.nombre ?? '—'}</strong>
+        </p>
       </ResumenSeccion>
 
       {wiz.addons.length > 0 && (
@@ -1469,6 +1820,11 @@ function Paso6Confirmacion({
       )}
 
       <ResumenSeccion titulo="Cotizacion">
+        {wiz.cortesia && (
+          <p data-testid="wiz-resumen-cortesia" className="font-medium">
+            <strong className="text-terracota">Cortesía</strong>: no se cobra
+          </p>
+        )}
         <p>
           Subtotal experiencia:{' '}
           <strong className="tabular-nums">{formatMXN(cot.subtotal_experiencia)}</strong>
@@ -1486,18 +1842,30 @@ function Paso6Confirmacion({
           </p>
         )}
         <p>
-          Propina ({wiz.propinaPct}%):{' '}
-          <strong className="tabular-nums">{formatMXN(cot.propina_monto)}</strong>
+          Código promocional:{' '}
+          <strong data-testid="wiz-resumen-codigo-promocional">
+            {wiz.codigoPromocional.trim() || '—'}
+          </strong>
         </p>
+        {!wiz.cortesia && (
+          <p>
+            Propina ({wiz.propinaPct}%):{' '}
+            <strong className="tabular-nums">{formatMXN(cot.propina_monto)}</strong>
+          </p>
+        )}
         <p className="text-lg font-display text-verde">
           TOTAL: <strong className="tabular-nums">{formatMXN(cot.total)}</strong>
         </p>
-        <p>
-          Anticipo: <strong className="tabular-nums">{formatMXN(wiz.anticipo)}</strong>
-        </p>
-        <p>
-          Balance: <strong className="tabular-nums">{formatMXN(cot.balance)}</strong>
-        </p>
+        {!wiz.cortesia && (
+          <>
+            <p>
+              Anticipo: <strong className="tabular-nums">{formatMXN(wiz.anticipo)}</strong>
+            </p>
+            <p>
+              Balance: <strong className="tabular-nums">{formatMXN(cot.balance)}</strong>
+            </p>
+          </>
+        )}
       </ResumenSeccion>
 
       <ResumenSeccion titulo="Asignaciones">
@@ -1510,10 +1878,16 @@ function Paso6Confirmacion({
       </ResumenSeccion>
 
       <div className="space-y-2 border-t border-neutro-borde pt-4">
-        <label className="flex items-center gap-2 text-sm text-verde cursor-pointer">
+        <label
+          className={`flex items-center gap-2 text-sm text-verde ${
+            wiz.cortesia ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+          }`}
+        >
           <input
             type="checkbox"
-            checked={wiz.generarLinkMp}
+            data-testid="wiz-generar-link-mp"
+            checked={wiz.generarLinkMp && !wiz.cortesia}
+            disabled={wiz.cortesia}
             onChange={(e) =>
               dispatch({
                 type: 'SET_FIELD',
@@ -1524,11 +1898,20 @@ function Paso6Confirmacion({
             className="w-4 h-4 text-terracota border-neutro-borde rounded focus:ring-terracota"
           />
           Generar link de pago MercadoPago automaticamente
+          {wiz.cortesia && (
+            <span className="text-xs text-verde-suave">(no aplica: es cortesía)</span>
+          )}
         </label>
-        <label className="flex items-center gap-2 text-sm text-verde cursor-pointer">
+        <label
+          className={`flex items-center gap-2 text-sm text-verde ${
+            wiz.cortesia ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+          }`}
+        >
           <input
             type="checkbox"
-            checked={wiz.enviarCotizacionPdf}
+            data-testid="wiz-enviar-cotizacion"
+            checked={wiz.enviarCotizacionPdf && !wiz.cortesia}
+            disabled={wiz.cortesia}
             onChange={(e) =>
               dispatch({
                 type: 'SET_FIELD',
@@ -1539,6 +1922,11 @@ function Paso6Confirmacion({
             className="w-4 h-4 text-terracota border-neutro-borde rounded focus:ring-terracota"
           />
           Enviar cotizacion PDF por email al cliente
+          {wiz.cortesia && (
+            <span className="text-xs text-verde-suave">
+              (no aplica: las cortesías no se cotizan)
+            </span>
+          )}
         </label>
       </div>
     </div>

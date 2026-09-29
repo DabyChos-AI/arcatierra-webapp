@@ -11,7 +11,8 @@ export type ReservaEstado =
   | 'cancelada'
   | 'reagendada'
 
-export type ReservaEstadoPago = 'sin_pagar' | 'anticipo' | 'pagado' | 'reembolsado'
+// 'cortesia' (PS1, 30-sep): estado propio con total $0; sin link de pago ni anticipo.
+export type ReservaEstadoPago = 'sin_pagar' | 'anticipo' | 'pagado' | 'reembolsado' | 'cortesia'
 
 export type TipoCliente = 'directo' | 'reseller'
 
@@ -49,6 +50,8 @@ export interface Personal {
   telefono?: string | null
   es_vendedor: boolean
   es_guia: boolean
+  // PS1: guía externo (el Sheet los marca «G.E»)
+  es_externo?: boolean
   idiomas?: string[]
   activo: boolean
 }
@@ -150,6 +153,20 @@ export interface Reserva {
   hora_fin?: string | null
   chinampa_asignada?: string | null
   numero_invitados_min: number
+  // PS1 (planeación semanal). De los invitados, cuántos son niños (pagan y cuentan).
+  ninos: number
+  // Staff: aparte de los invitados; no se cobra ni suma platos/sillas.
+  staff: number
+  cortesia: boolean
+  codigo_promocional?: string | null
+  contacto?: string | null
+  fuente_id?: string | null
+  fuente_nombre?: string | null
+  fuente_tipo?: 'canal' | 'persona' | null
+  cocina_id?: string | null
+  cocina_nombre?: string | null
+  // NULL = capturada en el panel; 'sheet_2026' = cargada del Google Sheet
+  origen?: string | null
   numero_invitados_max?: number | null
   manifest_invitados?: ManifestInvitado[]
   precio_base: number
@@ -243,7 +260,17 @@ export interface WizardData {
   horaFin: string
   invMin: number
   invMax: number
+  // PS1: de invMin, cuántos son niños; staff va aparte y no se cobra
+  ninos: number
+  staff: number
+  // Nombre de la chinampa (catálogo /admin/catalogos/chinampas; se guarda el texto)
   chinampa: string
+  fuenteId: string
+  cocinaId: string
+  contacto: string
+  codigoPromocional: string
+  // Cortesía: total $0, sin anticipo ni link de pago
+  cortesia: boolean
   addons: WizardAddon[]
   descuento: number
   motivoDescuento: string
@@ -291,7 +318,14 @@ export const initialWizardData: WizardData = {
   horaFin: '',
   invMin: 1,
   invMax: 0,
+  ninos: 0,
+  staff: 0,
   chinampa: '',
+  fuenteId: '',
+  cocinaId: '',
+  contacto: '',
+  codigoPromocional: '',
+  cortesia: false,
   addons: [],
   descuento: 0,
   motivoDescuento: '',
@@ -317,9 +351,11 @@ export function calcularCotizacion(data: WizardData) {
     (sum, a) => sum + a.cantidad * a.precio_unitario,
     0
   )
-  const propina_monto = subtotal_experiencia * (data.propinaPct / 100)
-  const total = subtotal_experiencia + subtotal_addons + propina_monto - data.descuento
-  const balance = total - data.anticipo
+  // Cortesía (PS1): lo cobrado es $0. subtotal_experiencia y subtotal_addons se conservan
+  // como valor de referencia (el backend guarda lo mismo: precio_base/monto_addons).
+  const propina_monto = data.cortesia ? 0 : subtotal_experiencia * (data.propinaPct / 100)
+  const total = data.cortesia ? 0 : subtotal_experiencia + subtotal_addons + propina_monto - data.descuento
+  const balance = data.cortesia ? 0 : total - data.anticipo
   return {
     adicionales,
     subtotal_experiencia,

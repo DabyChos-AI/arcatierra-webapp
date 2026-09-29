@@ -1,100 +1,84 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useSession } from 'next-auth/react'
 import { Calendar, Plus, Eye, Edit2, Users, MapPin, Loader2, X, Clock, DollarSign } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { formatFechaMexico } from '@/lib/dates'
+import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
+import type { EventoPlaneacion, ListaEventos } from '@/types/planeacion'
+import { hoyMexico, horaCorta, sinTope, sumarDias } from '../eventos/components/fechas'
 
-interface EventoCalendario {
-  id: string
-  nombre_evento: string
-  descripcion: string
-  fecha_evento: string
-  hora_inicio: string
-  hora_fin?: string
-  ubicacion?: string
-  area_encargada: string
-  tipo_evento: string
-  capacidad_maxima?: number
-  capacidad_ocupada: number
-  disponibles?: number
-  precio_base?: number
-  estado: string
+// PS1 (30-sep): el calendario del panel lee GET /api/admin/planeacion/eventos (permiso
+// `planeacion`: guías, cocina, admin). Antes leía el endpoint PÚBLICO, que ya no trae los
+// internos, las fechas ocultas ni las notas. EventoPlaneacion no trae `ubicacion` ni
+// `area_encargada`: se pintan la chinampa y el tipo (fecha pública / interno).
+type EventoCalendario = EventoPlaneacion
+
+const DIAS_CALENDARIO = 90
+
+// Públicas: lugares ocupados. Internos: las personas que van.
+function participantes(evento: EventoCalendario): number {
+  return evento.tipo === 'interno' ? evento.personas ?? 0 : evento.capacidad_ocupada || 0
+}
+
+function textoParticipantes(evento: EventoCalendario): string {
+  if (evento.tipo === 'interno') {
+    return evento.personas != null ? `${evento.personas} personas` : 'Personas sin definir'
+  }
+  const capacidad = sinTope(evento.capacidad_maxima) ? 'sin tope' : evento.capacidad_maxima
+  return `${evento.capacidad_ocupada}/${capacidad} participantes`
+}
+
+function textoTipo(evento: EventoCalendario): string {
+  if (evento.tipo === 'publica') return 'Fecha pública'
+  if (evento.tipo === 'interno') return 'Interno'
+  return evento.tipo_evento
 }
 
 export default function CalendarioPage() {
+  const { data: session } = useSession()
+  const token = session?.accessToken as string | undefined
   const [eventos, setEventos] = useState<EventoCalendario[]>([])
   const [loading, setLoading] = useState(true)
   const [usingAPI, setUsingAPI] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showModalCrear, setShowModalCrear] = useState(false)
   const [creandoEvento, setCreandoEvento] = useState(false)
-  // Cargar eventos desde API con fallback
-  useEffect(() => {
-    const fetchEventos = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        
-        // ✅ PRIORIDAD 1: API real
-        const response = await fetch(`${API_URL}/api/calendario/eventos?limit=20`)
-        
-        if (response.ok) {
-          const data = await response.json()
-          setEventos(data.items || [])
-          setUsingAPI(true)
-          console.log('✅ Eventos cargados desde API:', data.items?.length || 0)
-        } else {
-          throw new Error(`API respondió con ${response.status}`)
-        }
-      } catch (error) {
-        // ✅ FALLBACK: Eventos simulados
-        console.warn('⚠️ API no disponible, usando eventos simulados:', error)
-        setEventos(eventosFallback)
-        setUsingAPI(false)
-        setError('Usando datos simulados - API no disponible')
-      } finally {
-        setLoading(false)
-      }
-    }
-    
-    fetchEventos()
-  }, [])
 
-  // ✅ EVENTOS FALLBACK (mantener los existentes como respaldo)
-  const eventosFallback: EventoCalendario[] = [
-    {
-      id: 'fallback-1',
-      nombre_evento: 'Experiencia de Cosecha',
-      descripcion: 'Evento simulado para demostración',
-      fecha_evento: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Mañana
-      hora_inicio: '10:00',
-      hora_fin: '14:00',
-      ubicacion: 'Campo Norte',
-      area_encargada: 'experiencias',
-      tipo_evento: 'experiencia_publica',
-      capacidad_maxima: 20,
-      capacidad_ocupada: 15,
-      disponibles: 5,
-      precio_base: 890,
-      estado: 'activo'
-    },
-    {
-      id: 'fallback-2',
-      nombre_evento: 'Reunión de Equipo',
-      descripcion: 'Reunión semanal del equipo',
-      fecha_evento: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0], // En 3 días
-      hora_inicio: '14:00',
-      hora_fin: '16:00',
-      ubicacion: 'Oficina Principal',
-      area_encargada: 'admin',
-      tipo_evento: 'reunion_interna',
-      capacidad_maxima: 10,
-      capacidad_ocupada: 5,
-      disponibles: 5,
-      estado: 'activo'
+  // Hoy y los próximos 90 días. Ya no hay eventos simulados de respaldo: con el
+  // calendario en manos de guías y cocina, un evento inventado se leería como real.
+  const fetchEventos = useCallback(async () => {
+    if (!token) return
+    try {
+      setLoading(true)
+      setError(null)
+      const hoy = hoyMexico()
+      const params = new URLSearchParams({ desde: hoy, hasta: sumarDias(hoy, DIAS_CALENDARIO) })
+      const response = await fetch(`${API_URL}/api/admin/planeacion/eventos?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, response.status))
+      }
+      const data = (await response.json()) as ListaEventos
+      setEventos(data.items ?? [])
+      setUsingAPI(true)
+    } catch (err) {
+      setEventos([])
+      setUsingAPI(false)
+      setError(
+        `No se pudieron cargar los eventos: ${err instanceof Error ? err.message : 'sin conexión'}`,
+      )
+    } finally {
+      setLoading(false)
     }
-  ]
+  }, [token])
+
+  useEffect(() => {
+    fetchEventos()
+  }, [fetchEventos])
 
   const handleCrearEvento = () => {
     setShowModalCrear(true)
@@ -139,7 +123,7 @@ export default function CalendarioPage() {
 
   const handleVerEvento = (evento: EventoCalendario) => {
     const fechaFormateada = formatFechaMexico(evento.fecha_evento)
-    alert(`👁️ Visualizando evento:\n${evento.nombre_evento}\nFecha: ${fechaFormateada} ${evento.hora_inicio}\nParticipantes: ${evento.capacidad_ocupada}/${evento.capacidad_maxima}\nEstado: ${evento.estado}\nFuente: ${usingAPI ? 'API real' : 'Datos simulados'}\n\n✅ Evento ${evento.estado}`)
+    alert(`👁️ Visualizando evento:\n${evento.nombre_evento}\nFecha: ${fechaFormateada} ${horaCorta(evento.hora_inicio)}\nParticipantes: ${textoParticipantes(evento)}\nEstado: ${evento.estado}\n\n✅ Evento ${evento.estado}`)
   }
 
   const handleEditarEvento = (evento: EventoCalendario) => {
@@ -155,11 +139,15 @@ export default function CalendarioPage() {
             Calendario de Eventos
             {/* El caso normal —datos de verdad— no necesita anunciarse: solo se
                 avisa cuando lo que se ve NO es real, y en castellano. */}
-            {!usingAPI && <span className="ml-2 text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Datos de ejemplo</span>}
           </h1>
           <p className="text-gray-600 mt-1">Programa y gestiona eventos y actividades</p>
           {error && (
-            <p className="text-orange-600 text-sm mt-1">⚠️ {error}</p>
+            <p className="text-orange-600 text-sm mt-1" role="alert">
+              ⚠️ {error}{' '}
+              <button type="button" onClick={fetchEventos} className="underline hover:no-underline">
+                Reintentar
+              </button>
+            </p>
           )}
         </div>
         <button 
@@ -192,17 +180,17 @@ export default function CalendarioPage() {
             ) : eventos.length > 0 ? (
               <div className="space-y-4">
                 {eventos.slice(0, 5).map((evento, index) => {
-                  const fechaEvento = new Date(evento.fecha_evento)
-                  const esHoy = fechaEvento.toDateString() === new Date().toDateString()
-                  const esMañana = fechaEvento.toDateString() === new Date(Date.now() + 86400000).toDateString()
+                  // fecha_evento es YYYY-MM-DD: se compara como texto (new Date() la corre un día)
+                  const hoy = hoyMexico()
+                  const esHoy = evento.fecha_evento === hoy
+                  const esMañana = evento.fecha_evento === sumarDias(hoy, 1)
                   
-                  let fechaTexto = formatFechaMexico(fechaEvento)
+                  let fechaTexto = formatFechaMexico(evento.fecha_evento)
                   if (esHoy) fechaTexto = 'Hoy'
                   else if (esMañana) fechaTexto = 'Mañana'
                   
-                  const colorBorde = evento.area_encargada === 'experiencias' ? 'green' : 
-                                   evento.area_encargada === 'catering' ? 'blue' : 
-                                   evento.area_encargada === 'admin' ? 'purple' : 'gray'
+                  const colorBorde = evento.tipo === 'publica' ? 'green' : 
+                                   evento.tipo === 'interno' ? 'purple' : 'gray'
                   
                   return (
                     <div key={evento.id} className={`flex items-center justify-between p-4 bg-${colorBorde}-50 border border-${colorBorde}-200 rounded-lg`}>
@@ -213,10 +201,10 @@ export default function CalendarioPage() {
                         <div>
                           <h4 className="font-semibold text-gray-900">{evento.nombre_evento}</h4>
                           <p className="text-sm text-gray-600">
-                            {fechaTexto}, {evento.hora_inicio} - {evento.ubicacion || 'Ubicación TBD'}
+                            {fechaTexto}, {horaCorta(evento.hora_inicio)} - {evento.chinampa || 'Chinampa sin asignar'}
                           </p>
                           <p className={`text-xs text-${colorBorde}-600`}>
-                            {evento.capacidad_ocupada}/{evento.capacidad_maxima} participantes • {evento.area_encargada}
+                            {textoParticipantes(evento)} • {textoTipo(evento)}
                           </p>
                         </div>
                       </div>
@@ -254,36 +242,27 @@ export default function CalendarioPage() {
             
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Eventos este mes</span>
+                <span className="text-sm text-gray-600">Eventos (próximos {DIAS_CALENDARIO} días)</span>
                 <span className="font-semibold text-gray-900">
-                  {usingAPI ? eventos.length : 12}
+                  {eventos.length}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Participantes total</span>
                 <span className="font-semibold text-gray-900">
-                  {usingAPI ? 
-                    eventos.reduce((sum, e) => sum + (e.capacidad_ocupada || 0), 0) : 
-                    284
-                  }
+                  {eventos.reduce((sum, e) => sum + participantes(e), 0)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Eventos confirmados</span>
                 <span className="font-semibold text-green-600">
-                  {usingAPI ? 
-                    eventos.filter(e => e.estado === 'activo').length : 
-                    9
-                  }
+                  {eventos.filter(e => e.estado === 'activo').length}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">En planificación</span>
                 <span className="font-semibold text-yellow-600">
-                  {usingAPI ? 
-                    eventos.filter(e => e.estado === 'borrador').length : 
-                    3
-                  }
+                  {eventos.filter(e => e.estado === 'borrador').length}
                 </span>
               </div>
             </div>
@@ -294,30 +273,21 @@ export default function CalendarioPage() {
               </h4>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">🌱 Experiencias</span>
+                  <span className="text-sm text-gray-600">🌱 Fechas públicas</span>
                   <span className="text-sm font-medium">
-                    {usingAPI ? 
-                      eventos.filter(e => e.area_encargada === 'experiencias').length : 
-                      5
-                    }
+                    {eventos.filter(e => e.tipo === 'publica').length}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">👥 Reuniones</span>
+                  <span className="text-sm text-gray-600">👥 Internos</span>
                   <span className="text-sm font-medium">
-                    {usingAPI ? 
-                      eventos.filter(e => e.area_encargada === 'admin').length : 
-                      4
-                    }
+                    {eventos.filter(e => e.tipo === 'interno').length}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">🍽️ Catering</span>
+                  <span className="text-sm text-gray-600">📌 Otros</span>
                   <span className="text-sm font-medium">
-                    {usingAPI ? 
-                      eventos.filter(e => e.area_encargada === 'catering').length : 
-                      3
-                    }
+                    {eventos.filter(e => e.tipo === 'otro').length}
                   </span>
                 </div>
               </div>

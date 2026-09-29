@@ -16,6 +16,9 @@ import { Bell, Search, LogOut, ChevronDown } from 'lucide-react'
 const TITLES: Record<string, [string, string]> = {
   '/admin': ['Dashboard', 'Inicio'],
   '/admin/reservas': ['Reservas Privadas', 'Reservas / Privadas'],
+  '/admin/catalogos': ['Catálogos de reservas', 'Reservas / Catálogos'],
+  '/admin/eventos': ['Eventos y fechas públicas', 'Reservas / Eventos'],
+  '/admin/planeacion': ['Planeación semanal', 'Reservas / Planeación'],
   '/admin/leads': ['Bandeja de Leads', 'Reservas / Leads'],
   '/admin/catering': ['Catering', 'Reservas / Catering'],
   '/admin/mi-dia': ['Mi dia', 'Principal / Mi dia'],

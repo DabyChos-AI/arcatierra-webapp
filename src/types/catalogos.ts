@@ -22,6 +22,8 @@ export interface Personal {
   telefono: string | null
   es_vendedor: boolean
   es_guia: boolean
+  // PS1 (30-sep): guía externo (el Sheet los marca «G.E»)
+  es_externo: boolean
   puesto: string | null
   idiomas: string[]
   notas_internas: string | null

@@ -7,6 +7,7 @@ import {
   CalendarClock,
   CheckCircle2,
   CreditCard,
+  Gift,
   Info,
   Loader2,
   Plus,
@@ -14,6 +15,9 @@ import {
   X,
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { formatFechaMexico } from '@/lib/dates'
+import type { ItemCatalogo, ListaCatalogo, TipoCatalogo } from '@/types/planeacion'
+import { extraerMensajeError } from './errores'
 import {
   formatMXN,
   calcularCotizacion,
@@ -79,7 +83,27 @@ interface FormDatos {
   notasInternas: string
   notasAlergias: string
   notasCliente: string
+  // PS1 (planeación semanal)
+  contacto: string
+  fuenteId: string
+  cocinaId: string
+  // De los invitados, cuántos son niños (pagan y cuentan; el precio no cambia)
+  ninos: number
+  // Aparte de los invitados: no se cobra ni suma platos/sillas
+  staff: number
+  codigoPromocional: string
+  cortesia: boolean
 }
+
+// Catálogos editables de /admin/catalogos (solo los activos se ofrecen).
+// null = todavía no carga o falló: no se puede decir que lo guardado esté archivado.
+interface CatalogosReserva {
+  fuentes: ItemCatalogo[] | null
+  chinampas: ItemCatalogo[] | null
+  cocinas: ItemCatalogo[] | null
+}
+
+const CATALOGOS_VACIOS: CatalogosReserva = { fuentes: null, chinampas: null, cocinas: null }
 
 interface ToastState {
   msg: string
@@ -110,6 +134,8 @@ export default function ModalDetalleReserva({
   const [vendedoras, setVendedoras] = useState<Personal[]>([])
   const [guiasDisponibles, setGuiasDisponibles] = useState<Personal[]>([])
   const [addonsCat, setAddonsCat] = useState<ExperienciaCatalogo[]>([])
+  const [catalogos, setCatalogos] = useState<CatalogosReserva>(CATALOGOS_VACIOS)
+  const [catalogosError, setCatalogosError] = useState<string | null>(null)
 
   // Sub-modales
   const [showLinkMP, setShowLinkMP] = useState(false)
@@ -201,10 +227,46 @@ export default function ModalDetalleReserva({
     }
   }, [token])
 
+  // PS1: fuentes, chinampas y cocinas (solo activos). Si uno falla, los selects
+  // siguen mostrando el valor guardado y se avisa arriba del formulario.
+  const fetchCatalogosReserva = useCallback(async () => {
+    if (!token) return
+    const tipos: TipoCatalogo[] = ['fuentes', 'chinampas', 'cocinas']
+    const resultados = await Promise.all(
+      tipos.map(async (tipo) => {
+        try {
+          const res = await fetch(
+            `${API_URL}/api/admin/catalogos/${tipo}?incluir_inactivos=false`,
+            { headers: { Authorization: `Bearer ${token}` } },
+          )
+          if (!res.ok) {
+            const payload = await res.json().catch(() => null)
+            return { tipo, items: null, error: extraerMensajeError(payload, res.status) }
+          }
+          const data = (await res.json()) as ListaCatalogo
+          return { tipo, items: data.items ?? [], error: null }
+        } catch {
+          return { tipo, items: null, error: 'sin conexión' }
+        }
+      }),
+    )
+    const nuevos: CatalogosReserva = { ...CATALOGOS_VACIOS }
+    const fallidos: string[] = []
+    for (const r of resultados) {
+      if (r.items) nuevos[r.tipo] = r.items
+      else fallidos.push(`${r.tipo} (${r.error})`)
+    }
+    setCatalogos(nuevos)
+    setCatalogosError(
+      fallidos.length > 0 ? `No se pudo cargar el catálogo de ${fallidos.join(', ')}.` : null,
+    )
+  }, [token])
+
   useEffect(() => {
     fetchReserva()
     fetchCatalogos()
-  }, [fetchReserva, fetchCatalogos])
+    fetchCatalogosReserva()
+  }, [fetchReserva, fetchCatalogos, fetchCatalogosReserva])
 
   // CRITICO bug v9 fix: cuando carga reserva, sincronizar form y selectedGuias
   useEffect(() => {
@@ -222,6 +284,13 @@ export default function ModalDetalleReserva({
       notasInternas: reserva.notas_internas ?? '',
       notasAlergias: reserva.notas_alergias ?? '',
       notasCliente: reserva.notas_cliente ?? '',
+      contacto: reserva.contacto ?? '',
+      fuenteId: reserva.fuente_id ?? '',
+      cocinaId: reserva.cocina_id ?? '',
+      ninos: reserva.ninos ?? 0,
+      staff: reserva.staff ?? 0,
+      codigoPromocional: reserva.codigo_promocional ?? '',
+      cortesia: reserva.cortesia === true,
     })
     setSelectedGuias(
       reserva.guias?.map((g) => g.personal_id ?? g.id ?? '').filter(Boolean) ?? [],
@@ -254,6 +323,11 @@ export default function ModalDetalleReserva({
   // === Handlers ===
   async function saveDatos() {
     if (!token || !form || !reserva) return
+    if (form.ninos > form.invMin) {
+      showToast('Los niños no pueden ser más que los invitados', 'error')
+      return
+    }
+    const cambiaCortesia = form.cortesia !== (reserva.cortesia === true)
     setSavingDatos(true)
     try {
       const res = await fetch(`${API_URL}/api/admin/reservas/${reserva.id}`, {
@@ -268,21 +342,41 @@ export default function ModalDetalleReserva({
           hora_fin: form.horaFin || undefined,
           numero_invitados_min: form.invMin,
           numero_invitados_max: form.invMax || undefined,
-          chinampa_asignada: form.chinampa || undefined,
+          // «Ninguna» limpia la chinampa (null explícito, contrato Ola 2 §1.4)
+          chinampa_asignada: form.chinampa || null,
           idioma: form.idioma,
           vendedor_id: form.vendedorId || undefined,
           nombre_cliente: form.nombreCliente.trim() || undefined,
           notas_internas: form.notasInternas,
           notas_alergias: form.notasAlergias,
           notas_cliente: form.notasCliente,
+          // PS1: siempre presentes; null limpia
+          ninos: form.ninos,
+          staff: form.staff,
+          cortesia: form.cortesia,
+          codigo_promocional: form.codigoPromocional.trim() || null,
+          contacto: form.contacto.trim() || null,
+          fuente_id: form.fuenteId || null,
+          cocina_id: form.cocinaId || null,
         }),
       })
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.detail || `Error ${res.status}`)
+        const payload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, res.status))
       }
-      showToast('Cambios guardados', 'success')
-      await fetchReserva(true)
+      showToast(
+        cambiaCortesia
+          ? form.cortesia
+            ? 'Cambios guardados: la reserva es cortesía (no se cobra)'
+            : 'Cambios guardados: la reserva ya no es cortesía (montos recalculados)'
+          : 'Cambios guardados',
+        'success',
+      )
+      // El PATCH responde el detalle completo (con montos recalculados si cambió
+      // la cortesía): refresco silencioso sin vaciar el estado.
+      const data = (await res.json().catch(() => null)) as Reserva | null
+      if (data && data.id === reserva.id && data.booking_id) setReserva(data)
+      else await fetchReserva(true)
       onUpdated()
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Error al guardar', 'error')
@@ -307,8 +401,8 @@ export default function ModalDetalleReserva({
         },
       )
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.detail || `Error ${res.status}`)
+        const payload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, res.status))
       }
       showToast('Guias actualizados', 'success')
       await fetchReserva(true)
@@ -338,8 +432,8 @@ export default function ModalDetalleReserva({
         },
       )
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.detail || `Error ${res.status}`)
+        const payload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, res.status))
       }
       setNuevoAddonId('')
       setNuevoAddonCant(1)
@@ -363,8 +457,8 @@ export default function ModalDetalleReserva({
         },
       )
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.detail || `Error ${res.status}`)
+        const payload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, res.status))
       }
       showToast('Add-on eliminado', 'success')
       await fetchReserva(true)
@@ -408,8 +502,8 @@ export default function ModalDetalleReserva({
         },
       )
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.detail || `Error ${res.status}`)
+        const payload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, res.status))
       }
       setNuevoInvitado({ nombre: '', edad: null, idioma: 'es', alergias: '' })
       showToast('Invitado agregado', 'success')
@@ -454,8 +548,8 @@ export default function ModalDetalleReserva({
         },
       )
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.detail || `Error ${res.status}`)
+        const payload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, res.status))
       }
       await fetchReserva(true)
       onUpdated()
@@ -478,10 +572,13 @@ export default function ModalDetalleReserva({
         body: JSON.stringify({ numero_invitados_min: nuevoInvitados }),
       })
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.detail || `Error ${res.status}`)
+        const payload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, res.status))
       }
-      showToast('Cotización actualizada', 'success')
+      showToast(
+        reserva.cortesia ? 'Invitados actualizados (cortesía: total $0)' : 'Cotización actualizada',
+        'success',
+      )
       await fetchReserva(true)
       onUpdated()
     } catch (err) {
@@ -509,8 +606,8 @@ export default function ModalDetalleReserva({
         }),
       })
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.detail || `Error ${res.status}`)
+        const payload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, res.status))
       }
       showToast('SAP actualizado', 'success')
       await fetchReserva(true)
@@ -548,8 +645,8 @@ export default function ModalDetalleReserva({
         },
       )
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.detail || `Error ${res.status}`)
+        const payload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, res.status))
       }
       showToast('Reserva cancelada', 'success')
       onUpdated()
@@ -608,9 +705,12 @@ export default function ModalDetalleReserva({
               <BadgeEstadoPago estado={reserva.estado_pago} />
             </div>
             <p className="text-xs text-verde-suave mt-1">
-              {reserva.experiencia_nombre} · {reserva.fecha_experiencia} ·{' '}
+              {reserva.experiencia_nombre} · {formatFechaMexico(reserva.fecha_experiencia)} ·{' '}
               {reserva.hora_inicio?.slice(0, 5)} ·{' '}
               {reserva.numero_invitados_min} invitados
+              {(reserva.ninos ?? 0) > 0 && ` (${reserva.ninos} ${reserva.ninos === 1 ? 'niño' : 'niños'})`}
+              {(reserva.staff ?? 0) > 0 && ` · ${reserva.staff} staff`}
+              {reserva.codigo_promocional && ` · Código ${reserva.codigo_promocional}`}
             </p>
           </div>
           <button
@@ -671,6 +771,8 @@ export default function ModalDetalleReserva({
               selectedGuias={selectedGuias}
               setSelectedGuias={setSelectedGuias}
               guiasPendientes={guiasPendientes}
+              catalogos={catalogos}
+              catalogosError={catalogosError}
               saveDatos={saveDatos}
               saveGuias={saveGuias}
               savingDatos={savingDatos}
@@ -705,6 +807,7 @@ export default function ModalDetalleReserva({
               reserva={reserva}
               totalPagado={totalPagado}
               saldoPendiente={saldoPendiente}
+              cortesia={reserva.cortesia === true}
               onAbrirPagoManual={() => setShowPagoManual(true)}
               onAbrirLinkMP={() => setShowLinkMP(true)}
             />
@@ -739,7 +842,7 @@ export default function ModalDetalleReserva({
         </footer>
       </div>
 
-      {showLinkMP && (
+      {showLinkMP && !reserva.cortesia && (
         <ModalLinkMP
           reservaId={reserva.id}
           bookingId={reserva.booking_id}
@@ -754,7 +857,7 @@ export default function ModalDetalleReserva({
           onClose={() => setShowLinkMP(false)}
         />
       )}
-      {showPagoManual && (
+      {showPagoManual && !reserva.cortesia && (
         <ModalPagoManual
           reservaId={reserva.id}
           bookingId={reserva.booking_id}
@@ -797,6 +900,8 @@ function TabDatos({
   selectedGuias,
   setSelectedGuias,
   guiasPendientes,
+  catalogos,
+  catalogosError,
   saveDatos,
   saveGuias,
   savingDatos,
@@ -810,6 +915,8 @@ function TabDatos({
   selectedGuias: string[]
   setSelectedGuias: React.Dispatch<React.SetStateAction<string[]>>
   guiasPendientes: string[]
+  catalogos: CatalogosReserva
+  catalogosError: string | null
   saveDatos: () => Promise<void>
   saveGuias: () => Promise<void>
   savingDatos: boolean
@@ -818,6 +925,45 @@ function TabDatos({
   const updateForm = <K extends keyof FormDatos>(field: K, value: FormDatos[K]) => {
     setForm((prev) => (prev ? { ...prev, [field]: value } : prev))
   }
+
+  // Lo guardado se muestra aunque ya no esté en el catálogo activo (chinampa «Otro»
+  // de reservas viejas, una fuente o cocina archivada): si no, el select lo borraría.
+  // La etiqueta "(archivada)" solo sale si el catálogo sí cargó y el valor no está.
+  const fuentes = catalogos.fuentes ?? []
+  const chinampas = catalogos.chinampas ?? []
+  const cocinas = catalogos.cocinas ?? []
+  const fuentesCanal = fuentes.filter((f) => f.tipo === 'canal')
+  const fuentesPersona = fuentes.filter((f) => f.tipo === 'persona')
+  const fuenteFueraDeCatalogo =
+    reserva.fuente_id && !fuentes.some((f) => f.id === reserva.fuente_id)
+      ? {
+          id: reserva.fuente_id,
+          nombre: `${reserva.fuente_nombre ?? 'Fuente guardada'}${catalogos.fuentes ? ' (archivada)' : ''}`,
+        }
+      : null
+  const cocinasCocina = cocinas.filter((c) => c.tipo !== 'chef_invitado')
+  const cocinasChef = cocinas.filter((c) => c.tipo === 'chef_invitado')
+  const cocinaFueraDeCatalogo =
+    reserva.cocina_id && !cocinas.some((c) => c.id === reserva.cocina_id)
+      ? {
+          id: reserva.cocina_id,
+          nombre: `${reserva.cocina_nombre ?? 'Cocina guardada'}${catalogos.cocinas ? ' (archivada)' : ''}`,
+        }
+      : null
+  const chinampaGuardada = reserva.chinampa_asignada ?? ''
+  const chinampaFueraDeCatalogo =
+    chinampaGuardada && !chinampas.some((c) => c.nombre === chinampaGuardada)
+      ? chinampaGuardada
+      : null
+
+  const ninosExcede = form.ninos > form.invMin
+  // Misma regla que el backend: con algo cobrado no puede pasar a cortesía
+  const tienePagosAprobados =
+    Number(reserva.monto_pagado_acumulado) > 0 ||
+    (reserva.pagos ?? []).some((p) => p.mp_status === 'approved')
+
+  const inputClass =
+    'w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota'
 
   return (
     <div className="space-y-4">
@@ -828,6 +974,16 @@ function TabDatos({
           email de actualizacion al cliente al guardar.
         </p>
       </div>
+
+      {catalogosError && (
+        <div
+          role="status"
+          className="bg-amarillo-bg border border-amarillo/30 rounded-lg p-3 text-sm text-verde flex gap-2"
+        >
+          <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5 text-amarillo" aria-hidden="true" />
+          <p>{catalogosError} Se muestra lo guardado en la reserva.</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Cliente" htmlFor="d-nombre-cliente">
@@ -844,7 +1000,61 @@ function TabDatos({
         <ReadOnly label="Telefono" value={reserva.cliente_telefono ?? reserva.usuario_telefono ?? '—'} />
         <ReadOnly label="Reseller" value={reserva.reseller_nombre ?? '✕ Venta directa'} />
         <ReadOnly label="Experiencia" value={reserva.experiencia_nombre ?? '—'} />
-        <ReadOnly label="Total" value={formatMXN(Number(reserva.monto_total))} />
+        <ReadOnly
+          label="Total"
+          value={
+            reserva.cortesia
+              ? `${formatMXN(Number(reserva.monto_total))} · Cortesía`
+              : formatMXN(Number(reserva.monto_total))
+          }
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Contacto" htmlFor="d-contacto">
+          <input
+            id="d-contacto"
+            type="text"
+            value={form.contacto}
+            onChange={(e) => updateForm('contacto', e.target.value)}
+            placeholder="Quién coordina (nombre, teléfono, correo)"
+            maxLength={200}
+            data-testid="detalle-contacto"
+            className={inputClass}
+          />
+        </Field>
+        <Field label="Fuente" htmlFor="d-fuente">
+          <select
+            id="d-fuente"
+            value={form.fuenteId}
+            onChange={(e) => updateForm('fuenteId', e.target.value)}
+            data-testid="detalle-fuente"
+            className={inputClass}
+          >
+            <option value="">— Sin fuente —</option>
+            {fuenteFueraDeCatalogo && (
+              <option value={fuenteFueraDeCatalogo.id}>{fuenteFueraDeCatalogo.nombre}</option>
+            )}
+            {fuentesCanal.length > 0 && (
+              <optgroup label="Canal">
+                {fuentesCanal.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.nombre}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {fuentesPersona.length > 0 && (
+              <optgroup label="Persona">
+                {fuentesPersona.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.nombre}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+          </select>
+        </Field>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
@@ -877,7 +1087,7 @@ function TabDatos({
         </Field>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Field label="Invitados min" htmlFor="d-inv-min">
           <input
             id="d-inv-min"
@@ -898,18 +1108,98 @@ function TabDatos({
             className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
           />
         </Field>
+        <Field label="Niños (de los invitados)" htmlFor="d-ninos">
+          <input
+            id="d-ninos"
+            type="number"
+            min={0}
+            max={form.invMin}
+            value={form.ninos}
+            onChange={(e) => updateForm('ninos', Math.max(0, Math.floor(Number(e.target.value) || 0)))}
+            aria-invalid={ninosExcede}
+            aria-describedby="d-ninos-ayuda"
+            data-testid="detalle-ninos"
+            className={`${inputClass} tabular-nums ${ninosExcede ? 'border-rojo' : ''}`}
+          />
+          <p
+            id="d-ninos-ayuda"
+            className={`text-xs mt-1 ${ninosExcede ? 'text-rojo' : 'text-verde-suave'}`}
+          >
+            {ninosExcede
+              ? `Máximo ${form.invMin} (los invitados)`
+              : 'Pagan y cuentan; el precio no cambia'}
+          </p>
+        </Field>
+        <Field label="Staff" htmlFor="d-staff">
+          <input
+            id="d-staff"
+            type="number"
+            min={0}
+            value={form.staff}
+            onChange={(e) => updateForm('staff', Math.max(0, Math.floor(Number(e.target.value) || 0)))}
+            aria-describedby="d-staff-ayuda"
+            data-testid="detalle-staff"
+            className={`${inputClass} tabular-nums`}
+          />
+          <p id="d-staff-ayuda" className="text-xs mt-1 text-verde-suave">
+            Aparte: no se cobra ni suma platos/sillas
+          </p>
+        </Field>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
         <Field label="Chinampa" htmlFor="d-chinampa">
           <select
             id="d-chinampa"
             value={form.chinampa}
             onChange={(e) => updateForm('chinampa', e.target.value)}
-            className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
+            data-testid="detalle-chinampa"
+            className={inputClass}
           >
-            {['', 'Sol', 'Garza', 'Techumbre', 'Otro'].map((c) => (
-              <option key={c || 'ninguna'} value={c}>
-                {c || 'Ninguna'}
+            <option value="">Ninguna</option>
+            {chinampaFueraDeCatalogo && (
+              <option value={chinampaFueraDeCatalogo}>
+                {chinampaFueraDeCatalogo}
+                {catalogos.chinampas ? ' (fuera del catálogo)' : ''}
+              </option>
+            )}
+            {chinampas.map((c) => (
+              <option key={c.id} value={c.nombre}>
+                {c.nombre}
               </option>
             ))}
+          </select>
+        </Field>
+        <Field label="Cocina / chef" htmlFor="d-cocina">
+          <select
+            id="d-cocina"
+            value={form.cocinaId}
+            onChange={(e) => updateForm('cocinaId', e.target.value)}
+            data-testid="detalle-cocina"
+            className={inputClass}
+          >
+            <option value="">— Sin asignar —</option>
+            {cocinaFueraDeCatalogo && (
+              <option value={cocinaFueraDeCatalogo.id}>{cocinaFueraDeCatalogo.nombre}</option>
+            )}
+            {cocinasCocina.length > 0 && (
+              <optgroup label="Cocina">
+                {cocinasCocina.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nombre}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {cocinasChef.length > 0 && (
+              <optgroup label="Chef invitado">
+                {cocinasChef.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nombre}
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
         </Field>
       </div>
@@ -942,6 +1232,45 @@ function TabDatos({
             ))}
           </select>
         </Field>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 items-start">
+        <Field label="Código promocional" htmlFor="d-codigo">
+          <input
+            id="d-codigo"
+            type="text"
+            value={form.codigoPromocional}
+            onChange={(e) => updateForm('codigoPromocional', e.target.value)}
+            placeholder="Opcional"
+            maxLength={50}
+            data-testid="detalle-codigo"
+            className={inputClass}
+          />
+        </Field>
+        <div className="pt-6">
+          <label
+            htmlFor="d-cortesia"
+            className="flex items-center gap-2 text-sm text-verde cursor-pointer"
+          >
+            <input
+              id="d-cortesia"
+              type="checkbox"
+              checked={form.cortesia}
+              onChange={(e) => updateForm('cortesia', e.target.checked)}
+              data-testid="detalle-cortesia"
+              className="w-4 h-4 text-terracota border-neutro-borde rounded focus:ring-terracota"
+            />
+            <Gift className="h-4 w-4 text-morado" aria-hidden="true" />
+            Cortesía (no se cobra)
+          </label>
+          <p className="text-xs text-verde-suave mt-1">
+            {form.cortesia
+              ? 'Total $0: sin anticipo ni link de pago. Al guardar se recalculan los montos.'
+              : tienePagosAprobados
+                ? 'Tiene pagos registrados: no puede pasar a cortesía.'
+                : 'Al marcarla, el total queda en $0 al guardar.'}
+          </p>
+        </div>
       </div>
 
       <Field label="Notas internas" htmlFor="d-notas-internas">
@@ -977,7 +1306,8 @@ function TabDatos({
       <button
         type="button"
         onClick={saveDatos}
-        disabled={savingDatos}
+        disabled={savingDatos || ninosExcede}
+        data-testid="detalle-guardar-datos"
         className="inline-flex items-center gap-2 bg-terracota hover:bg-terracota-dark text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {savingDatos && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
@@ -1060,6 +1390,15 @@ function TabAddons({
   onDelete: (id: string) => void
 }) {
   const addons = reserva.addons ?? []
+  // Cortesía: la experiencia y los add-ons quedan como valor de referencia y el
+  // total es $0. La fila "Cortesía" cuadra la suma con el total que manda el backend.
+  const ajusteCortesia = reserva.cortesia
+    ? Number(reserva.precio_base) +
+      Number(reserva.monto_addons) +
+      Number(reserva.propina_monto) -
+      Number(reserva.monto_descuento) -
+      Number(reserva.monto_total)
+    : 0
 
   return (
     <div className="space-y-4">
@@ -1153,6 +1492,17 @@ function TabAddons({
                 </td>
                 <td className="px-3 py-2 text-right text-rojo tabular-nums">
                   -{formatMXN(Number(reserva.monto_descuento))}
+                </td>
+                <td />
+              </tr>
+            )}
+            {reserva.cortesia && (
+              <tr>
+                <td colSpan={3} className="px-3 py-2 text-right text-morado">
+                  Cortesía (no se cobra)
+                </td>
+                <td className="px-3 py-2 text-right text-morado tabular-nums">
+                  -{formatMXN(ajusteCortesia)}
                 </td>
                 <td />
               </tr>
@@ -1375,13 +1725,44 @@ function TabManifest({
     propinaPct: Number(reserva.propina_pct),
     descuento: Number(reserva.monto_descuento),
     anticipo: Number(reserva.monto_anticipo),
+    cortesia: reserva.cortesia === true,
   })
   const nuevoTotal = nuevaCotizacion.total
 
   return (
     <div className="space-y-4">
+      {/* Cortesía: no se cotiza (decisión de David, 30-sep). Solo se ajusta el número
+          de invitados, que sí cuenta para la planeación; el total sigue en $0. */}
+      {excedeCotizacion && reserva.cortesia && (
+        <div className="bg-morado-bg border border-morado/30 rounded-lg p-3 space-y-2">
+          <div className="flex items-start gap-2">
+            <Gift className="h-4 w-4 text-morado flex-shrink-0 mt-0.5" aria-hidden="true" />
+            <div className="flex-1">
+              <p className="text-sm text-verde">
+                El manifest tiene {manifestCount} invitados y la reserva dice {cotizados}.
+              </p>
+              <p
+                className="text-xs font-medium text-morado mt-1"
+                data-testid="detalle-cortesia-sin-cotizacion"
+              >
+                Las cortesías no se cotizan.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onActualizarCotizacion(manifestCount)}
+            disabled={savingCotizacion}
+            className="inline-flex items-center gap-1 bg-verde hover:bg-verde-claro text-white px-3 py-1.5 rounded-lg text-sm font-medium disabled:opacity-50"
+          >
+            {savingCotizacion && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
+            Actualizar a {manifestCount} invitados
+          </button>
+        </div>
+      )}
+
       {/* C38: badge + boton manual (NUNCA recalcula automaticamente) */}
-      {excedeCotizacion && (
+      {excedeCotizacion && !reserva.cortesia && (
         <div className="bg-terracota/5 border border-terracota/30 rounded-lg p-3 space-y-2">
           <div className="flex items-start gap-2">
             <AlertTriangle
@@ -1555,21 +1936,60 @@ function TabPagos({
   reserva,
   totalPagado,
   saldoPendiente,
+  cortesia,
   onAbrirPagoManual,
   onAbrirLinkMP,
 }: {
   reserva: Reserva
   totalPagado: number
   saldoPendiente: number
+  cortesia: boolean
   onAbrirPagoManual: () => void
   onAbrirLinkMP: () => void
 }) {
   const pagos = reserva.pagos ?? []
   const total = Number(reserva.monto_total)
   const porcentaje = total > 0 ? Math.min(100, (totalPagado / total) * 100) : 0
+  // Cortesía: lo que valdría (experiencia + add-ons), solo de referencia.
+  const valorCortesia = Number(reserva.precio_base) + Number(reserva.monto_addons)
 
   return (
     <div className="space-y-4">
+      {cortesia && (
+        <div
+          role="status"
+          data-testid="pagos-cortesia"
+          className="bg-morado-bg border border-morado/30 rounded-lg p-3 flex items-start gap-2"
+        >
+          <Gift className="h-5 w-5 text-morado flex-shrink-0 mt-0.5" aria-hidden="true" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-morado">Cortesía: no se cobra</p>
+            <p className="text-xs text-verde-suave mt-0.5">
+              Sin anticipo ni link de pago. Para cobrarla, quita la casilla «Cortesía» en la
+              pestaña Datos.
+            </p>
+            <p
+              className="text-xs font-medium text-morado mt-1"
+              data-testid="detalle-cortesia-sin-cotizacion"
+            >
+              Las cortesías no se cotizan.
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-verde-suave">Valor de la cortesía</p>
+            <p className="text-base font-display font-semibold text-verde tabular-nums">
+              {formatMXN(valorCortesia)}
+            </p>
+            {Number(reserva.monto_addons) > 0 && (
+              <p className="text-xs text-verde-suave tabular-nums">
+                Experiencia {formatMXN(Number(reserva.precio_base))} · Add-ons{' '}
+                {formatMXN(Number(reserva.monto_addons))}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-verde/10 border border-verde/30 rounded-lg p-3">
           <p className="text-xs text-verde-suave">Total pagado</p>
@@ -1591,18 +2011,20 @@ function TabPagos({
         </div>
       </div>
 
-      <div className="bg-white border border-neutro-borde rounded-lg p-3">
-        <div className="flex items-center justify-between text-xs text-verde-suave mb-1">
-          <span>Progreso de pago</span>
-          <span className="tabular-nums">{porcentaje.toFixed(1)}%</span>
+      {!cortesia && (
+        <div className="bg-white border border-neutro-borde rounded-lg p-3">
+          <div className="flex items-center justify-between text-xs text-verde-suave mb-1">
+            <span>Progreso de pago</span>
+            <span className="tabular-nums">{porcentaje.toFixed(1)}%</span>
+          </div>
+          <div className="h-2 rounded-full bg-neutro-light overflow-hidden">
+            <div
+              className="h-full bg-verde rounded-full transition-all"
+              style={{ width: `${porcentaje}%` }}
+            />
+          </div>
         </div>
-        <div className="h-2 rounded-full bg-neutro-light overflow-hidden">
-          <div
-            className="h-full bg-verde rounded-full transition-all"
-            style={{ width: `${porcentaje}%` }}
-          />
-        </div>
-      </div>
+      )}
 
       <div className="bg-white border border-neutro-borde rounded-lg overflow-hidden">
         <table className="w-full text-sm">
@@ -1688,24 +2110,26 @@ function TabPagos({
         </table>
       </div>
 
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={onAbrirPagoManual}
-          className="inline-flex items-center gap-2 bg-verde hover:bg-verde-claro text-white px-4 py-2 rounded-lg text-sm font-medium"
-        >
-          <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-          Pago manual
-        </button>
-        <button
-          type="button"
-          onClick={onAbrirLinkMP}
-          className="inline-flex items-center gap-2 bg-terracota hover:bg-terracota-dark text-white px-4 py-2 rounded-lg text-sm font-medium"
-        >
-          <CreditCard className="h-4 w-4" aria-hidden="true" />
-          Generar link MP
-        </button>
-      </div>
+      {!cortesia && (
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onAbrirPagoManual}
+            className="inline-flex items-center gap-2 bg-verde hover:bg-verde-claro text-white px-4 py-2 rounded-lg text-sm font-medium"
+          >
+            <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+            Pago manual
+          </button>
+          <button
+            type="button"
+            onClick={onAbrirLinkMP}
+            className="inline-flex items-center gap-2 bg-terracota hover:bg-terracota-dark text-white px-4 py-2 rounded-lg text-sm font-medium"
+          >
+            <CreditCard className="h-4 w-4" aria-hidden="true" />
+            Generar link MP
+          </button>
+        </div>
+      )}
     </div>
   )
 }

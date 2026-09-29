@@ -23,6 +23,11 @@ const ESTADO_PAGO_CONFIG: Record<ReservaEstadoPago, { label: string; classes: st
     label: 'Reembolsado',
     classes: 'bg-neutro-borde text-verde-suave',
   },
+  // PS1: estado propio con total $0 (ronda 2 de David)
+  cortesia: {
+    label: 'Cortesía',
+    classes: 'bg-morado-bg text-morado border border-morado/30',
+  },
 }
 
 export default function BadgeEstadoPago({ estado }: BadgeEstadoPagoProps) {
