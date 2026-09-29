@@ -97,7 +97,9 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
           onClose={() => setSidebarOpen(false)}
           permisosActivos={permisosActivos}
         />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-6">
+        {/* PL1 (29-sep): min-w-0 deja que el contenido se encoja; sin él, una tabla ancha
+            (Planeación semanal, 13 columnas) ensanchaba <main> y aplastaba el menú lateral. */}
+        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-6">
           {children}
         </main>
       </div>

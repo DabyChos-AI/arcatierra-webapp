@@ -263,7 +263,7 @@ export default function AdminSidebar({ isOpen, onClose, permisosActivos }: Admin
       {/* Sidebar */}
       <aside
         className={`
-          fixed lg:static top-0 left-0 bottom-0 w-64 bg-white border-r border-neutro-borde z-50
+          fixed lg:static top-0 left-0 bottom-0 w-64 shrink-0 bg-white border-r border-neutro-borde z-50
           transform transition-transform duration-300 lg:transform-none
           ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           overflow-y-auto
