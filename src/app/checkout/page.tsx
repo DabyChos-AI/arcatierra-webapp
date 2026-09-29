@@ -6,6 +6,12 @@ import { useRouter } from 'next/navigation'
 import CheckoutFormSingleStep from '@/components/CheckoutFormSingleStep'
 import DeliveryTypeSelector from '@/components/ui/DeliveryTypeSelector'
 import AddToSubscriptionButton from '@/components/ui/AddToSubscriptionButton'
+
+// SU2 (2026-09-29): oculto hasta que se decida cómo se cobran los extras de una
+// suscripción. El monto de MercadoPago es fijo y nada los cobraba, aunque el botón
+// prometía "Se cobrarán junto con tu canasta". El endpoint ya está arreglado (SU1):
+// para volver a mostrarlo basta con poner `true`. Lo vigila T32 en qa-front.
+const EXTRAS_EN_SUSCRIPCION = false
 import { ShoppingCart, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { calcularCostoEnvio, subtotalProductos as calcSubtotalProductos } from '@/lib/envio'
@@ -88,14 +94,16 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Formulario de checkout */}
           <div className="lg:col-span-2">
-            {/* Opción de agregar a suscripción existente */}
-            <AddToSubscriptionButton 
-              cartItems={cartItems}
-              onSuccess={() => {
-                localStorage.removeItem('arcaTierraCart')
-                setCartItems([])
-              }}
-            />
+            {/* Opción de agregar a suscripción existente (oculta: ver EXTRAS_EN_SUSCRIPCION) */}
+            {EXTRAS_EN_SUSCRIPCION && (
+              <AddToSubscriptionButton 
+                cartItems={cartItems}
+                onSuccess={() => {
+                  localStorage.removeItem('arcaTierraCart')
+                  setCartItems([])
+                }}
+              />
+            )}
 
             {/* Selector de tipo de entrega */}
             <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
