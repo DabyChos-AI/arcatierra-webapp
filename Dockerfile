@@ -16,6 +16,14 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# B10 (2026-09-29): el .env.production ya no entra al build (el modo standalone
+# lo copiaba a la imagen final, con todas las credenciales). Next inlinea las
+# NEXT_PUBLIC_* al compilar, así que aquí van SOLO las públicas, con los mismos
+# valores que tenía el archivo. Las secretas llegan al contenedor por env_file.
+ARG NEXT_PUBLIC_API_URL=https://api.dabychos.com
+ARG NEXT_PUBLIC_SITE_URL=https://arcatierra.dabychos.com
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+
 # Deshabilitar telemetría durante la construcción
 ENV NEXT_TELEMETRY_DISABLED 1
 

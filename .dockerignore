@@ -44,3 +44,11 @@ coverage
 .gitignore
 README.md
 
+
+# B10 (2026-09-29): el modo `standalone` de Next copia los .env* junto a server.js,
+# así que la imagen final llevaba .env.production con todas las credenciales.
+# El contenedor las recibe por `env_file` del compose (0 llaves faltaban) y el
+# código solo lee NEXT_PUBLIC_API_URL al compilar, cuyo valor por defecto en
+# src/lib/api.ts es el mismo. Lo vigila arca_tierra_api/docs/fases/test-imagenes-sin-env.sh.
+.env
+.env.*
