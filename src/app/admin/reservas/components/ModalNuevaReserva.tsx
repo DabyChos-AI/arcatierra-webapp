@@ -87,12 +87,11 @@ function wizardReducer(state: WizardData, action: WizardAction): WizardData {
         precioBase: action.precioBase,
         precioAdicional: action.precioAdicional,
         personasIncluidas: action.personasIncluidas,
-        // Si los invitados seguian en el minimo anterior (o quedan por debajo del
-        // nuevo), siguen al minimo de ESTA experiencia.
+        // Si los invitados seguian en las incluidas de la experiencia anterior (no
+        // se tocaron), siguen a las de ESTA. Si se escribió otro número, se respeta,
+        // aunque sea menor: se registran los invitados reales (29-sep).
         invMin:
-          state.invMin === state.personasIncluidas || state.invMin < action.personasIncluidas
-            ? action.personasIncluidas
-            : state.invMin,
+          state.invMin === state.personasIncluidas ? action.personasIncluidas : state.invMin,
         horaFin: action.horaFinSugerida ?? state.horaFin,
       }
     case 'TOGGLE_ADDON': {
@@ -156,10 +155,13 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
 
   const [wiz, dispatch] = useReducer(wizardReducer, initialWizardData)
 
-  // Bug 10: normalizar el default de invitados al minimo al abrir el wizard
-  // (el backend rechaza menos de las personas incluidas de la experiencia).
+  // Al abrir, los invitados proponen las personas incluidas. Ya no es un mínimo
+  // (29-sep, David): se pueden registrar menos para saber cuántos platos y sillas
+  // preparar; el precio no baja del base.
+  // Al abrir nadie ha escrito nada: el estado inicial trae 1 y se propone el número
+  // de incluidas (así, al elegir la experiencia, sigue a las de ESA experiencia).
   useEffect(() => {
-    if (wiz.invMin < wiz.personasIncluidas) {
+    if (wiz.invMin !== wiz.personasIncluidas) {
       dispatch({ type: 'SET_FIELD', field: 'invMin', value: wiz.personasIncluidas })
     }
     // Solo en el montaje inicial.
@@ -333,7 +335,7 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
           !!wiz.experienciaId &&
           !!wiz.fecha &&
           !!wiz.horaInicio &&
-          wiz.invMin >= wiz.personasIncluidas
+          wiz.invMin >= 1
         )
       case 3:
         return true
@@ -931,23 +933,22 @@ function Paso2Experiencia({
           <input
             id="exp-inv-min"
             type="number"
-            min={wiz.personasIncluidas}
+            min={1}
             value={wiz.invMin}
             onChange={(e) =>
               dispatch({
                 type: 'SET_FIELD',
                 field: 'invMin',
-                value: Math.max(wiz.personasIncluidas, Number(e.target.value)),
+                value: Math.max(1, Number(e.target.value)),
               })
             }
             aria-describedby="exp-inv-min-help"
             className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
           />
-          <p
-            id="exp-inv-min-help"
-            className={`mt-1 text-xs ${wiz.invMin < wiz.personasIncluidas ? 'text-rojo' : 'text-verde-suave'}`}
-          >
-            Mínimo {wiz.personasIncluidas} personas para esta experiencia
+          <p id="exp-inv-min-help" className="mt-1 text-xs text-verde-suave">
+            {wiz.invMin < wiz.personasIncluidas
+              ? `Menos de las ${wiz.personasIncluidas} incluidas: se cobra el precio base completo.`
+              : `El precio base incluye hasta ${wiz.personasIncluidas} personas; cada persona extra se cobra aparte.`}
           </p>
         </div>
         <div>
