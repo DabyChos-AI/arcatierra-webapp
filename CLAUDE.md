@@ -216,15 +216,16 @@ No hay `.env.example`. Archivos: `.env.local` (dev), `.env.production` (prod). N
 **Seguridad:**
 - NUNCA exponer secretos, tokens, passwords o API keys en código
 - NUNCA hardcodear URLs de producción — usar variables de entorno
-- NO modificar `.env.production` sin confirmación explícita
-- NO modificar `docker-compose.yml`, `Dockerfile`, traefik ni configuraciones de infraestructura sin confirmación
-- NO modificar `src/middleware.ts` (auth/protección de rutas) sin confirmación
+- `.env.production`: se puede modificar (p. ej. rotar un secreto) copiando antes el archivo a un respaldo con fecha y sin imprimir valores
+- `docker-compose.yml`, `Dockerfile`, traefik e infraestructura: se pueden modificar con respaldo o commit antes
+- `src/middleware.ts` (auth/protección de rutas): se puede modificar con pruebas de sesión antes y después
 - NO tocar la carpeta `api/` — es legacy. El backend real es `~/vps-stack/arca_tierra_api/`
 
 **Deploy:**
 - Siempre `npm run build` primero para verificar que compila
 - El comando de deploy es siempre con `--no-cache`
-- NO hacer deploy automático — siempre esperar confirmación del usuario
+- Deploy autónomo: `docker compose build --no-cache` primero, verificar la imagen, luego `docker compose up -d`
+- **Borrar cualquier cosa que ya existía** (datos, archivos, contenedores, imágenes, volúmenes, ramas) **requiere confirmación de David**
 - NO hacer `docker compose down` a menos que se solicite explícitamente
 - Después de deploy, verificar con `docker ps --filter name=arcatierra`
 
