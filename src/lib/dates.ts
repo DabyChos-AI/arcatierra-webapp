@@ -74,3 +74,35 @@ export function formatFechaHoraMexico(
     ...opciones,
   })
 }
+
+// ─── «Hoy» de México (TZ1, Fase 3 de PLAN-EXP-SIN-FALLAS, 30-sep-2026) ───────────────
+// UN solo «hoy» para todo el front. Antes había tres copias (eventos/components/fechas.ts,
+// planeacion/components/fechas.ts y ModalPreviewReporte.tsx) y varias pantallas usaban
+// `new Date().toISOString().slice(0, 10)`, que es el día de UTC: de 18:00 a 24:00 en
+// México ya es «mañana». Nada nuevo debe usar `toISOString()` para sacar una fecha de negocio.
+
+/** Hoy en México, como `YYYY-MM-DD` (en-CA imprime ese formato). */
+export function hoyMexico(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+}
+
+/** El mes de hoy en México, como `YYYY-MM`. */
+export function mesMexico(): string {
+  return hoyMexico().slice(0, 7)
+}
+
+/**
+ * `YYYY-MM-DD` + `dias` (negativo resta). La cuenta se hace en UTC con los componentes de la
+ * fecha: ni la zona del navegador ni el horario de verano corren el día.
+ */
+export function sumarDias(iso: string, dias: number): string {
+  const [anio, mes, dia] = iso.split('-').map(Number)
+  const fecha = new Date(Date.UTC(anio, mes - 1, dia))
+  fecha.setUTCDate(fecha.getUTCDate() + dias)
+  return fecha.toISOString().slice(0, 10)
+}

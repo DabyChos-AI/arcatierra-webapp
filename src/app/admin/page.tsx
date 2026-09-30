@@ -12,7 +12,7 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
-import { formatFechaMexico, formatFechaHoraMexico } from '@/lib/dates'
+import { formatFechaMexico, formatFechaHoraMexico, mesMexico } from '@/lib/dates'
 
 import LiveClock from './components/dashboard/LiveClock'
 import KpiCard from './components/dashboard/KpiCard'
@@ -112,7 +112,7 @@ export default function AdminDashboardEjecutivo() {
       if (!token) return
       const headers = { Authorization: `Bearer ${token}` }
       const base = `${API_URL}/api/admin/dashboard`
-      const mes = new Date().toISOString().slice(0, 7)
+      const mes = mesMexico() // TZ1: YYYY-MM de México (UTC ya era el mes siguiente el último día desde las 18:00)
 
       const getJson = async <T,>(path: string): Promise<T> => {
         const res = await fetch(`${base}${path}`, { headers, signal })
@@ -187,7 +187,7 @@ export default function AdminDashboardEjecutivo() {
     : ''
   const manifestCount = kpis?.manifest_manana.reservas_count ?? 0
   const leadsCount = kpis?.leads_sin_procesar.value ?? 0
-  const mesActual = new Date().toISOString().slice(0, 7)
+  const mesActual = mesMexico()
 
   // ─── Error total (primer load, todo falló) ──────────────────────────
 

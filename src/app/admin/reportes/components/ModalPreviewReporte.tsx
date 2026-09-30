@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { Download, FileSpreadsheet, FileText, Loader2, RefreshCw, X } from 'lucide-react'
+import { FileSpreadsheet, FileText, Loader2, RefreshCw, X } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+// TZ1: el único «hoy» del front (la copia local que vivía aquí se borró en la Fase 3).
+import { hoyMexico } from '@/lib/dates'
 import { ErrorPanel, pedirAlPanel, volverAlLoginDelPanel } from '@/lib/fetchPanel'
 import type {
   FiltrosGlobales,
@@ -40,16 +42,6 @@ const META_ETIQUETAS: Record<string, string> = {
   experiencias_con_reservas: 'Experiencias',
   vendedoras: 'Vendedoras',
   aprobados: 'Aprobados',
-}
-
-/** Hoy en México como YYYY-MM-DD (en-CA imprime ese formato). */
-function hoyMexico(): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Mexico_City',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date())
 }
 
 export default function ModalPreviewReporte({

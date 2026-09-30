@@ -1,17 +1,24 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { 
-  Globe, Lock, Users, DollarSign, Eye, EyeOff, 
+import { useState, useEffect, useCallback, useRef } from 'react'
+import {
+  Globe, Lock, Users, DollarSign, Eye, EyeOff,
   Plus, Search, Edit2, Trash2, ToggleLeft, ToggleRight,
   Loader2, Calendar, MapPin, Clock, ChevronLeft, ChevronRight,
-  RefreshCw, AlertCircle, CheckCircle, X
+  RefreshCw, AlertCircle, CheckCircle, X, Pencil
 } from 'lucide-react'
 import { ImageUploader, GalleryUploader } from '@/components/admin/ImageUploader'
 import MapPicker from '@/components/admin/MapPicker'
 import { formatFechaMexico } from '@/lib/dates'
 import { CAPACIDAD_SIN_TOPE } from '@/types/catalogos'
+import {
+  esRequiereConfirmacion,
+  type EditarFechaPayload,
+  type EditarFechaResponse,
+  type EventoExperiencia,
+} from '@/types/eventos-experiencia'
 import { hoyMexico, horaCorta, horario, sinTope } from '@/app/admin/eventos/components/fechas'
+import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
 import DisplayCapacidad from './DisplayCapacidad'
 import DisplayDuracion from './DisplayDuracion'
 
@@ -52,21 +59,104 @@ interface Experiencia {
   fecha_actualizacion: string
 }
 
-interface Evento {
-  id: string
-  nombre_evento: string
-  fecha_evento: string
-  // El back manda null si la fecha no tiene hora (experiencias_admin.py, listado de eventos)
-  hora_inicio: string | null
-  hora_fin: string | null
-  // null = sin cupo definido (propuesta de backend-1, pendiente del líder); hoy llega 0.
-  // sinTope() trata null y 999 como «sin tope» y entonces no se lee lugares_disponibles.
-  capacidad_maxima: number | null
-  capacidad_ocupada: number
-  lugares_disponibles: number | null
-  precio_base: number | null
-  estado: string
-  notas_internas: string | null
+// ─── Editar una fecha (EV3 + NV1, Fase 3 de PLAN-EXP-SIN-FALLAS) ──────────────────────────
+// Contrato: EXP-FASE3-CONTRATO.md §C1/§F1. Los tipos son de @/types/eventos-experiencia.
+
+/** D6: lo que se avisa ANTES de publicar una fecha (no hay compra en línea todavía: D1 = No). */
+const AVISO_PUBLICAR =
+  'Al publicarla, la fecha se ve en la web. Mientras no exista la compra en línea el pago en la web falla y la venta sigue por WhatsApp. ¿Publicarla?'
+
+/** El formulario del modal Editar fecha: todo texto, como lo dan los inputs. */
+interface FormEditarFecha {
+  fecha: string
+  horaInicio: string
+  horaFin: string
+  /** Vacío = sin tope (se manda CAPACIDAD_SIN_TOPE). */
+  cupo: string
+  /** Vacío = el precio de la experiencia (se manda null). */
+  precio: string
+  notas: string
+  motivo: string
+}
+
+function formDeEvento(ev: EventoExperiencia): FormEditarFecha {
+  return {
+    fecha: ev.fecha_evento,
+    horaInicio: horaCorta(ev.hora_inicio),
+    horaFin: horaCorta(ev.hora_fin),
+    cupo: sinTope(ev.capacidad_maxima) ? '' : String(ev.capacidad_maxima),
+    precio: ev.precio_base == null ? '' : String(ev.precio_base),
+    notas: ev.notas_internas ?? '',
+    motivo: '',
+  }
+}
+
+/** Cambió el día o la hora de inicio: con lugares vendidos pide confirmación y motivo (D7). */
+function mueveLaFecha(ev: EventoExperiencia, f: FormEditarFecha): boolean {
+  return f.fecha !== ev.fecha_evento || f.horaInicio !== horaCorta(ev.hora_inicio)
+}
+
+/** Arma el PATCH con SOLO lo que cambió respecto a lo guardado, o el error de captura. */
+function payloadEditarFecha(
+  ev: EventoExperiencia,
+  f: FormEditarFecha,
+): { payload: EditarFechaPayload } | { error: string } {
+  if (!f.fecha || !f.horaInicio) return { error: 'Elige la fecha y la hora de inicio.' }
+  const payload: EditarFechaPayload = {}
+  if (f.fecha !== ev.fecha_evento) payload.fecha_evento = f.fecha
+  if (f.horaInicio !== horaCorta(ev.hora_inicio)) payload.hora_inicio = f.horaInicio
+  // Si solo cambia el inicio, el fin NO se manda: el back lo mueve con la misma duración
+  if (f.horaFin !== horaCorta(ev.hora_fin)) payload.hora_fin = f.horaFin || null
+
+  const cupoTexto = f.cupo.trim()
+  let cupo = CAPACIDAD_SIN_TOPE
+  if (cupoTexto !== '') {
+    const n = Number(cupoTexto)
+    if (!Number.isInteger(n) || n < 1) {
+      return { error: 'El cupo debe ser un número entero mayor que 0 (vacío = sin tope).' }
+    }
+    if (n > CAPACIDAD_SIN_TOPE) {
+      return { error: 'Ese cupo es demasiado grande: deja el campo vacío para no poner tope.' }
+    }
+    cupo = n
+  }
+  // Una fecha sin cupo definido (null) guardada con el campo vacío queda sin tope
+  if (cupo !== ev.capacidad_maxima) payload.capacidad_maxima = cupo
+
+  const precioTexto = f.precio.trim()
+  let precio: number | null = null
+  if (precioTexto !== '') {
+    const p = Number(precioTexto)
+    if (!Number.isFinite(p) || p < 0) return { error: 'El precio no puede ser negativo.' }
+    precio = p
+  }
+  if (precio !== ev.precio_base) payload.precio_base = precio
+
+  if (f.notas !== (ev.notas_internas ?? '')) payload.notas_internas = f.notas.trim() ? f.notas : null
+
+  const motivo = f.motivo.trim()
+  if (motivo && mueveLaFecha(ev, f) && ev.capacidad_ocupada > 0) payload.motivo = motivo
+  return { payload }
+}
+
+type RespuestaPatchFecha =
+  | { ok: true; data: EditarFechaResponse }
+  | { ok: false; status: number; detail: unknown; mensaje: string }
+
+/** PATCH por el proxy del panel (inyecta el JWT). Lanza solo si no hubo respuesta (red). */
+async function patchFecha(eventoId: string, payload: EditarFechaPayload): Promise<RespuestaPatchFecha> {
+  const res = await fetch(`/api/experiencias-admin/eventos/${encodeURIComponent(eventoId)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  const data: unknown = await res.json().catch(() => null)
+  if (res.ok) return { ok: true, data: data as EditarFechaResponse }
+  const detail =
+    typeof data === 'object' && data !== null && 'detail' in data
+      ? (data as { detail: unknown }).detail
+      : null
+  return { ok: false, status: res.status, detail, mensaje: extraerMensajeError(data, res.status) }
 }
 
 interface Notificacion {
@@ -102,10 +192,19 @@ export default function ExperienciasAdminPage({
   const [showModal, setShowModal] = useState<'crear' | 'editar' | 'eliminar' | null>(null)
   const [selectedExperiencia, setSelectedExperiencia] = useState<Experiencia | null>(null)
   const [activeTab, setActiveTab] = useState<'info' | 'eventos'>('info')
-  const [eventos, setEventos] = useState<Evento[]>([])
+  const [eventos, setEventos] = useState<EventoExperiencia[]>([])
   const [loadingEventos, setLoadingEventos] = useState(false)
-  
+
+  // Modal «Editar fecha» (EV3)
+  const [editandoFecha, setEditandoFecha] = useState<EventoExperiencia | null>(null)
+  const [formFecha, setFormFecha] = useState<FormEditarFecha | null>(null)
+  const [guardandoFecha, setGuardandoFecha] = useState(false)
+  const [errorFecha, setErrorFecha] = useState<string | null>(null)
+
   const [notificacion, setNotificacion] = useState<Notificacion | null>(null)
+  // Los avisos de las fechas son largos: más tiempo para leerlos, y una notificación nueva
+  // no se borra con el temporizador de la anterior.
+  const notificacionTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   
   const [formData, setFormData] = useState({
     nombre: '',
@@ -172,6 +271,8 @@ export default function ExperienciasAdminPage({
   const IconTipo = colorTema === 'green' ? Globe : Lock
   // "Personas incluidas" es regla de las reservas privadas; las publicas se cobran por persona
   const esPrivada = tipoExperiencia === 'EXPERIENCIAS PRIVADAS'
+  // NV1 / D6: «Visible en la web» solo existe para las fechas de experiencias públicas
+  const esPublica = tipoExperiencia === 'EXPERIENCIAS PUBLICAS'
 
   const fetchExperiencias = useCallback(async () => {
     setLoading(true)
@@ -408,10 +509,117 @@ export default function ExperienciasAdminPage({
     }
   }
 
+  // ─── Editar fecha y «Visible en la web» (EV3 + NV1) ───
+  const aplicarEventoActualizado = (ev: EventoExperiencia | null | undefined) => {
+    if (!ev?.id) {
+      if (selectedExperiencia) fetchEventos(selectedExperiencia.id)
+      return
+    }
+    setEventos((prev) => prev.map((e) => (e.id === ev.id ? ev : e)))
+  }
+
+  /** avisos[] del back: uno va en la notificación; dos o más, en un alert para que no se pierdan. */
+  const avisarResultado = (titulo: string, avisos: string[] | null | undefined) => {
+    const lista = Array.isArray(avisos) ? avisos.filter(Boolean) : []
+    if (lista.length >= 2) {
+      window.alert(lista.join('\n\n'))
+      mostrarNotificacion('success', titulo)
+    } else if (lista.length === 1) {
+      mostrarNotificacion('info', `${titulo}. ${lista[0]}`)
+    } else {
+      mostrarNotificacion('success', titulo)
+    }
+  }
+
+  const abrirEditarFecha = (ev: EventoExperiencia) => {
+    setEditandoFecha(ev)
+    setFormFecha(formDeEvento(ev))
+    setErrorFecha(null)
+  }
+
+  const cerrarEditarFecha = () => {
+    if (guardandoFecha) return
+    setEditandoFecha(null)
+    setFormFecha(null)
+    setErrorFecha(null)
+  }
+
+  const guardarFecha = async () => {
+    if (!editandoFecha || !formFecha) return
+    const armado = payloadEditarFecha(editandoFecha, formFecha)
+    if ('error' in armado) {
+      setErrorFecha(armado.error)
+      return
+    }
+    if (Object.keys(armado.payload).length === 0) {
+      setErrorFecha('No cambiaste nada.')
+      return
+    }
+    setGuardandoFecha(true)
+    setErrorFecha(null)
+    try {
+      let resp = await patchFecha(editandoFecha.id, armado.payload)
+      // D7: mover día u hora con lugares vendidos pide confirmación (409) y se reenvía
+      if (!resp.ok && resp.status === 409) {
+        const detalle = resp.detail
+        if (esRequiereConfirmacion(detalle)) {
+          if (!window.confirm(`${detalle.mensaje} ¿Moverla?`)) {
+            setErrorFecha('No se movió la fecha.')
+            return
+          }
+          resp = await patchFecha(editandoFecha.id, {
+            ...armado.payload,
+            confirmar_con_vendidos: true,
+          })
+        }
+      }
+      if (!resp.ok) {
+        setErrorFecha(resp.mensaje)
+        return
+      }
+      aplicarEventoActualizado(resp.data.evento)
+      setEditandoFecha(null)
+      setFormFecha(null)
+      avisarResultado('Fecha actualizada', resp.data.avisos)
+    } catch {
+      setErrorFecha('Error de conexión. Reintenta.')
+    } finally {
+      setGuardandoFecha(false)
+    }
+  }
+
+  // D6: publicar avisa ANTES del PATCH que el pago en la web falla; ocultar no pregunta
+  const handleVisibleEvento = async (evento: EventoExperiencia) => {
+    const publicar = !evento.visible_publico
+    if (publicar && !window.confirm(AVISO_PUBLICAR)) return
+    setLoadingAction(`visible-${evento.id}`)
+    try {
+      const resp = await patchFecha(evento.id, { visible_publico: publicar })
+      if (!resp.ok) {
+        mostrarNotificacion('error', resp.mensaje)
+        return
+      }
+      aplicarEventoActualizado(resp.data.evento)
+      avisarResultado(publicar ? 'Fecha publicada en la web' : 'Fecha oculta de la web', resp.data.avisos)
+    } catch {
+      mostrarNotificacion('error', 'Error de conexión')
+    } finally {
+      setLoadingAction(null)
+    }
+  }
+
   const mostrarNotificacion = (tipo: 'success' | 'error' | 'info', mensaje: string) => {
     setNotificacion({ tipo, mensaje })
-    setTimeout(() => setNotificacion(null), 4000)
+    if (notificacionTimer.current) clearTimeout(notificacionTimer.current)
+    notificacionTimer.current = setTimeout(() => setNotificacion(null), Math.max(4000, mensaje.length * 60))
   }
+
+  useEffect(
+    () => () => {
+      if (notificacionTimer.current) clearTimeout(notificacionTimer.current)
+    },
+    [],
+  )
 
   const resetForm = () => {
     setFormData({
@@ -512,17 +720,21 @@ export default function ExperienciasAdminPage({
 
       {/* Notificación */}
       {notificacion && (
-        <div className={`fixed top-4 right-4 z-[1100] flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg ${
+        // z por encima de los modales (1100 / 1200): los avisos de la pestaña Eventos se veían detrás
+        <div
+          data-testid="exp-notificacion"
+          data-tipo={notificacion.tipo}
+          role="status"
+          className={`fixed top-4 right-4 left-4 sm:left-auto sm:max-w-md z-[1300] flex items-start gap-3 px-4 py-3 rounded-lg shadow-lg ${
           notificacion.tipo === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
           notificacion.tipo === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
           'bg-blue-100 text-blue-800 border border-blue-200'
         }`}>
-          {notificacion.tipo === 'success' ? <CheckCircle className="h-5 w-5" /> :
-           notificacion.tipo === 'error' ? <AlertCircle className="h-5 w-5" /> :
-           <AlertCircle className="h-5 w-5" />}
-          <span>{notificacion.mensaje}</span>
-          <button onClick={() => setNotificacion(null)} className="ml-2">
-            <X className="h-4 w-4" />
+          {notificacion.tipo === 'success' ? <CheckCircle className="h-5 w-5 shrink-0" aria-hidden="true" /> :
+           <AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" />}
+          <span className="flex-1 text-sm">{notificacion.mensaje}</span>
+          <button type="button" onClick={() => setNotificacion(null)} className="ml-2 shrink-0" aria-label="Cerrar aviso">
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
       )}
@@ -1221,31 +1433,37 @@ export default function ExperienciasAdminPage({
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {eventos.map((evento) => (
-                      <div 
-                        key={evento.id} 
+                    {eventos.map((evento) => {
+                      // Una fecha cancelada no se reactiva ni se edita (el back responde 400)
+                      const cancelada = evento.estado === 'cancelado'
+                      const cambiandoVisible = loadingAction === `visible-${evento.id}`
+                      return (
+                      <div
+                        key={evento.id}
                         data-testid="exp-evento-fila"
-                        className={`flex items-center justify-between p-3 rounded-lg border ${
+                        className={`flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg border ${
                           evento.estado === 'activo' ? 'bg-white' : 'bg-gray-50'
                         }`}
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 min-w-0">
+                          {!cancelada && (
                           <button
                             type="button"
                             onClick={() => handleToggleEvento(evento.id)}
                             aria-label={evento.estado === 'activo' ? 'Desactivar esta fecha' : 'Activar esta fecha'}
                             className={`p-1.5 rounded ${
-                              evento.estado === 'activo' 
-                                ? 'bg-green-100 text-green-600' 
+                              evento.estado === 'activo'
+                                ? 'bg-green-100 text-green-600'
                                 : 'bg-gray-100 text-gray-400'
                             }`}
                           >
-                            {evento.estado === 'activo' 
-                              ? <ToggleRight className="h-4 w-4" /> 
+                            {evento.estado === 'activo'
+                              ? <ToggleRight className="h-4 w-4" />
                               : <ToggleLeft className="h-4 w-4" />}
                           </button>
-                          
-                          <div>
+                          )}
+
+                          <div className="min-w-0">
                             <p className="font-medium text-sm" data-testid="exp-evento-fecha">
                               {formatFechaMexico(evento.fecha_evento, {
                                 weekday: 'long',
@@ -1260,7 +1478,7 @@ export default function ExperienciasAdminPage({
                           </div>
                         </div>
                         
-                        <div className="flex items-center gap-4">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                           <div className="text-right" data-testid="exp-evento-cupo">
                             {sinTope(evento.capacidad_maxima) ? (
                               <>
@@ -1288,7 +1506,58 @@ export default function ExperienciasAdminPage({
                           }`}>
                             {evento.estado}
                           </span>
-                          
+
+                          {/* NV1 / D6: solo las fechas de experiencias públicas se ven en la web */}
+                          {esPublica && (
+                            <div className="flex items-center gap-2">
+                              <span
+                                data-testid="exp-evento-visible-chip"
+                                className={`px-2 py-1 text-xs rounded-full whitespace-nowrap ${
+                                  evento.visible_publico
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-gray-100 text-gray-600'
+                                }`}
+                              >
+                                {evento.visible_publico ? 'En la web' : 'Oculta'}
+                              </span>
+                              {!cancelada && (
+                                <button
+                                  type="button"
+                                  data-testid="exp-evento-visible"
+                                  aria-pressed={evento.visible_publico}
+                                  aria-label="Visible en la web"
+                                  aria-busy={cambiandoVisible}
+                                  title={evento.visible_publico ? 'Ocultar de la web' : 'Mostrar en la web'}
+                                  onClick={() => handleVisibleEvento(evento)}
+                                  disabled={cambiandoVisible}
+                                  className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${
+                                    evento.visible_publico ? 'bg-green-500' : 'bg-gray-300'
+                                  }`}
+                                >
+                                  <span
+                                    aria-hidden="true"
+                                    className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                                      evento.visible_publico ? 'translate-x-5' : 'translate-x-0.5'
+                                    }`}
+                                  />
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {!cancelada && (
+                            <button
+                              type="button"
+                              data-testid="exp-evento-editar"
+                              onClick={() => abrirEditarFecha(evento)}
+                              aria-label="Editar fecha"
+                              title="Editar fecha"
+                              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
+                            >
+                              <Pencil className="h-4 w-4" aria-hidden="true" />
+                            </button>
+                          )}
+
                           <button
                             type="button"
                             onClick={() => handleEliminarEvento(evento.id)}
@@ -1299,7 +1568,8 @@ export default function ExperienciasAdminPage({
                           </button>
                         </div>
                       </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -1464,6 +1734,218 @@ export default function ExperienciasAdminPage({
           </div>
         </div>
       )}
+
+      {/* Modal Editar fecha (EV3): manda solo lo que cambió; D7 con vendidos pide confirmación */}
+      {editandoFecha && formFecha && (() => {
+        const vendidos = editandoFecha.capacidad_ocupada
+        const pideMotivo = vendidos > 0 && mueveLaFecha(editandoFecha, formFecha)
+        const armado = payloadEditarFecha(editandoFecha, formFecha)
+        const hayCambios = 'error' in armado || Object.keys(armado.payload).length > 0
+        const finSeMueve =
+          !!editandoFecha.hora_fin &&
+          formFecha.horaInicio !== horaCorta(editandoFecha.hora_inicio) &&
+          formFecha.horaFin === horaCorta(editandoFecha.hora_fin)
+        const cambiar = (campo: keyof FormEditarFecha, valor: string) => {
+          setFormFecha((prev) => (prev ? { ...prev, [campo]: valor } : prev))
+          setErrorFecha(null)
+        }
+        return (
+          <div
+            className="fixed inset-0 bg-black/50 flex items-start justify-center z-[1200] px-4 pt-10 sm:pt-16 pb-4 overflow-y-auto"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="editar-fecha-titulo"
+          >
+            <div
+              data-testid="modal-editar-fecha"
+              className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[calc(100dvh-3.5rem)] sm:max-h-[calc(100dvh-5rem)] flex flex-col"
+            >
+              <div className="shrink-0 border-b px-6 py-4 flex justify-between items-start gap-3">
+                <div className="min-w-0">
+                  <h3 id="editar-fecha-titulo" className="font-sans text-lg font-semibold text-gray-900 mb-0">
+                    Editar fecha
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    {selectedExperiencia?.nombre ? `${selectedExperiencia.nombre} · ` : ''}
+                    {formatFechaMexico(editandoFecha.fecha_evento, {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={cerrarEditarFecha}
+                  aria-label="Cerrar editar fecha"
+                  className="p-1 rounded-lg hover:bg-gray-100 shrink-0"
+                >
+                  <X className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </div>
+
+              <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4">
+                {errorFecha && (
+                  <p
+                    data-testid="editar-fecha-error"
+                    role="alert"
+                    className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3"
+                  >
+                    {errorFecha}
+                  </p>
+                )}
+
+                <div>
+                  <label htmlFor="editar-fecha-fecha" className="block text-sm font-medium mb-1">Fecha *</label>
+                  <input
+                    id="editar-fecha-fecha"
+                    data-testid="editar-fecha-fecha"
+                    type="date"
+                    value={formFecha.fecha}
+                    min={hoyMexico()}
+                    onChange={(e) => cambiar('fecha', e.target.value)}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 ${theme.ring}`}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="editar-fecha-hora-inicio" className="block text-sm font-medium mb-1">Hora inicio *</label>
+                    <input
+                      id="editar-fecha-hora-inicio"
+                      data-testid="editar-fecha-hora-inicio"
+                      type="time"
+                      value={formFecha.horaInicio}
+                      onChange={(e) => cambiar('horaInicio', e.target.value)}
+                      className={`w-full min-w-0 px-3 py-2 border rounded-lg focus:ring-2 ${theme.ring}`}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="editar-fecha-hora-fin" className="block text-sm font-medium mb-1">Hora fin</label>
+                    <input
+                      id="editar-fecha-hora-fin"
+                      data-testid="editar-fecha-hora-fin"
+                      type="time"
+                      value={formFecha.horaFin}
+                      onChange={(e) => cambiar('horaFin', e.target.value)}
+                      aria-describedby={finSeMueve ? 'editar-fecha-fin-ayuda' : undefined}
+                      className={`w-full min-w-0 px-3 py-2 border rounded-lg focus:ring-2 ${theme.ring}`}
+                    />
+                  </div>
+                </div>
+                {finSeMueve && (
+                  <p id="editar-fecha-fin-ayuda" data-testid="editar-fecha-fin-ayuda" className="text-xs text-gray-500 -mt-2">
+                    Si no cambias la hora de fin, se mueve con el inicio (misma duración).
+                  </p>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="editar-fecha-cupo" className="block text-sm font-medium mb-1">Cupo</label>
+                    <input
+                      id="editar-fecha-cupo"
+                      data-testid="editar-fecha-cupo"
+                      type="number"
+                      inputMode="numeric"
+                      min={Math.max(1, vendidos)}
+                      step={1}
+                      value={formFecha.cupo}
+                      onChange={(e) => cambiar('cupo', e.target.value)}
+                      placeholder="Sin tope"
+                      aria-describedby="editar-fecha-cupo-ayuda"
+                      className={`w-full min-w-0 px-3 py-2 border rounded-lg focus:ring-2 ${theme.ring}`}
+                    />
+                    <p id="editar-fecha-cupo-ayuda" className="text-xs text-gray-500 mt-1">
+                      Vendidos: {vendidos}. Vacío = sin tope.
+                      {editandoFecha.capacidad_maxima == null && ' Esta fecha no tenía cupo definido: al guardar queda sin tope.'}
+                    </p>
+                  </div>
+                  <div>
+                    <label htmlFor="editar-fecha-precio" className="block text-sm font-medium mb-1">Precio</label>
+                    <input
+                      id="editar-fecha-precio"
+                      data-testid="editar-fecha-precio"
+                      type="number"
+                      inputMode="decimal"
+                      min={0}
+                      step="0.01"
+                      value={formFecha.precio}
+                      onChange={(e) => cambiar('precio', e.target.value)}
+                      placeholder="El de la experiencia"
+                      aria-describedby="editar-fecha-precio-ayuda"
+                      className={`w-full min-w-0 px-3 py-2 border rounded-lg focus:ring-2 ${theme.ring}`}
+                    />
+                    <p id="editar-fecha-precio-ayuda" className="text-xs text-gray-500 mt-1">
+                      Vacío = el precio de la experiencia
+                      {selectedExperiencia ? ` ($${selectedExperiencia.precio_por_persona.toLocaleString()})` : ''}.
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="editar-fecha-notas" className="block text-sm font-medium mb-1">Notas internas</label>
+                  <textarea
+                    id="editar-fecha-notas"
+                    data-testid="editar-fecha-notas"
+                    value={formFecha.notas}
+                    onChange={(e) => cambiar('notas', e.target.value)}
+                    rows={3}
+                    maxLength={2000}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 ${theme.ring}`}
+                    placeholder="Solo visibles para el equipo"
+                  />
+                </div>
+
+                {pideMotivo && (
+                  <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+                    <label htmlFor="editar-fecha-motivo" className="block text-sm font-medium mb-1 text-amber-900">
+                      Motivo del cambio
+                    </label>
+                    <textarea
+                      id="editar-fecha-motivo"
+                      data-testid="editar-fecha-motivo"
+                      value={formFecha.motivo}
+                      onChange={(e) => cambiar('motivo', e.target.value)}
+                      rows={2}
+                      maxLength={500}
+                      aria-describedby="editar-fecha-motivo-ayuda"
+                      className={`w-full px-3 py-2 border rounded-lg bg-white focus:ring-2 ${theme.ring}`}
+                    />
+                    <p id="editar-fecha-motivo-ayuda" className="text-xs text-amber-900 mt-1">
+                      Esta fecha tiene {vendidos} {vendidos === 1 ? 'lugar vendido' : 'lugares vendidos'}. El motivo queda
+                      en las notas de la fecha; avisa tú a quienes compraron.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="shrink-0 border-t px-6 py-4 flex justify-end gap-3">
+                <button
+                  type="button"
+                  data-testid="editar-fecha-cancelar"
+                  onClick={cerrarEditarFecha}
+                  disabled={guardandoFecha}
+                  className="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  data-testid="editar-fecha-guardar"
+                  onClick={guardarFecha}
+                  disabled={guardandoFecha || !hayCambios}
+                  title={hayCambios ? undefined : 'No hay cambios que guardar'}
+                  className={`px-4 py-2 ${theme.primary} text-white rounded-lg disabled:opacity-50 flex items-center gap-2`}
+                >
+                  {guardandoFecha && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
+                  Guardar
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

@@ -21,6 +21,7 @@ import {
   Info,
 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { formatFechaHoraMexico } from '@/lib/dates'
 import { API_URL } from '@/lib/api'
 import { useVendedoras, vendedoraFueraDeLista, type Vendedora } from '@/hooks/useVendedoras'
@@ -147,6 +148,7 @@ export default function AdminLeadsPage() {
   // LD2-a (30-sep): vendedoras de Personal, no una lista fija en el código (se había quedado
   // con quien ya no vende y sin las nuevas). Las llamadas de leads siguen por el proxy.
   const { data: session } = useSession()
+  const router = useRouter()
   const vendedorasEstado = useVendedoras(session?.accessToken as string | undefined)
   const { vendedoras } = vendedorasEstado
 
@@ -402,7 +404,8 @@ export default function AdminLeadsPage() {
   const cambiarEstado = async (estado: EstadoLead) => {
     if (!leadDetalle) return
     if (estado === 'convertido_a_reserva') {
-      setAccionError('La conversion a reserva estara disponible en Fase C.')
+      // LD2-b: el lead se convierte al crear la reserva desde «Convertir a reserva»
+      setAccionError('Para convertirlo usa «Convertir a reserva»: el lead queda ligado al crear la reserva.')
       return
     }
     try {
@@ -1179,18 +1182,61 @@ export default function AdminLeadsPage() {
                 Marcar descartado
               </button>
 
-              <div className="flex gap-2 flex-wrap">
-                <span title="Disponible en Fase C">
+              <div className="flex gap-2 flex-wrap items-center justify-end">
+                {/* LD2-b: el asistente de Nueva Reserva se abre con el lead precargado; la
+                    reserva queda ligada al lead al crearla (no se usa convertir-a-reserva). */}
+                {leadDetalle.estado_lead === 'convertido_a_reserva' &&
+                leadDetalle.reserva_creada_id ? (
                   <button
                     type="button"
-                    disabled
-                    aria-label="Convertir a reserva (disponible en Fase C)"
-                    className="flex items-center gap-1 px-3 py-2 bg-[#33503E]/40 text-white rounded-lg text-sm cursor-not-allowed opacity-60"
+                    data-testid="lead-ver-reserva"
+                    onClick={() =>
+                      router.push(
+                        `/admin/reservas?reserva_id=${encodeURIComponent(leadDetalle.reserva_creada_id ?? '')}`,
+                      )
+                    }
+                    className="flex items-center gap-1 px-3 py-2 bg-[#B15543] text-white rounded-lg text-sm hover:bg-[#975543]"
+                  >
+                    <Eye className="h-4 w-4" aria-hidden="true" />
+                    Ver reserva {leadDetalle.reserva_booking_id ?? ''}
+                  </button>
+                ) : leadDetalle.estado_lead === 'nuevo' ||
+                  leadDetalle.estado_lead === 'en_cotizacion' ? (
+                  <button
+                    type="button"
+                    data-testid="lead-convertir"
+                    onClick={() =>
+                      router.push(`/admin/reservas?lead_id=${encodeURIComponent(leadDetalle.id)}`)
+                    }
+                    disabled={accionLoading}
+                    className="flex items-center gap-1 px-3 py-2 bg-[#B15543] text-white rounded-lg text-sm hover:bg-[#975543] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <CheckCircle className="h-4 w-4" aria-hidden="true" />
                     Convertir a reserva
                   </button>
-                </span>
+                ) : (
+                  <>
+                    <span
+                      id="lead-convertir-motivo"
+                      data-testid="lead-convertir-motivo"
+                      className="text-xs text-gray-600 max-w-[16rem]"
+                    >
+                      {leadDetalle.estado_lead === 'descartado'
+                        ? 'Lead descartado: cámbialo a Nuevo o En cotización para convertirlo.'
+                        : 'Este lead ya está convertido, pero no tiene reserva ligada.'}
+                    </span>
+                    <button
+                      type="button"
+                      data-testid="lead-convertir"
+                      disabled
+                      aria-describedby="lead-convertir-motivo"
+                      className="flex items-center gap-1 px-3 py-2 bg-[#33503E]/40 text-white rounded-lg text-sm cursor-not-allowed opacity-60"
+                    >
+                      <CheckCircle className="h-4 w-4" aria-hidden="true" />
+                      Convertir a reserva
+                    </button>
+                  </>
+                )}
                 <button
                   type="button"
                   onClick={closeModal}

@@ -2,37 +2,48 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { ChevronDown, ChevronUp, Loader2, Phone, Printer } from 'lucide-react'
+import { CalendarDays, ChevronDown, ChevronUp, Loader2, Phone, Printer } from 'lucide-react'
 import { API_URL } from '@/lib/api'
-import type {
-  ManifestDelDia as ManifestDelDiaType,
-  ManifestInvitado,
-  Reserva,
+import { formatFechaMexico, hoyMexico, sumarDias } from '@/lib/dates'
+import {
+  MANIFEST_RANGOS,
+  type ManifestDelDia as ManifestDelDiaType,
+  type ManifestDelDiaResponse,
+  type ManifestInvitado,
+  type ManifestRango,
+  type Reserva,
 } from '@/types/reservas'
+import { extraerMensajeError } from './errores'
 
 interface ManifestDelDiaProps {
   refreshKey: number
   onRowClick: (id: string) => void
 }
 
-type RangoDias = 1 | 2 | 7
+// D10 (MD1, Fase 3): Hoy = hoy, Mañana = mañana, 7 días = hoy…+6, contados desde HOY de México.
+// Antes `?dias=1|2|7` hacía que «Hoy» trajera hoy y mañana.
 
-const RANGOS: { value: RangoDias; label: string }[] = [
-  { value: 1, label: 'Hoy' },
-  { value: 2, label: 'Manana' },
-  { value: 7, label: 'Proximos 7 dias' },
-]
+/** «jue 1 oct» — sin el «de» que pone es-MX con el día de la semana. */
+function diaCorto(iso: string): string {
+  const semana = formatFechaMexico(iso, { weekday: 'short', day: undefined, month: undefined, year: undefined })
+  return `${semana} ${formatFechaMexico(iso, { year: undefined })}`
+}
 
+/** «jue 1 oct» si es un día; «1–7 oct» o «30 sep–6 oct» si son varios. */
+function textoRango(desde: string, hasta: string): string {
+  if (desde === hasta) return diaCorto(desde)
+  const mismoAnio = desde.slice(0, 4) === hasta.slice(0, 4)
+  const mismoMes = mismoAnio && desde.slice(0, 7) === hasta.slice(0, 7)
+  const inicio = mismoMes
+    ? formatFechaMexico(desde, { day: 'numeric', month: undefined, year: undefined })
+    : formatFechaMexico(desde, mismoAnio ? { year: undefined } : undefined)
+  const fin = formatFechaMexico(hasta, mismoAnio ? { year: undefined } : undefined)
+  return `${inicio}–${fin}`
+}
+
+/** Encabezado de cada día: «jueves, 1 de octubre». */
 function formatearFechaDia(fechaISO: string): string {
-  try {
-    return new Intl.DateTimeFormat('es-MX', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-    }).format(new Date(`${fechaISO}T00:00:00`))
-  } catch {
-    return fechaISO
-  }
+  return formatFechaMexico(fechaISO, { weekday: 'long', day: 'numeric', month: 'long', year: undefined })
 }
 
 function ordenarPorHora(a: Reserva, b: Reserva): number {
@@ -67,8 +78,10 @@ function FilaInvitados({ invitados, minimo }: { invitados: ManifestInvitado[] | 
 
 export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDiaProps) {
   const { data: session, status } = useSession()
-  const [rango, setRango] = useState<RangoDias>(2)
+  const [rango, setRango] = useState<ManifestRango>('hoy')
   const [data, setData] = useState<ManifestDelDiaType[]>([])
+  // El rango que respondió el back (C6); mientras no llega, el que se pidió
+  const [rangoFechas, setRangoFechas] = useState<{ desde: string; hasta: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [expandidos, setExpandidos] = useState<Record<string, boolean>>({})
@@ -76,24 +89,27 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
   const fetchManifest = useCallback(async () => {
     const token = session?.accessToken as string | undefined
     if (!token) return
+    const r = MANIFEST_RANGOS.find((x) => x.value === rango) ?? MANIFEST_RANGOS[0]
+    const hoy = hoyMexico()
+    setRangoFechas({ desde: sumarDias(hoy, r.desde), hasta: sumarDias(hoy, r.dias) })
     setLoading(true)
     setError(null)
     try {
       const res = await fetch(
-        `${API_URL}/api/admin/reservas/manifest-del-dia?dias=${rango}`,
+        `${API_URL}/api/admin/reservas/manifest-del-dia?desde=${r.desde}&dias=${r.dias}`,
         { headers: { Authorization: `Bearer ${token}` } },
       )
-      if (!res.ok) throw new Error(`Error ${res.status}`)
-      const json = await res.json()
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, res.status))
+      }
+      const json = (await res.json()) as Partial<ManifestDelDiaResponse> | null
       // El backend manda los dias agrupados en `dias`. Antes esto tomaba `items`
       // (plano, sin `reservas`) y con cualquier evento en el rango tronaba en
       // `[...dia.reservas]` (2026-09-25).
-      const arr: ManifestDelDiaType[] = Array.isArray(json)
-        ? json
-        : Array.isArray(json?.dias)
-        ? json.dias
-        : []
+      const arr: ManifestDelDiaType[] = Array.isArray(json?.dias) ? json.dias : []
       setData(arr)
+      if (json?.desde && json?.hasta) setRangoFechas({ desde: json.desde, hasta: json.hasta })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido')
       setData([])
@@ -139,7 +155,7 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
           role="radiogroup"
           aria-label="Rango de dias"
         >
-          {RANGOS.map((r) => {
+          {MANIFEST_RANGOS.map((r) => {
             const active = rango === r.value
             return (
               <button
@@ -147,6 +163,7 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
                 type="button"
                 role="radio"
                 aria-checked={active}
+                data-testid={`manifest-rango-${r.value}`}
                 onClick={() => setRango(r.value)}
                 className={`px-4 py-2 text-sm font-medium transition-colors ${
                   active
@@ -159,6 +176,16 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
             )
           })}
         </div>
+
+        {rangoFechas && (
+          <p
+            data-testid="manifest-rango-texto"
+            className="inline-flex items-center gap-1.5 text-sm text-verde"
+          >
+            <CalendarDays className="h-4 w-4 text-verde-suave" aria-hidden="true" />
+            {textoRango(rangoFechas.desde, rangoFechas.hasta)}
+          </p>
+        )}
 
         <div className="ml-auto flex items-center gap-2">
           <button
@@ -184,7 +211,11 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
 
       {/* Estado de error */}
       {error && (
-        <div className="bg-rojo-bg border border-rojo/30 rounded-lg p-4 flex items-center gap-3 no-print">
+        <div
+          data-testid="manifest-error"
+          role="alert"
+          className="bg-rojo-bg border border-rojo/30 rounded-lg p-4 flex items-center gap-3 no-print"
+        >
           <span className="text-sm text-rojo flex-1">Error: {error}</span>
           <button
             type="button"
@@ -206,7 +237,10 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
 
       {/* Empty */}
       {!loading && !error && data.length === 0 && (
-        <div className="bg-white border border-neutro-borde rounded-lg p-8 text-center text-verde-suave">
+        <div
+          data-testid="manifest-vacio"
+          className="bg-white border border-neutro-borde rounded-lg p-8 text-center text-verde-suave"
+        >
           <p className="text-lg font-medium text-verde">Sin eventos en el rango seleccionado</p>
           <p className="text-sm mt-1">Cuando haya reservas confirmadas para estas fechas, apareceran aqui.</p>
         </div>
@@ -220,6 +254,8 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
           return (
             <section
               key={dia.fecha}
+              data-testid="manifest-dia"
+              data-fecha={dia.fecha}
               aria-labelledby={`dia-${dia.fecha}`}
               className="bg-white border border-neutro-borde rounded-lg overflow-hidden"
             >
@@ -286,7 +322,12 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
                           ? r.guias.map((g) => g.nombre).join(', ')
                           : '—'
                       return (
-                        <tr key={r.id} className="border-b border-neutro-borde align-top">
+                        <tr
+                          key={r.id}
+                          data-testid="manifest-fila"
+                          data-booking={r.booking_id}
+                          className="border-b border-neutro-borde align-top"
+                        >
                           <td className="px-3 py-2 text-verde whitespace-nowrap font-medium">
                             {r.hora_inicio.slice(0, 5)}
                           </td>

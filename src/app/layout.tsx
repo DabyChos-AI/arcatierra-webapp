@@ -9,6 +9,7 @@ import { NotificationProvider } from '@/components/NotificationSystem'
 import WhatsAppChat from '@/components/WhatsAppChat'
 import ClientLayout from './client-layout'
 import AnnouncementBanner from '@/components/AnnouncementBanner'
+import RegistrarSW from '@/components/RegistrarSW'
 
 // TIPOGRAFÍAS OFICIALES ARCA TIERRA - Manual de Identidad
 
@@ -101,15 +102,17 @@ export const metadata: Metadata = {
     google: 'google-site-verification-code',
   },
   manifest: '/manifest.json',
+  // A10 (Fase 3): íconos cuadrados de la app instalable (public/icons/, D11). Los PNG viejos
+  // /icon-192.png e /icon-512.png se quedan en disco por si algo externo los enlaza.
   icons: {
     icon: [
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+      { url: '/icons/app-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/app-512.png', sizes: '512x512', type: 'image/png' },
     ],
     apple: [
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/apple-touch-180.png', sizes: '180x180', type: 'image/png' },
     ],
-    shortcut: '/icon-192.png',
+    shortcut: '/icons/app-192.png',
   },
 };
 
@@ -234,6 +237,9 @@ export default function RootLayout({
             <WhatsAppChat />
           </NotificationProvider>
         </AuthProvider>
+
+        {/* A10: registra /sw.js (solo producción; no intercepta nada ni guarda caché) */}
+        <RegistrarSW />
         
         {/* Scripts de análisis y tracking */}
         <script

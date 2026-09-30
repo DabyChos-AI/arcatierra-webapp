@@ -536,3 +536,45 @@ export function formatMXN(monto: number): string {
     minimumFractionDigits: 2,
   }).format(monto)
 }
+
+// ─── Fase 3 de PLAN-EXP-SIN-FALLAS (sesión 38, 30-sep-2026) · contrato EXP-FASE3-CONTRATO.md ───
+
+/**
+ * D10 (MD1): los tres rangos del Manifest del día. `desde` y `dias` son días contados desde HOY
+ * de México y viajan tal cual a `GET /api/admin/reservas/manifest-del-dia?desde=&dias=`
+ * (rango = hoy+desde … hoy+dias, los dos incluidos). Antes «Hoy» traía dos días y «Mañana» tres.
+ */
+export type ManifestRango = 'hoy' | 'manana' | 'semana'
+
+export const MANIFEST_RANGOS: { value: ManifestRango; label: string; desde: number; dias: number }[] = [
+  { value: 'hoy', label: 'Hoy', desde: 0, dias: 0 },
+  { value: 'manana', label: 'Mañana', desde: 1, dias: 1 },
+  { value: 'semana', label: 'Próximos 7 días', desde: 0, dias: 6 },
+]
+
+/** Respuesta completa de `manifest-del-dia` (C6). `desde`/`hasta` = el rango pedido, `YYYY-MM-DD`. */
+export interface ManifestDelDiaResponse {
+  items: unknown[]
+  total: number
+  dias: ManifestDelDia[]
+  desde: string
+  hasta: string
+}
+
+/**
+ * B6 (D9): «Marcar como realizada» solo desde Confirmada o Pagada y con la fecha de la
+ * experiencia hoy o antes (México). La regla de verdad vive en el PATCH del backend (C7);
+ * esto solo decide qué pinta el botón. `hoy` = `hoyMexico()` de `@/lib/dates`.
+ */
+export function puedeMarcarRealizada(
+  r: Pick<Reserva, 'estado' | 'fecha_experiencia'>,
+  hoy: string,
+): { puede: boolean; motivo: string | null } {
+  if (r.estado !== 'confirmada' && r.estado !== 'pagada') {
+    return { puede: false, motivo: 'Solo una reserva Confirmada o Pagada se marca como realizada.' }
+  }
+  if (!r.fecha_experiencia || r.fecha_experiencia.slice(0, 10) > hoy) {
+    return { puede: false, motivo: 'Se puede marcar desde el día de la experiencia.' }
+  }
+  return { puede: true, motivo: null }
+}

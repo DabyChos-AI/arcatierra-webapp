@@ -133,6 +133,18 @@ const nextConfig = {
           },
         ],
       },
+      // ── Service worker de la app instalable (A10, Fase 3) ──────────────
+      // Nunca en caché (ni navegador ni Cloudflare): si hay que apagarlo, el kill-switch
+      // (`public/sw-apagar.js` copiado sobre `sw.js`) tiene que llegar en la siguiente visita.
+      // Entradas aparte: el bloque de seguridad de arriba se sigue aplicando a estos archivos.
+      {
+        source: '/sw.js',
+        headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
+      },
+      {
+        source: '/sw-apagar.js',
+        headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }],
+      },
     ]
   },
 }

@@ -19,6 +19,7 @@ import {
   Users,
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { hoyMexico, sumarDias } from '@/lib/dates'
 import { ErrorPanel, pedirAlPanel, volverAlLoginDelPanel } from '@/lib/fetchPanel'
 import ModalImportarCorte from './components/ModalImportarCorte'
 import ModalPreviewReporte from './components/ModalPreviewReporte'
@@ -44,16 +45,6 @@ const ESTILO: Record<string, { icono: typeof Truck; color: string }> = {
   dashboard_ejecutivo: { icono: LayoutDashboard, color: 'bg-terracota-medio' },
 }
 
-function hoyISO(): string {
-  return new Date().toISOString().slice(0, 10)
-}
-
-function haceDias(dias: number): string {
-  const d = new Date()
-  d.setDate(d.getDate() - dias)
-  return d.toISOString().slice(0, 10)
-}
-
 function pesoLegible(bytes: number | null): string {
   if (!bytes) return '—'
   if (bytes < 1024) return `${bytes} B`
@@ -71,11 +62,16 @@ export default function ReportesPage() {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const [filtros, setFiltros] = useState<FiltrosGlobales>({
-    fecha_entrega: hoyISO(),
-    origen: '',
-    desde: haceDias(30),
-    hasta: hoyISO(),
+  // TZ1: «hoy» es el de México. `toISOString()` daba el día de UTC y de 18:00 a 24:00 los
+  // filtros ya arrancaban en «mañana». Inicializador perezoso: se calcula una sola vez.
+  const [filtros, setFiltros] = useState<FiltrosGlobales>(() => {
+    const hoy = hoyMexico()
+    return {
+      fecha_entrega: hoy,
+      origen: '',
+      desde: sumarDias(hoy, -30),
+      hasta: hoy,
+    }
   })
 
   const [reporteAbierto, setReporteAbierto] = useState<ReporteSpec | null>(null)
@@ -202,6 +198,7 @@ export default function ReportesPage() {
           </label>
           <input
             id="f-dia"
+            data-testid="reportes-filtro-dia"
             type="date"
             value={filtros.fecha_entrega}
             onChange={(e) => setFiltros((f) => ({ ...f, fecha_entrega: e.target.value }))}
@@ -239,6 +236,7 @@ export default function ReportesPage() {
           </label>
           <input
             id="f-desde"
+            data-testid="reportes-filtro-desde"
             type="date"
             value={filtros.desde}
             onChange={(e) => setFiltros((f) => ({ ...f, desde: e.target.value }))}
@@ -254,6 +252,7 @@ export default function ReportesPage() {
           </label>
           <input
             id="f-hasta"
+            data-testid="reportes-filtro-hasta"
             type="date"
             value={filtros.hasta}
             onChange={(e) => setFiltros((f) => ({ ...f, hasta: e.target.value }))}

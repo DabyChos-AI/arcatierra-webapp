@@ -65,6 +65,9 @@ storybook-static/
 **/public/workbox-*.js
 **/public/sw.js
 **/public/worker-*.js
+# A10 (Fase 3, 30-sep-2026): el sw.js de la app instalable es código propio (sin next-pwa) y su
+# kill-switch se despliega copiando sw-apagar.js encima: los dos tienen que estar en el repo.
+!public/sw.js
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)

@@ -6,7 +6,7 @@ import {
   ChevronLeft, ChevronRight, AlertTriangle, Clock,
   CheckCircle, Package, FileText, Phone, Mail
 } from 'lucide-react'
-import { formatFechaMexico, formatFechaHoraMexico } from '@/lib/dates'
+import { formatFechaMexico, formatFechaHoraMexico, hoyMexico, mesMexico } from '@/lib/dates'
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -131,13 +131,15 @@ export default function AdminEntregasPage() {
 
   // Calendario state
   const [calendarioDias, setCalendarioDias] = useState<CalendarioDia[]>([])
-  const [calMes, setCalMes] = useState(new Date().getMonth() + 1)
-  const [calAnio, setCalAnio] = useState(new Date().getFullYear())
+  // TZ1: mes y año de México (no los del reloj del navegador ni los de UTC).
+  const [calMes, setCalMes] = useState(() => Number(mesMexico().slice(5, 7)))
+  const [calAnio, setCalAnio] = useState(() => Number(mesMexico().slice(0, 4)))
   const [loadingCalendario, setLoadingCalendario] = useState(false)
 
   // Ruta del dia state
   const [rutaZonas, setRutaZonas] = useState<RutaZona[]>([])
-  const [rutaFecha, setRutaFecha] = useState(new Date().toISOString().split('T')[0])
+  // TZ1: hoy de México (YYYY-MM-DD). `toISOString()` daba el día de UTC: de 18:00 a 24:00 ya era «mañana».
+  const [rutaFecha, setRutaFecha] = useState(hoyMexico)
   const [rutaTotal, setRutaTotal] = useState(0)
   const [loadingRuta, setLoadingRuta] = useState(false)
 
@@ -642,6 +644,7 @@ export default function AdminEntregasPage() {
                 const startDow = (firstDay.getDay() + 6) % 7 // Monday = 0
                 const daysInMonth = lastDay.getDate()
 
+                const hoy = hoyMexico() // TZ1: resalta el día de México, no el de UTC
                 const diasMap: Record<string, CalendarioDia> = {}
                 calendarioDias.forEach(d => { diasMap[d.fecha] = d })
 
@@ -654,11 +657,12 @@ export default function AdminEntregasPage() {
                 for (let day = 1; day <= daysInMonth; day++) {
                   const dateStr = `${calAnio}-${String(calMes).padStart(2, '0')}-${String(day).padStart(2, '0')}`
                   const diaData = diasMap[dateStr]
-                  const isToday = dateStr === new Date().toISOString().split('T')[0]
+                  const isToday = dateStr === hoy
 
                   cells.push(
                     <div
                       key={day}
+                      data-testid={isToday ? 'entregas-cal-hoy' : undefined}
                       className={`h-20 border rounded-lg p-1.5 text-xs ${
                         isToday ? 'border-[#33503E] bg-green-50' : 'border-gray-100'
                       } ${diaData ? 'cursor-pointer hover:bg-gray-50' : ''}`}
@@ -701,8 +705,10 @@ export default function AdminEntregasPage() {
           {/* Date selector */}
           <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-center gap-4">
             <MapPin className="h-5 w-5 text-[#33503E]" />
-            <span className="text-sm font-medium text-gray-700">Fecha:</span>
+            <label htmlFor="entregas-ruta-fecha" className="text-sm font-medium text-gray-700">Fecha:</label>
             <input
+              id="entregas-ruta-fecha"
+              data-testid="entregas-ruta-fecha"
               type="date"
               value={rutaFecha}
               onChange={e => setRutaFecha(e.target.value)}

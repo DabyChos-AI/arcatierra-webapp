@@ -4,26 +4,8 @@
 
 import { CAPACIDAD_SIN_TOPE } from '@/types/catalogos'
 
-/** Hoy en México, como YYYY-MM-DD (en-CA imprime ese formato). */
-export function hoyMexico(): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Mexico_City',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date())
-}
-
-function aUTC(iso: string): Date {
-  const [anio, mes, dia] = iso.split('-').map(Number)
-  return new Date(Date.UTC(anio, mes - 1, dia))
-}
-
-export function sumarDias(iso: string, dias: number): string {
-  const fecha = aUTC(iso)
-  fecha.setUTCDate(fecha.getUTCDate() + dias)
-  return fecha.toISOString().slice(0, 10)
-}
+// TZ1 (Fase 3): UN solo «hoy» de México y una sola suma de días, en src/lib/dates.ts.
+export { hoyMexico, sumarDias } from '@/lib/dates'
 
 /** El día 1 del mes de `iso`. */
 export function primeroDelMes(iso: string): string {

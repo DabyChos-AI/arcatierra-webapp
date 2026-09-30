@@ -18,7 +18,7 @@ import {
   X,
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
-import { formatFechaHoraMexico, formatFechaMexico } from '@/lib/dates'
+import { formatFechaHoraMexico, formatFechaMexico, hoyMexico } from '@/lib/dates'
 import type { ItemCatalogo, ListaCatalogo, TipoCatalogo } from '@/types/planeacion'
 import { TIPO_LABELS } from '@/types/plantillas-email'
 import { horaCorta } from '@/app/admin/eventos/components/fechas'
@@ -33,6 +33,7 @@ import {
   calcularCotizacion,
   initialWizardData,
   MOTIVO_NO_ENVIO_TEXTO,
+  puedeMarcarRealizada,
   textoCorreo,
   type CancelarResponse,
   type Comunicacion,
@@ -285,6 +286,9 @@ export default function ModalDetalleReserva({
   // CN1: el back manda la plantilla Cancelación (si está activa) solo si se pide
   const [notificarClienteCancel, setNotificarClienteCancel] = useState(true)
   const [cancelando, setCancelando] = useState(false)
+
+  // B6 / D9: «Marcar como realizada»
+  const [marcandoRealizada, setMarcandoRealizada] = useState(false)
 
   // Correos de la reserva: los comparten las pestañas Comunicaciones y Auditoría (DT1-b)
   const comunicaciones = useComunicaciones(reservaId, token)
@@ -814,6 +818,44 @@ export default function ModalDetalleReserva({
     }
   }
 
+  // B6 / D9: solo desde Confirmada o Pagada y con la fecha de hoy o antes (México). La regla de
+  // verdad es del back (C7): un 400 se muestra tal cual.
+  async function marcarRealizada() {
+    if (!token || !reserva) return
+    if (
+      !window.confirm(
+        `¿Marcar la reserva ${reserva.booking_id} como realizada? Hazlo cuando la experiencia ya ocurrió.`,
+      )
+    ) {
+      return
+    }
+    setMarcandoRealizada(true)
+    try {
+      const res = await fetch(`${API_URL}/api/admin/reservas/${reserva.id}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ estado: 'realizada' }),
+      })
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, res.status))
+      }
+      showToast('Reserva marcada como realizada', 'success')
+      // El PATCH responde el detalle completo: refresco silencioso sin vaciar el estado
+      const data = (await res.json().catch(() => null)) as Reserva | null
+      if (data && data.id === reserva.id && data.booking_id) setReserva(data)
+      else await fetchReserva(true)
+      onUpdated()
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Error al marcar como realizada', 'error')
+    } finally {
+      setMarcandoRealizada(false)
+    }
+  }
+
   // Resultados de los sub-modales (Fase 2): un toast que dice qué pasó con los correos y links
   function alReagendar(res: ReagendarResponse) {
     mostrarAvisos(res.avisos)
@@ -1003,6 +1045,13 @@ export default function ModalDetalleReserva({
           {tab === 'auditoria' && <TabAuditoria reserva={reserva} comunicaciones={comunicaciones} />}
           {tab === 'acciones' && (
             <TabAcciones
+              realizada={
+                reserva.estado === 'realizada'
+                  ? { puede: false, motivo: 'Ya está marcada como realizada.' }
+                  : puedeMarcarRealizada(reserva, hoyMexico())
+              }
+              marcandoRealizada={marcandoRealizada}
+              onMarcarRealizada={marcarRealizada}
               cancelada={reserva.estado === 'cancelada'}
               pagosEnCamino={pagosEnCamino(reserva.pagos ?? []).length}
               linksPorVencer={linksSinCobrar(reserva.pagos ?? []).length}
@@ -2816,6 +2865,9 @@ function TabAuditoria({
 // TAB 7 — Acciones
 // ============================================================================
 function TabAcciones({
+  realizada,
+  marcandoRealizada,
+  onMarcarRealizada,
   cancelada,
   pagosEnCamino: nPagosEnCamino,
   linksPorVencer,
@@ -2834,6 +2886,10 @@ function TabAcciones({
   setProcesarReembolso,
   onCancelarReserva,
 }: {
+  /** B6: si se puede marcar como realizada y, si no, por qué (se muestra). */
+  realizada: { puede: boolean; motivo: string | null }
+  marcandoRealizada: boolean
+  onMarcarRealizada: () => void
   cancelada: boolean
   /** Pagos de MercadoPago sin acreditar (OXXO, en revisión): D15. */
   pagosEnCamino: number
@@ -2856,6 +2912,41 @@ function TabAcciones({
 }) {
   return (
     <div className="space-y-4">
+      <div className="border border-verde/30 rounded-lg p-4 bg-white">
+        <h3 className="text-sm font-semibold text-verde mb-2 flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+          Marcar como realizada
+        </h3>
+        <p className="text-sm text-verde-suave mb-2">
+          Cuando la experiencia ya ocurrió. Solo desde Confirmada o Pagada, el día de la experiencia o
+          después.
+        </p>
+        <button
+          type="button"
+          data-testid="accion-realizada"
+          onClick={onMarcarRealizada}
+          disabled={!realizada.puede || marcandoRealizada}
+          aria-describedby={realizada.motivo ? 'accion-realizada-motivo' : undefined}
+          className="inline-flex items-center gap-2 bg-verde hover:bg-verde-claro text-white px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {marcandoRealizada ? (
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+          ) : (
+            <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+          )}
+          Marcar como realizada
+        </button>
+        {realizada.motivo && (
+          <p
+            id="accion-realizada-motivo"
+            data-testid="accion-realizada-motivo"
+            className="mt-2 text-xs text-verde-suave"
+          >
+            {realizada.motivo}
+          </p>
+        )}
+      </div>
+
       <div className="border border-verde/30 rounded-lg p-4 bg-verde/5">
         <h3 className="text-sm font-semibold text-verde mb-2">Marcar en SAP</h3>
         <label className="flex items-center gap-2 text-sm text-verde cursor-pointer mb-2">

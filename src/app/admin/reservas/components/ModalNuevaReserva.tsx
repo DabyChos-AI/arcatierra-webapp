@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { Loader2, Search, X } from 'lucide-react'
 import { API_URL } from '@/lib/api'
@@ -30,8 +30,11 @@ interface ModalNuevaReservaProps {
   /** `avisos`: lo que el paso 6 no pudo hacer (link MP, envio de la cotizacion). */
   onCreated: (id: string, bookingId: string, avisos?: string[]) => void
   /** RC1: YYYY-MM-DD del día tocado en el calendario. Solo se precarga si es hoy o después
-   *  (hoy de México): el back todavía acepta fechas pasadas (PD1). */
+   *  (hoy de México): el back rechaza las fechas pasadas (PD1). */
   fechaSugerida?: string
+  /** LD2-b: lead con el que se abre (Leads › «Convertir a reserva»). Se lee de
+   *  `GET /api/admin/leads/{id}` y precarga el paso 1 (y la experiencia si está en la lista). */
+  leadIdInicial?: string
 }
 
 const STEPS: { num: number; label: string }[] = [
@@ -103,6 +106,21 @@ interface LeadMini {
   telefono?: string | null
   estado_lead?: string | null
 }
+
+// LD2-b: lo que el asistente usa de `GET /api/admin/leads/{id}` (C5: las llaves de un item del
+// listado; aquí solo las que se leen).
+interface LeadDetalle extends LeadMini {
+  experiencia_id: string | null
+  experiencia_nombre: string | null
+  reserva_creada_id: string | null
+  reserva_booking_id: string | null
+}
+
+/** Estado de la precarga desde un lead. `nombre` = cómo se le nombra en el aviso. */
+type LeadInicialEstado =
+  | { tipo: 'cargando' }
+  | { tipo: 'ok'; leadId: string; nombre: string }
+  | { tipo: 'error'; mensaje: string }
 
 const ESTADO_LEAD_LABEL: Record<string, string> = {
   nuevo: 'Nuevo',
@@ -198,11 +216,12 @@ export default function ModalNuevaReserva({
   onClose,
   onCreated,
   fechaSugerida,
+  leadIdInicial,
 }: ModalNuevaReservaProps) {
   const { data: session } = useSession()
   const token = session?.accessToken as string | undefined
 
-  // RC1: con un día pasado se abre sin fecha (el back no las rechaza todavía: PD1)
+  // RC1: con un día pasado se abre sin fecha (el back las rechaza: PD1)
   const [wiz, dispatch] = useReducer(wizardReducer, initialWizardData, (inicial) =>
     fechaSugerida && fechaSugerida >= hoyMexico() ? { ...inicial, fecha: fechaSugerida } : inicial,
   )
@@ -235,6 +254,20 @@ export default function ModalNuevaReserva({
   const [leadsLoading, setLeadsLoading] = useState(false)
   const [leadsQuery, setLeadsQuery] = useState('')
 
+  // LD2-b: precarga desde un lead (Leads › «Convertir a reserva»)
+  const [leadInicial, setLeadInicial] = useState<LeadInicialEstado | null>(
+    leadIdInicial ? { tipo: 'cargando' } : null,
+  )
+  // La experiencia del lead espera a que cargue la lista para elegirse como lo haría el usuario
+  const [experienciaDelLead, setExperienciaDelLead] = useState<{ id: string; nombre: string | null } | null>(
+    null,
+  )
+  const [avisoExperienciaLead, setAvisoExperienciaLead] = useState<string | null>(null)
+  const [experienciasCargadas, setExperienciasCargadas] = useState(false)
+  // El lead se precarga UNA vez: si el token se renueva con el asistente abierto no se
+  // pisa lo que ya se escribió.
+  const leadYaLeido = useRef<string | null>(null)
+
   // Submit
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -266,6 +299,7 @@ export default function ModalNuevaReserva({
           : []
         // El backend rechaza reservar una experiencia inactiva: no ofrecerla
         setExperiencias(arr.filter((e) => e.disponible !== false))
+        setExperienciasCargadas(true)
       }
       if (resAdc.ok) {
         const data = await resAdc.json()
@@ -398,6 +432,79 @@ export default function ModalNuevaReserva({
     fetchCatalogos()
   }, [token, fetchExperiencias, fetchResellers, fetchGuias, fetchCatalogos])
 
+  // LD2-b: abrir desde un lead → GET /api/admin/leads/{id} (C5) y PREFILL_FROM_LEAD, el mismo
+  // camino que «Buscar lead existente». Un 404 o un lead ya convertido dejan el asistente vacío.
+  useEffect(() => {
+    if (!leadIdInicial || !token || leadYaLeido.current === leadIdInicial) return
+    let cancelado = false
+    // Solo una lectura que terminó cuenta como hecha (StrictMode monta dos veces)
+    const terminar = (estado: LeadInicialEstado) => {
+      if (cancelado) return false
+      leadYaLeido.current = leadIdInicial
+      setLeadInicial(estado)
+      return true
+    }
+    const cargar = async () => {
+      setLeadInicial({ tipo: 'cargando' })
+      try {
+        const res = await fetch(`${API_URL}/api/admin/leads/${encodeURIComponent(leadIdInicial)}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!res.ok) {
+          const payload = await res.json().catch(() => null)
+          const mensaje =
+            res.status === 404
+              ? 'No se encontró el lead (puede que lo hayan borrado). El asistente sigue vacío.'
+              : `No se pudo leer el lead (${extraerMensajeError(payload, res.status)}). El asistente sigue vacío.`
+          terminar({ tipo: 'error', mensaje })
+          return
+        }
+        const lead = (await res.json()) as LeadDetalle
+        if (cancelado) return
+        // Un lead convertido ya tiene reserva: el back rechazaría ligarlo otra vez (LD4)
+        if (lead.estado_lead === 'convertido_a_reserva' || lead.reserva_creada_id) {
+          terminar({
+            tipo: 'error',
+            mensaje: lead.reserva_booking_id
+              ? `Este lead ya se convirtió en la reserva ${lead.reserva_booking_id}. El asistente sigue vacío.`
+              : 'Este lead ya se convirtió en una reserva. El asistente sigue vacío.',
+          })
+          return
+        }
+        if (
+          !terminar({
+            tipo: 'ok',
+            leadId: lead.id,
+            nombre: lead.nombre?.trim() || lead.email || lead.telefono || 'un cliente sin nombre',
+          })
+        ) {
+          return
+        }
+        dispatch({
+          type: 'PREFILL_FROM_LEAD',
+          lead: {
+            id: lead.id,
+            nombre: lead.nombre ?? '',
+            email: lead.email ?? undefined,
+            telefono: lead.telefono ?? undefined,
+          },
+        })
+        if (lead.experiencia_id) {
+          setExperienciaDelLead({ id: lead.experiencia_id, nombre: lead.experiencia_nombre })
+        }
+      } catch {
+        terminar({
+          tipo: 'error',
+          mensaje: 'Sin conexión con el servidor: no se pudo leer el lead. El asistente sigue vacío.',
+        })
+      }
+    }
+    cargar()
+    return () => {
+      cancelado = true
+    }
+  }, [leadIdInicial, token])
+
   // === Validacion por paso ===
   const pasoValido = useMemo(() => {
     switch (wiz.step) {
@@ -515,22 +622,42 @@ export default function ModalNuevaReserva({
     }
   }
 
-  function selectExperiencia(id: string) {
-    const exp = experiencias.find((e) => e.id === id)
-    if (!exp) return
-    const horaFinSugerida = wiz.horaInicio
-      ? sumarHoras(wiz.horaInicio, exp.duracion_horas ?? 0)
-      : undefined
-    dispatch({
-      type: 'SET_EXPERIENCIA',
-      id: exp.id,
-      nombre: exp.nombre,
-      precioBase: Number(exp.precio_por_persona ?? 0),
-      precioAdicional: Number(exp.precio_persona_adicional ?? 0),
-      personasIncluidas: Number(exp.personas_incluidas ?? 9),
-      horaFinSugerida,
-    })
-  }
+  // useCallback: también la usa el efecto que elige la experiencia del lead (LD2-b)
+  const selectExperiencia = useCallback(
+    (id: string) => {
+      const exp = experiencias.find((e) => e.id === id)
+      if (!exp) return
+      const horaFinSugerida = wiz.horaInicio
+        ? sumarHoras(wiz.horaInicio, exp.duracion_horas ?? 0)
+        : undefined
+      dispatch({
+        type: 'SET_EXPERIENCIA',
+        id: exp.id,
+        nombre: exp.nombre,
+        precioBase: Number(exp.precio_por_persona ?? 0),
+        precioAdicional: Number(exp.precio_persona_adicional ?? 0),
+        personasIncluidas: Number(exp.personas_incluidas ?? 9),
+        horaFinSugerida,
+      })
+    },
+    [experiencias, wiz.horaInicio],
+  )
+
+  // LD2-b: la experiencia del lead se elige cuando la lista ya cargó, con el mismo camino que
+  // usa el usuario. Si no está (pública, archivada o inactiva), se avisa y se elige a mano.
+  useEffect(() => {
+    if (!experienciaDelLead || !experienciasCargadas) return
+    if (experiencias.some((e) => e.id === experienciaDelLead.id)) {
+      if (!wiz.experienciaId) selectExperiencia(experienciaDelLead.id)
+    } else {
+      setAvisoExperienciaLead(
+        `La experiencia del lead${
+          experienciaDelLead.nombre ? ` (${experienciaDelLead.nombre})` : ''
+        } no está en la lista de experiencias privadas activas: elige una en el paso 2.`,
+      )
+    }
+    setExperienciaDelLead(null)
+  }, [experienciaDelLead, experienciasCargadas, experiencias, wiz.experienciaId, selectExperiencia])
 
   // === Lead picker ===
   function abrirLeadPicker() {
@@ -564,13 +691,14 @@ export default function ModalNuevaReserva({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center px-4 pt-36 sm:pt-40 pb-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center px-4 pt-10 sm:pt-16 pb-4 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-nueva-reserva-title"
     >
-      <div className="bg-white rounded-lg shadow-medium max-w-4xl w-full max-h-[92vh] flex flex-col">
-        <header className="border-b border-neutro-borde px-6 py-4 flex items-center justify-between">
+      {/* 390×844 (sesión 37): alto máximo al de la pantalla; lo que no debe encogerse, shrink-0 */}
+      <div className="bg-white rounded-lg shadow-medium max-w-4xl w-full max-h-[calc(100dvh-3.5rem)] sm:max-h-[calc(100dvh-5rem)] flex flex-col">
+        <header className="shrink-0 border-b border-neutro-borde px-6 py-4 flex items-center justify-between">
           <h2 id="modal-nueva-reserva-title" className="font-display text-xl text-verde">
             Nueva Reserva
           </h2>
@@ -584,7 +712,8 @@ export default function ModalNuevaReserva({
           </button>
         </header>
 
-        <div className="px-6 pt-4">
+        {/* Las 6 etiquetas no caben a 390 px: se desplazan aquí dentro, no ensanchan la página */}
+        <div className="shrink-0 px-6 pt-4 overflow-x-auto">
           <WizardSteps
             steps={STEPS}
             current={wiz.step}
@@ -594,7 +723,44 @@ export default function ModalNuevaReserva({
           />
         </div>
 
-        <div className="flex-1 overflow-auto px-6 py-4">
+        <div className="flex-1 min-h-0 overflow-auto px-6 py-4">
+          {/* LD2-b: de qué lead viene lo precargado, o por qué no se precargó */}
+          {leadInicial?.tipo === 'cargando' && (
+            <p
+              data-testid="wiz-lead-cargando"
+              role="status"
+              className="mb-4 inline-flex items-center gap-2 text-sm text-verde-suave"
+            >
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              Cargando el lead…
+            </p>
+          )}
+          {leadInicial?.tipo === 'ok' && wiz.leadId === leadInicial.leadId && (
+            <p
+              data-testid="wiz-lead-precargado"
+              role="status"
+              className="mb-4 bg-verde/10 border border-verde/30 rounded-lg p-3 text-sm text-verde"
+            >
+              Desde el lead de <strong>{leadInicial.nombre}</strong>
+            </p>
+          )}
+          {leadInicial?.tipo === 'error' && (
+            <p
+              data-testid="wiz-lead-error"
+              role="alert"
+              className="mb-4 bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo"
+            >
+              {leadInicial.mensaje}
+            </p>
+          )}
+          {avisoExperienciaLead && wiz.step <= 2 && !wiz.experienciaId && (
+            <p
+              data-testid="wiz-lead-experiencia-aviso"
+              className="mb-4 bg-amarillo-bg border border-amarillo/40 rounded-lg p-3 text-sm text-verde"
+            >
+              {avisoExperienciaLead}
+            </p>
+          )}
           {error && (
             <div className="mb-4 bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo">
               {error}
@@ -648,7 +814,7 @@ export default function ModalNuevaReserva({
           )}
         </div>
 
-        <footer className="border-t border-neutro-borde px-6 py-4 flex items-center justify-between">
+        <footer className="shrink-0 border-t border-neutro-borde px-6 py-4 flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={onClose}
@@ -921,7 +1087,7 @@ function Paso1Cliente({
         </>
       )}
 
-      <div className="grid grid-cols-3 gap-3 border-t border-neutro-borde pt-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 border-t border-neutro-borde pt-4">
         <div>
           <label htmlFor="cliente-idioma" className="block text-sm font-medium text-verde mb-1">
             Idioma de la experiencia
@@ -1101,7 +1267,7 @@ function Paso2Experiencia({
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label htmlFor="exp-fecha" className="block text-sm font-medium text-verde mb-1">
             Fecha *
@@ -1153,7 +1319,7 @@ function Paso2Experiencia({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label htmlFor="exp-inv-min" className="block text-sm font-medium text-verde mb-1">
             Invitados *
@@ -1232,7 +1398,7 @@ function Paso2Experiencia({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label htmlFor="exp-inv-max" className="block text-sm font-medium text-verde mb-1">
             Invitados max (opcional)
@@ -2011,13 +2177,13 @@ function LeadPickerModal({
 }) {
   return (
     <div
-      className="fixed inset-0 bg-black/50 z-[70] flex items-start justify-center px-4 pt-36 sm:pt-40 pb-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/50 z-[70] flex items-start justify-center px-4 pt-10 sm:pt-16 pb-4 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-label="Buscar lead existente"
     >
-      <div className="bg-white rounded-lg shadow-medium max-w-lg w-full max-h-[80vh] flex flex-col">
-        <header className="border-b border-neutro-borde px-4 py-3 flex items-center justify-between">
+      <div className="bg-white rounded-lg shadow-medium max-w-lg w-full max-h-[calc(100dvh-3.5rem)] sm:max-h-[calc(100dvh-5rem)] flex flex-col">
+        <header className="shrink-0 border-b border-neutro-borde px-4 py-3 flex items-center justify-between">
           <h3 className="font-display text-lg text-verde">Buscar lead existente</h3>
           <button
             type="button"
@@ -2028,7 +2194,7 @@ function LeadPickerModal({
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </header>
-        <div className="p-4 border-b border-neutro-borde">
+        <div className="shrink-0 p-4 border-b border-neutro-borde">
           <div className="relative">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde-suave"

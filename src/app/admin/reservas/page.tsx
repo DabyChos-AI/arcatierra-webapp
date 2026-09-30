@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, Suspense } from 'react'
 import dynamic from 'next/dynamic'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Plus, FileText, Calendar as CalendarIcon, Table as TableIcon, AlertTriangle, X } from 'lucide-react'
 import AdminTopbar from '../components/AdminTopbar'
 import ReservasKPIs from './components/ReservasKPIs'
@@ -48,27 +48,43 @@ function ReservasPageInner() {
   // RC1: el día que se tocó en el calendario (YYYY-MM-DD). El asistente solo lo usa si es
   // hoy o después; el botón «Nueva Reserva» abre sin fecha.
   const [fechaSugerida, setFechaSugerida] = useState<string | undefined>(undefined)
+  // LD2-b: el lead con el que se abre el asistente (Leads › «Convertir a reserva»)
+  const [leadIdInicial, setLeadIdInicial] = useState<string | undefined>(undefined)
   const [detalleId, setDetalleId] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   // Lo que el paso 6 del wizard no pudo hacer (link MP / envio de cotizacion)
   const [avisosAlta, setAvisosAlta] = useState<{ bookingId: string; avisos: string[] } | null>(null)
 
   // C33: apertura directa del modal de detalle vía ?reserva_id=<uuid>
-  // (deep-link desde el dashboard ejecutivo → Próximos eventos).
+  // (deep-link desde el dashboard ejecutivo → Próximos eventos y desde Leads › «Ver reserva»).
+  // LD2-b: ?lead_id=<uuid> abre el asistente con el lead precargado.
+  // DL1: leído el parámetro, la URL se limpia para que recargar no vuelva a abrir el modal.
   const searchParams = useSearchParams()
+  const router = useRouter()
   useEffect(() => {
     const rid = searchParams.get('reserva_id')
+    const lid = searchParams.get('lead_id')
+    if (lid) {
+      setFechaSugerida(undefined)
+      setLeadIdInicial(lid)
+      setShowNueva(true)
+    }
     if (rid) setDetalleId(rid)
-  }, [searchParams])
+    if (lid || rid) router.replace('/admin/reservas', { scroll: false })
+  }, [searchParams, router])
 
   const handleCreated = useCallback((id: string, bookingId: string, avisos: string[] = []) => {
     setShowNueva(false)
+    setLeadIdInicial(undefined)
     setRefreshKey((k) => k + 1)
     setDetalleId(id)
     setAvisosAlta(avisos.length > 0 ? { bookingId, avisos } : null)
   }, [])
 
-  const handleClose = useCallback(() => setShowNueva(false), [])
+  const handleClose = useCallback(() => {
+    setShowNueva(false)
+    setLeadIdInicial(undefined)
+  }, [])
 
   const handleCloseDetalle = useCallback(() => setDetalleId(null), [])
 
@@ -93,6 +109,7 @@ function ReservasPageInner() {
             type="button"
             onClick={() => {
               setFechaSugerida(undefined)
+              setLeadIdInicial(undefined)
               setShowNueva(true)
             }}
             className="inline-flex items-center gap-2 bg-terracota hover:bg-terracota-dark text-white px-4 py-2 rounded-lg shadow-terracota transition-colors font-medium"
@@ -168,6 +185,7 @@ function ReservasPageInner() {
               onEventClick={(id) => setDetalleId(id)}
               onSlotClick={(fecha) => {
                 setFechaSugerida(fecha)
+                setLeadIdInicial(undefined)
                 setShowNueva(true)
               }}
             />
@@ -186,6 +204,7 @@ function ReservasPageInner() {
           onClose={handleClose}
           onCreated={handleCreated}
           fechaSugerida={fechaSugerida}
+          leadIdInicial={leadIdInicial}
         />
       )}
       {detalleId && (

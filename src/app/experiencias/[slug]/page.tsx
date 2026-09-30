@@ -10,7 +10,61 @@ import { Experiencia } from '@/data/experiencias';
 import { formatPrice } from '@/utils/formatters';
 import { useSession } from 'next-auth/react';
 import { API_URL } from '@/lib/api';
+import { formatFechaMexico, hoyMexico } from '@/lib/dates';
 import { decodificarSlug, normalizarSlug } from './slug';
+
+// ─── Solicitud de experiencia privada (LD3, contrato C4 de la Fase 3) ────────────────
+type HorarioPrivado = 'manana' | 'tarde' | 'noche';
+
+/** Mismos textos que el servidor escribe en el mensaje del lead. */
+const HORARIOS_PRIVADOS: { valor: HorarioPrivado; etiqueta: string }[] = [
+  { valor: 'manana', etiqueta: 'Mañana (8:00–12:00)' },
+  { valor: 'tarde', etiqueta: 'Tarde (12:00–17:00)' },
+  { valor: 'noche', etiqueta: 'Noche (17:00–21:00)' },
+];
+
+/** `x@y.z`: la misma revisión que hace el servidor para contactar por correo. */
+const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Límites de `SolicitudPrivadaRequest` (Pydantic): lo que no cabe, el servidor lo rechaza. */
+const PERSONAS_MIN = 1;
+const PERSONAS_MAX = 500;
+const MAX_NOMBRE = 255;
+const MAX_EMAIL = 255;
+const MAX_TELEFONO = 50;
+const MAX_COMENTARIOS = 1500;
+
+const CAMPOS_SOLICITUD: Record<string, string> = {
+  nombre: 'nombre',
+  email: 'correo',
+  telefono: 'teléfono',
+  medio_contacto: 'medio de contacto',
+  fecha_deseada: 'fecha deseada',
+  horario: 'horario',
+  personas: 'número de personas',
+  comentarios: 'comentarios',
+};
+
+/**
+ * `detail` de FastAPI en texto para el cliente: un 400 lo trae como texto; un 422 de Pydantic,
+ * como lista de `{loc, msg}` (en inglés), así que se dice qué campos revisar.
+ */
+function detalleLegible(detail: unknown): string {
+  if (typeof detail === 'string' && detail.trim()) return detail;
+  if (Array.isArray(detail)) {
+    const campos = detail
+      .map((d) => {
+        if (!d || typeof d !== 'object' || !('loc' in d)) return null;
+        const loc = (d as { loc: unknown }).loc;
+        const campo = Array.isArray(loc) ? loc[loc.length - 1] : null;
+        return typeof campo === 'string' ? CAMPOS_SOLICITUD[campo] ?? null : null;
+      })
+      .filter((c): c is string => c !== null);
+    const unicos = Array.from(new Set(campos));
+    if (unicos.length > 0) return `Revisa estos datos: ${unicos.join(', ')}.`;
+  }
+  return 'Revisa los datos del formulario.';
+}
 
 interface ExperienciaPageProps {
   params: Promise<{
@@ -36,38 +90,133 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
   
   const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
 
+  // LD3 (Fase 3): los datos del formulario privado ya viajan al lead. Antes fecha, horario,
+  // personas y comentarios eran campos sin estado y se perdían; el nombre y el correo vacíos
+  // se rellenaban con «Visitante» y un correo inventado.
+  const [privFecha, setPrivFecha] = useState('');
+  const [privHorario, setPrivHorario] = useState<HorarioPrivado | ''>('');
+  const [privPersonas, setPrivPersonas] = useState('');
+  const [privComentarios, setPrivComentarios] = useState('');
+  const [privError, setPrivError] = useState<string | null>(null);
+  // Personas que incluye el precio de la experiencia privada (si la API la manda).
+  const [personasIncluidas, setPersonasIncluidas] = useState<number | null>(null);
+
+  const cerrarModal = () => {
+    setShowReservationModal(false);
+    setPrivError(null);
+  };
+
   // Enviar solicitud de experiencia privada y abrir canal de contacto
   const handleContactoPrivada = async (medio: 'whatsapp' | 'email') => {
     if (!experiencia || enviandoSolicitud) return;
+    setPrivError(null);
+
+    // Regla de contacto de C4, antes de mandar nada (el servidor la vuelve a revisar).
+    const nombreLimpio = nombre.trim();
+    const emailLimpio = email.trim();
+    const telefonoLimpio = telefono.trim();
+    const personasTexto = privPersonas.trim();
+    const personasNum = personasTexto === '' ? null : Number(personasTexto);
+    let errorLocal: string | null = null;
+    if (!nombreLimpio) {
+      errorLocal = 'Escribe tu nombre';
+    } else if (medio === 'whatsapp' && !telefonoLimpio) {
+      errorLocal = 'Escribe tu teléfono para que te contactemos por WhatsApp';
+    } else if (medio === 'email' && !CORREO_VALIDO.test(emailLimpio)) {
+      errorLocal = 'Escribe un correo válido';
+    } else if (privFecha && privFecha < hoyMexico()) {
+      errorLocal = 'La fecha deseada ya pasó';
+    } else if (
+      personasNum !== null &&
+      (!Number.isInteger(personasNum) || personasNum < PERSONAS_MIN || personasNum > PERSONAS_MAX)
+    ) {
+      errorLocal = `El número de personas va de ${PERSONAS_MIN} a ${PERSONAS_MAX}`;
+    }
+    if (errorLocal) {
+      setPrivError(errorLocal);
+      return;
+    }
+
     setEnviandoSolicitud(true);
+    // Payload = C4 (sin `mensaje`: el servidor lo arma con estos datos).
+    const payload = {
+      nombre: nombreLimpio,
+      email: emailLimpio || null,
+      telefono: telefonoLimpio || null,
+      medio_contacto: medio,
+      fecha_deseada: privFecha || null,
+      horario: privHorario || null,
+      personas: personasNum,
+      comentarios: privComentarios.trim() || null,
+    };
+    let rechazo: string | null = null;
     try {
-      await fetch(`${API_URL}/api/experiencias/${experiencia.id}/solicitud-privada`, {
+      const res = await fetch(`${API_URL}/api/experiencias/${experiencia.id}/solicitud-privada`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre: nombre || 'Visitante',
-          email: email || 'no-proporcionado@arcatierra.com',
-          telefono: telefono || '',
-          medio_contacto: medio,
-          mensaje: `Solicitud para experiencia privada: ${experiencia.nombre}`,
-        }),
+        body: JSON.stringify(payload),
       });
+      // 400/422 = el servidor rechazó los datos: se dice por qué y NO se abre el canal.
+      // 200, 5xx, 429 o cualquier otra cosa: se abre igual (el cliente quiere hablar con nosotros).
+      if (res.status === 400 || res.status === 422) {
+        const cuerpo: unknown = await res.json().catch(() => null);
+        rechazo = detalleLegible(
+          cuerpo && typeof cuerpo === 'object' && 'detail' in cuerpo
+            ? (cuerpo as { detail: unknown }).detail
+            : null
+        );
+      }
     } catch (err) {
+      // Error de red: no se guardó el lead, pero el canal se abre igual.
       console.error('Error registrando solicitud:', err);
     } finally {
       setEnviandoSolicitud(false);
     }
 
-    const nombreExp = encodeURIComponent(experiencia.nombre);
+    if (rechazo) {
+      setPrivError(rechazo);
+      return;
+    }
+
+    // Lo que el cliente pidió, también en el texto de WhatsApp / correo.
+    const horarioTexto = HORARIOS_PRIVADOS.find((h) => h.valor === privHorario)?.etiqueta;
+    const detalles = [
+      privFecha
+        ? `Fecha deseada: ${formatFechaMexico(privFecha, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}`
+        : null,
+      horarioTexto ? `Horario: ${horarioTexto}` : null,
+      personasNum !== null ? `Personas: ${personasNum}` : null,
+    ].filter((linea): linea is string => linea !== null);
+
     if (medio === 'whatsapp') {
-      const msg = encodeURIComponent(`Hola, me interesa la experiencia privada "${experiencia.nombre}". Mi nombre es ${nombre || 'no especificado'}.`);
+      const msg = encodeURIComponent(
+        [
+          `Hola, me interesa la experiencia privada "${experiencia.nombre}". Mi nombre es ${nombreLimpio}.`,
+          ...detalles,
+        ].join('\n')
+      );
       window.open(`https://wa.me/525510515525?text=${msg}`, '_blank');
     } else {
       const subject = encodeURIComponent(`Solicitud experiencia privada: ${experiencia.nombre}`);
-      const body = encodeURIComponent(`Hola,\n\nMe interesa la experiencia privada "${experiencia.nombre}".\n\nNombre: ${nombre || ''}\nEmail: ${email || ''}\nTelefono: ${telefono || ''}\n\nQuedo atento/a a su respuesta.`);
+      const comentariosLimpios = privComentarios.trim();
+      const body = encodeURIComponent(
+        [
+          'Hola,',
+          '',
+          `Me interesa la experiencia privada "${experiencia.nombre}".`,
+          '',
+          `Nombre: ${nombreLimpio}`,
+          `Email: ${emailLimpio}`,
+          `Teléfono: ${telefonoLimpio}`,
+          ...detalles,
+          ...(comentariosLimpios ? [`Comentarios: ${comentariosLimpios}`] : []),
+          '',
+          'Quedo atento/a a su respuesta.',
+        ].join('\n')
+      );
       window.open(`mailto:info@arcatierra.com?subject=${subject}&body=${body}`, '_blank');
     }
-    setShowReservationModal(false);
+    cerrarModal();
   };
 
   // Llenar datos del usuario si está logueado
@@ -196,6 +345,13 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
             };
             
             setExperiencia(experienciaMapeada);
+            // Pista del formulario privado: solo con un número real de la API (C4).
+            const incluidas: unknown = expEncontrada.personas_incluidas;
+            setPersonasIncluidas(
+              typeof incluidas === 'number' && Number.isInteger(incluidas) && incluidas > 0
+                ? incluidas
+                : null
+            );
             console.log(`Experiencia ${slug} cargada desde la API`);
           } else {
             console.error(`Experiencia con slug "${slug}" no encontrada`);
@@ -496,8 +652,9 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
               <h3 className="text-xl font-bold text-gray-800">
                 {isPrivate ? "Solicitar Experiencia Privada" : "Reservar Experiencia"}
               </h3>
-              <button 
-                onClick={() => setShowReservationModal(false)} 
+              <button
+                onClick={cerrarModal}
+                aria-label="Cerrar"
                 className="text-gray-500 hover:text-gray-700"
               >
                 <X size={24} />
@@ -518,75 +675,129 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
               /* Formulario para experiencias PRIVADAS */
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
+                  <label htmlFor="priv-nombre" className="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
                   <input
-                    type="text" 
+                    id="priv-nombre"
+                    data-testid="priv-nombre"
+                    type="text"
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
+                    maxLength={MAX_NOMBRE}
+                    autoComplete="name"
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <label htmlFor="priv-correo" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                   <input
-                    type="email" 
+                    id="priv-correo"
+                    data-testid="priv-correo"
+                    type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    maxLength={MAX_EMAIL}
+                    autoComplete="email"
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
-                    required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                  <label htmlFor="priv-telefono" className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
                   <input
-                    type="tel" 
+                    id="priv-telefono"
+                    data-testid="priv-telefono"
+                    type="tel"
                     value={telefono}
                     onChange={(e) => setTelefono(e.target.value)}
+                    maxLength={MAX_TELEFONO}
+                    autoComplete="tel"
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
-                    required
                   />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Para WhatsApp necesitamos tu teléfono; para correo, tu email.
+                  </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Fecha deseada</label>
+                  <label htmlFor="priv-fecha" className="block text-sm font-medium text-gray-700 mb-1">Fecha deseada</label>
                   <input
+                    id="priv-fecha"
+                    data-testid="priv-fecha"
                     type="date"
+                    min={hoyMexico()}
+                    value={privFecha}
+                    onChange={(e) => setPrivFecha(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
-                    required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Horario preferido</label>
+                  <label htmlFor="priv-horario" className="block text-sm font-medium text-gray-700 mb-1">Horario preferido</label>
                   <select
+                    id="priv-horario"
+                    data-testid="priv-horario"
+                    value={privHorario}
+                    onChange={(e) => {
+                      const valor = e.target.value;
+                      const opcion = HORARIOS_PRIVADOS.find((h) => h.valor === valor);
+                      setPrivHorario(opcion ? opcion.valor : '');
+                    }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
-                    required
                   >
                     <option value="">Selecciona un horario</option>
-                    <option value="manana">Mañana (8:00 AM - 12:00 PM)</option>
-                    <option value="tarde">Tarde (12:00 PM - 5:00 PM)</option>
-                    <option value="noche">Noche (5:00 PM - 9:00 PM)</option>
+                    {HORARIOS_PRIVADOS.map((h) => (
+                      <option key={h.valor} value={h.valor}>
+                        {h.etiqueta}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Número de personas</label>
+                  <label htmlFor="priv-personas" className="block text-sm font-medium text-gray-700 mb-1">Número de personas</label>
                   <input
+                    id="priv-personas"
+                    data-testid="priv-personas"
                     type="number"
-                    min="1" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
-                    required
+                    inputMode="numeric"
+                    min={PERSONAS_MIN}
+                    max={PERSONAS_MAX}
+                    step={1}
+                    value={privPersonas}
+                    onChange={(e) => setPrivPersonas(e.target.value)}
+                    aria-describedby="priv-personas-pista"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
                   />
-                  <p className="mt-1 text-xs text-gray-500">Mínimo 10 personas para experiencias privadas</p>
+                  <p id="priv-personas-pista" data-testid="priv-personas-pista" className="mt-1 text-xs text-gray-500">
+                    {personasIncluidas !== null
+                      ? `Incluye ${personasIncluidas} personas; puedes pedir más o menos`
+                      : 'Un aproximado basta; lo confirmamos contigo'}
+                  </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Comentarios y requerimientos especiales</label>
-                  <textarea className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota min-h-[100px]"
+                  <label htmlFor="priv-comentarios" className="block text-sm font-medium text-gray-700 mb-1">Comentarios y requerimientos especiales</label>
+                  <textarea
+                    id="priv-comentarios"
+                    data-testid="priv-comentarios"
+                    value={privComentarios}
+                    onChange={(e) => setPrivComentarios(e.target.value)}
+                    maxLength={MAX_COMENTARIOS}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota min-h-[100px]"
                   />
                 </div>
+
+                {privError && (
+                  <p
+                    data-testid="priv-error"
+                    role="alert"
+                    className="rounded-md border border-terracota/40 bg-terracota/10 px-3 py-2 text-sm text-terracota-oscuro"
+                  >
+                    {privError}
+                  </p>
+                )}
               </div>
             ) : (
               /* Formulario para experiencias PÚBLICAS */
@@ -693,12 +904,13 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
             {isPrivate ? (
               <div className="flex flex-col gap-3">
                 <button
-                  onClick={() => setShowReservationModal(false)}
+                  onClick={cerrarModal}
                   className="w-full py-3 px-6 bg-white border border-gray-300 rounded-md text-gray-700 font-medium hover:bg-gray-50 transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
+                  data-testid="priv-whatsapp"
                   onClick={() => handleContactoPrivada('whatsapp')}
                   disabled={enviandoSolicitud}
                   className="w-full py-3 px-6 rounded-md font-medium text-white transition-colors flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50"
@@ -710,6 +922,7 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                   Contactar por WhatsApp
                 </button>
                 <button
+                  data-testid="priv-email"
                   onClick={() => handleContactoPrivada('email')}
                   disabled={enviandoSolicitud}
                   className="w-full py-3 px-6 rounded-md font-medium text-white transition-colors flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50"

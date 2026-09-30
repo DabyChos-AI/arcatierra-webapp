@@ -78,6 +78,9 @@ export const MOCK_PLANTILLA: Record<string, string> = {
   monto_link: '4,620.00',
   concepto_link: 'Anticipo reserva AT-EXP-2026-05-001',
   vence_link: '2026-06-06',
+  // Fase 3 (N4b): la propina aparte, como recomendación (monto_total la incluye)
+  total_sin_propina: '13,090.00',
+  total_con_propina: '15,400.00',
 }
 
 // Variables Jinja2 disponibles para los chips clickeables del editor.
@@ -89,11 +92,13 @@ export const VARIABLES_JINJA: { key: string; descripcion: string }[] = [
   { key: 'hora_inicio', descripcion: 'Hora HH:MM' },
   { key: 'experiencia_nombre', descripcion: 'Nombre de la experiencia' },
   { key: 'punto_encuentro', descripcion: 'Ubicación del encuentro' },
-  { key: 'monto_total', descripcion: 'Monto total con formato' },
+  { key: 'monto_total', descripcion: 'Monto total con formato (INCLUYE la propina sugerida)' },
   { key: 'monto_anticipo', descripcion: 'Monto del anticipo' },
   { key: 'monto_balance', descripcion: 'Saldo pendiente' },
   { key: 'addons_lista', descripcion: 'HTML <li> con desglose de addons (C03)' },
-  { key: 'propina_monto', descripcion: 'Propina sugerida (C09)' },
+  { key: 'propina_monto', descripcion: 'Propina sugerida (opcional, no facturable)' },
+  { key: 'total_sin_propina', descripcion: 'Total de la experiencia SIN propina (lo facturable)' },
+  { key: 'total_con_propina', descripcion: 'Total con la propina sugerida (= monto_total)' },
   { key: 'guias_lista', descripcion: 'Guías asignados (CSV)' },
   { key: 'hora_fin', descripcion: 'Hora de término HH:MM (vacía si la reserva no la tiene)' },
   { key: 'fecha_anterior', descripcion: 'Solo Reagendamiento: fecha antes del cambio' },
