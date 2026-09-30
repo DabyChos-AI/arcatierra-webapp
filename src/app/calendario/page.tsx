@@ -2,26 +2,24 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Calendar, 
-  Clock, 
-  Users, 
-  Star, 
-  ShoppingCart, 
-  X, 
-  Plus, 
-  Minus, 
-  Eye,
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Clock,
+  Users,
+  Star,
+  ShoppingCart,
+  X,
   Sparkles,
-  Grid3X3,
-  List
 } from 'lucide-react'
-import { useSession } from 'next-auth/react'
 import { API_URL } from '@/lib/api'
-import { formatFechaMexico } from '@/lib/dates'
+import { formatFechaMexico, hoyMexico } from '@/lib/dates'
 import { normalizarSlug, rutaExperiencia } from '@/app/experiencias/[slug]/slug'
+import { horario } from '@/app/admin/eventos/components/fechas'
+import { formatMXN } from '@/types/reservas'
+import type { FechaPublica } from '@/types/compra-experiencias'
+import SelectorFecha, { esVendible, nombreDeFecha } from '@/components/experiencias/SelectorFecha'
 
 // Fechas del feed (AAAA-MM-DD, columna DATE) con día de la semana. WEB-f: siempre con
 // formatFechaMexico; `new Date('AAAA-MM-DD')` es medianoche UTC y en México pinta un día antes.
@@ -41,8 +39,19 @@ function fechaISOLocal(fecha: Date): string {
 }
 
 /** «Más Información»: liga por el slug que manda el feed (C3); si viene null, la fórmula de antes. */
-function rutaDetalle(exp: { experiencia_slug: string | null; experiencia: string }): string {
-  return rutaExperiencia(exp.experiencia_slug || normalizarSlug(exp.experiencia.replace(/\s+/g, '-')))
+function rutaDetalle(fecha: FechaPublica): string {
+  return rutaExperiencia(fecha.experiencia_slug || normalizarSlug(nombreDeFecha(fecha).replace(/\s+/g, '-')))
+}
+
+/** Precio por persona de la fecha (C5: el de la fecha si tiene propio; si no, el de la experiencia). */
+function precioFecha(fecha: FechaPublica): string {
+  return fecha.precio_efectivo != null ? formatMXN(fecha.precio_efectivo) : 'Precio por confirmar'
+}
+
+/** «N disponibles» solo si la fecha se vende en línea y tiene cupo definido. */
+function textoDisponibles(fecha: FechaPublica): string {
+  if (!esVendible(fecha)) return 'Reserva por WhatsApp'
+  return fecha.disponibles != null ? `${fecha.disponibles} disponibles` : ''
 }
 
 // Días de la semana
@@ -116,271 +125,81 @@ const categorias = [
   }
 ]
 
-export default function CalendarioPage() {
-  console.log('🚀 CALENDARIO PAGE LOADED - VERSION 3.0 - ' + new Date().toISOString())
-  
-  const [fechaActual, setFechaActual] = useState(new Date()) // Mes actual
-  const [vista, setVista] = useState<'calendario' | 'lista'>('lista')
-  const [fechaSeleccionada, setFechaSeleccionada] = useState<Date | null>(null)
-  const [carrito, setCarrito] = useState<any[]>([])
-  const [modalReserva, setModalReserva] = useState<any>(null)
-  const [adultos, setAdultos] = useState(1)
-  const [niños, setNiños] = useState(0)
-  const [formData, setFormData] = useState({ nombre: '', email: '', telefono: '', comentarios: '' })
-  const [loading, setLoading] = useState(false)
-  const [experienciasCalendario, setExperienciasCalendario] = useState<any[]>([])
-  const [loadingEventos, setLoadingEventos] = useState(true)
-  const { data: session } = useSession()
+/** ¿La fecha es de esta categoría del panel izquierdo? (por el nombre, como siempre) */
+function esDeCategoria(fecha: FechaPublica, categoriaId: string): boolean {
+  const nombre = nombreDeFecha(fecha).toLowerCase()
+  switch (categoriaId) {
+    case 'amanecer-chinampero':
+      return nombre.includes('amanecer chinampero') && !nombre.includes('tcm')
+    case 'amanecer-tcm':
+      return nombre.includes('amanecer') && nombre.includes('tcm')
+    case 'brunch-chinampero':
+      return nombre.includes('brunch')
+    case 'comida-chinampera':
+      return nombre.includes('comida chinampera')
+    case 'taller-plantas':
+      return nombre.includes('taller')
+    case 'cena-chinampas':
+      return nombre.includes('cena')
+    case 'dia-muertos':
+      return nombre.includes('muertos')
+    case 'chinampa-familia':
+      return nombre.includes('familia')
+    default:
+      return false
+  }
+}
 
-  // Cargar eventos del calendario desde API existente
+export default function CalendarioPage() {
+  const [fechaActual, setFechaActual] = useState(new Date()) // Mes actual
+  const [vista] = useState<'calendario' | 'lista'>('lista')
+  const [fechaSeleccionada, setFechaSeleccionada] = useState<Date | null>(null)
+  // La fecha cuyo selector está abierto (F2: «Agregar al carrito» abre SelectorFecha en el modal)
+  const [modalFecha, setModalFecha] = useState<FechaPublica | null>(null)
+  // Feed público GET /api/calendario/eventos (C5): cada item ES una fecha (`id` = evento_id)
+  const [fechasCalendario, setFechasCalendario] = useState<FechaPublica[]>([])
+  const [loadingEventos, setLoadingEventos] = useState(true)
+  const [errorEventos, setErrorEventos] = useState<string | null>(null)
+
   useEffect(() => {
     const cargarEventos = async () => {
       try {
         setLoadingEventos(true)
-        // Usar el endpoint que YA EXISTE
+        setErrorEventos(null)
         const response = await fetch(`${API_URL}/api/calendario/eventos?limit=100`)
-        
         if (!response.ok) {
-          console.error('Error al cargar eventos:', response.status)
-          setExperienciasCalendario([])
+          setErrorEventos('No pudimos cargar las fechas. Recarga la página en un momento.')
+          setFechasCalendario([])
           return
         }
-        
-        const result = await response.json()
-        
-        // Adaptar formato de eventos_calendario al formato esperado
-        const eventos = result.items.map((e: any) => ({
-          id: e.recurso_id,  // ID de la experiencia (para agregar al carrito)
-          evento_id: e.id,   // ID del evento (para referencia)
-          fecha: e.fecha_evento,
-          experiencia: e.nombre_evento,
-          // C1/C3: slug de la experiencia (mismo que GET /api/experiencias); null en feeds viejos
-          experiencia_slug: e.experiencia_slug ?? null,
-          hora: e.hora_inicio,
-          hora_fin: e.hora_fin,
-          precio: e.precio_base || 0,
-          disponibles: e.disponibles || (e.capacidad_maxima - e.capacidad_ocupada),
-          total: e.capacidad_maxima,
-          tipo: e.tipo_evento?.includes('publica') ? 'publica' : 'privada',
-          categoria: e.nombre_evento.toLowerCase().replace(/\s+/g, '_'),
-          icon: '⭐',
-          duracion: '4 horas',
-          rating: 4.8
-        }))
-        
-        console.log(`✅ Eventos cargados desde API: ${eventos.length}`)
-        console.log('🔍 Primeros 3 eventos:', eventos.slice(0, 3).map((e: any) => ({nombre: e.experiencia, fecha: e.fecha})))
-        setExperienciasCalendario(eventos)
-      } catch (error) {
-        console.error('Error cargando eventos:', error)
-        setExperienciasCalendario([])
+        const result: { items?: FechaPublica[] } = await response.json()
+        setFechasCalendario(Array.isArray(result.items) ? result.items : [])
+      } catch {
+        setErrorEventos('No pudimos cargar las fechas. Revisa tu conexión y recarga la página.')
+        setFechasCalendario([])
       } finally {
         setLoadingEventos(false)
       }
     }
-    
+
     cargarEventos()
   }, [])
-
-  // Eliminado: contador de personas viendo
-
-  // Cargar datos del usuario al abrir modal
-  useEffect(() => {
-    if (modalReserva && session?.user) {
-      // Obtener datos completos del usuario desde la API
-      if (session.accessToken) {
-        fetch(`${API_URL}/api/auth/me`, {
-          headers: {
-            'Authorization': `Bearer ${session.accessToken}`
-          }
-        })
-        .then(res => {
-          if (!res.ok) throw new Error('Failed to fetch user data')
-          return res.json()
-        })
-        .then(userData => {
-          setFormData({
-            nombre: userData.nombre_completo || userData.nombre || session.user.name || '',
-            email: userData.email || session.user.email || '',
-            telefono: userData.telefono || userData.phone || '',
-            comentarios: ''
-          })
-        })
-        .catch((error) => {
-          console.error('Error fetching user data:', error)
-          // Fallback con datos de la sesión (sin teléfono)
-          setFormData({
-            nombre: session.user.name || '',
-            email: session.user.email || '',
-            telefono: '',
-            comentarios: ''
-          })
-        })
-      } else {
-        setFormData({
-          nombre: session.user.name || '',
-          email: session.user.email || '',
-          telefono: '',
-          comentarios: ''
-        })
-      }
-    }
-  }, [modalReserva, session])
-
-  // Función para agregar experiencia al carrito (SOLO localStorage)
-  const agregarAlCarrito = async () => {
-    if (!session) {
-      alert('Debes iniciar sesión para agregar al carrito')
-      return
-    }
-
-    setLoading(true)
-    try {
-      // Generar ID único para la experiencia
-      const experienciaId = modalReserva.id || `EXP-${modalReserva.experiencia.replace(/\s+/g, '-')}-${modalReserva.fecha}`
-      
-      // Crear item del carrito
-      const cartItem = {
-        id: experienciaId,
-        name: modalReserva.experiencia,
-        price: modalReserva.precio,
-        quantity: adultos + niños,
-        image: '/placeholder-experiencia.jpg',
-        unit: 'personas',
-        tipo: 'experiencia',
-        fecha: modalReserva.fecha,
-        hora: modalReserva.hora,
-        adultos: adultos,
-        ninos: niños,
-        notas: formData.comentarios
-      }
-
-      console.log('Agregando experiencia al carrito:', cartItem)
-
-      // Agregar a localStorage
-      const existingCart = JSON.parse(localStorage.getItem('arcaTierraCart') || '[]')
-      const existingItemIndex = existingCart.findIndex((item: any) => 
-        item.id === cartItem.id && item.fecha === cartItem.fecha && item.hora === cartItem.hora
-      )
-
-      if (existingItemIndex >= 0) {
-        existingCart[existingItemIndex].quantity += cartItem.quantity
-      } else {
-        existingCart.push(cartItem)
-      }
-
-      localStorage.setItem('arcaTierraCart', JSON.stringify(existingCart))
-      
-      // Disparar evento para actualizar header
-      window.dispatchEvent(new Event('cartUpdated'))
-      
-      alert('✅ Experiencia agregada al carrito')
-      setModalReserva(null)
-      
-    } catch (error: any) {
-      console.error('Error al agregar al carrito:', error)
-      alert(`Error al agregar al carrito: ${error.message || 'Error desconocido'}`)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Función para comprar ahora (agregar al carrito + ir a checkout)
-  const comprarAhora = async () => {
-    if (!session) {
-      alert('Debes iniciar sesión para hacer una reserva')
-      return
-    }
-
-    if (!formData.nombre || !formData.email) {
-      alert('Por favor completa nombre y email')
-      return
-    }
-
-    setLoading(true)
-    try {
-      // Agregar al carrito usando localStorage (igual que productos)
-      const savedCart = localStorage.getItem('arcaTierraCart')
-      const cartItems = savedCart ? JSON.parse(savedCart) : []
-      
-      // Crear item de experiencia para el carrito
-      // El ID debe ser el UUID de la experiencia para que el backend lo procese
-      const experienciaItem = {
-        id: modalReserva.id, // UUID completo de la experiencia
-        name: modalReserva.experiencia,
-        price: modalReserva.precio,
-        quantity: adultos + niños,
-        image: modalReserva.imagen || '/images/experiencias/default.jpg',
-        unit: 'persona',
-        tipo: 'experiencia',
-        fecha: modalReserva.fecha,
-        hora: modalReserva.hora,
-        adultos,
-        niños,
-        experiencia_id: modalReserva.id,
-        evento_id: modalReserva.evento_id, // ID del evento en el calendario
-        datos_contacto: {
-          nombre: formData.nombre,
-          email: formData.email,
-          telefono: formData.telefono
-        },
-        notas: formData.comentarios
-      }
-      
-      // Buscar si ya existe esta experiencia+fecha en el carrito
-      const existingIndex = cartItems.findIndex((item: any) => 
-        item.id === experienciaItem.id && item.fecha === experienciaItem.fecha
-      )
-      
-      if (existingIndex >= 0) {
-        // Actualizar cantidad
-        cartItems[existingIndex].quantity = adultos + niños
-        cartItems[existingIndex].adultos = adultos
-        cartItems[existingIndex].niños = niños
-      } else {
-        // Agregar nuevo
-        cartItems.push(experienciaItem)
-      }
-      
-      // Guardar en localStorage
-      localStorage.setItem('arcaTierraCart', JSON.stringify(cartItems))
-      window.dispatchEvent(new Event('cartUpdated'))
-      
-      // Ir al checkout
-      window.location.href = '/checkout'
-    } catch (error) {
-      console.error('Error:', error)
-      alert('Error al agregar al carrito')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   // Calcular experiencias del mes actual
   const experienciasDelMes = useMemo(() => {
     const año = fechaActual.getFullYear()
     const mes = fechaActual.getMonth() + 1 // JavaScript mes es 0-11, necesitamos 1-12
-    
-    const filtradas = experienciasCalendario.filter(exp => {
+    return fechasCalendario.filter((f) => {
       // Extraer año y mes del string YYYY-MM-DD
-      const [expAño, expMes] = exp.fecha.split('-').map(Number)
+      const [expAño, expMes] = f.fecha_evento.split('-').map(Number)
       return expAño === año && expMes === mes
     })
-    
-    console.log(`📅 Filtrado calendario: ${año}-${mes.toString().padStart(2, '0')} → ${filtradas.length} eventos`, filtradas.map(e => e.fecha))
-    return filtradas
-  }, [fechaActual, experienciasCalendario])
-
-  // Usar directamente las experiencias del mes sin filtros adicionales
-  const experienciasFiltradas = useMemo(() => {
-    console.log('🔄 experienciasFiltradas actualizado:', experienciasDelMes.length, 'eventos')
-    return [...experienciasDelMes] // Crear nuevo array para forzar re-render
-  }, [experienciasDelMes])
+  }, [fechaActual, fechasCalendario])
 
   // Obtener experiencias de una fecha específica
   const getExperienciasDia = (fecha: Date) => {
     const fechaStr = fechaISOLocal(fecha)
-    return experienciasCalendario.filter(exp => exp.fecha === fechaStr)
+    return fechasCalendario.filter((f) => f.fecha_evento === fechaStr)
   }
 
   // Generar días del calendario
@@ -419,24 +238,14 @@ export default function CalendarioPage() {
   const dias = generarDiasCalendario()
 
   const navegarMes = (direccion: 'anterior' | 'siguiente') => {
-    setFechaActual(prev => {
+    setFechaActual((prev) => {
       const año = prev.getFullYear()
       const mes = prev.getMonth()
-      
-      if (direccion === 'anterior') {
-        // Crear un nuevo objeto Date para el mes anterior
-        return new Date(año, mes - 1, 1)
-      } else {
-        // Crear un nuevo objeto Date para el mes siguiente
-        return new Date(año, mes + 1, 1)
-      }
+      return direccion === 'anterior' ? new Date(año, mes - 1, 1) : new Date(año, mes + 1, 1)
     })
   }
 
-
-  const abrirModalReserva = (experiencia: any) => {
-    setModalReserva(experiencia)
-  }
+  const hoy = hoyMexico()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5F3F0] to-[#E8E4DF]">
@@ -492,74 +301,23 @@ export default function CalendarioPage() {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {categorias.map((categoria, index) => {
-                  // Filtrar experiencias de esta categoría DEL MES ACTUAL VISIBLE
-                  const experienciasCategoriaMes = experienciasDelMes.filter(exp => {
-                    const nombre = exp.experiencia?.toLowerCase() || ''
-                    switch (categoria.id) {
-                      case 'amanecer-chinampero':
-                        return nombre.includes('amanecer chinampero') && !nombre.includes('tcm')
-                      case 'amanecer-tcm':
-                        return nombre.includes('amanecer') && nombre.includes('tcm')
-                      case 'brunch-chinampero':
-                        return nombre.includes('brunch')
-                      case 'comida-chinampera':
-                        return nombre.includes('comida chinampera')
-                      case 'taller-plantas':
-                        return nombre.includes('taller')
-                      case 'cena-chinampas':
-                        return nombre.includes('cena')
-                      case 'dia-muertos':
-                        return nombre.includes('muertos')
-                      case 'chinampa-familia':
-                        return nombre.includes('familia')
-                      default:
-                        return false
-                    }
-                  })
+                  // Fechas de esta categoría DEL MES ACTUAL VISIBLE
+                  const fechasDisponibles = experienciasDelMes.filter((f) => esDeCategoria(f, categoria.id)).length
 
-                  // Contar fechas disponibles en el mes actual
-                  const fechasDisponibles = experienciasCategoriaMes.length
-                  
-                  // Encontrar la próxima fecha disponible GLOBALMENTE (para navegación)
-                  const hoy = new Date()
-                  const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
-                  
-                  const todasExperienciasCategoria = experienciasCalendario.filter(exp => {
-                    const nombre = exp.experiencia?.toLowerCase() || ''
-                    switch (categoria.id) {
-                      case 'amanecer-chinampero':
-                        return nombre.includes('amanecer chinampero') && !nombre.includes('tcm')
-                      case 'amanecer-tcm':
-                        return nombre.includes('amanecer') && nombre.includes('tcm')
-                      case 'brunch-chinampero':
-                        return nombre.includes('brunch')
-                      case 'comida-chinampera':
-                        return nombre.includes('comida chinampera')
-                      case 'taller-plantas':
-                        return nombre.includes('taller')
-                      case 'cena-chinampas':
-                        return nombre.includes('cena')
-                      case 'dia-muertos':
-                        return nombre.includes('muertos')
-                      case 'chinampa-familia':
-                        return nombre.includes('familia')
-                      default:
-                        return false
-                    }
-                  })
-                  
-                  const proximaExperienciaGlobal = todasExperienciasCategoria
-                    .sort((a, b) => a.fecha.localeCompare(b.fecha))
-                    .find(exp => exp.fecha >= hoyStr)
-                  
+                  // La próxima fecha de la categoría GLOBALMENTE (para navegación); «hoy» de México
+                  const proximaExperienciaGlobal = fechasCalendario
+                    .filter((f) => esDeCategoria(f, categoria.id))
+                    .sort((x, y) => x.fecha_evento.localeCompare(y.fecha_evento))
+                    .find((f) => f.fecha_evento >= hoy)
+
                   const proximaFechaTexto = proximaExperienciaGlobal
-                    ? formatFechaMexico(proximaExperienciaGlobal.fecha, { year: undefined, day: 'numeric', month: 'short' })
+                    ? formatFechaMexico(proximaExperienciaGlobal.fecha_evento, { year: undefined, day: 'numeric', month: 'short' })
                     : 'Sin fechas'
 
                   const handleClickExperiencia = () => {
                     if (proximaExperienciaGlobal) {
                       // Solo navegar al mes de la próxima fecha, sin filtros
-                      const [año, mes, dia] = proximaExperienciaGlobal.fecha.split('-').map(Number)
+                      const [año, mes] = proximaExperienciaGlobal.fecha_evento.split('-').map(Number)
                       setFechaActual(new Date(año, mes - 1, 1)) // mes - 1 porque JavaScript usa 0-11
                     }
                   }
@@ -673,37 +431,10 @@ export default function CalendarioPage() {
                           {/* Indicadores de experiencias */}
                           {tieneExperiencias && (
                             <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-1">
-                              {experienciasDia.slice(0, 3).map((exp, i) => {
-                                const categoria = categorias.find(cat => {
-                                  const nombre = exp.experiencia?.toLowerCase() || ''
-                                  switch (cat.id) {
-                                    case 'amanecer-chinampero':
-                                      return nombre.includes('amanecer chinampero') && !nombre.includes('tcm')
-                                    case 'amanecer-tcm':
-                                      return nombre.includes('amanecer') && nombre.includes('tcm')
-                                    case 'brunch-chinampero':
-                                      return nombre.includes('brunch')
-                                    case 'comida-chinampera':
-                                      return nombre.includes('comida chinampera')
-                                    case 'taller-plantas':
-                                      return nombre.includes('taller')
-                                    case 'cena-chinampas':
-                                      return nombre.includes('cena')
-                                    case 'dia-muertos':
-                                      return nombre.includes('muertos')
-                                    case 'chinampa-familia':
-                                      return nombre.includes('familia')
-                                    default:
-                                      return false
-                                  }
-                                })
-                                
+                              {experienciasDia.slice(0, 3).map((f) => {
+                                const categoria = categorias.find((cat) => esDeCategoria(f, cat.id))
                                 return (
-                                  <div
-                                    key={i}
-                                    className="text-xs"
-                                    title={exp.experiencia}
-                                  >
+                                  <div key={f.id} className="text-xs" title={nombreDeFecha(f)}>
                                     {categoria?.emoji || '📅'}
                                   </div>
                                 )
@@ -722,63 +453,84 @@ export default function CalendarioPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="text-[#475A52] mb-4">
-                    {experienciasFiltradas.length} experiencias disponibles
-                  </div>
-                  
-                  {experienciasFiltradas.map((exp, index) => (
+                  {errorEventos ? (
+                    <p data-testid="cal-error" role="alert" className="text-[#B15543]">
+                      {errorEventos}
+                    </p>
+                  ) : loadingEventos ? (
+                    <p className="text-[#475A52]">Cargando fechas...</p>
+                  ) : (
+                    <div className="text-[#475A52] mb-4">
+                      {experienciasDelMes.length} experiencias disponibles
+                    </div>
+                  )}
+
+                  {experienciasDelMes.map((f, index) => (
                     <motion.div
-                      key={exp.id}
+                      key={f.id}
+                      data-testid="cal-exp"
+                      data-evento-id={f.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className={`p-6 rounded-xl border-2 transition-all duration-300 ${
-                        fechaSeleccionada && fechaISOLocal(fechaSeleccionada) === exp.fecha
+                      transition={{ delay: Math.min(index, 10) * 0.1 }}
+                      className={`p-4 sm:p-6 rounded-xl border-2 transition-all duration-300 ${
+                        fechaSeleccionada && fechaISOLocal(fechaSeleccionada) === f.fecha_evento
                           ? 'border-[#B15543] bg-gradient-to-r from-[#B15543]/10 to-[#D4735E]/10'
                           : 'border-[#CCBB9A]/30 bg-gradient-to-r from-[#F5F3F0] to-white hover:border-[#B15543]/50'
                       }`}
                     >
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h4 className="font-bold text-[#3A4741] text-lg">{exp.experiencia}</h4>
+                      <div className="flex justify-between items-start gap-3 mb-3">
+                        <div className="min-w-0">
+                          <h4 className="font-bold text-[#3A4741] text-lg break-words">{nombreDeFecha(f)}</h4>
                           <p className="text-[#475A52] text-sm" data-testid="cal-exp-fecha">
-                            {formatFechaMexico(exp.fecha, FECHA_LARGA)}
+                            {formatFechaMexico(f.fecha_evento, FECHA_LARGA)}
                           </p>
                         </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-[#B15543]">${exp.precio}</div>
-                          <div className="text-sm text-[#475A52]">{exp.disponibles} disponibles</div>
+                        <div className="text-right shrink-0">
+                          <div className="text-2xl font-bold text-[#B15543]" data-testid="cal-exp-precio">
+                            {precioFecha(f)}
+                          </div>
+                          <div className="text-sm text-[#475A52]" data-testid="cal-exp-disponibles">
+                            {textoDisponibles(f)}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4 text-sm text-[#475A52] mb-4">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#475A52] mb-4">
                         <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          <span>{exp.hora}</span>
+                          <Clock className="w-4 h-4" aria-hidden="true" />
+                          <span>{horario(f.hora_inicio, f.hora_fin)}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Users className="w-4 h-4" />
+                          <Users className="w-4 h-4" aria-hidden="true" />
                           <span>Duración: 3 horas</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 text-yellow-500" />
+                          <Star className="w-4 h-4 text-yellow-500" aria-hidden="true" />
                           <span>Calificación: 4.9/5</span>
                         </div>
                       </div>
 
-                      <div className="flex gap-3">
+                      <div className="flex flex-col sm:flex-row gap-3">
                         <button
-                          onClick={() => abrirModalReserva(exp)}
+                          type="button"
+                          onClick={() => setModalFecha(f)}
+                          data-testid="cal-exp-reservar"
                           className="flex-1 bg-gradient-to-r from-[#B15543] to-[#D4735E] text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
                         >
-                          <ShoppingCart className="w-4 h-4 inline mr-2" />
-                          Agregar al Carrito
+                          {esVendible(f) ? (
+                            <>
+                              <ShoppingCart className="w-4 h-4 inline mr-2" aria-hidden="true" />
+                              Agregar al carrito
+                            </>
+                          ) : (
+                            'Reservar'
+                          )}
                         </button>
                         <button
+                          type="button"
                           onClick={() => {
-                            if (exp.experiencia_slug || exp.experiencia) {
-                              window.location.href = rutaDetalle(exp);
-                            }
+                            window.location.href = rutaDetalle(f)
                           }}
                           data-testid="cal-exp-mas-info"
                           className="px-6 py-3 border-2 border-[#B15543] text-[#B15543] rounded-xl font-semibold hover:bg-[#B15543] hover:text-white transition-all duration-300"
@@ -794,61 +546,68 @@ export default function CalendarioPage() {
 
             {/* Panel de fecha seleccionada */}
             {fechaSeleccionada && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-white rounded-2xl shadow-lg border border-[#CCBB9A]/30 p-6"
               >
                 <h3 className="text-xl font-bold text-[#3A4741] mb-4">
-                  Experiencias del {fechaSeleccionada.toLocaleDateString('es-ES', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
+                  Experiencias del {fechaSeleccionada.toLocaleDateString('es-ES', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
                   })}
                 </h3>
-                
+
                 {getExperienciasDia(fechaSeleccionada).length === 0 ? (
                   <div className="text-center py-8 text-[#475A52]">
-                    <Calendar className="w-12 h-12 mx-auto mb-3 text-[#CCBB9A]" />
+                    <Calendar className="w-12 h-12 mx-auto mb-3 text-[#CCBB9A]" aria-hidden="true" />
                     <p>No hay experiencias programadas para esta fecha</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {getExperienciasDia(fechaSeleccionada).map((exp, index) => (
+                    {getExperienciasDia(fechaSeleccionada).map((f, index) => (
                       <motion.div
-                        key={exp.id}
+                        key={f.id}
+                        data-testid="cal-dia-exp"
+                        data-evento-id={f.id}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
                         className="bg-gradient-to-r from-[#F5F3F0] to-white rounded-xl p-4 border border-[#CCBB9A]/30"
                       >
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-semibold text-[#3A4741]">{exp.experiencia}</h4>
-                          <span className="text-lg font-bold text-[#B15543]">${exp.precio}</span>
+                        <div className="flex justify-between items-start gap-3 mb-2">
+                          <h4 className="font-semibold text-[#3A4741] min-w-0 break-words">{nombreDeFecha(f)}</h4>
+                          <span className="text-lg font-bold text-[#B15543] shrink-0" data-testid="cal-dia-precio">
+                            {precioFecha(f)}
+                          </span>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-[#475A52] mb-3">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#475A52] mb-3">
                           <div className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            <span>{exp.hora}</span>
+                            <Clock className="w-4 h-4" aria-hidden="true" />
+                            <span>{horario(f.hora_inicio, f.hora_fin)}</span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Users className="w-4 h-4" />
-                            <span>{exp.disponibles} disponibles</span>
-                          </div>
+                          {textoDisponibles(f) && (
+                            <div className="flex items-center gap-1">
+                              <Users className="w-4 h-4" aria-hidden="true" />
+                              <span>{textoDisponibles(f)}</span>
+                            </div>
+                          )}
                         </div>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => abrirModalReserva(exp)}
+                            type="button"
+                            onClick={() => setModalFecha(f)}
+                            data-testid="cal-dia-reservar"
                             className="flex-1 bg-gradient-to-r from-[#B15543] to-[#D4735E] text-white py-2 px-4 rounded-lg text-sm font-medium hover:shadow-md transition-all duration-300"
                           >
-                            Agregar al Carrito
+                            {esVendible(f) ? 'Agregar al carrito' : 'Reservar'}
                           </button>
                           <button
+                            type="button"
                             onClick={() => {
-                              if (exp.experiencia_slug || exp.experiencia) {
-                                window.location.href = rutaDetalle(exp);
-                              }
+                              window.location.href = rutaDetalle(f)
                             }}
                             data-testid="cal-dia-mas-info"
                             className="px-4 py-2 border border-[#B15543] text-[#B15543] rounded-lg text-sm font-medium hover:bg-[#B15543] hover:text-white transition-all duration-300"
@@ -866,194 +625,48 @@ export default function CalendarioPage() {
         </div>
       </div>
 
-      {/* Modal de reserva */}
+      {/* Modal: SelectorFecha de la fecha elegida (F1/F2). Sin sesión: el checkout acepta invitados.
+          z-[950] = nivel de modales (Z_INDEX_HIERARCHY.md): por encima de la burbuja de WhatsApp (750), que se abre sola. */}
       <AnimatePresence>
-        {modalReserva && (
+        {modalFecha && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-start justify-center pt-36 px-4 pb-8 overflow-y-auto"
-            onClick={() => setModalReserva(null)}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[950] flex items-start justify-center pt-28 sm:pt-36 px-4 pb-4"
+            onClick={() => setModalFecha(null)}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[calc(100vh-180px)] overflow-y-auto"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="cal-modal-titulo"
+              data-testid="cal-modal"
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[calc(100dvh-8rem)] sm:max-h-[calc(100dvh-10rem)] flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-6">
-                  <h3 className="text-2xl font-bold text-[#3A4741]">Reservar Experiencia</h3>
-                  <button
-                    onClick={() => setModalReserva(null)}
-                    className="p-2 hover:bg-[#F5F3F0] rounded-xl transition-colors"
-                  >
-                    <X className="w-5 h-5 text-[#475A52]" />
-                  </button>
-                </div>
-
-                <div className="mb-6">
-                  <h4 className="font-bold text-[#3A4741] text-lg mb-2">{modalReserva.experiencia}</h4>
-                  <p className="text-[#475A52] mb-4" data-testid="cal-modal-fecha">
-                    {formatFechaMexico(modalReserva.fecha, FECHA_LARGA)} a las {modalReserva.hora}
-                  </p>
-                  <div className="text-2xl font-bold text-[#B15543] mb-4">${modalReserva.precio}</div>
-                </div>
-
-                <div className="space-y-4 mb-6">
-                  <div>
-                    <label className="block text-sm font-medium text-[#3A4741] mb-2">Nombre completo</label>
-                    <input
-                      type="text"
-                      value={formData.nombre}
-                      onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-                      className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors"
-                      placeholder="Tu nombre completo"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-[#3A4741] mb-2">Email</label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors"
-                      placeholder="tu@email.com"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-[#3A4741] mb-2">Teléfono</label>
-                    <input
-                      type="tel"
-                      value={formData.telefono}
-                      onChange={(e) => setFormData({...formData, telefono: e.target.value})}
-                      className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors"
-                      placeholder="+52 55 1234 5678"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-[#3A4741] mb-2">Comentarios especiales</label>
-                    <textarea
-                      rows={4}
-                      value={formData.comentarios}
-                      onChange={(e) => setFormData({...formData, comentarios: e.target.value})}
-                      className="w-full px-4 py-3 border border-[#CCBB9A] rounded-xl focus:ring-2 focus:ring-[#B15543] focus:border-[#B15543] transition-colors resize-none"
-                      placeholder="¿Tienes alguna solicitud especial? Por ejemplo: alergias alimentarias, necesidades de accesibilidad, celebración especial, etc."
-                    />
-                    <p className="text-sm text-[#475A52] mt-1">💡 Comparte cualquier información que nos ayude a personalizar tu experiencia</p>
-                  </div>
-
-                  <div className="flex gap-4">
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium text-[#3A4741] mb-2">Adultos</label>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setAdultos(Math.max(1, adultos - 1))}
-                          className="p-2 border border-[#CCBB9A] rounded-lg hover:bg-[#F5F3F0] transition-colors"
-                        >
-                          <Minus className="w-4 h-4 text-[#475A52]" />
-                        </button>
-                        <span className="font-semibold text-[#3A4741] min-w-[2rem] text-center">{adultos}</span>
-                        <button 
-                          onClick={() => setAdultos(adultos + 1)}
-                          className="p-2 border border-[#CCBB9A] rounded-lg hover:bg-[#F5F3F0] transition-colors"
-                        >
-                          <Plus className="w-4 h-4 text-[#475A52]" />
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium text-[#3A4741] mb-2">Niños</label>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setNiños(Math.max(0, niños - 1))}
-                          className="p-2 border border-[#CCBB9A] rounded-lg hover:bg-[#F5F3F0] transition-colors"
-                        >
-                          <Minus className="w-4 h-4 text-[#475A52]" />
-                        </button>
-                        <span className="font-semibold text-[#3A4741] min-w-[2rem] text-center">{niños}</span>
-                        <button 
-                          onClick={() => setNiños(niños + 1)}
-                          className="p-2 border border-[#CCBB9A] rounded-lg hover:bg-[#F5F3F0] transition-colors"
-                        >
-                          <Plus className="w-4 h-4 text-[#475A52]" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={agregarAlCarrito}
-                    disabled={loading}
-                    className="flex-1 px-6 py-3 border-2 border-[#B15543] text-[#B15543] rounded-xl font-semibold hover:bg-[#B15543] hover:text-white transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    <ShoppingCart className="w-4 h-4" />
-                    {loading ? 'Agregando...' : 'Agregar al Carrito'}
-                  </button>
-                  <button 
-                    onClick={comprarAhora}
-                    disabled={loading}
-                    className="flex-1 bg-gradient-to-r from-[#B15543] to-[#D4735E] text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50"
-                  >
-                    {loading ? 'Procesando...' : 'Comprar Ahora'}
-                  </button>
-                </div>
+              <div className="shrink-0 flex justify-between items-center gap-3 px-5 py-4 border-b border-[#CCBB9A]/40">
+                <h3 id="cal-modal-titulo" className="text-xl font-bold text-[#3A4741] mb-0">
+                  {esVendible(modalFecha) ? 'Elige tus lugares' : 'Reservar experiencia'}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setModalFecha(null)}
+                  aria-label="Cerrar"
+                  className="p-2 hover:bg-[#F5F3F0] rounded-xl transition-colors shrink-0"
+                >
+                  <X className="w-5 h-5 text-[#475A52]" aria-hidden="true" />
+                </button>
+              </div>
+              <div className="flex-1 min-h-0 overflow-y-auto p-5">
+                <SelectorFecha key={modalFecha.id} fecha={modalFecha} onAgregado={() => setModalFecha(null)} />
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Carrito - Movido abajo del calendario */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="bg-white rounded-2xl shadow-lg border border-[#CCBB9A]/30 p-6"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <ShoppingCart className="w-5 h-5 text-[#B15543]" />
-            <h3 className="font-bold text-[#3A4741]">Tu Carrito</h3>
-            {carrito.length > 0 && (
-              <span className="bg-[#B15543] text-white text-xs px-2 py-1 rounded-full">
-                {carrito.length}
-              </span>
-            )}
-          </div>
-          
-          {carrito.length === 0 ? (
-            <div className="text-center py-8 text-[#475A52]">
-              <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-[#CCBB9A]" />
-              <p className="font-medium">Carrito vacío</p>
-              <p className="text-sm">Agrega experiencias para comenzar</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {carrito.map((item, index) => (
-                <div key={index} className="flex justify-between items-center p-3 bg-[#F5F3F0] rounded-lg">
-                  <div>
-                    <p className="font-medium text-[#3A4741] text-sm">{item.experiencia}</p>
-                    <p className="text-xs text-[#475A52]">{item.fecha}</p>
-                  </div>
-                  <span className="font-bold text-[#B15543]">${item.precio}</span>
-                </div>
-              ))}
-              <button className="w-full bg-gradient-to-r from-[#B15543] to-[#D4735E] text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300">
-                Proceder al Checkout
-              </button>
-            </div>
-          )}
-        </motion.div>
-      </div>
 
       {/* Footer */}
       <footer className="bg-[#3A4741] text-white py-12 mt-16">

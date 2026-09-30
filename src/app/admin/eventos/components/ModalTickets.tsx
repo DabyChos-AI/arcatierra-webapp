@@ -12,10 +12,11 @@ import type {
   ItemCatalogo,
   ListaTickets,
   ResumenTickets,
-  VentaTicket,
   VentaTicketPatch,
   VentaTicketPayload,
 } from '@/types/planeacion'
+// Fase 4a (C8): la venta trae `es_web`, el pedido, el comprador y su contacto (permiso `reservas`)
+import { textoPersonas, type VentaTicket } from '@/types/compra-experiencias'
 import { inputClass } from './CamposPlaneacion'
 import { hoyMexico, horario, sinTope } from './fechas'
 import { textoONull } from './utils'
@@ -93,7 +94,7 @@ export default function ModalTickets({
           const payload = await res.json().catch(() => null)
           throw new Error(extraerMensajeError(payload, res.status))
         }
-        const data = (await res.json()) as ListaTickets
+        const data = (await res.json()) as Omit<ListaTickets, 'items'> & { items?: VentaTicket[] }
         setVentas(data.items ?? [])
         setResumen(data.resumen)
         if (data.evento) onEventoRef.current(data.evento)
@@ -406,11 +407,14 @@ export default function ModalTickets({
                   ) : ventas.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-3 py-6 text-center text-verde-suave">
-                        Sin ventas registradas a mano para esta fecha.
+                        Sin ventas registradas para esta fecha.
                       </td>
                     </tr>
                   ) : (
-                    ventas.map((v) => (
+                    ventas.map((v) =>
+                      v.es_web === true ? (
+                        <FilaVentaWeb key={v.id} venta={v} />
+                      ) : (
                       <tr
                         key={v.id}
                         data-testid={`tickets-fila-${v.id}`}
@@ -461,7 +465,8 @@ export default function ModalTickets({
                           </div>
                         </td>
                       </tr>
-                    ))
+                      ),
+                    )
                   )}
                 </tbody>
               </table>
@@ -538,7 +543,7 @@ export default function ModalTickets({
                     ))}
                   </select>
                   <p id="tk-fuente-nota" className="text-xs text-verde-suave mt-1">
-                    Las ventas de la página se cuentan solas.
+                    Las ventas de la página se registran solas al pagarse.
                   </p>
                 </div>
                 <div>
@@ -649,5 +654,69 @@ export default function ModalTickets({
         </div>
       </div>
     </div>
+  )
+}
+
+/**
+ * Una venta de la página web (C8): la registró el pago, no el equipo. Se ve el comprador, los niños, las
+ * alergias, el folio del pedido y el contacto (solo el equipo de Experiencias abre este modal: permiso
+ * `reservas`). No se edita ni se borra aquí: se cancela desde Pedidos, que libera el lugar y dice si hay
+ * reembolso (D13-10).
+ */
+function FilaVentaWeb({ venta: v }: { venta: VentaTicket }) {
+  const ninos = v.ninos ?? 0
+  return (
+    <tr data-testid={`ticket-web-${v.id}`} className="border-b border-neutro-borde bg-azul-bg/60 align-top">
+      <td className="px-3 py-2 text-verde">
+        <span className="whitespace-nowrap">{v.fuente_nombre ?? 'Página web'}</span>
+        <span className="mt-1 block w-fit rounded-full bg-azul/10 px-2 py-0.5 text-xs text-azul">Web</span>
+      </td>
+      <td className="px-3 py-2 text-center tabular-nums text-verde font-medium">
+        {v.cantidad}
+        {/* Igual que en el carrito y el checkout: «3 personas (2 adultos, 1 niño)» */}
+        <span data-testid="ticket-web-personas" className="block text-xs font-normal text-verde-suave">
+          {textoPersonas(Math.max(0, v.cantidad - ninos), ninos)}
+        </span>
+      </td>
+      <td className="px-3 py-2 text-right tabular-nums text-verde">{v.monto != null ? formatMXN(v.monto) : '—'}</td>
+      <td className="px-3 py-2 text-verde whitespace-nowrap">{formatFechaMexico(v.fecha_venta)}</td>
+      <td className="px-3 py-2 text-verde min-w-[220px]">
+        <dl className="space-y-0.5 text-xs">
+          <div>
+            <dt className="inline text-verde-suave">Comprador: </dt>
+            <dd data-testid="ticket-web-comprador" className="inline font-medium">
+              {v.comprador_nombre || '—'}
+            </dd>
+          </div>
+          <div>
+            <dt className="inline text-verde-suave">Niños: </dt>
+            <dd className="inline">{ninos}</dd>
+          </div>
+          <div>
+            <dt className="inline text-verde-suave">Alergias: </dt>
+            <dd data-testid="ticket-web-alergias" className="inline break-words">
+              {v.alergias || 'Ninguna'}
+            </dd>
+          </div>
+          <div>
+            <dt className="inline text-verde-suave">Pedido: </dt>
+            <dd data-testid="ticket-web-pedido" className="inline font-mono">
+              {v.numero_pedido || '—'}
+            </dd>
+          </div>
+          <div data-testid="ticket-web-contacto">
+            <dt className="inline text-verde-suave">Contacto: </dt>
+            <dd className="inline break-all">
+              {[v.comprador_email, v.comprador_telefono].filter(Boolean).join(' · ') || '—'}
+            </dd>
+          </div>
+        </dl>
+      </td>
+      <td className="px-3 py-2 text-center">
+        <span data-testid="ticket-web-nota" className="text-xs text-verde-suave">
+          Se cancela desde Pedidos
+        </span>
+      </td>
+    </tr>
   )
 }

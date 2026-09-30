@@ -11,7 +11,22 @@ import { formatPrice } from '@/utils/formatters';
 import { useSession } from 'next-auth/react';
 import { API_URL } from '@/lib/api';
 import { formatFechaMexico, hoyMexico } from '@/lib/dates';
+import { linkWhatsApp } from '@/lib/whatsapp';
+import { horario } from '@/app/admin/eventos/components/fechas';
+import { formatMXN } from '@/types/reservas';
+import type { FechaPublica } from '@/types/compra-experiencias';
+import SelectorFecha, { esVendible } from '@/components/experiencias/SelectorFecha';
 import { decodificarSlug, normalizarSlug } from './slug';
+
+// ─── Rama pública: compra en línea de una fecha (F2, Fase 4a de PLAN-EXP-SIN-FALLAS) ─────
+/** Cuántas próximas fechas de la experiencia se ofrecen en «Reservar Ahora». */
+const MAX_FECHAS_SLUG = 6;
+const FECHA_LARGA_SLUG: Intl.DateTimeFormatOptions = {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+};
 
 // ─── Solicitud de experiencia privada (LD3, contrato C4 de la Fase 3) ────────────────
 type HorarioPrivado = 'manana' | 'tarde' | 'noche';
@@ -81,9 +96,7 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
   const [showReservationModal, setShowReservationModal] = useState(false);
   const [galeriaIndex, setGaleriaIndex] = useState(0);
 
-  // Estados para el formulario de reserva
-  const [adultos, setAdultos] = useState(1);
-  const [ninos, setNinos] = useState(0);
+  // Estados del formulario privado (LD3)
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [telefono, setTelefono] = useState('');
@@ -101,9 +114,16 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
   // Personas que incluye el precio de la experiencia privada (si la API la manda).
   const [personasIncluidas, setPersonasIncluidas] = useState<number | null>(null);
 
+  // Rama pública (F2): las próximas fechas de ESTA experiencia en el feed público (C5) y la elegida.
+  // null = todavía cargando. Nada se manda al backend desde aquí: la fecha va al carrito (SelectorFecha).
+  const [fechasWeb, setFechasWeb] = useState<FechaPublica[] | null>(null);
+  const [errorFechasWeb, setErrorFechasWeb] = useState<string | null>(null);
+  const [fechaElegida, setFechaElegida] = useState<FechaPublica | null>(null);
+
   const cerrarModal = () => {
     setShowReservationModal(false);
     setPrivError(null);
+    setFechaElegida(null);
   };
 
   // Enviar solicitud de experiencia privada y abrir canal de contacto
@@ -228,56 +248,6 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
     }
   }, [session]);
 
-  // Función para manejar el checkout real
-  const handleCompletarReserva = async () => {
-    if (!experiencia) return;
-    
-    const precioTotal = experiencia.precio.base * adultos;
-    
-    try {
-      const response = await fetch(`${API_URL}/api/crear-preferencia-pago`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          items: [{
-            id: experiencia.id,
-            name: experiencia.nombre,
-            price: experiencia.precio.base,
-            quantity: adultos,
-            description: `${experiencia.nombre} - ${adultos} adulto${adultos > 1 ? 's' : ''} ${ninos > 0 ? ` + ${ninos} niño${ninos > 1 ? 's' : ''}` : ''}`
-          }],
-          back_urls: {
-            success: `${window.location.origin}/experiencias/${slug}?status=success`,
-            failure: `${window.location.origin}/experiencias/${slug}?status=failure`,
-            pending: `${window.location.origin}/experiencias/${slug}?status=pending`
-          },
-          auto_return: 'approved',
-          external_reference: `EXP-${experiencia.id}-${Date.now()}`,
-          payer: {
-            name: nombre,
-            email: email,
-            phone: {
-              number: telefono
-            }
-          }
-        })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        // Redirigir al checkout de MercadoPago
-        window.location.href = data.init_point;
-      } else {
-        alert('Error al crear la preferencia de pago. Intenta de nuevo.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error al procesar la reserva. Intenta de nuevo.');
-    }
-  };
-
   // Cargar experiencia desde la API
   useEffect(() => {
     const fetchExperiencia = async () => {
@@ -370,6 +340,34 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
     fetchExperiencia();
   }, [slug]);
 
+  // Rama pública: próximas fechas de esta experiencia (feed público filtrado por experiencia_id, hasta 6)
+  const experienciaIdPublica = experiencia && experiencia.tipo !== 'privada' ? experiencia.id : null;
+  useEffect(() => {
+    if (!experienciaIdPublica) return;
+    let vigente = true;
+    const cargarFechas = async () => {
+      setErrorFechasWeb(null);
+      try {
+        const res = await fetch(`${API_URL}/api/calendario/eventos?limit=100`);
+        if (!res.ok) throw new Error(String(res.status));
+        const data: { items?: FechaPublica[] } = await res.json();
+        const items = Array.isArray(data.items) ? data.items : [];
+        if (vigente) {
+          setFechasWeb(items.filter((f) => f.experiencia_id === experienciaIdPublica).slice(0, MAX_FECHAS_SLUG));
+        }
+      } catch {
+        if (vigente) {
+          setFechasWeb([]);
+          setErrorFechasWeb('No pudimos cargar las fechas. Intenta de nuevo en un momento o escríbenos por WhatsApp.');
+        }
+      }
+    };
+    cargarFechas();
+    return () => {
+      vigente = false;
+    };
+  }, [experienciaIdPublica]);
+
   // Detectar si se viene desde un clic en "Solicitar Cotización"
   useEffect(() => {
     const action = searchParams.get('action');
@@ -395,6 +393,9 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
   }
 
   const isPrivate = experiencia.tipo === 'privada';
+  // Rama pública: el precio de niño que se cobra en línea sale de la regla de la experiencia (NI1), que el
+  // feed ya calcula por fecha (`precio_nino` null = sin regla: pagan como adulto).
+  const fechaConReglaNino = !isPrivate ? fechasWeb?.find((f) => f.precio_nino != null) ?? null : null;
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-24">
@@ -572,11 +573,23 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                   <div className="text-gray-600">
                     {experiencia.precio.capacidad}
                   </div>
-                  {experiencia.precio.nino && (
+                  {isPrivate && experiencia.precio.nino && (
                     <div className="mt-3 pt-3 border-t border-gray-200">
                       <div className="text-sm text-gray-600">Precio niño:</div>
                       <div className="text-xl font-semibold text-verde-principal">
                         ${formatPrice(experiencia.precio.nino)}
+                      </div>
+                    </div>
+                  )}
+                  {fechaConReglaNino && fechaConReglaNino.precio_nino != null && (
+                    <div data-testid="slug-precio-nino" className="mt-3 pt-3 border-t border-gray-200">
+                      <div className="text-sm text-gray-600">
+                        {fechaConReglaNino.edad_maxima_nino != null
+                          ? `Niños de hasta ${fechaConReglaNino.edad_maxima_nino} años:`
+                          : 'Niños:'}
+                      </div>
+                      <div className="text-xl font-semibold text-verde-principal">
+                        {formatMXN(fechaConReglaNino.precio_nino)}
                       </div>
                     </div>
                   )}
@@ -645,8 +658,10 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
       {/* Sección de experiencias relacionadas - Temporalmente removida hasta implementar carga de experiencias relacionadas */}
 
       {/* Modal de reserva */}
+      {/* z-[950] = nivel de modales (Z_INDEX_HIERARCHY.md): con z-50 la burbuja de WhatsApp (750), que se abre
+          sola a los 30 s, tapaba los botones del modal en el celular. */}
       {showReservationModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center pt-36 px-4 pb-8 overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[950] flex items-start justify-center pt-36 px-4 pb-8 overflow-y-auto">
           <div className="bg-white rounded-xl max-w-md w-full p-6 max-h-[calc(100vh-180px)] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-gray-800">
@@ -661,14 +676,15 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
               </button>
             </div>
             
-            <h4 className="font-medium text-gray-900 mb-1">{experiencia.nombre}</h4>
-            {!isPrivate && (
-              <p className="text-gray-600 mb-4">sábado, 22 de noviembre de 2025 a las 5:30</p>
+            {isPrivate && (
+              <>
+                <h4 className="font-medium text-gray-900 mb-1">{experiencia.nombre}</h4>
+                <p className="text-xl font-bold text-terracota mb-6">
+                  ${formatPrice(experiencia.precio.base)}
+                  <span className="text-sm font-normal"> / por persona</span>
+                </p>
+              </>
             )}
-            <p className="text-xl font-bold text-terracota mb-6">
-              ${formatPrice(experiencia.precio.base)}
-              {isPrivate && <span className="text-sm font-normal"> / por persona</span>}
-            </p>
 
             {/* Formulario diferente según el tipo de experiencia */}
             {isPrivate ? (
@@ -800,104 +816,75 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                 )}
               </div>
             ) : (
-              /* Formulario para experiencias PÚBLICAS */
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
-                  <input
-                    type="text" 
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                  <input
-                    type="tel" 
-                    value={telefono}
-                    onChange={(e) => setTelefono(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Comentarios especiales</label>
-                  <textarea className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-terracota min-h-[100px]"
-                  />
-                  <p className="mt-1 text-xs text-gray-500 flex items-center">
-                    <span className="mr-1">💡</span>
-                    <span>Comparte cualquier información que nos ayude a personalizar tu experiencia</span>
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Adultos</label>
-                    <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
-                      <button
-                        type="button"
-                        onClick={() => setAdultos(Math.max(1, adultos - 1))}
-                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 transition-colors"
-                      >
-                        −
-                      </button>
-                      <input
-                        type="text"
-                        readOnly
-                        value={adultos}
-                        className="flex-1 text-center px-3 py-2 border-l border-r border-gray-300"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setAdultos(adultos + 1)}
-                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 transition-colors"
-                      >
-                        +
-                      </button>
-                    </div>
+              /* Rama PÚBLICA (F2): próximas fechas de esta experiencia → SelectorFecha (sin sesión) */
+              <div data-testid="slug-fechas" className="space-y-3">
+                {fechaElegida ? (
+                  <>
+                    <button
+                      type="button"
+                      data-testid="slug-otras-fechas"
+                      onClick={() => setFechaElegida(null)}
+                      className="text-sm font-medium text-terracota hover:underline"
+                    >
+                      ← Otras fechas
+                    </button>
+                    <SelectorFecha
+                      key={fechaElegida.id}
+                      fecha={fechaElegida}
+                      imagen={experiencia.imagen}
+                      onAgregado={cerrarModal}
+                    />
+                  </>
+                ) : fechasWeb === null ? (
+                  <p className="text-sm text-gray-600">Buscando fechas...</p>
+                ) : fechasWeb.length === 0 ? (
+                  <div data-testid="slug-sin-fechas" className="space-y-3">
+                    <p className="text-gray-700">{errorFechasWeb ?? 'No hay fechas a la venta en línea.'}</p>
+                    <a
+                      data-testid="slug-whatsapp"
+                      href={linkWhatsApp(`Hola, quiero reservar ${experiencia.nombre}`)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-verde px-4 py-3 font-semibold text-white transition-colors hover:bg-verde-dark"
+                    >
+                      Reservar por WhatsApp
+                    </a>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Niños</label>
-                    <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
-                      <button
-                        type="button"
-                        onClick={() => setNinos(Math.max(0, ninos - 1))}
-                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 transition-colors"
-                      >
-                        −
-                      </button>
-                      <input
-                        type="text"
-                        readOnly
-                        value={ninos}
-                        className="flex-1 text-center px-3 py-2 border-l border-r border-gray-300"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setNinos(ninos + 1)}
-                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 transition-colors"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-gray-600">Elige una fecha:</p>
+                    <ul className="space-y-2">
+                      {fechasWeb.map((f) => (
+                        <li key={f.id}>
+                          <button
+                            type="button"
+                            data-testid="slug-fecha"
+                            data-evento-id={f.id}
+                            onClick={() => setFechaElegida(f)}
+                            className="w-full rounded-lg border border-gray-300 p-3 text-left transition-colors hover:border-terracota hover:bg-terracota/5"
+                          >
+                            <span className="block font-medium text-gray-900">
+                              {formatFechaMexico(f.fecha_evento, FECHA_LARGA_SLUG)}
+                            </span>
+                            <span className="mt-0.5 flex items-baseline justify-between gap-3 text-sm text-gray-600">
+                              <span>{horario(f.hora_inicio, f.hora_fin)}</span>
+                              <span className="shrink-0 font-semibold text-terracota">
+                                {f.precio_efectivo != null ? formatMXN(f.precio_efectivo) : ''}
+                              </span>
+                            </span>
+                            <span className="mt-0.5 block text-xs text-gray-500">
+                              {esVendible(f)
+                                ? f.disponibles != null
+                                  ? `Quedan ${f.disponibles} ${f.disponibles === 1 ? 'lugar' : 'lugares'}`
+                                  : 'Compra en línea'
+                                : 'Reserva por WhatsApp'}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
               </div>
             )}
 
@@ -932,22 +919,7 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                   Contactar por Email
                 </button>
               </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => setShowReservationModal(false)}
-                  className="w-full py-3 px-6 bg-white border border-gray-300 rounded-md text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleCompletarReserva}
-                  className="w-full py-3 px-6 bg-terracota text-white rounded-md font-medium hover:bg-terracota-oscuro transition-colors"
-                >
-                  Completar Reserva
-                </button>
-              </div>
-            )}
+            ) : null}
           </div>
         </div>
       )}

@@ -19,6 +19,14 @@ import {
 } from '@/types/eventos-experiencia'
 import { hoyMexico, horaCorta, horario, sinTope } from '@/app/admin/eventos/components/fechas'
 import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
+import { formatMXN } from '@/types/reservas'
+import {
+  REGLA_NINO_VACIA,
+  precioNino,
+  reglaNinoCompleta,
+  type ReglaNino,
+  type TipoPrecioNino,
+} from '@/types/compra-experiencias'
 import DisplayCapacidad from './DisplayCapacidad'
 import DisplayDuracion from './DisplayDuracion'
 
@@ -43,6 +51,10 @@ interface Experiencia {
   precio_persona_adicional: number
   personas_incluidas: number
   precio_nino: number | null
+  // NI1 (Fase 4a, C6): `tipo_precio_nino` es el interruptor; null = sin regla (niños pagan como adulto)
+  edad_maxima_nino: number | null
+  tipo_precio_nino: TipoPrecioNino | null
+  porcentaje_nino: number | null
   capacidad_maxima: number
   ubicacion: string
   coordenadas: string | null
@@ -62,9 +74,102 @@ interface Experiencia {
 // ─── Editar una fecha (EV3 + NV1, Fase 3 de PLAN-EXP-SIN-FALLAS) ──────────────────────────
 // Contrato: EXP-FASE3-CONTRATO.md §C1/§F1. Los tipos son de @/types/eventos-experiencia.
 
-/** D6: lo que se avisa ANTES de publicar una fecha (no hay compra en línea todavía: D1 = No). */
+/** D6 (Fase 4a): lo que se avisa ANTES de publicar una fecha; ya existe la compra en línea (WEB1). */
 const AVISO_PUBLICAR =
-  'Al publicarla, la fecha se ve en la web. Mientras no exista la compra en línea el pago en la web falla y la venta sigue por WhatsApp. ¿Publicarla?'
+  'Al publicarla, la fecha se ve en la web y se puede comprar en línea hasta 24 horas antes. ¿Publicarla?'
+
+// ─── NI1: regla de niño de la experiencia (Fase 4a de PLAN-EXP-SIN-FALLAS, contrato EXP-FASE4 §C6/§F6) ──
+/** Mismo texto que el 400 del backend (C6). */
+const ERROR_REGLA_INCOMPLETA =
+  'Para cobrar distinto a los niños llena la edad máxima y el precio (porcentaje o monto)'
+const EDAD_NINO_MIN = 1
+const EDAD_NINO_MAX = 17
+
+/** Lo que se manda: apagado = los 4 campos null; con tipo, solo el valor de ese tipo (el otro, null). */
+function reglaNinoDelForm(f: ReglaNino): ReglaNino {
+  if (f.tipo_precio_nino == null) return { ...REGLA_NINO_VACIA }
+  return {
+    edad_maxima_nino: f.edad_maxima_nino,
+    tipo_precio_nino: f.tipo_precio_nino,
+    porcentaje_nino: f.tipo_precio_nino === 'porcentaje' ? f.porcentaje_nino : null,
+    precio_nino: f.tipo_precio_nino === 'monto' ? f.precio_nino : null,
+  }
+}
+
+/** El error de captura de la regla, o null si se puede mandar (el servidor la vuelve a validar). */
+function validarReglaNino(f: ReglaNino): string | null {
+  const r = reglaNinoDelForm(f)
+  if (r.tipo_precio_nino == null) return null
+  if (!reglaNinoCompleta(r)) return ERROR_REGLA_INCOMPLETA
+  const edad = r.edad_maxima_nino as number
+  if (!Number.isInteger(edad) || edad < EDAD_NINO_MIN || edad > EDAD_NINO_MAX) {
+    return `La edad máxima va de ${EDAD_NINO_MIN} a ${EDAD_NINO_MAX} años.`
+  }
+  if (r.tipo_precio_nino === 'porcentaje') {
+    const p = r.porcentaje_nino as number
+    if (!Number.isFinite(p) || p < 0 || p > 100) return 'El porcentaje va de 0 a 100.'
+  } else {
+    const m = r.precio_nino as number
+    if (!Number.isFinite(m) || m < 0) return 'El precio del niño no puede ser negativo.'
+  }
+  return null
+}
+
+const formatoPorcentaje = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 })
+
+/** «Un niño de hasta 12 años paga $550.00 (50 % de $1,100.00)» — con `precioNino()`, el espejo del backend. */
+function vistaPreviaNino(f: ReglaNino, precioAdulto: number): string {
+  const r = reglaNinoDelForm(f)
+  if (r.tipo_precio_nino == null || validarReglaNino(f)) {
+    return 'Llena la edad máxima y el precio para ver cuánto paga un niño.'
+  }
+  const paga = precioNino(r, precioAdulto)
+  const inicio = `Un niño de hasta ${r.edad_maxima_nino} años paga ${formatMXN(paga)}`
+  if (r.tipo_precio_nino === 'porcentaje') {
+    return `${inicio} (${formatoPorcentaje.format(r.porcentaje_nino as number)} % de ${formatMXN(precioAdulto)})`
+  }
+  const tope = (r.precio_nino as number) > precioAdulto ? '; nunca más que un adulto' : ''
+  return `${inicio} (monto fijo; un adulto paga ${formatMXN(precioAdulto)}${tope})`
+}
+
+/** Leer un input numérico: vacío o inválido = null. */
+function numeroONull(valor: string): number | null {
+  if (valor.trim() === '') return null
+  const n = Number(valor)
+  return Number.isFinite(n) ? n : null
+}
+
+// ─── Toggle y DELETE de una fecha con ventas de la página web (C7 / C11) ──────────────────────────────────
+type RespuestaAccionFecha = { success?: boolean; message?: string; avisos?: string[] }
+type ResultadoAccionFecha =
+  | { estado: 'ok'; data: RespuestaAccionFecha }
+  | { estado: 'cancelado' }
+  | { estado: 'error'; mensaje: string }
+
+/**
+ * PATCH toggle o DELETE de una fecha por el proxy del panel. Con compradores web el back responde 409
+ * `requiere_confirmacion` (nada cambia): se pregunta con su `mensaje` y, si se acepta, se reintenta con
+ * `?confirmar=true` (entonces se les manda el correo de cancelación y vienen `avisos`).
+ */
+async function accionFechaConConfirmacion(url: string, method: 'PATCH' | 'DELETE'): Promise<ResultadoAccionFecha> {
+  const pedir = async (confirmar: boolean) => {
+    const res = await fetch(confirmar ? `${url}?confirmar=true` : url, { method })
+    const data: unknown = await res.json().catch(() => null)
+    return { res, data }
+  }
+  let { res, data } = await pedir(false)
+  if (res.status === 409) {
+    const detalle =
+      typeof data === 'object' && data !== null && 'detail' in data ? (data as { detail: unknown }).detail : null
+    if (esRequiereConfirmacion(detalle)) {
+      if (!window.confirm(detalle.mensaje)) return { estado: 'cancelado' }
+      ;({ res, data } = await pedir(true))
+    }
+  }
+  const cuerpo = (data ?? {}) as RespuestaAccionFecha
+  if (res.ok && cuerpo.success) return { estado: 'ok', data: cuerpo }
+  return { estado: 'error', mensaje: extraerMensajeError(data, res.status) }
+}
 
 /** El formulario del modal Editar fecha: todo texto, como lo dan los inputs. */
 interface FormEditarFecha {
@@ -213,8 +318,11 @@ export default function ExperienciasAdminPage({
     precio_por_persona: 0,
     precio_persona_adicional: 0,
     personas_incluidas: 9,
+    // NI1: se capturan aquí; lo que se manda sale de reglaNinoDelForm() (apagado = 4 null)
     precio_nino: null as number | null,
-    edad_maxima_nino: 12,
+    edad_maxima_nino: null as number | null,
+    tipo_precio_nino: null as TipoPrecioNino | null,
+    porcentaje_nino: null as number | null,
     capacidad_maxima: 10,
     ubicacion: 'Xochimilco, CDMX',
     coordenadas: '',
@@ -240,6 +348,8 @@ export default function ExperienciasAdminPage({
   ])
   const [showNewTemporada, setShowNewTemporada] = useState(false)
   const [newTemporadaName, setNewTemporadaName] = useState('')
+  // NI1: error de captura de la regla de niño (se muestra dentro del recuadro)
+  const [errorNino, setErrorNino] = useState<string | null>(null)
 
   const [showNewEventModal, setShowNewEventModal] = useState(false)
   const [newEventForm, setNewEventForm] = useState({
@@ -342,17 +452,23 @@ export default function ExperienciasAdminPage({
   }
 
   const handleCrear = async () => {
+    const errorRegla = validarReglaNino(formData)
+    setErrorNino(errorRegla)
+    if (errorRegla) {
+      mostrarNotificacion('error', errorRegla)
+      return
+    }
     setLoadingAction('crear')
     try {
       const payload = {
         ...formData,
+        ...reglaNinoDelForm(formData),
         tipo_experiencia: tipoExperiencia,
         incluye: formData.incluye.filter(i => i.trim() !== ''),
         requisitos: formData.requisitos.filter(r => r.trim() !== ''),
         informacion_importante: formData.informacion_importante.filter(i => i.trim() !== ''),
         coordenadas: formData.coordenadas || null,
         temporada: formData.temporada || null,
-        precio_nino: formData.precio_nino,
         galeria_imagenes: formData.galeria_imagenes
       }
       
@@ -369,7 +485,8 @@ export default function ExperienciasAdminPage({
         resetForm()
         fetchExperiencias()
       } else {
-        mostrarNotificacion('error', data.detail || data.message || 'Error al crear')
+        // 400 de la regla de niño (C6) o 422 de Pydantic: siempre como texto
+        mostrarNotificacion('error', extraerMensajeError(data, res.status))
       }
     } catch (error) {
       mostrarNotificacion('error', 'Error de conexión')
@@ -380,16 +497,22 @@ export default function ExperienciasAdminPage({
 
   const handleEditar = async () => {
     if (!selectedExperiencia) return
+    const errorRegla = validarReglaNino(formData)
+    setErrorNino(errorRegla)
+    if (errorRegla) {
+      mostrarNotificacion('error', errorRegla)
+      return
+    }
     setLoadingAction('editar')
     try {
       const payload = {
         ...formData,
+        ...reglaNinoDelForm(formData),
         incluye: formData.incluye.filter(i => i.trim() !== ''),
         requisitos: formData.requisitos.filter(r => r.trim() !== ''),
         informacion_importante: formData.informacion_importante.filter(i => i.trim() !== ''),
         coordenadas: formData.coordenadas || null,
         temporada: formData.temporada || null,
-        precio_nino: formData.precio_nino,
         galeria_imagenes: formData.galeria_imagenes
       }
       
@@ -405,7 +528,8 @@ export default function ExperienciasAdminPage({
         setShowModal(null)
         fetchExperiencias()
       } else {
-        mostrarNotificacion('error', data.detail || 'Error al actualizar')
+        // 400 de la regla de niño (C6) o 422 de Pydantic: siempre como texto
+        mostrarNotificacion('error', extraerMensajeError(data, res.status))
       }
     } catch (error) {
       mostrarNotificacion('error', 'Error de conexión')
@@ -470,41 +594,47 @@ export default function ExperienciasAdminPage({
     }
   }
 
+  // C7: desactivar una fecha con compradores web pide confirmación (409) y trae `avisos` (correo de cancelación)
   const handleToggleEvento = async (eventoId: string) => {
     try {
-      const res = await fetch(
-        `/api/experiencias-admin/eventos/${eventoId}/toggle`,
-        { method: 'PATCH' }
+      const r = await accionFechaConConfirmacion(
+        `/api/experiencias-admin/eventos/${encodeURIComponent(eventoId)}/toggle`,
+        'PATCH',
       )
-      const data = await res.json()
-      
-      if (data.success) {
-        mostrarNotificacion('success', data.message)
-        if (selectedExperiencia) fetchEventos(selectedExperiencia.id)
-      } else {
-        mostrarNotificacion('error', data.detail || 'No se pudo cambiar la fecha')
+      if (r.estado === 'cancelado') {
+        mostrarNotificacion('info', 'No se cambió la fecha.')
+        return
       }
-    } catch (error) {
+      if (r.estado === 'error') {
+        mostrarNotificacion('error', r.mensaje)
+        return
+      }
+      avisarResultado(r.data.message || 'Fecha actualizada', r.data.avisos)
+      if (selectedExperiencia) fetchEventos(selectedExperiencia.id)
+    } catch {
       mostrarNotificacion('error', 'Error de conexión')
     }
   }
 
+  // C11: eliminar (cancelar) una fecha con compradores web también pide confirmación (409) y trae `avisos`
   const handleEliminarEvento = async (eventoId: string) => {
     if (!confirm('¿Eliminar este evento?')) return
     try {
-      const res = await fetch(
-        `/api/experiencias-admin/eventos/${eventoId}`,
-        { method: 'DELETE' }
+      const r = await accionFechaConConfirmacion(
+        `/api/experiencias-admin/eventos/${encodeURIComponent(eventoId)}`,
+        'DELETE',
       )
-      const data = await res.json()
-      
-      if (data.success) {
-        mostrarNotificacion('success', data.message)
-        if (selectedExperiencia) fetchEventos(selectedExperiencia.id)
-      } else {
-        mostrarNotificacion('error', data.detail || 'No se pudo eliminar la fecha')
+      if (r.estado === 'cancelado') {
+        mostrarNotificacion('info', 'No se eliminó la fecha.')
+        return
       }
-    } catch (error) {
+      if (r.estado === 'error') {
+        mostrarNotificacion('error', r.mensaje)
+        return
+      }
+      avisarResultado(r.data.message || 'Fecha eliminada', r.data.avisos)
+      if (selectedExperiencia) fetchEventos(selectedExperiencia.id)
+    } catch {
       mostrarNotificacion('error', 'Error de conexión')
     }
   }
@@ -630,7 +760,9 @@ export default function ExperienciasAdminPage({
       precio_persona_adicional: 0,
       personas_incluidas: 9,
       precio_nino: null,
-      edad_maxima_nino: 12,
+      edad_maxima_nino: null,
+      tipo_precio_nino: null,
+      porcentaje_nino: null,
       capacidad_maxima: 10,
       ubicacion: 'Xochimilco, CDMX',
       coordenadas: '',
@@ -646,6 +778,7 @@ export default function ExperienciasAdminPage({
     })
     setShowNewTemporada(false)
     setNewTemporadaName('')
+    setErrorNino(null)
   }
 
   const abrirModalEditar = (exp: Experiencia) => {
@@ -657,8 +790,11 @@ export default function ExperienciasAdminPage({
       precio_por_persona: exp.precio_por_persona,
       precio_persona_adicional: exp.precio_persona_adicional || 0,
       personas_incluidas: exp.personas_incluidas || 9,
-      precio_nino: exp.precio_nino,
-      edad_maxima_nino: 12,
+      // NI1: lo guardado (antes se forzaba 12 y el back lo descartaba)
+      precio_nino: exp.precio_nino ?? null,
+      edad_maxima_nino: exp.edad_maxima_nino ?? null,
+      tipo_precio_nino: exp.tipo_precio_nino ?? null,
+      porcentaje_nino: exp.porcentaje_nino ?? null,
       capacidad_maxima: exp.capacidad_maxima,
       ubicacion: exp.ubicacion,
       coordenadas: exp.coordenadas || '',
@@ -673,6 +809,7 @@ export default function ExperienciasAdminPage({
       horarios_disponibles: (exp.horarios_disponibles || []).map((h) => horaCorta(h))
     })
     setActiveTab('info')
+    setErrorNino(null)
     setShowModal('editar')
   }
 
@@ -1243,43 +1380,170 @@ export default function ExperienciasAdminPage({
                     </div>
                   </div>
 
-                  {/* Precio Niño */}
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <label className="block text-sm font-medium mb-2 text-blue-800">
-                      👶 Precio para Niños (opcional)
-                    </label>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs text-gray-600 mb-1">Precio niño ($)</label>
-                        <input
-                          type="number"
-                          value={formData.precio_nino ?? ''}
-                          onChange={(e) => setFormData(prev => ({ 
-                            ...prev, 
-                            precio_nino: e.target.value ? parseFloat(e.target.value) : null 
-                          }))}
-                          min="0"
-                          placeholder="Ej: 350"
-                          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 ${theme.ring}`}
-                        />
+                  {/* NI1 (Fase 4a): regla de niño. «Cobrar distinto a los niños» = tipo_precio_nino; apagado manda los 4 campos null */}
+                  {(() => {
+                    const ninoActiva = formData.tipo_precio_nino != null
+                    const precioNinoLegado =
+                      showModal === 'editar' &&
+                      selectedExperiencia?.tipo_precio_nino == null &&
+                      selectedExperiencia?.precio_nino != null
+                        ? selectedExperiencia.precio_nino
+                        : null
+                    const cambiarRegla = (cambios: Partial<ReglaNino>) => {
+                      setFormData((prev) => ({ ...prev, ...cambios }))
+                      setErrorNino(null)
+                    }
+                    return (
+                      <div
+                        data-testid="exp-nino"
+                        className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 space-y-3"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <span id="exp-nino-activa-etiqueta" className="text-sm font-medium text-blue-800">
+                            Cobrar distinto a los niños
+                          </span>
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={ninoActiva}
+                            aria-labelledby="exp-nino-activa-etiqueta"
+                            data-testid="exp-nino-activa"
+                            onClick={() =>
+                              cambiarRegla({ tipo_precio_nino: ninoActiva ? null : 'porcentaje' })
+                            }
+                            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+                              ninoActiva ? (colorTema === 'green' ? 'bg-green-500' : 'bg-purple-500') : 'bg-gray-300'
+                            }`}
+                          >
+                            <span
+                              aria-hidden="true"
+                              className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                                ninoActiva ? 'translate-x-5' : 'translate-x-0.5'
+                              }`}
+                            />
+                          </button>
+                        </div>
+
+                        {!ninoActiva ? (
+                          <p className="text-xs text-gray-600">Apagado: los niños pagan como adulto.</p>
+                        ) : (
+                          <>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <label htmlFor="exp-nino-edad" className="block text-xs text-gray-600 mb-1">
+                                  Edad máxima (años)
+                                </label>
+                                <input
+                                  id="exp-nino-edad"
+                                  data-testid="exp-nino-edad"
+                                  type="number"
+                                  inputMode="numeric"
+                                  min={EDAD_NINO_MIN}
+                                  max={EDAD_NINO_MAX}
+                                  step={1}
+                                  value={formData.edad_maxima_nino ?? ''}
+                                  onChange={(e) => cambiarRegla({ edad_maxima_nino: numeroONull(e.target.value) })}
+                                  placeholder="Ej: 12"
+                                  className={`w-full min-w-0 px-4 py-2 border rounded-lg bg-white focus:ring-2 ${theme.ring}`}
+                                />
+                              </div>
+                              <fieldset className="min-w-0">
+                                <legend className="block text-xs text-gray-600 mb-1">Cómo se cobra</legend>
+                                <div className="flex flex-wrap gap-x-4 gap-y-1 py-2">
+                                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="exp-nino-tipo"
+                                      data-testid="exp-nino-tipo-porcentaje"
+                                      checked={formData.tipo_precio_nino === 'porcentaje'}
+                                      onChange={() => cambiarRegla({ tipo_precio_nino: 'porcentaje' })}
+                                    />
+                                    % del precio de adulto
+                                  </label>
+                                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="exp-nino-tipo"
+                                      data-testid="exp-nino-tipo-monto"
+                                      checked={formData.tipo_precio_nino === 'monto'}
+                                      onChange={() => cambiarRegla({ tipo_precio_nino: 'monto' })}
+                                    />
+                                    Monto fijo
+                                  </label>
+                                </div>
+                              </fieldset>
+                              {formData.tipo_precio_nino === 'porcentaje' ? (
+                                <div>
+                                  <label htmlFor="exp-nino-porcentaje" className="block text-xs text-gray-600 mb-1">
+                                    Porcentaje del precio de adulto (%)
+                                  </label>
+                                  <input
+                                    id="exp-nino-porcentaje"
+                                    data-testid="exp-nino-porcentaje"
+                                    type="number"
+                                    inputMode="decimal"
+                                    min={0}
+                                    max={100}
+                                    step="0.01"
+                                    value={formData.porcentaje_nino ?? ''}
+                                    onChange={(e) => cambiarRegla({ porcentaje_nino: numeroONull(e.target.value) })}
+                                    placeholder="Ej: 50"
+                                    className={`w-full min-w-0 px-4 py-2 border rounded-lg bg-white focus:ring-2 ${theme.ring}`}
+                                  />
+                                </div>
+                              ) : (
+                                <div>
+                                  <label htmlFor="exp-nino-monto" className="block text-xs text-gray-600 mb-1">
+                                    Precio por niño (MXN)
+                                  </label>
+                                  <input
+                                    id="exp-nino-monto"
+                                    data-testid="exp-nino-monto"
+                                    type="number"
+                                    inputMode="decimal"
+                                    min={0}
+                                    step="0.01"
+                                    value={formData.precio_nino ?? ''}
+                                    onChange={(e) => cambiarRegla({ precio_nino: numeroONull(e.target.value) })}
+                                    placeholder="Ej: 350"
+                                    className={`w-full min-w-0 px-4 py-2 border rounded-lg bg-white focus:ring-2 ${theme.ring}`}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                            <p data-testid="exp-nino-preview" aria-live="polite" className="text-sm font-medium text-blue-900">
+                              {vistaPreviaNino(formData, formData.precio_por_persona)}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Si una fecha tiene precio propio, el precio del niño se calcula sobre el de esa fecha.
+                            </p>
+                          </>
+                        )}
+
+                        {errorNino && (
+                          <p
+                            data-testid="exp-nino-error"
+                            role="alert"
+                            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                          >
+                            {errorNino}
+                          </p>
+                        )}
+                        {!ninoActiva && precioNinoLegado != null && (
+                          <p data-testid="exp-nino-legado" className="text-xs text-amber-800">
+                            Esta experiencia tenía guardado un precio de niño de {formatMXN(precioNinoLegado)} sin edad
+                            máxima, así que no se cobraba. Si guardas con el interruptor apagado, se borra; para usarlo,
+                            enciéndelo y elige «Monto fijo».
+                          </p>
+                        )}
+                        {esPrivada && (
+                          <p data-testid="exp-nino-privadas" className="text-xs text-gray-600">
+                            En las reservas privadas del panel, por ahora, los niños pagan como adulto.
+                          </p>
+                        )}
                       </div>
-                      <div>
-                        <label className="block text-xs text-gray-600 mb-1">Edad máxima (años)</label>
-                        <select
-                          value={formData.edad_maxima_nino}
-                          onChange={(e) => setFormData(prev => ({ ...prev, edad_maxima_nino: parseInt(e.target.value) }))}
-                          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 ${theme.ring}`}
-                        >
-                          {[4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17].map(edad => (
-                            <option key={edad} value={edad}>Menores de {edad} años</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">
-                      Deja vacío el precio si no aplica tarifa especial para niños
-                    </p>
-                  </div>
+                    )
+                  })()}
                 </div>
 
                 {/* Disponibilidad: dias + horarios */}
@@ -1914,7 +2178,8 @@ export default function ExperienciasAdminPage({
                     />
                     <p id="editar-fecha-motivo-ayuda" className="text-xs text-amber-900 mt-1">
                       Esta fecha tiene {vendidos} {vendidos === 1 ? 'lugar vendido' : 'lugares vendidos'}. El motivo queda
-                      en las notas de la fecha; avisa tú a quienes compraron.
+                      en las notas de la fecha. Al guardar verás si se les avisó por correo a los compradores de la página
+                      web; a los de otros canales avísales tú.
                     </p>
                   </div>
                 )}

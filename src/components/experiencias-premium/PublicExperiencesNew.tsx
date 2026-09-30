@@ -1,19 +1,21 @@
 'use client'
 
 import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion, useInView, useAnimation } from 'framer-motion'
 import ExperienceCardPro from '@/components/experiencias-premium/ExperienceCardPro'
-import ExperienceCarousel from '@/components/experiencias-premium/ExperienceCarousel'
-import CalendarPro from '@/components/experiencias-premium/CalendarPro'
 import ExperienceFilters, { ExperienceFilters as FilterOptions } from '@/components/experiencias-premium/ExperienceFilters'
-import { toast } from 'react-hot-toast'
 import { Calendar as CalendarIcon } from 'lucide-react'
 
+// Fase 4a de PLAN-EXP-SIN-FALLAS (F2): aquí ya no se «reserva». Antes un calendario con fechas fijas de 2025
+// terminaba en un toast «¡Reserva confirmada!» sin reservar nada. Las fechas reales y la compra en línea
+// viven en /calendario: el botón «Reservar» de cada tarjeta lleva ahí.
 const PublicExperiencesNew = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px 0px" });
   const controls = useAnimation();
-  const [selectedExperience, setSelectedExperience] = useState<any>(null);
+  const router = useRouter();
   
   useEffect(() => {
     if (isInView) {
@@ -171,41 +173,6 @@ const PublicExperiencesNew = () => {
     });
   }, []);
 
-  const handleSelectExperience = (experience: any) => {
-    setSelectedExperience(experience);
-    
-    // Breve tiempo para permitir la renderización antes de hacer scroll
-    setTimeout(() => {
-      // Scroll to calendar section smoothly
-      const calendarElement = document.getElementById('calendar-section');
-      if (calendarElement) {
-        calendarElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 100);
-  };
-
-  const handleReservation = (date: string) => {
-    if (selectedExperience) {
-      toast.success(
-        `¡Reserva confirmada! Experiencia: ${selectedExperience.title} para el ${new Date(date).toLocaleDateString('es-MX', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        })}`,
-        {
-          duration: 5000,
-          position: 'bottom-center',
-          style: {
-            background: '#f0f9eb',
-            color: '#3c6142',
-            border: '1px solid #3c6142'
-          }
-        }
-      );
-    }
-  };
-
   return (
     <section ref={ref} className="py-20 px-4 md:px-8 bg-white overflow-hidden">
       <motion.div 
@@ -273,85 +240,34 @@ const PublicExperiencesNew = () => {
                       price: experience.price,
                       dates: experience.dates
                     }}
-                    onReserve={() => handleSelectExperience(experience)}
+                    onReserve={() => router.push('/calendario')}
                     index={index}
                   />
                 ))}
               </div>
             </motion.div>
             
-            <div id="calendar-section" className="mt-16 scroll-mt-10">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-                <motion.div className="md:col-span-2" variants={itemVariants}>
-                  <h3 className="text-2xl font-playfair text-verde-principal mb-4">Reserva tu experiencia</h3>
-                  <p className="text-verde-tipografia mb-6">
-                    Selecciona una de nuestras experiencias y reserva en las fechas disponibles del calendario. 
-                    Todas las experiencias incluyen transporte desde puntos específicos de la ciudad, alimentos y actividades guiadas.
+            <motion.div
+              variants={itemVariants}
+              className="mt-16 flex flex-col items-start gap-4 rounded-lg border-l-4 border-verde-principal bg-neutro-crema/30 p-6 md:flex-row md:items-center md:justify-between"
+            >
+              <div className="flex items-start gap-3">
+                <CalendarIcon className="mt-1 h-6 w-6 shrink-0 text-verde-principal" aria-hidden="true" />
+                <div>
+                  <h3 className="text-2xl font-playfair text-verde-principal mb-1">Reserva tu experiencia</h3>
+                  <p className="text-verde-tipografia">
+                    Consulta las fechas disponibles y compra tus lugares en línea desde el calendario.
                   </p>
-                  
-                  <div className="bg-neutro-crema/30 p-6 rounded-lg border-l-4 border-verde-principal mb-6">
-                    <h4 className="font-medium text-lg text-verde-principal mb-2">
-                      {selectedExperience ? selectedExperience.title : 'Selecciona una experiencia'}
-                    </h4>
-                    
-                    {selectedExperience ? (
-                      <>
-                        <p className="text-verde-tipografia mb-3">{selectedExperience.description}</p>
-                        <div className="grid grid-cols-2 gap-y-2 text-sm">
-                          <div className="flex items-center text-verde-tipografia">
-                            <span className="font-medium mr-2">Duración:</span> 
-                            <span>{selectedExperience.duration}</span>
-                          </div>
-                          
-                          <div className="flex items-center text-verde-tipografia">
-                            <span className="font-medium mr-2">Participantes:</span> 
-                            <span>{selectedExperience.participants}</span>
-                          </div>
-                          
-                          <div className="flex items-center text-verde-tipografia col-span-2">
-                            <span className="font-medium mr-2">Ubicación:</span> 
-                            <span>{selectedExperience.location}</span>
-                          </div>
-                          
-                          <div className="flex items-center text-verde-principal col-span-2 mt-2">
-                            <span className="font-medium mr-2">Precio:</span> 
-                            <span className="font-playfair">{selectedExperience.price}</span>
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="flex items-center justify-center py-8 text-verde-tipografia/60">
-                        <p>Selecciona una experiencia para ver detalles y reservar</p>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-                
-                <motion.div className="md:sticky md:top-28" variants={itemVariants}>
-                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    {selectedExperience ? (
-                      <CalendarPro 
-                        experience={{
-                          title: selectedExperience.title,
-                          duration: selectedExperience.duration,
-                          participants: selectedExperience.participants,
-                          price: selectedExperience.price
-                        }}
-                        dates={selectedExperience.dates} 
-                        onSelectDate={handleReservation}
-                        className="min-h-[400px] p-4"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-80 p-6 text-center">
-                        <CalendarIcon className="w-12 h-12 mb-4 text-neutro-gris/40" />
-                        <p className="text-verde-tipografia mb-2">Selecciona una experiencia para ver fechas disponibles</p>
-                        <p className="text-sm text-verde-tipografia/60">El calendario mostrará las fechas disponibles para reservar</p>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
+                </div>
               </div>
-            </div>
+              <Link
+                href="/calendario"
+                data-testid="premium-ver-calendario"
+                className="shrink-0 rounded-md bg-terracota px-5 py-3 font-medium text-white transition-colors hover:bg-terracota-oscuro"
+              >
+                Ver fechas y comprar
+              </Link>
+            </motion.div>
           </>
         )}
       </motion.div>

@@ -4,9 +4,12 @@ import { useState, useEffect, useCallback } from 'react'
 import {
   Package, TrendingUp, DollarSign, Clock, RefreshCw,
   Search, ChevronLeft, ChevronRight, X, Truck, Store,
-  AlertTriangle, Eye
+  AlertTriangle, Eye, Ticket
 } from 'lucide-react'
 import { formatFechaHoraMexico } from '@/lib/dates'
+
+/** Pedido de solo experiencias (Fase 4a, C3): sin envío ni fecha de entrega. */
+const TIPO_ENTREGA_EXPERIENCIA = 'experiencia'
 
 interface Pedido {
   id: string
@@ -128,6 +131,9 @@ export default function AdminPedidosPage() {
   const [loadingDetalle, setLoadingDetalle] = useState(false)
   const [nuevoEstado, setNuevoEstado] = useState('')
   const [cambiandoEstado, setCambiandoEstado] = useState(false)
+  // C10: al cancelar/reembolsar un pedido con experiencias, el back dice qué lugares liberó y si hay reembolso.
+  // El modal se cierra al guardar, así que el aviso queda en la página hasta que lo cierren.
+  const [avisoEstado, setAvisoEstado] = useState<{ numero: string; texto: string } | null>(null)
 
   const fetchStats = useCallback(async () => {
     try {
@@ -187,6 +193,7 @@ export default function AdminPedidosPage() {
     if (!detalle || !nuevoEstado) return
     try {
       setCambiandoEstado(true)
+      setAvisoEstado(null)
       const res = await fetch(`/api/admin/pedidos/${detalle.id}/estado`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -196,6 +203,10 @@ export default function AdminPedidosPage() {
         const err = await res.json()
         alert(err.detail || 'Error al cambiar estado')
         return
+      }
+      const data: { aviso?: unknown } | null = await res.json().catch(() => null)
+      if (data && typeof data.aviso === 'string' && data.aviso.trim()) {
+        setAvisoEstado({ numero: detalle.numero_pedido, texto: data.aviso })
       }
       // Refresh
       setModalOpen(false)
@@ -320,6 +331,29 @@ export default function AdminPedidosPage() {
         </div>
       </div>
 
+      {/* C10: lugares liberados y reembolso al cancelar/reembolsar un pedido con experiencias */}
+      {avisoEstado && (
+        <div
+          data-testid="pedido-aviso"
+          role="status"
+          className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3"
+        >
+          <Ticket className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="flex-1 text-sm text-amber-900">
+            <span className="font-semibold">Pedido {avisoEstado.numero}: </span>
+            {avisoEstado.texto}
+          </p>
+          <button
+            type="button"
+            onClick={() => setAvisoEstado(null)}
+            aria-label="Cerrar aviso"
+            className="p-1 rounded hover:bg-amber-100 shrink-0"
+          >
+            <X className="h-4 w-4 text-amber-700" aria-hidden="true" />
+          </button>
+        </div>
+      )}
+
       {/* Error */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
@@ -384,7 +418,11 @@ export default function AdminPedidosPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        {pedido.tipo_entrega === 'recoger_bodega' ? (
+                        {pedido.tipo_entrega === TIPO_ENTREGA_EXPERIENCIA ? (
+                          <span className="inline-flex items-center text-xs text-emerald-700">
+                            <Ticket className="h-3.5 w-3.5 mr-1" aria-hidden="true" />Experiencia
+                          </span>
+                        ) : pedido.tipo_entrega === 'recoger_bodega' ? (
                           <span className="inline-flex items-center text-xs text-orange-600">
                             <Store className="h-3.5 w-3.5 mr-1" />Bodega
                           </span>
@@ -630,7 +668,11 @@ export default function AdminPedidosPage() {
                   <div>
                     <span className="text-gray-500">Tipo de entrega:</span>
                     <span className="ml-2 font-medium">
-                      {detalle.tipo_entrega === 'recoger_bodega' ? 'Recoger en bodega' : 'Envío a domicilio'}
+                      {detalle.tipo_entrega === TIPO_ENTREGA_EXPERIENCIA
+                        ? 'Experiencia (sin envío)'
+                        : detalle.tipo_entrega === 'recoger_bodega'
+                          ? 'Recoger en bodega'
+                          : 'Envío a domicilio'}
                     </span>
                   </div>
                   <div>

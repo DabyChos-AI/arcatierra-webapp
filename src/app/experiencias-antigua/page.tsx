@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid/index.js'
 import timeGridPlugin from '@fullcalendar/timegrid/index.js'
@@ -108,12 +109,11 @@ export default function ExperienciasPage() {
   const [selectedCategory, setSelectedCategory] = useState('Todos')
   const [selectedDifficulty, setSelectedDifficulty] = useState('Todos los niveles')
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedExperience, setSelectedExperience] = useState<number | null>(null)
   const [calendarEvents, setCalendarEvents] = useState<any[]>([])
   const [favorites, setFavorites] = useState<number[]>([])
-  const [showReservationModal, setShowReservationModal] = useState(false)
-  const [selectedDate, setSelectedDate] = useState<string>('')
-  const [selectedTime, setSelectedTime] = useState<string>('')
+  // Fase 4a (F2): esta página ya no «confirma» reservas (era un alert sin reservar nada).
+  // Reservar y el clic en el calendario llevan a /calendario, donde están las fechas reales.
+  const router = useRouter()
 
   // Generar eventos del calendario
   useEffect(() => {
@@ -155,20 +155,10 @@ export default function ExperienciasPage() {
     )
   }
 
-  const handleDateClick = (arg: any) => {
-    const event = calendarEvents.find(e => e.start === arg.dateStr)
-    if (event) {
-      setSelectedExperience(event.extendedProps.experienceId)
-      setSelectedDate(arg.dateStr.split('T')[0])
-      setSelectedTime(arg.dateStr.split('T')[1])
-      setShowReservationModal(true)
-    }
-  }
-
-  const handleReservation = () => {
-    // Aquí iría la lógica de reserva
-    alert(`Reserva confirmada para ${selectedDate} a las ${selectedTime}`)
-    setShowReservationModal(false)
+  // Un día con experiencias → /calendario (antes abría el modal que «confirmaba» con un alert)
+  const handleDateClick = (arg: { dateStr: string }) => {
+    const dia = arg.dateStr.slice(0, 10)
+    if (calendarEvents.some((e) => String(e.start).startsWith(dia))) router.push('/calendario')
   }
 
   return (
@@ -380,10 +370,7 @@ export default function ExperienciasPage() {
                       </Button>
                       <Button
                         className="flex-1 bg-terracota-primary hover:bg-terracota-dark text-white"
-                        onClick={() => {
-                          setSelectedExperience(experience.id)
-                          setShowReservationModal(true)
-                        }}
+                        onClick={() => router.push('/calendario')}
                       >
                         Reservar Ahora
                         <ChevronRight className="w-4 h-4 ml-1" />
@@ -447,82 +434,6 @@ export default function ExperienciasPage() {
         </div>
       </div>
 
-      {/* Modal de reserva */}
-      {showReservationModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Confirmar Reserva</h3>
-            
-            {selectedExperience && (
-              <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-2">
-                  {experiences.find(e => e.id === selectedExperience)?.title}
-                </h4>
-                <p className="text-sm text-gray-600 mb-2">
-                  Fecha: {selectedDate && new Date(selectedDate).toLocaleDateString('es-MX')}
-                </p>
-                <p className="text-sm text-gray-600 mb-2">
-                  Hora: {selectedTime}
-                </p>
-                <p className="text-lg font-bold text-terracota-primary">
-                  Precio: ${experiences.find(e => e.id === selectedExperience)?.price} MXN
-                </p>
-              </div>
-            )}
-
-            <div className="space-y-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Número de personas
-                </label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-verde-dark focus:border-transparent">
-                  <option value="1">1 persona</option>
-                  <option value="2">2 personas</option>
-                  <option value="3">3 personas</option>
-                  <option value="4">4 personas</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre completo
-                </label>
-                <Input placeholder="Tu nombre completo" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <Input type="email" placeholder="tu@email.com" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Teléfono
-                </label>
-                <Input placeholder="55 1234 5678" />
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => setShowReservationModal(false)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                className="flex-1 bg-terracota-primary hover:bg-terracota-dark text-white"
-                onClick={handleReservation}
-              >
-                Confirmar Reserva
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

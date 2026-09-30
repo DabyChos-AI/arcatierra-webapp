@@ -5,17 +5,25 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { CheckCircle, Package, Home, ShoppingCart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { experienciasDelCarrito, leerCarrito, vaciarCarrito } from '@/lib/carrito'
+import { formatFechaMexico } from '@/lib/dates'
 
 function PagoExitosoContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [paymentData, setPaymentData] = useState<any>(null)
+  // Lo que traía el carrito ANTES de vaciarlo (con `prev ||`: el segundo efecto de React ya lo ve vacío).
+  const [conExperiencias, setConExperiencias] = useState(false)
+  const [conProductos, setConProductos] = useState(false)
 
   useEffect(() => {
-    // Limpiar el carrito al confirmar pago exitoso
-    localStorage.removeItem('arcaTierraCart')
-    window.dispatchEvent(new Event('cartUpdated'))
+    // Limpiar el carrito al confirmar pago exitoso (y olvidar el apartado: ya se pagó)
+    const items = leerCarrito()
+    const experiencias = experienciasDelCarrito(items).length
+    setConExperiencias((prev) => prev || experiencias > 0)
+    setConProductos((prev) => prev || items.length > experiencias)
+    vaciarCarrito()
 
     // Obtener parámetros de la URL de Mercado Pago
     const paymentId = searchParams.get('payment_id')
@@ -88,7 +96,7 @@ function PagoExitosoContent() {
                 )}
                 <div>
                   <span className="font-medium text-gray-600">Fecha:</span>
-                  <p className="text-gray-800">{new Date().toLocaleDateString('es-MX')}</p>
+                  <p className="text-gray-800">{formatFechaMexico(new Date())}</p>
                 </div>
               </div>
             </div>
@@ -103,10 +111,19 @@ function PagoExitosoContent() {
                   ¿Qué sigue?
                 </h4>
                 <ul className="text-sm text-blue-700 space-y-1">
-                  <li>• Recibirás un email de confirmación en unos minutos</li>
-                  <li>• Tu pedido será preparado y empacado con cuidado</li>
-                  <li>• Te contactaremos para coordinar la entrega</li>
-                  <li>• Tiempo estimado de entrega: 24-48 horas</li>
+                  {conExperiencias && (
+                    <li data-testid="pago-exitoso-experiencias">
+                      • Te mandamos un correo con la fecha, la hora y el punto de encuentro
+                    </li>
+                  )}
+                  {(conProductos || !conExperiencias) && (
+                    <>
+                      <li>• Recibirás un email de confirmación en unos minutos</li>
+                      <li>• Tu pedido será preparado y empacado con cuidado</li>
+                      <li>• Te contactaremos para coordinar la entrega</li>
+                      <li>• Tiempo estimado de entrega: 24-48 horas</li>
+                    </>
+                  )}
                 </ul>
               </div>
             </div>

@@ -5,11 +5,22 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { Clock, Package, Home, ShoppingCart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { apartadoVigente, horaVenceApartado } from '@/components/checkout/RelojApartado'
+import { leerCarrito } from '@/lib/carrito'
+import { formatFechaMexico } from '@/lib/dates'
+import { linkWhatsApp } from '@/lib/whatsapp'
 
 function PagoPendienteContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [paymentData, setPaymentData] = useState<any>(null)
+  // F4: si el apartado de lugares sigue vigente (y es de este carrito), hasta qué hora (México).
+  const [apartadoHasta, setApartadoHasta] = useState<string | null>(null)
+
+  useEffect(() => {
+    const apartado = apartadoVigente(leerCarrito())
+    setApartadoHasta(apartado ? horaVenceApartado(apartado) : null)
+  }, [])
 
   useEffect(() => {
     // Obtener parámetros de la URL de Mercado Pago
@@ -70,9 +81,20 @@ function PagoPendienteContent() {
                 )}
                 <div>
                   <span className="font-medium text-yellow-600">Fecha:</span>
-                  <p className="text-yellow-800">{new Date().toLocaleDateString('es-MX')}</p>
+                  <p className="text-yellow-800">{formatFechaMexico(new Date())}</p>
                 </div>
               </div>
+            </div>
+          )}
+
+          {apartadoHasta && (
+            <div className="bg-amarillo-bg border border-amarillo rounded-lg p-4 mb-6 text-left" role="status" data-testid="pago-apartado-vigente">
+              <p className="text-sm font-medium text-verde-tipografia">
+                Tus lugares siguen apartados hasta las {apartadoHasta}: vuelve a intentar
+              </p>
+              <Link href="/checkout" className="mt-2 inline-block text-sm font-medium text-[#B15543] hover:underline">
+                Volver a pagar
+              </Link>
             </div>
           )}
 
@@ -140,7 +162,16 @@ function PagoPendienteContent() {
               📧 Email: <a href="mailto:pagos@arcatierra.com" className="text-[#B15543] hover:underline">pagos@arcatierra.com</a>
             </p>
             <p>
-              📱 WhatsApp: <a href="https://wa.me/5512345678" className="text-[#B15543] hover:underline">+52 55 1234 5678</a>
+              📱 WhatsApp:{' '}
+              <a
+                href={linkWhatsApp('Hola, tengo una pregunta sobre mi pago pendiente en la página de Arca Tierra')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#B15543] hover:underline"
+                data-testid="pago-whatsapp"
+              >
+                Escríbenos por WhatsApp
+              </a>
             </p>
           </div>
         </div>

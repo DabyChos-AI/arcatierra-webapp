@@ -5,7 +5,12 @@ import { cabecerasDelCliente } from '@/lib/ip-cliente';
 
 const BACKEND_URL = process.env.INTERNAL_API_URL || 'http://arca-api:8000';
 
-async function getGuestToken(origen: Headers, email: string, nombre?: string, apellidos?: string, telefono?: string): Promise<string | null> {
+const ERROR_GENERICO = 'No pudimos crear tu pago. Intenta de nuevo.';
+
+/** Token de invitado, o el status y el `detail` REALES de /auth/guest-token (429, 403 del equipo, 409 con cuenta…). */
+type TokenInvitado = { token: string } | { status: number; detail: unknown };
+
+async function getGuestToken(origen: Headers, email: string, nombre?: string, apellidos?: string, telefono?: string): Promise<TokenInvitado> {
   try {
     const response = await fetch(`${BACKEND_URL}/api/auth/guest-token`, {
       method: 'POST',
@@ -13,15 +18,15 @@ async function getGuestToken(origen: Headers, email: string, nombre?: string, ap
       headers: { 'Content-Type': 'application/json', ...cabecerasDelCliente(origen) },
       body: JSON.stringify({ email, nombre, apellidos, telefono }),
     });
-    if (!response.ok) {
-      console.error('Guest token failed:', response.status, await response.text());
-      return null;
+    const data = await response.json().catch(() => null);
+    if (!response.ok || !data?.access_token) {
+      console.error('Guest token failed:', response.status);
+      return { status: response.ok ? 502 : response.status, detail: data?.detail ?? ERROR_GENERICO };
     }
-    const data = await response.json();
-    return data.access_token;
+    return { token: data.access_token };
   } catch (error) {
     console.error('Error obteniendo guest token:', error);
-    return null;
+    return { status: 502, detail: ERROR_GENERICO };
   }
 }
 
@@ -40,40 +45,40 @@ export async function POST(request: NextRequest) {
     }
 
     let bearerToken: string | null = null;
-    let userEmail: string;
 
     if (session?.user?.email) {
       // Usuario logueado: usa token de sesion
       bearerToken = (session as any).accessToken || null;
-      userEmail = session.user.email;
-      body.email = userEmail; // anti-IDOR
+      body.email = session.user.email; // anti-IDOR
+      delete body._guest_token;
     } else if (body._guest_token) {
       // Reuse del token guest emitido por sync-and-validate
       bearerToken = body._guest_token;
       delete body._guest_token;
-      userEmail = body.email;
     } else {
-      // Guest checkout fresh: requiere email
+      // Guest checkout fresh (p. ej. al volver de MercadoPago con «atrás»): requiere email.
+      // guest-token reusa al MISMO invitado por correo, así que su apartado sigue siendo suyo.
       if (!body.email || typeof body.email !== 'string') {
-        return NextResponse.json(
-          { error: 'Email requerido para procesar el pago' },
-          { status: 400 }
-        );
+        return NextResponse.json({ detail: 'Escribe tu correo para continuar.' }, { status: 400 });
       }
-      userEmail = body.email;
-      bearerToken = await getGuestToken(
+      const invitado = await getGuestToken(
         request.headers,
-        userEmail,
+        body.email,
         body.nombre,
         body.apellido || body.apellidos,
         body.telefono
       );
-      if (!bearerToken) {
+      if (!('token' in invitado)) {
+        // Status y texto del backend tal cual (antes todo salía como 409 «tiene cuenta registrada»).
+        // 409 (el correo tiene cuenta) y 403 (correo del equipo) se resuelven iniciando sesión: `code` le dice al
+        // checkout que ofrezca el enlace, sin adivinar por el texto.
+        const pideSesion = invitado.status === 409 || invitado.status === 403;
         return NextResponse.json(
-          { error: 'Este email tiene cuenta registrada. Inicia sesion para continuar.' },
-          { status: 409 }
+          pideSesion ? { detail: invitado.detail, code: 'inicia_sesion' } : { detail: invitado.detail },
+          { status: invitado.status }
         );
       }
+      bearerToken = invitado.token;
     }
 
     const headers: Record<string, string> = {
@@ -89,19 +94,17 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    // Status y JSON del backend TAL CUAL (F4): el 409 `{detail: {code: 'apartado_vencido', mensaje}}` no se aplana.
+    const data = await response.json().catch(() => ({ detail: ERROR_GENERICO }));
 
     if (!response.ok) {
-      console.error('Backend crear-preferencia-pago error:', response.status, data);
+      console.error('Backend crear-preferencia-pago error:', response.status);
       return NextResponse.json(data, { status: response.status });
     }
 
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error en proxy crear-preferencia-pago:', error);
-    return NextResponse.json(
-      { error: 'Error generando preferencia de pago' },
-      { status: 500 }
-    );
+    return NextResponse.json({ detail: 'Error generando preferencia de pago' }, { status: 500 });
   }
 }

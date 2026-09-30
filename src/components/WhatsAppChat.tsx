@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { MessageCircle, X, Send, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-
-const WHATSAPP_NUMBER = '+525510515525' // Número de WhatsApp de Arca Tierra
+import { linkWhatsApp } from '@/lib/whatsapp'
 
 const QUICK_MESSAGES = [
   '¡Hola! Me interesa conocer más sobre sus productos orgánicos',
@@ -19,9 +19,12 @@ export default function WhatsAppChat() {
   const [isOpen, setIsOpen] = useState(false)
   const [message, setMessage] = useState('')
   const [showQuickMessages, setShowQuickMessages] = useState(true)
+  // G3/ADM1 (Fase 4): la burbuja es del sitio público; en el panel tapaba la pantalla a 390 px.
+  const enAdmin = usePathname()?.startsWith('/admin') ?? false
 
-  // Auto-abrir el chat después de 30 segundos (solo la primera vez)
+  // Auto-abrir el chat después de 30 segundos (solo la primera vez, y nunca dentro del panel)
   useEffect(() => {
+    if (enAdmin) return
     const hasSeenChat = localStorage.getItem('whatsapp-chat-seen')
     if (!hasSeenChat) {
       const timer = setTimeout(() => {
@@ -30,12 +33,10 @@ export default function WhatsAppChat() {
       }, 30000)
       return () => clearTimeout(timer)
     }
-  }, [])
+  }, [enAdmin])
 
   const sendToWhatsApp = (text: string) => {
-    const encodedMessage = encodeURIComponent(text)
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace(/[^0-9]/g, '')}?text=${encodedMessage}`
-    window.open(whatsappUrl, '_blank')
+    window.open(linkWhatsApp(text), '_blank')
     setIsOpen(false)
   }
 
@@ -50,10 +51,12 @@ export default function WhatsAppChat() {
     sendToWhatsApp(quickMessage)
   }
 
+  if (enAdmin) return null
+
   return (
     <>
       {/* Botón flotante */}
-      <div className="fixed bottom-6 right-6 z-[750]">
+      <div className="fixed bottom-6 right-6 z-[750]" data-testid="whatsapp-burbuja">
         {!isOpen && (
           <button
             onClick={() => setIsOpen(true)}
@@ -80,6 +83,7 @@ export default function WhatsAppChat() {
               </div>
               <button
                 onClick={() => setIsOpen(false)}
+                aria-label="Cerrar chat de WhatsApp"
                 className="text-white hover:text-green-100 transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -138,12 +142,14 @@ export default function WhatsAppChat() {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder="Escribe tu mensaje..."
+                      aria-label="Tu mensaje para WhatsApp"
                       onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                       className="flex-1"
                     />
                     <Button
                       onClick={handleSendMessage}
                       disabled={!message.trim()}
+                      aria-label="Enviar por WhatsApp"
                       className="bg-green-500 hover:bg-green-600 text-white px-3"
                     >
                       <Send className="w-4 h-4" />

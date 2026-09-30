@@ -5,7 +5,12 @@ import { cabecerasDelCliente } from '@/lib/ip-cliente';
 
 const BACKEND_URL = process.env.INTERNAL_API_URL || 'http://arca-api:8000';
 
-async function getGuestToken(origen: Headers, email: string, nombre?: string, apellidos?: string, telefono?: string): Promise<string | null> {
+const ERROR_GENERICO = 'No pudimos continuar con tu compra. Intenta de nuevo.';
+
+/** Token de invitado, o el status y el `detail` REALES de /auth/guest-token (429, 403 del equipo, 409 con cuenta…). */
+type TokenInvitado = { token: string } | { status: number; detail: unknown };
+
+async function getGuestToken(origen: Headers, email: string, nombre?: string, apellidos?: string, telefono?: string): Promise<TokenInvitado> {
   try {
     const response = await fetch(`${BACKEND_URL}/api/auth/guest-token`, {
       method: 'POST',
@@ -13,15 +18,15 @@ async function getGuestToken(origen: Headers, email: string, nombre?: string, ap
       headers: { 'Content-Type': 'application/json', ...cabecerasDelCliente(origen) },
       body: JSON.stringify({ email, nombre, apellidos, telefono }),
     });
-    if (!response.ok) {
-      console.error('Guest token failed:', response.status, await response.text());
-      return null;
+    const data = await response.json().catch(() => null);
+    if (!response.ok || !data?.access_token) {
+      console.error('Guest token failed:', response.status);
+      return { status: response.ok ? 502 : response.status, detail: data?.detail ?? ERROR_GENERICO };
     }
-    const data = await response.json();
-    return data.access_token;
+    return { token: data.access_token };
   } catch (error) {
     console.error('Error obteniendo guest token:', error);
-    return null;
+    return { status: 502, detail: ERROR_GENERICO };
   }
 }
 
@@ -44,35 +49,34 @@ export async function POST(request: NextRequest) {
     }
 
     let bearerToken: string | null = null;
-    let userEmail: string;
 
     if (session?.user?.email) {
       // Usuario logueado: usa su token de sesion
       bearerToken = (session as any).accessToken || null;
-      userEmail = session.user.email;
-      body.email = userEmail; // anti-IDOR
+      body.email = session.user.email; // anti-IDOR
     } else {
       // Guest checkout: requiere email en body, obtiene token temporal
       if (!body.email || typeof body.email !== 'string') {
-        return NextResponse.json(
-          { error: 'Email requerido para checkout' },
-          { status: 400 }
-        );
+        return NextResponse.json({ detail: 'Escribe tu correo para continuar.' }, { status: 400 });
       }
-      userEmail = body.email;
-      bearerToken = await getGuestToken(
+      const invitado = await getGuestToken(
         request.headers,
-        userEmail,
+        body.email,
         body.nombre,
         body.apellidos,
         body.telefono
       );
-      if (!bearerToken) {
+      if (!('token' in invitado)) {
+        // Status y texto del backend tal cual (antes todo salía como 409 «tiene cuenta registrada»).
+        // 409 (el correo tiene cuenta) y 403 (correo del equipo) se resuelven iniciando sesión: `code` le dice al
+        // checkout que ofrezca el enlace, sin adivinar por el texto.
+        const pideSesion = invitado.status === 409 || invitado.status === 403;
         return NextResponse.json(
-          { error: 'Este email tiene cuenta registrada. Inicia sesion para continuar.' },
-          { status: 409 }
+          pideSesion ? { detail: invitado.detail, code: 'inicia_sesion' } : { detail: invitado.detail },
+          { status: invitado.status }
         );
       }
+      bearerToken = invitado.token;
     }
 
     const headers: Record<string, string> = {
@@ -88,10 +92,11 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    // Status y JSON del backend TAL CUAL (F4): un `detail` objeto (409 apartado_vencido) no se aplana.
+    const data = await response.json().catch(() => ({ detail: ERROR_GENERICO }));
 
     if (!response.ok) {
-      console.error('Backend cart/sync-and-validate error:', response.status, data);
+      console.error('Backend cart/sync-and-validate error:', response.status);
       return NextResponse.json(data, { status: response.status });
     }
 
@@ -103,9 +108,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error en proxy cart/sync-and-validate:', error);
-    return NextResponse.json(
-      { error: 'Error sincronizando carrito' },
-      { status: 500 }
-    );
+    return NextResponse.json({ detail: 'Error sincronizando carrito' }, { status: 500 });
   }
 }
