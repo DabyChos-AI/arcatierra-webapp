@@ -31,6 +31,13 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
   // parpadear, con [] no pinta nada. Ver AdminSidebar.tsx::filterItems.
   const [permisosActivos, setPermisosActivos] = useState<string[] | undefined>(undefined)
 
+  // T55g (30-sep): funciones ESTABLES. AdminSidebar cierra el menú en un useEffect que
+  // depende de [pathname, onClose]; con una flecha nueva en cada render, abrir el menú
+  // repintaba este componente, el efecto corría y lo volvía a cerrar: en el celular el
+  // menú nunca abría.
+  const abrirMenu = useCallback(() => setSidebarOpen(true), [])
+  const cerrarMenu = useCallback(() => setSidebarOpen(false), [])
+
   // Fetch roles del usuario al montar
   useEffect(() => {
     async function fetchRoles() {
@@ -79,7 +86,7 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
         rolActivo={rolActivo}
         roles={roles}
         onSwitchRole={handleSwitchRole}
-        onAbrirMenu={() => setSidebarOpen(true)}
+        onAbrirMenu={abrirMenu}
       />
 
       {/* HD1 (30-sep): el botón «Abrir menu» vivía aquí como `fixed top-20` y <main> llevaba
@@ -89,7 +96,7 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
       <div className="flex">
         <AdminSidebar
           isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
+          onClose={cerrarMenu}
           permisosActivos={permisosActivos}
         />
         {/* PL1 (29-sep): min-w-0 deja que el contenido se encoja; sin él, una tabla ancha
