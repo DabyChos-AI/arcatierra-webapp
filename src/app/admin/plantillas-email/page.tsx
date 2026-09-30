@@ -53,6 +53,7 @@ const TIPOS_TABS: { key: FiltroTipo; label: string }[] = [
   { key: 'cotizacion', label: 'Cotización' },
   { key: 'cancelacion', label: 'Cancelación' },
   { key: 'reagendamiento', label: 'Reagendamiento' },
+  { key: 'link_pago', label: 'Link de pago' },
 ]
 
 const TIPO_BADGE: Record<PlantillaTipo, string> = {
@@ -61,9 +62,29 @@ const TIPO_BADGE: Record<PlantillaTipo, string> = {
   cotizacion: 'bg-[#B15543]/10 text-[#B15543] border border-[#B15543]/30',
   cancelacion: 'bg-red-50 text-red-700 border border-red-200',
   reagendamiento: 'bg-blue-50 text-blue-700 border border-blue-200',
+  link_pago: 'bg-violet-50 text-violet-700 border border-violet-200',
 }
 
 const PER_PAGE = 25
+
+// Fase 2 (30-sep): cuándo sale de verdad cada correo (guardia de services/email_reservas.py).
+// Una plantilla inactiva no se usa: sin una activa del tipo e idioma de la reserva, no sale nada.
+const CUANDO_SALE: Record<PlantillaTipo, string> = {
+  confirmacion:
+    'sale una sola vez, cuando la reserva pasa a Confirmada (pago manual, pago por link de MercadoPago o cambio de estado).',
+  recordatorio:
+    'sale el día anterior a la experiencia, a las reservas Confirmadas o Pagadas.',
+  cotizacion: 'sale solo cuando se pide al crear la reserva («Enviar cotización»), con el PDF.',
+  cancelacion: 'sale al cancelar una reserva si se marcó «Avisar al cliente por correo».',
+  reagendamiento: 'sale al reagendar una reserva si se marcó «Avisar al cliente por correo».',
+  link_pago: 'sale al generar un link de pago con «Enviar email al cliente» marcado.',
+}
+
+/** «Solo Reagendamiento: …» en VARIABLES_JINJA → la etiqueta del único tipo donde existe. */
+function tipoExclusivo(descripcion: string): string | null {
+  const m = /^Solo ([^:]+):/.exec(descripcion)
+  return m ? m[1].trim() : null
+}
 
 interface ExperienciaSimple {
   id: string
@@ -611,21 +632,35 @@ export default function PlantillasEmailPage() {
         </div>
       </div>
 
-      {/* Info banner */}
-      <div className="flex items-start gap-3 p-3 rounded-lg bg-[#E3DBCB]/40 border-l-4 border-[#B15543] text-sm text-gray-700">
+      {/* Info banner: cuándo sale cada correo (Fase 2) */}
+      <div
+        data-testid="plantillas-aviso-envios"
+        className="flex items-start gap-3 p-3 rounded-lg bg-[#E3DBCB]/40 border-l-4 border-[#B15543] text-sm text-gray-700"
+      >
         <Info
           className="h-4 w-4 text-[#B15543] mt-0.5 flex-shrink-0"
           aria-hidden="true"
         />
-        <p className="leading-relaxed">
-          Estas plantillas se envían automáticamente cuando una reserva cambia
-          de estado (confirmada/pagada) o cuando el cron diario manda los
-          recordatorios del día siguiente. Las variables{' '}
-          <code className="bg-white px-1 rounded text-xs">
-            {'{{nombre_cliente}}'}
-          </code>{' '}
-          se reemplazan con los datos reales en el envío.
-        </p>
+        <div className="leading-relaxed space-y-2">
+          <p className="font-medium text-gray-900">Cuándo sale cada correo</p>
+          <ul className="list-disc pl-5 space-y-0.5">
+            {(Object.keys(CUANDO_SALE) as PlantillaTipo[]).map((tipo) => (
+              <li key={tipo}>
+                <strong>{TIPO_LABELS[tipo]}</strong>: {CUANDO_SALE[tipo]}
+              </li>
+            ))}
+          </ul>
+          <p>
+            Salvo la Cotización, ninguno sale a reservas del Sheet de planeación, de reseller o
+            sin correo real del cliente. <strong>Una plantilla inactiva no se manda</strong>: si
+            no hay una activa de ese tipo en el idioma de la reserva, no sale nada de ese tipo. La
+            plantilla de una experiencia gana sobre la genérica. Las variables{' '}
+            <code className="bg-white px-1 rounded text-xs">
+              {'{{nombre_cliente}}'}
+            </code>{' '}
+            se reemplazan con los datos reales en el envío.
+          </p>
+        </div>
       </div>
 
       {/* Toast global */}
@@ -858,14 +893,14 @@ export default function PlantillasEmailPage() {
                       {p.activa ? (
                         <span
                           className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-[#33503E]/10 text-[#33503E] border border-[#33503E]/30"
-                          title="Esta plantilla se enviará automáticamente"
+                          title={`Activa: ${CUANDO_SALE[p.tipo]}`}
                         >
                           Activa
                         </span>
                       ) : (
                         <span
                           className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200"
-                          title="Inactiva: no se enviará más, pero los emails previos quedan en historial"
+                          title="Inactiva: no se manda; los correos que ya salieron quedan en el historial"
                         >
                           Inactiva
                         </span>
@@ -1044,6 +1079,7 @@ export default function PlantillasEmailPage() {
 
               {modalTab === 'cuerpo' && (
                 <CuerpoTab
+                  tipo={formData.tipo}
                   formData={formData}
                   updateField={updateField}
                   insertarVariable={insertarVariable}
@@ -1184,11 +1220,11 @@ function DatosTab({ formData, updateField, experiencias }: DatosTabProps) {
             }
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B15543]/40"
           >
-            <option value="confirmacion">Confirmación</option>
-            <option value="recordatorio">Recordatorio</option>
-            <option value="cotizacion">Cotización</option>
-            <option value="cancelacion">Cancelación</option>
-            <option value="reagendamiento">Reagendamiento</option>
+            {(Object.keys(TIPO_LABELS) as PlantillaTipo[]).map((tipo) => (
+              <option key={tipo} value={tipo}>
+                {TIPO_LABELS[tipo]}
+              </option>
+            ))}
           </select>
         </div>
         <div>
@@ -1274,8 +1310,8 @@ function DatosTab({ formData, updateField, experiencias }: DatosTabProps) {
           className="h-4 w-4 rounded border-gray-300 text-[#33503E] focus:ring-[#33503E]"
         />
         <span>
-          <strong>Activa</strong> — se enviará automáticamente cuando el
-          dispatcher la seleccione.
+          <strong>Activa</strong> — {TIPO_LABELS[formData.tipo]}:{' '}
+          {CUANDO_SALE[formData.tipo]} Si está inactiva, no se manda.
         </span>
       </label>
     </form>
@@ -1283,6 +1319,7 @@ function DatosTab({ formData, updateField, experiencias }: DatosTabProps) {
 }
 
 interface CuerpoTabProps {
+  tipo: PlantillaTipo
   formData: PlantillaPayload
   updateField: <K extends keyof PlantillaPayload>(
     key: K,
@@ -1293,11 +1330,18 @@ interface CuerpoTabProps {
 }
 
 function CuerpoTab({
+  tipo,
   formData,
   updateField,
   insertarVariable,
   cuerpoRef,
 }: CuerpoTabProps) {
+  // Las «Solo Reagendamiento» / «Solo Link de pago» salen vacías en los demás tipos
+  const aplican = VARIABLES_JINJA.filter((v) => {
+    const exclusivo = tipoExclusivo(v.descripcion)
+    return !exclusivo || exclusivo === TIPO_LABELS[tipo]
+  })
+  const deOtros = VARIABLES_JINJA.filter((v) => !aplican.includes(v))
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_16rem] gap-4">
       <div>
@@ -1328,10 +1372,10 @@ function CuerpoTab({
 
       <aside className="space-y-2">
         <p className="text-sm font-medium text-gray-700">
-          Variables disponibles
+          Variables para {TIPO_LABELS[tipo]}
         </p>
-        <div className="flex flex-wrap gap-2">
-          {VARIABLES_JINJA.map((v) => (
+        <div className="flex flex-wrap gap-2" data-testid="variables-aplican">
+          {aplican.map((v) => (
             <button
               key={v.key}
               type="button"
@@ -1345,6 +1389,24 @@ function CuerpoTab({
             </button>
           ))}
         </div>
+        {deOtros.length > 0 && (
+          <div className="space-y-1" data-testid="variables-otros-tipos">
+            <p className="text-xs text-gray-500">
+              Solo existen en otros tipos (aquí saldrían vacías):
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {deOtros.map((v) => (
+                <span
+                  key={v.key}
+                  title={v.descripcion}
+                  className="px-1.5 py-0.5 text-[11px] rounded bg-gray-50 text-gray-400 border border-gray-200 font-mono"
+                >
+                  {v.key}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
         <p className="text-xs text-gray-500 leading-relaxed">
           Click en cualquier chip para insertarla en la posición del cursor del
           editor. <code>addons_lista</code> ya viene como{' '}

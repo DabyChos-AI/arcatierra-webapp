@@ -18,9 +18,16 @@ import {
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { useVendedoras } from '@/hooks/useVendedoras'
-import { formatMXN, type Reserva, type ReservaEstado } from '@/types/reservas'
+import {
+  formatMXN,
+  textoCorreo,
+  type CancelarResponse,
+  type Reserva,
+  type ReservaEstado,
+} from '@/types/reservas'
 import BadgeEstado from '../../components/BadgeEstado'
 import BadgeEstadoPago from '../../components/BadgeEstadoPago'
+import { extraerMensajeError } from './errores'
 
 interface ReservasTablaProps {
   refreshKey: number
@@ -90,6 +97,8 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
 
   // Cancel inflight
   const [cancelandoId, setCancelandoId] = useState<string | null>(null)
+  // CN1: qué pasó al cancelar desde el bote (correo al cliente, links vencidos)
+  const [avisoCancelacion, setAvisoCancelacion] = useState<string | null>(null)
 
   // Debounce busqueda 400ms
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -184,11 +193,22 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
 
   const cancelarReserva = async (reserva: Reserva) => {
     if (!token) return
+    // La lista no trae los pagos: se dice lo que puede pasar. Para decidir si se avisa al
+    // cliente o poner otro motivo, está Acciones en el detalle.
     const confirm = window.confirm(
-      `Cancelar la reserva ${reserva.booking_id}?\nEsta accion no se puede deshacer.`,
+      [
+        `Cancelar la reserva ${reserva.booking_id}?`,
+        'Esta accion no se puede deshacer.',
+        '',
+        '• Si tiene links de pago sin cobrar, se vencen en MercadoPago.',
+        '• Se le avisa al cliente por correo si la plantilla Cancelación está activa y tiene correo real (las reservas del Sheet y de reseller no reciben correos).',
+        '',
+        'Para cancelar sin avisar al cliente, usa Acciones en el detalle de la reserva.',
+      ].join('\n'),
     )
     if (!confirm) return
     setCancelandoId(reserva.id)
+    setAvisoCancelacion(null)
     try {
       const res = await fetch(`${API_URL}/api/admin/reservas/${reserva.id}/cancelar`, {
         method: 'POST',
@@ -196,12 +216,27 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ motivo: 'Cancelacion desde tabla' }),
+        body: JSON.stringify({ motivo: 'Cancelacion desde tabla', notificar_cliente: true }),
       })
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.detail || `Error ${res.status}`)
+        const err = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(err, res.status))
       }
+      const data = (await res.json()) as CancelarResponse
+      // D4 / D15: lo que no se puede perder va en un alert, igual que en el detalle
+      if (Array.isArray(data.avisos) && data.avisos.length > 0) {
+        window.alert(data.avisos.join('\n\n'))
+      }
+      const partes = [`Reserva ${reserva.booking_id} cancelada.`]
+      if (data.links_vencidos > 0) {
+        partes.push(
+          data.links_vencidos === 1
+            ? 'Se venció 1 link de pago sin cobrar.'
+            : `Se vencieron ${data.links_vencidos} links de pago sin cobrar.`,
+        )
+      }
+      partes.push(textoCorreo(data.correo_cliente))
+      setAvisoCancelacion(partes.filter(Boolean).join(' '))
       await fetchReservas()
     } catch (err) {
       window.alert(err instanceof Error ? err.message : 'Error al cancelar')
@@ -314,6 +349,24 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
           </button>
         </div>
       </div>
+
+      {avisoCancelacion && (
+        <div
+          role="status"
+          data-testid="tabla-aviso-cancelacion"
+          className="bg-verde/10 border border-verde/30 rounded-lg p-3 text-sm text-verde flex items-start gap-2"
+        >
+          <p className="flex-1">{avisoCancelacion}</p>
+          <button
+            type="button"
+            onClick={() => setAvisoCancelacion(null)}
+            aria-label="Cerrar aviso de cancelación"
+            className="p-0.5 rounded hover:bg-verde/10"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+      )}
 
       {/* Tabla */}
       <div className="bg-white border border-neutro-borde rounded-lg overflow-hidden">

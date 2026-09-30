@@ -40,6 +40,8 @@ export interface Guia {
   apellidos?: string | null
   email?: string | null
   idiomas?: string[]
+  /** ISO con zona: cuándo se asignó a la reserva (detalle, `guias[].asignado_en`). Auditoría (DT1-b). */
+  asignado_en?: string | null
 }
 
 export interface Personal {
@@ -137,6 +139,14 @@ export interface PagoReserva {
   monto_total: number
   moneda: string
   mp_status: string
+  /**
+   * Fase 2: por qué quedó así. Links: 'link_generado' (pendiente), 'link_cobrado',
+   * 'anulado_por_cortesia', 'anulado_por_cancelacion', 'anulado_por_pago_manual'.
+   * Manual: 'manual'. MercadoPago: su status_detail ('accredited', 'pending_waiting_payment'…).
+   */
+  mp_status_detail?: string | null
+  /** Fase 2: ISO con zona en que el link se anuló o se cerró por cobro (webhook_raw.anulado_en / cerrado_en); null si sigue abierto o no aplica. */
+  cerrado_en?: string | null
   mp_payment_id?: string | null
   mp_preference_id?: string | null
   mp_payment_method?: string | null
@@ -144,6 +154,121 @@ export interface PagoReserva {
   fecha_pago?: string | null
   fecha_registro: string
   init_point?: string | null
+}
+
+// ─── Fase 2 de PLAN-EXP-SIN-FALLAS (30-sep): correos y cobros ────────────────────────────
+// Contrato: docs/decisiones/EXP-FASE2-CONTRATO.md (C1–C9). El back devuelve el CÓDIGO; el
+// panel lo traduce con MOTIVO_NO_ENVIO_TEXTO. Ningún correo se escribe a reservas del Sheet,
+// de reseller o sin correo real; sin plantilla activa no se manda nada (y no queda «fallido»).
+
+export type MotivoNoEnvio =
+  | 'origen_sheet'
+  | 'reseller'
+  | 'sin_correo'
+  | 'correo_provisional'
+  | 'sin_plantilla'
+  | 'ya_enviado'
+  | 'no_solicitado'
+  | 'reserva_no_encontrada'
+  | 'sin_guias'
+
+export const MOTIVO_NO_ENVIO_TEXTO: Record<MotivoNoEnvio, string> = {
+  origen_sheet: 'la reserva viene del Sheet de planeación (esas no reciben correos)',
+  reseller: 'es de un reseller (el reseller avisa a su cliente)',
+  sin_correo: 'el cliente no tiene correo registrado',
+  correo_provisional: 'el correo del cliente es provisional (@arcatierra.local)',
+  sin_plantilla:
+    'no hay plantilla activa de ese correo en el idioma de la reserva (se activa en Plantillas Email)',
+  ya_enviado: 'ya se le había mandado antes',
+  no_solicitado: 'no se pidió avisar',
+  reserva_no_encontrada: 'no se encontró la reserva',
+  sin_guias: 'la reserva no tiene guías asignados',
+}
+
+/** Resultado de un correo que el endpoint encoló (o no) al CLIENTE. */
+export interface ResultadoCorreo {
+  encolado: boolean
+  /** null cuando se encoló. */
+  motivo: MotivoNoEnvio | null
+}
+
+/** Aviso a los guías asignados al reagendar (RG1). */
+export interface ResultadoGuias {
+  con_correo: number
+  sin_correo: number
+  encolado: boolean
+  /** null cuando se encoló; 'sin_correo' = ninguno de los asignados tiene correo. */
+  motivo: MotivoNoEnvio | null
+}
+
+/** «Se mandará…» / «No se mandó: <motivo>» — una frase para toasts y resultados. */
+export function textoCorreo(r: ResultadoCorreo | null | undefined, destinatario = 'al cliente'): string {
+  if (!r) return ''
+  if (r.encolado) return `Se está mandando el correo ${destinatario}.`
+  // Sin motivo = el servidor no pudo revisar la guardia (error); el correo no se encoló.
+  if (!r.motivo) return `No se mandó correo ${destinatario}: no se pudo revisar si podía salir (error del servidor).`
+  return `No se mandó correo ${destinatario}: ${MOTIVO_NO_ENVIO_TEXTO[r.motivo] ?? r.motivo}.`
+}
+
+/** POST /api/admin/reservas/{id}/cancelar (C5). */
+export interface CancelarResponse {
+  success: boolean
+  estado: 'cancelada'
+  reserva_id: string
+  /** Links sin cobrar que se vencieron en MercadoPago y quedaron anulados. */
+  links_vencidos: number
+  /** preference_id de los links que MercadoPago NO venció (D4: vencerlos a mano). */
+  links_sin_vencer: string[]
+  /** Había un pago real pendiente (OXXO / en revisión): D15. */
+  pago_en_camino: boolean
+  correo_cliente: ResultadoCorreo
+  /** Frases listas para mostrar (D4, D15). Vacío = nada que avisar. */
+  avisos: string[]
+}
+
+/** POST /api/admin/reservas/{id}/reagendar (C6). */
+export interface ReagendarResponse {
+  success: boolean
+  fecha_experiencia: string // YYYY-MM-DD
+  hora_inicio: string // HH:MM:SS
+  hora_fin: string | null // HH:MM:SS (se movió igual que el inicio) o null si no tenía
+  reserva_id: string
+  correo_cliente: ResultadoCorreo
+  guias: ResultadoGuias
+  avisos: string[]
+}
+
+/** POST /api/admin/reservas/{id}/link-pago (C7). Las llaves de antes no cambian. */
+export interface LinkPagoResponse {
+  success: boolean
+  init_point: string | null
+  sandbox_init_point?: string | null
+  preference_id: string | null
+  monto: number
+  external_reference: string
+  tipo?: string
+  warning?: string
+  /** ISO con zona (fin del día en México) o null = sin vencimiento. */
+  vence_en?: string | null
+  /** Lo que ve el cliente en MercadoPago (el `title` del renglón). */
+  concepto?: string
+  correo_cliente?: ResultadoCorreo
+}
+
+/** POST /api/admin/reservas/{id}/pagos (C3). Las llaves de antes no cambian. */
+export interface PagoManualResponse {
+  success: boolean
+  pago_id: string
+  monto_pagado_acumulado: number
+  monto_balance: number
+  estado: ReservaEstado
+  estado_pago: ReservaEstadoPago
+  /** Links cuyo monto quedó mayor que el saldo nuevo (D5): vencidos y anulados. */
+  links_vencidos: number
+  links_sin_vencer: string[]
+  /** null si el pago no pasó la reserva de Tentativa a Confirmada. */
+  correo_confirmacion: ResultadoCorreo | null
+  avisos: string[]
 }
 
 export interface ManifestInvitado {

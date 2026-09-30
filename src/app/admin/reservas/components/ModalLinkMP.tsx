@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { Copy, Loader2, X } from 'lucide-react'
 import { API_URL } from '@/lib/api'
-import { formatMXN } from '@/types/reservas'
+import { formatFechaMexico } from '@/lib/dates'
+import { formatMXN, textoCorreo, type LinkPagoResponse } from '@/types/reservas'
 import { extraerMensajeError } from './errores'
 
 interface ModalLinkMPProps {
@@ -13,22 +14,24 @@ interface ModalLinkMPProps {
   totalActual: number
   anticipoSugerido: number
   balance: number
-  onCreated: (preferenceId: string, initPoint: string) => void
+  onCreated: (res: LinkPagoResponse) => void
   onClose: () => void
 }
 
 type TipoLink = 'anticipo' | 'balance' | 'total' | 'custom'
 
-interface LinkResult {
-  success: boolean
-  preference_id: string | null
-  init_point: string | null
-  sandbox_init_point?: string | null
-  monto?: number
-  external_reference?: string
-  tipo?: string
-  warning?: string
+// LinkPagoRequest (C7): vigencia_dias entero 1–30, concepto ≤120 (vacío = no se manda)
+interface LinkPagoPayload {
+  tipo: string
+  monto_override?: number
+  vigencia_dias?: number
+  concepto?: string
+  enviar_email: boolean
 }
+
+const VIGENCIA_MIN = 1
+const VIGENCIA_MAX = 30
+const MAX_CONCEPTO = 120
 
 export default function ModalLinkMP({
   reservaId,
@@ -45,14 +48,15 @@ export default function ModalLinkMP({
   const [tipo, setTipo] = useState<TipoLink>('anticipo')
   const [montoCustom, setMontoCustom] = useState<number>(0)
   const [porcentaje, setPorcentaje] = useState<number>(30)
-  const [vigenciaDias, setVigenciaDias] = useState<number>(7)
+  // Texto: vacío = sin vencimiento (no se manda vigencia_dias)
+  const [vigenciaDias, setVigenciaDias] = useState<string>('7')
   const [concepto, setConcepto] = useState<string>(
     `Anticipo reserva ${bookingId ?? ''}`.trim(),
   )
   const [enviarEmail, setEnviarEmail] = useState<boolean>(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [result, setResult] = useState<LinkResult | null>(null)
+  const [result, setResult] = useState<LinkPagoResponse | null>(null)
   const [copied, setCopied] = useState(false)
 
   // Monto efectivo segun tipo
@@ -78,20 +82,23 @@ export default function ModalLinkMP({
 
   const PRESETS_PCT = [30, 40, 50] as const
 
+  // Auto-actualizar el concepto SOLO cuando cambia el tipo (antes también al mover el %,
+  // y borraba lo que la vendedora hubiera escrito)
   useEffect(() => {
-    // Auto-actualizar concepto cuando cambia tipo
     const baseId = bookingId ?? reservaId.slice(0, 8)
     if (tipo === 'anticipo') setConcepto(`Anticipo reserva ${baseId}`)
     else if (tipo === 'balance') setConcepto(`Balance reserva ${baseId}`)
     else if (tipo === 'total') setConcepto(`Pago total reserva ${baseId}`)
-    else if (tipo === 'custom') {
-      setConcepto(`Pago reserva ${baseId}`)
-      // Bug 4b: sembrar el monto al abrir "Personalizado" para no mostrar $0.00
-      setMontoCustom((prev) =>
-        prev > 0 ? prev : Math.round(totalActual * (porcentaje / 100) * 100) / 100,
-      )
-    }
-  }, [tipo, bookingId, reservaId, totalActual, porcentaje])
+    else if (tipo === 'custom') setConcepto(`Pago reserva ${baseId}`)
+  }, [tipo, bookingId, reservaId])
+
+  useEffect(() => {
+    if (tipo !== 'custom') return
+    // Bug 4b: sembrar el monto al abrir "Personalizado" para no mostrar $0.00
+    setMontoCustom((prev) =>
+      prev > 0 ? prev : Math.round(totalActual * (porcentaje / 100) * 100) / 100,
+    )
+  }, [tipo, totalActual, porcentaje])
 
   async function handleSubmit() {
     if (!token) {
@@ -102,6 +109,20 @@ export default function ModalLinkMP({
       setError('El monto debe ser mayor a 0')
       return
     }
+    const vigenciaTexto = vigenciaDias.trim()
+    const vigencia = vigenciaTexto === '' ? null : Number(vigenciaTexto)
+    if (
+      vigencia !== null &&
+      (!Number.isInteger(vigencia) || vigencia < VIGENCIA_MIN || vigencia > VIGENCIA_MAX)
+    ) {
+      setError(`La vigencia va de ${VIGENCIA_MIN} a ${VIGENCIA_MAX} días (vacía = sin vencimiento).`)
+      return
+    }
+    const conceptoLimpio = concepto.trim()
+    if (conceptoLimpio.length > MAX_CONCEPTO) {
+      setError(`El concepto admite hasta ${MAX_CONCEPTO} caracteres.`)
+      return
+    }
     setSubmitting(true)
     setError(null)
     try {
@@ -109,10 +130,12 @@ export default function ModalLinkMP({
       // 'total' del UI → 'completo' del backend. 'custom' → 'anticipo' + monto_override.
       const tipoBackend =
         tipo === 'total' ? 'completo' : tipo === 'custom' ? 'anticipo' : tipo
-      const payload: { tipo: string; monto_override?: number } = { tipo: tipoBackend }
+      const payload: LinkPagoPayload = { tipo: tipoBackend, enviar_email: enviarEmail }
       if (tipo === 'custom') {
         payload.monto_override = montoCustom
       }
+      if (vigencia !== null) payload.vigencia_dias = vigencia
+      if (conceptoLimpio) payload.concepto = conceptoLimpio
       const res = await fetch(
         `${API_URL}/api/admin/reservas/${reservaId}/link-pago`,
         {
@@ -128,7 +151,7 @@ export default function ModalLinkMP({
         const err = await res.json().catch(() => ({}))
         throw new Error(extraerMensajeError(err, res.status))
       }
-      const data = (await res.json()) as LinkResult
+      const data = (await res.json()) as LinkPagoResponse
       // Backend devuelve 200 OK incluso si MP falla — verificar success
       if (!data.success || !data.init_point) {
         throw new Error(
@@ -136,7 +159,7 @@ export default function ModalLinkMP({
         )
       }
       setResult(data)
-      onCreated(data.preference_id ?? '', data.init_point)
+      onCreated(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al generar link')
     } finally {
@@ -157,13 +180,13 @@ export default function ModalLinkMP({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center px-4 pt-36 sm:pt-40 pb-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center px-4 pt-10 sm:pt-16 pb-4 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-link-mp-title"
     >
-      <div className="bg-white rounded-lg shadow-medium max-w-lg w-full max-h-[92vh] flex flex-col">
-        <header className="border-b border-neutro-borde px-6 py-4 flex items-center justify-between">
+      <div className="bg-white rounded-lg shadow-medium max-w-lg w-full max-h-[calc(100dvh-3.5rem)] sm:max-h-[calc(100dvh-5rem)] flex flex-col">
+        <header className="shrink-0 border-b border-neutro-borde px-4 sm:px-6 py-4 flex items-center justify-between gap-2">
           <h2 id="modal-link-mp-title" className="font-display text-xl text-verde">
             Generar link de pago MercadoPago
           </h2>
@@ -177,9 +200,9 @@ export default function ModalLinkMP({
           </button>
         </header>
 
-        <div className="flex-1 overflow-auto px-6 py-4 space-y-4">
+        <div className="flex-1 overflow-auto px-4 sm:px-6 py-4 space-y-4">
           {error && (
-            <div className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo">
+            <div role="alert" className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo">
               {error}
             </div>
           )}
@@ -314,35 +337,30 @@ export default function ModalLinkMP({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label
-                    htmlFor="link-mp-vigencia"
-                    className="block text-sm font-medium text-verde mb-1"
-                  >
-                    Vigencia (dias)
-                  </label>
-                  <input
-                    id="link-mp-vigencia"
-                    type="number"
-                    min={1}
-                    max={30}
-                    value={vigenciaDias}
-                    onChange={(e) => setVigenciaDias(Number(e.target.value))}
-                    className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
-                  />
-                </div>
-                <div className="flex items-end">
-                  <label className="flex items-center gap-2 text-sm text-verde cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={enviarEmail}
-                      onChange={(e) => setEnviarEmail(e.target.checked)}
-                      className="w-4 h-4 text-terracota border-neutro-borde rounded focus:ring-terracota"
-                    />
-                    Enviar email al cliente
-                  </label>
-                </div>
+              <div>
+                <label
+                  htmlFor="link-mp-vigencia"
+                  className="block text-sm font-medium text-verde mb-1"
+                >
+                  Vigencia (días)
+                </label>
+                <input
+                  id="link-mp-vigencia"
+                  data-testid="link-vigencia"
+                  type="number"
+                  inputMode="numeric"
+                  min={VIGENCIA_MIN}
+                  max={VIGENCIA_MAX}
+                  step={1}
+                  value={vigenciaDias}
+                  onChange={(e) => setVigenciaDias(e.target.value)}
+                  aria-describedby="link-mp-vigencia-ayuda"
+                  className="w-32 border border-neutro-borde rounded-lg px-3 py-2 text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
+                />
+                <p id="link-mp-vigencia-ayuda" className="text-xs text-verde-suave mt-1">
+                  De {VIGENCIA_MIN} a {VIGENCIA_MAX} días: el link deja de aceptar pagos al terminar
+                  ese día (hora de México). Vacío = sin vencimiento.
+                </p>
               </div>
 
               <div>
@@ -354,17 +372,36 @@ export default function ModalLinkMP({
                 </label>
                 <input
                   id="link-mp-concepto"
+                  data-testid="link-concepto"
                   type="text"
+                  maxLength={MAX_CONCEPTO}
                   value={concepto}
                   onChange={(e) => setConcepto(e.target.value)}
+                  aria-describedby="link-mp-concepto-ayuda"
                   className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
                 />
+                <p id="link-mp-concepto-ayuda" className="text-xs text-verde-suave mt-1">
+                  Lo que el cliente ve en MercadoPago ({concepto.length}/{MAX_CONCEPTO}).
+                </p>
               </div>
 
-              <div className="bg-neutro-light rounded-lg p-3 text-xs text-verde-suave">
-                Preview URL:{' '}
-                <span className="italic">(se generara al guardar)</span>
-              </div>
+              <label className="flex items-start gap-2 text-sm text-verde cursor-pointer">
+                <input
+                  type="checkbox"
+                  data-testid="link-enviar-email"
+                  checked={enviarEmail}
+                  onChange={(e) => setEnviarEmail(e.target.checked)}
+                  className="w-4 h-4 mt-0.5 text-terracota border-neutro-borde rounded focus:ring-terracota"
+                />
+                <span>
+                  Enviar email al cliente
+                  <span className="block text-xs text-verde-suave">
+                    Usa la plantilla «Link de pago» (Plantillas Email) solo si está activa en el
+                    idioma de la reserva y el cliente tiene correo real; si no, no sale nada y te
+                    decimos por qué.
+                  </span>
+                </span>
+              </label>
             </>
           ) : (
             <div className="space-y-3">
@@ -372,15 +409,13 @@ export default function ModalLinkMP({
                 Link generado correctamente.
               </div>
               <div>
-                <label className="block text-sm font-medium text-verde mb-1">
-                  Link de pago
-                </label>
+                <p className="block text-sm font-medium text-verde mb-1">Link de pago</p>
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
                     readOnly
                     value={result.init_point ?? ''}
-                    className="flex-1 border border-neutro-borde rounded-lg px-3 py-2 text-sm bg-neutro-light"
+                    className="flex-1 min-w-0 border border-neutro-borde rounded-lg px-3 py-2 text-sm bg-neutro-light"
                     aria-label="Link MercadoPago generado"
                   />
                   <button
@@ -394,14 +429,35 @@ export default function ModalLinkMP({
                   </button>
                 </div>
               </div>
-              <p className="text-xs text-verde-suave">
+              <div className="text-sm text-verde space-y-1">
+                <p className="tabular-nums">Monto: {formatMXN(Number(result.monto))}</p>
+                {result.concepto && <p className="break-words">Concepto: {result.concepto}</p>}
+                <p data-testid="link-resultado-vence">
+                  {result.vence_en
+                    ? `Vence: ${formatFechaMexico(result.vence_en)} (al terminar el día, hora de México)`
+                    : 'Sin vencimiento'}
+                </p>
+              </div>
+              {result.correo_cliente && (
+                <p
+                  data-testid="link-resultado-correo"
+                  className={`text-sm rounded-lg p-3 border ${
+                    result.correo_cliente.encolado
+                      ? 'bg-verde/10 border-verde/30 text-verde'
+                      : 'bg-amarillo-bg border-amarillo/30 text-verde'
+                  }`}
+                >
+                  {textoCorreo(result.correo_cliente)}
+                </p>
+              )}
+              <p className="text-xs text-verde-suave break-all">
                 Preference ID: <span className="font-mono">{result.preference_id ?? '—'}</span>
               </p>
             </div>
           )}
         </div>
 
-        <footer className="border-t border-neutro-borde px-6 py-4 flex items-center justify-between">
+        <footer className="shrink-0 border-t border-neutro-borde px-4 sm:px-6 py-4 flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={onClose}

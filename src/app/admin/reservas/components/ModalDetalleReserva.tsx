@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import {
   AlertTriangle,
@@ -10,14 +10,18 @@ import {
   Gift,
   Info,
   Loader2,
+  Mail,
   Plus,
+  StickyNote,
   Trash2,
+  UserCheck,
   X,
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { formatFechaHoraMexico, formatFechaMexico } from '@/lib/dates'
 import type { ItemCatalogo, ListaCatalogo, TipoCatalogo } from '@/types/planeacion'
 import { TIPO_LABELS } from '@/types/plantillas-email'
+import { horaCorta } from '@/app/admin/eventos/components/fechas'
 import {
   useVendedoras,
   vendedoraFueraDeLista,
@@ -28,14 +32,21 @@ import {
   formatMXN,
   calcularCotizacion,
   initialWizardData,
+  MOTIVO_NO_ENVIO_TEXTO,
+  textoCorreo,
+  type CancelarResponse,
   type Comunicacion,
   type ComunicacionesResponse,
   type Cotizacion,
   type ExperienciaCatalogo,
   type IdiomaCliente,
   type ManifestInvitado,
+  type PagoManualResponse,
+  type PagoReserva,
   type Personal,
+  type ReagendarResponse,
   type Reserva,
+  type ResultadoGuias,
 } from '@/types/reservas'
 
 // El backend expone en `cotizacion` el precio base, el adicional por persona y
@@ -118,6 +129,104 @@ interface ToastState {
   type: 'success' | 'error'
 }
 
+// ─── Fase 2 (30-sep): lo que el panel dice de correos y cobros ─────────────────────────────
+
+/** D15: el texto que se ve ANTES de cancelar (y se repite en el confirm). */
+const AVISO_PAGO_EN_CAMINO =
+  'Hay un pago de MercadoPago en camino (OXXO o en revisión). Puedes cancelar: si se acredita después, quedará registrado con una nota para devolverlo.'
+
+/** Pagos reales de MercadoPago que siguen sin acreditarse (OXXO, en revisión). */
+function pagosEnCamino(pagos: PagoReserva[]): PagoReserva[] {
+  return pagos.filter(
+    (p) => !!p.mp_payment_id && (p.mp_status === 'pending' || p.mp_status === 'in_process'),
+  )
+}
+
+/** Links de pago generados que nadie ha cobrado (se vencen al cancelar o con un pago manual). */
+function linksSinCobrar(pagos: PagoReserva[]): PagoReserva[] {
+  return pagos.filter((p) => p.mp_status === 'pending' && !p.mp_payment_id)
+}
+
+function textoLinksPorVencer(n: number): string {
+  return n === 1
+    ? 'Se vencerá 1 link de pago sin cobrar.'
+    : `Se vencerán ${n} links de pago sin cobrar.`
+}
+
+function textoLinksVencidos(n: number): string {
+  return n === 1 ? 'Se venció 1 link de pago sin cobrar.' : `Se vencieron ${n} links de pago sin cobrar.`
+}
+
+/** RG1: qué pasó con el aviso a los guías (el motivo `sin_correo` aquí es de los guías, no del cliente). */
+function textoGuias(g: ResultadoGuias | null | undefined): string {
+  if (!g) return ''
+  if (g.encolado) {
+    const avisados =
+      g.con_correo === 1
+        ? 'Se está avisando por correo al guía con correo.'
+        : `Se está avisando por correo a ${g.con_correo} guías.`
+    const faltan =
+      g.sin_correo === 1
+        ? ' 1 guía no tiene correo: avísale tú.'
+        : g.sin_correo > 1
+          ? ` ${g.sin_correo} guías no tienen correo: avísales tú.`
+          : ''
+    return avisados + faltan
+  }
+  if (g.motivo === 'sin_guias' || (g.motivo === 'no_solicitado' && g.con_correo + g.sin_correo === 0)) {
+    return 'No hay guías asignados a quienes avisar.'
+  }
+  if (g.motivo === 'sin_correo' || (g.motivo === 'no_solicitado' && g.con_correo === 0)) {
+    return 'No se avisó a los guías: ninguno de los asignados tiene correo (avísales tú).'
+  }
+  if (g.motivo === 'no_solicitado') return 'No se avisó a los guías (no se pidió): avísales tú.'
+  const motivo = g.motivo ? MOTIVO_NO_ENVIO_TEXTO[g.motivo] ?? g.motivo : 'sin motivo'
+  return `No se avisó a los guías: ${motivo}.`
+}
+
+/** Los avisos del back (D4, D15) no se pueden perder en un toast: van en un alert. */
+function mostrarAvisos(avisos: string[] | null | undefined) {
+  if (Array.isArray(avisos) && avisos.length > 0) window.alert(avisos.join('\n\n'))
+}
+
+// Correos de la reserva (GET /comunicaciones): una sola carga para Comunicaciones y Auditoría.
+interface EstadoComunicaciones {
+  items: Comunicacion[] | null
+  cargando: boolean
+  error: string | null
+  recargar: () => Promise<void>
+}
+
+function useComunicaciones(reservaId: string, token: string | undefined): EstadoComunicaciones {
+  const [items, setItems] = useState<Comunicacion[] | null>(null)
+  const [cargando, setCargando] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Mismo patrón que fetchReserva: API_URL directo + Bearer. Silencioso: no vacía `items`.
+  const recargar = useCallback(async () => {
+    if (!token) return
+    setCargando(true)
+    setError(null)
+    try {
+      const res = await fetch(`${API_URL}/api/admin/reservas/${reservaId}/comunicaciones`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, res.status))
+      }
+      const data = (await res.json()) as ComunicacionesResponse
+      setItems(data.items ?? [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cargar los correos')
+    } finally {
+      setCargando(false)
+    }
+  }, [token, reservaId])
+
+  return { items, cargando, error, recargar }
+}
+
 export default function ModalDetalleReserva({
   reservaId,
   onClose,
@@ -173,12 +282,32 @@ export default function ModalDetalleReserva({
   // Cancelar
   const [motivoCancelacion, setMotivoCancelacion] = useState('')
   const [procesarReembolso, setProcesarReembolso] = useState(false)
+  // CN1: el back manda la plantilla Cancelación (si está activa) solo si se pide
+  const [notificarClienteCancel, setNotificarClienteCancel] = useState(true)
+  const [cancelando, setCancelando] = useState(false)
 
-  // Toast handler
+  // Correos de la reserva: los comparten las pestañas Comunicaciones y Auditoría (DT1-b)
+  const comunicaciones = useComunicaciones(reservaId, token)
+  const { recargar: recargarComunicaciones } = comunicaciones
+  useEffect(() => {
+    // Cada visita a esas pestañas relee en silencio: los correos salen en segundo plano
+    if (tab === 'comunicaciones' || tab === 'auditoria') recargarComunicaciones()
+  }, [tab, recargarComunicaciones])
+
+  // Toast handler. Los mensajes de Fase 2 son largos (correo, links): más tiempo para leerlos,
+  // y un toast nuevo no se borra con el temporizador del anterior.
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const showToast = useCallback((msg: string, type: 'success' | 'error' = 'success') => {
     setToast({ msg, type })
-    setTimeout(() => setToast(null), 3000)
+    if (toastTimer.current) clearTimeout(toastTimer.current)
+    toastTimer.current = setTimeout(() => setToast(null), Math.max(3000, msg.length * 60))
   }, [])
+  useEffect(
+    () => () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current)
+    },
+    [],
+  )
 
   const fetchReserva = useCallback(async (silent = false) => {
     if (!token) return
@@ -632,12 +761,21 @@ export default function ModalDetalleReserva({
       showToast('Captura un motivo de cancelacion', 'error')
       return
     }
-    if (
-      !window.confirm(
-        `Cancelar la reserva ${reserva.booking_id}?\nEsta accion no se puede deshacer.`,
-      )
+    // CN1 / D15: lo que va a pasar, dicho ANTES de confirmar
+    const pagos = reserva.pagos ?? []
+    const hayPagoEnCamino = pagosEnCamino(pagos).length > 0
+    const linksPorVencer = linksSinCobrar(pagos).length
+    const lineas = [`Cancelar la reserva ${reserva.booking_id}?`, 'Esta accion no se puede deshacer.']
+    if (hayPagoEnCamino) lineas.push('', AVISO_PAGO_EN_CAMINO)
+    if (linksPorVencer > 0) lineas.push('', textoLinksPorVencer(linksPorVencer))
+    lineas.push(
+      '',
+      notificarClienteCancel
+        ? 'Se le avisa al cliente por correo si la plantilla Cancelación está activa y tiene correo real.'
+        : 'No se le manda correo al cliente.',
     )
-      return
+    if (!window.confirm(lineas.join('\n'))) return
+    setCancelando(true)
     try {
       const res = await fetch(
         `${API_URL}/api/admin/reservas/${reserva.id}/cancelar`,
@@ -648,8 +786,9 @@ export default function ModalDetalleReserva({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            motivo: motivoCancelacion,
+            motivo: motivoCancelacion.trim(),
             procesar_reembolso: procesarReembolso,
+            notificar_cliente: notificarClienteCancel,
           }),
         },
       )
@@ -657,17 +796,56 @@ export default function ModalDetalleReserva({
         const payload = await res.json().catch(() => null)
         throw new Error(extraerMensajeError(payload, res.status))
       }
-      showToast('Reserva cancelada', 'success')
+      const data = (await res.json()) as CancelarResponse
+      // Primero lo que no se puede perder (D4: vencer links a mano; D15), luego el resumen
+      mostrarAvisos(data.avisos)
+      const partes = ['Reserva cancelada.']
+      if (data.links_vencidos > 0) partes.push(textoLinksVencidos(data.links_vencidos))
+      partes.push(textoCorreo(data.correo_cliente))
+      showToast(partes.filter(Boolean).join(' '), 'success')
+      setMotivoCancelacion('')
+      // Silent refetch: el detalle se queda abierto y muestra la reserva cancelada
+      await fetchReserva(true)
       onUpdated()
-      onClose()
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Error al cancelar', 'error')
+    } finally {
+      setCancelando(false)
     }
+  }
+
+  // Resultados de los sub-modales (Fase 2): un toast que dice qué pasó con los correos y links
+  function alReagendar(res: ReagendarResponse) {
+    mostrarAvisos(res.avisos)
+    const horas = res.hora_fin
+      ? `${horaCorta(res.hora_inicio)}–${horaCorta(res.hora_fin)}`
+      : horaCorta(res.hora_inicio)
+    const partes = [
+      `Reserva reagendada al ${formatFechaMexico(res.fecha_experiencia)} a las ${horas}.`,
+      textoCorreo(res.correo_cliente),
+      textoGuias(res.guias),
+    ]
+    showToast(partes.filter(Boolean).join(' '), 'success')
+    fetchReserva(true)
+    onUpdated()
+  }
+
+  function alRegistrarPago(res: PagoManualResponse) {
+    mostrarAvisos(res.avisos)
+    const partes = ['Pago registrado.']
+    // correo_confirmacion no es null solo si el pago pasó la reserva de Tentativa a Confirmada
+    if (res.correo_confirmacion) {
+      partes.push('La reserva quedó Confirmada.', textoCorreo(res.correo_confirmacion, 'de confirmación'))
+    }
+    if (res.links_vencidos > 0) partes.push(textoLinksVencidos(res.links_vencidos))
+    showToast(partes.filter(Boolean).join(' '), 'success')
+    fetchReserva(true)
+    onUpdated()
   }
 
   if (loading && !reserva) {
     return (
-      <div className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center px-4 pt-36 sm:pt-40 pb-4 overflow-y-auto">
+      <div className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center px-4 pt-10 sm:pt-16 pb-4 overflow-y-auto">
         <div className="bg-white rounded-lg shadow-medium max-w-md w-full p-8 flex items-center gap-3">
           <Loader2 className="h-6 w-6 animate-spin text-terracota" aria-hidden="true" />
           <span className="text-sm text-verde">Cargando reserva...</span>
@@ -678,7 +856,7 @@ export default function ModalDetalleReserva({
 
   if (error || !reserva || !form) {
     return (
-      <div className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center px-4 pt-36 sm:pt-40 pb-4 overflow-y-auto">
+      <div className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center px-4 pt-10 sm:pt-16 pb-4 overflow-y-auto">
         <div className="bg-white rounded-lg shadow-medium max-w-md w-full p-6">
           <div className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo mb-4">
             {error ?? 'No se pudo cargar la reserva.'}
@@ -697,16 +875,16 @@ export default function ModalDetalleReserva({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center px-4 pt-36 sm:pt-40 pb-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center px-4 pt-10 sm:pt-16 pb-4 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-detalle-title"
     >
-      <div className="bg-white rounded-lg shadow-medium max-w-5xl w-full max-h-[92vh] flex flex-col">
+      <div className="bg-white rounded-lg shadow-medium max-w-5xl w-full max-h-[calc(100dvh-3.5rem)] sm:max-h-[calc(100dvh-5rem)] flex flex-col">
         {/* Header */}
-        <header className="border-b border-neutro-borde px-6 py-4 flex items-center justify-between">
+        <header className="shrink-0 border-b border-neutro-borde px-6 py-4 flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <h2 id="modal-detalle-title" className="font-display text-xl text-verde">
                 Reserva {reserva.booking_id}
               </h2>
@@ -733,7 +911,7 @@ export default function ModalDetalleReserva({
         </header>
 
         {/* Tabs */}
-        <div className="border-b border-neutro-borde px-6 overflow-x-auto">
+        <div className="shrink-0 border-b border-neutro-borde px-6 overflow-x-auto">
           <nav className="flex gap-1" role="tablist">
             {TABS.map((t) => (
               <button
@@ -821,10 +999,16 @@ export default function ModalDetalleReserva({
               onAbrirLinkMP={() => setShowLinkMP(true)}
             />
           )}
-          {tab === 'comunicaciones' && <TabComunicaciones reservaId={reserva.id} token={token} />}
-          {tab === 'auditoria' && <TabAuditoria reserva={reserva} />}
+          {tab === 'comunicaciones' && <TabComunicaciones estado={comunicaciones} />}
+          {tab === 'auditoria' && <TabAuditoria reserva={reserva} comunicaciones={comunicaciones} />}
           {tab === 'acciones' && (
             <TabAcciones
+              cancelada={reserva.estado === 'cancelada'}
+              pagosEnCamino={pagosEnCamino(reserva.pagos ?? []).length}
+              linksPorVencer={linksSinCobrar(reserva.pagos ?? []).length}
+              notificarCliente={notificarClienteCancel}
+              setNotificarCliente={setNotificarClienteCancel}
+              cancelando={cancelando}
               flagSap={flagSap}
               setFlagSap={setFlagSap}
               numeroOvSap={numeroOvSap}
@@ -840,7 +1024,7 @@ export default function ModalDetalleReserva({
           )}
         </div>
 
-        <footer className="border-t border-neutro-borde px-6 py-4 flex items-center justify-end gap-2">
+        <footer className="shrink-0 border-t border-neutro-borde px-6 py-4 flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={onClose}
@@ -858,8 +1042,9 @@ export default function ModalDetalleReserva({
           totalActual={Number(reserva.monto_total)}
           anticipoSugerido={Number(reserva.monto_anticipo)}
           balance={saldoPendiente}
-          onCreated={() => {
-            showToast('Link generado', 'success')
+          onCreated={(res) => {
+            // El resultado (vencimiento y correo) se queda a la vista en el propio modal
+            showToast(res.correo_cliente ? `Link generado. ${textoCorreo(res.correo_cliente)}` : 'Link generado', 'success')
             fetchReserva(true)
             onUpdated()
           }}
@@ -871,11 +1056,9 @@ export default function ModalDetalleReserva({
           reservaId={reserva.id}
           bookingId={reserva.booking_id}
           saldoPendiente={saldoPendiente}
-          onSaved={() => {
-            showToast('Pago registrado', 'success')
-            fetchReserva(true)
-            onUpdated()
-          }}
+          tentativa={reserva.estado === 'tentativo' || reserva.estado === 'tentativa'}
+          linksPendientes={linksSinCobrar(reserva.pagos ?? []).length}
+          onSaved={alRegistrarPago}
           onClose={() => setShowPagoManual(false)}
         />
       )}
@@ -885,11 +1068,10 @@ export default function ModalDetalleReserva({
           bookingId={reserva.booking_id}
           fechaActual={reserva.fecha_experiencia}
           horaActual={reserva.hora_inicio}
-          onSaved={() => {
-            showToast('Reserva reagendada', 'success')
-            fetchReserva(true)
-            onUpdated()
-          }}
+          horaFinActual={reserva.hora_fin ?? null}
+          guiasConCorreo={(reserva.guias ?? []).filter((g) => !!g.email?.trim()).length}
+          guiasTotal={(reserva.guias ?? []).length}
+          onSaved={alReagendar}
           onClose={() => setShowReagendar(false)}
         />
       )}
@@ -990,7 +1172,8 @@ function TabDatos({
         <Info className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
         <p>
           Guardar estos cambios no le manda correo al cliente. Si cambias fecha, hora o
-          invitados, avísale tú. Los correos enviados se ven en la pestaña Comunicaciones.
+          invitados, avísale tú. Los correos enviados se ven en la pestaña Comunicaciones. Para
+          cambiar la fecha con aviso por correo al cliente y a los guías, usa Acciones › Reagendar.
         </p>
       </div>
 
@@ -2094,7 +2277,7 @@ function TabPagos({
               pagos.map((p) => (
                 <tr key={p.id} className="border-b border-neutro-borde">
                   <td className="px-3 py-2 text-verde whitespace-nowrap">
-                    {p.fecha_pago?.slice(0, 10) ?? p.fecha_registro.slice(0, 10)}
+                    {formatFechaMexico(p.fecha_pago ?? p.fecha_registro)}
                   </td>
                   <td className="px-3 py-2 text-verde">{p.tipo_pago}</td>
                   <td className="px-3 py-2 text-verde">
@@ -2108,16 +2291,16 @@ function TabPagos({
                       className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                         p.mp_status === 'approved'
                           ? 'bg-verde/10 text-verde border border-verde/30'
-                          : 'bg-amarillo-bg text-amarillo border border-amarillo/30'
+                          : p.mp_status === 'cancelled'
+                            ? 'bg-neutro-light text-verde-suave border border-neutro-borde'
+                            : 'bg-amarillo-bg text-verde border border-amarillo/30'
                       }`}
-                      title={
-                        p.mp_status === 'pending'
-                          ? 'Estado pending: el cliente aun no completa el pago. Al pagar, MercadoPago notifica via webhook y el estado cambia automaticamente a approved.'
-                          : undefined
-                      }
                     >
                       {p.mp_status}
                     </span>
+                    {estadoPagoTexto(p) && (
+                      <p className="text-xs text-verde-suave mt-0.5">{estadoPagoTexto(p)}</p>
+                    )}
                   </td>
                   <td className="px-3 py-2 text-xs font-mono">
                     {p.init_point ? (
@@ -2167,6 +2350,63 @@ function TabPagos({
   )
 }
 
+// Pagos (Fase 2): qué es cada fila. Link = generado en el panel (sin mp_payment_id);
+// su mp_status_detail dice si sigue sin cobrar, si se cobró o por qué se anuló.
+const ESTADO_LINK: Record<string, string> = {
+  link_generado: 'Link sin cobrar',
+  link_cobrado: 'Link ya cobrado',
+  anulado_por_cortesia: 'Link anulado al marcar la reserva como cortesía',
+  anulado_por_cancelacion: 'Link anulado al cancelar la reserva',
+  anulado_por_pago_manual: 'Link anulado por un pago manual (pedía más que el saldo)',
+}
+
+function esPagoManual(p: PagoReserva): boolean {
+  return p.origen === 'manual' || p.mp_status_detail === 'manual'
+}
+
+function esLinkDePago(p: PagoReserva): boolean {
+  return !p.mp_payment_id && !esPagoManual(p)
+}
+
+/** Una línea bajo el estado en la tabla de Pagos (null = no hace falta explicar). */
+function estadoPagoTexto(p: PagoReserva): string | null {
+  if (esLinkDePago(p)) {
+    if (p.mp_status_detail && ESTADO_LINK[p.mp_status_detail]) return ESTADO_LINK[p.mp_status_detail]
+    return p.mp_status === 'pending' ? ESTADO_LINK.link_generado : null
+  }
+  if (p.mp_payment_id && (p.mp_status === 'pending' || p.mp_status === 'in_process')) {
+    return 'En camino (OXXO o en revisión)'
+  }
+  return null
+}
+
+const TIPO_PAGO_TEXTO: Record<string, string> = {
+  anticipo: 'anticipo',
+  balance: 'saldo',
+  unico: 'pago único',
+  pago_parcial: 'pago parcial',
+  reembolso: 'reembolso',
+  suscripcion: 'suscripción',
+}
+
+function tituloPagoMercadoPago(status: string): string {
+  switch (status) {
+    case 'approved':
+      return 'Pago de MercadoPago acreditado'
+    case 'pending':
+    case 'in_process':
+      return 'Pago de MercadoPago en camino (OXXO o en revisión)'
+    case 'rejected':
+      return 'Pago de MercadoPago rechazado'
+    case 'refunded':
+      return 'Pago de MercadoPago devuelto'
+    case 'cancelled':
+      return 'Pago de MercadoPago cancelado'
+    default:
+      return `Pago de MercadoPago (${status})`
+  }
+}
+
 // ============================================================================
 // TAB 5 — Comunicaciones (DT1-a, 30-sep): los correos que el sistema mandó o intentó
 // mandar para esta reserva, de GET /api/admin/reservas/{id}/comunicaciones.
@@ -2182,6 +2422,8 @@ function etiquetaComunicacion(c: Comunicacion): string {
   if (c.tipo) return (TIPO_LABELS as Record<string, string>)[c.tipo] ?? c.tipo
   const asunto = (c.asunto ?? '').trim()
   if (asunto.startsWith('Nueva reserva')) return 'Aviso interno: nueva reserva'
+  // RG1: avisar_guias_reagendamiento (asunto exacto «Cambio de fecha: {folio} — {experiencia}»)
+  if (asunto.startsWith('Cambio de fecha:')) return 'Aviso a guía: cambio de fecha'
   // _enviar_para_reserva registra «(plantilla <tipo>/<idioma> faltante)» cuando no hay plantilla
   const faltante = /^\(plantilla ([a-z_]+)\/[a-z]+ faltante\)$/.exec(asunto)
   if (faltante) {
@@ -2198,44 +2440,11 @@ const ESTADO_CORREO: Record<string, { label: string; clase: string }> = {
   fallido: { label: 'No se envió', clase: 'bg-rojo-bg text-rojo border border-rojo/30' },
 }
 
-function TabComunicaciones({
-  reservaId,
-  token,
-}: {
-  reservaId: string
-  token: string | undefined
-}) {
-  const [items, setItems] = useState<Comunicacion[] | null>(null)
-  const [cargando, setCargando] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+function TabComunicaciones({ estado }: { estado: EstadoComunicaciones }) {
+  const { items, error, recargar } = estado
 
-  // Mismo patrón que fetchReserva: API_URL directo + Bearer
-  const fetchComunicaciones = useCallback(async () => {
-    if (!token) return
-    setCargando(true)
-    setError(null)
-    try {
-      const res = await fetch(`${API_URL}/api/admin/reservas/${reservaId}/comunicaciones`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!res.ok) {
-        const payload = await res.json().catch(() => null)
-        throw new Error(extraerMensajeError(payload, res.status))
-      }
-      const data = (await res.json()) as ComunicacionesResponse
-      setItems(data.items ?? [])
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar los correos')
-    } finally {
-      setCargando(false)
-    }
-  }, [token, reservaId])
-
-  useEffect(() => {
-    fetchComunicaciones()
-  }, [fetchComunicaciones])
-
-  if (cargando && !items) {
+  // Primera carga (el padre la lanza al abrir la pestaña): sin datos todavía = cargando
+  if (items === null && !error) {
     return (
       <div
         data-testid="comunicaciones-cargando"
@@ -2258,7 +2467,7 @@ function TabComunicaciones({
         <p className="flex-1">No se pudieron cargar los correos: {error}</p>
         <button
           type="button"
-          onClick={fetchComunicaciones}
+          onClick={() => recargar()}
           className="text-xs underline hover:no-underline"
         >
           Reintentar
@@ -2277,8 +2486,9 @@ function TabComunicaciones({
         <Info className="h-8 w-8 mx-auto text-verde-suave mb-2" aria-hidden="true" />
         <p className="text-sm text-verde">Sin correos registrados</p>
         <p className="text-xs text-verde-suave mt-1">
-          Aquí aparecen la confirmación, el recordatorio, la cotización y los avisos internos
-          que el sistema mande para esta reserva.
+          Aquí aparecen la confirmación, el recordatorio, la cotización, el reagendamiento, la
+          cancelación, el link de pago, los avisos a guías y los avisos internos que el sistema
+          mande para esta reserva.
         </p>
       </div>
     )
@@ -2358,45 +2568,245 @@ function TabComunicaciones({
   )
 }
 
+
 // ============================================================================
-// TAB 6 — Auditoria
+// TAB 6 — Auditoria (DT1-b, 30-sep): línea de tiempo armada SOLO con lo que ya queda
+// registrado con fecha: alta, notas fechadas, pagos/links, correos y guías asignados.
 // ============================================================================
-function TabAuditoria({ reserva }: { reserva: Reserva }) {
-  const eventos = [
-    {
-      ts: reserva.fecha_creacion,
+type TipoEventoAuditoria = 'alta' | 'nota' | 'pago' | 'correo' | 'guia'
+
+interface EventoAuditoria {
+  tipo: TipoEventoAuditoria
+  /** 'AAAA-MM-DD HH:MM:SS' en hora de México: ordena y se pinta. */
+  clave: string
+  /** false = solo hay día (correo sin hora): no se inventa hora. */
+  conHora: boolean
+  /** Desempate a igual clave: el mayor es el más nuevo. */
+  orden: number
+  titulo: string
+  detalle?: string
+  quien?: string
+}
+
+const FORMATO_CLAVE_MEXICO = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'America/Mexico_City',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
+})
+
+/** ISO con zona → 'AAAA-MM-DD HH:MM:SS' en hora de México (null si no es fecha). */
+function claveMexico(iso: string | null | undefined): string | null {
+  if (!iso) return null
+  const fecha = new Date(iso)
+  if (isNaN(fecha.getTime())) return null
+  const partes: Partial<Record<Intl.DateTimeFormatPartTypes, string>> = {}
+  for (const p of FORMATO_CLAVE_MEXICO.formatToParts(fecha)) partes[p.type] = p.value
+  return `${partes.year}-${partes.month}-${partes.day} ${partes.hour}:${partes.minute}:${partes.second}`
+}
+
+function pintarClave(ev: EventoAuditoria): string {
+  const dia = formatFechaMexico(ev.clave.slice(0, 10))
+  return ev.conHora ? `${dia}, ${ev.clave.slice(11, 16)}` : dia
+}
+
+// Renglones que escriben el panel y el sistema en notas_internas (C9): ya vienen en hora de México
+const NOTA_FECHADA = /^\[(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})(?: ([^\]]+))?\]\s*(.*)$/
+
+function eventoDeNota(texto: string, quien: string | undefined): { titulo: string; detalle: string } {
+  const m = /^(CANCELADA|REAGENDADA):\s*(.*)$/.exec(texto)
+  if (m) {
+    return { titulo: m[1] === 'CANCELADA' ? 'Reserva cancelada' : 'Reserva reagendada', detalle: m[2] }
+  }
+  return { titulo: quien ? 'Nota interna' : 'Aviso del sistema', detalle: texto }
+}
+
+function armarEventos(reserva: Reserva, correos: Comunicacion[]): EventoAuditoria[] {
+  const eventos: EventoAuditoria[] = []
+  const agregar = (ev: Omit<EventoAuditoria, 'orden'>) => eventos.push({ ...ev, orden: eventos.length })
+
+  const alta = claveMexico(reserva.fecha_creacion)
+  if (alta) {
+    agregar({
+      tipo: 'alta',
+      clave: alta,
+      conHora: true,
       titulo: 'Reserva creada',
-      descripcion: `Booking ${reserva.booking_id}`,
-    },
-    {
-      ts: reserva.fecha_actualizacion,
-      titulo: 'Ultima actualizacion',
-      descripcion: `Estado: ${reserva.estado} · Pago: ${reserva.estado_pago}`,
-    },
-  ]
+      detalle: `Folio ${reserva.booking_id}${
+        reserva.origen === 'sheet_2026' ? ' · cargada del Sheet de planeación' : ''
+      }`,
+    })
+  }
+
+  for (const g of reserva.guias ?? []) {
+    const clave = claveMexico(g.asignado_en)
+    if (!clave) continue
+    agregar({ tipo: 'guia', clave, conHora: true, titulo: 'Guía asignado', detalle: g.nombre })
+  }
+
+  // La API los manda del más nuevo al más viejo: se recorren al revés para que el desempate
+  // (mismo segundo) deje arriba el más nuevo
+  for (const p of [...(reserva.pagos ?? [])].reverse()) {
+    const monto = formatMXN(Number(p.monto_total))
+    const tipo = TIPO_PAGO_TEXTO[p.tipo_pago] ?? p.tipo_pago
+    if (esPagoManual(p)) {
+      const clave = claveMexico(p.fecha_pago ?? p.fecha_registro)
+      if (!clave) continue
+      agregar({
+        tipo: 'pago',
+        clave,
+        conHora: true,
+        titulo: 'Pago manual registrado',
+        detalle: [monto, tipo, p.mp_payment_method].filter(Boolean).join(' · '),
+      })
+    } else if (p.mp_payment_id) {
+      const clave = claveMexico(p.fecha_pago ?? p.fecha_registro)
+      if (!clave) continue
+      agregar({
+        tipo: 'pago',
+        clave,
+        conHora: true,
+        titulo: tituloPagoMercadoPago(p.mp_status),
+        detalle: [monto, p.mp_payment_method, `pago ${p.mp_payment_id}`].filter(Boolean).join(' · '),
+      })
+    } else {
+      // Link: se fecha cuando se generó; su estado de hoy (cobrado/anulado) va en el detalle
+      const clave = claveMexico(p.fecha_registro)
+      if (!clave) continue
+      agregar({
+        tipo: 'pago',
+        clave,
+        conHora: true,
+        titulo: 'Link de pago generado',
+        detalle: [monto, tipo, estadoPagoTexto(p) ?? p.mp_status].join(' · '),
+      })
+      // Cuándo se cobró o se anuló (pagos[].cerrado_en); sin ese dato, solo queda el estado de arriba
+      const cierre = claveMexico(p.cerrado_en)
+      if (cierre) {
+        const detalleLink = p.mp_status_detail ?? ''
+        agregar({
+          tipo: 'pago',
+          clave: cierre,
+          conHora: true,
+          titulo:
+            detalleLink === 'link_cobrado'
+              ? 'Link de pago cobrado'
+              : detalleLink.startsWith('anulado_')
+                ? 'Link de pago anulado'
+                : 'Link de pago cerrado',
+          detalle: [monto, tipo, ESTADO_LINK[detalleLink] ?? p.mp_status].join(' · '),
+        })
+      }
+    }
+  }
+
+  for (const c of correos) {
+    const clave = claveMexico(c.enviado_at)
+    const soloDia = !clave && c.enviado_fecha ? `${c.enviado_fecha} 00:00:00` : null
+    if (!clave && !soloDia) continue
+    const estado = ESTADO_CORREO[c.estado ?? '']?.label ?? c.estado ?? '—'
+    agregar({
+      tipo: 'correo',
+      clave: clave ?? soloDia ?? '',
+      conHora: !!clave,
+      titulo: `Correo: ${etiquetaComunicacion(c)}`,
+      detalle: `${estado} · para ${c.destinatario_email || '—'}${
+        c.asunto ? ` · «${truncar(c.asunto, MAX_ERROR_DETALLE)}»` : ''
+      }`,
+    })
+  }
+
+  for (const linea of (reserva.notas_internas ?? '').split('\n')) {
+    const m = NOTA_FECHADA.exec(linea.trim())
+    if (!m) continue
+    const [, fecha, hora, quien, texto] = m
+    const { titulo, detalle } = eventoDeNota(texto, quien)
+    agregar({ tipo: 'nota', clave: `${fecha} ${hora}:00`, conHora: true, titulo, detalle, quien })
+  }
+
+  // Más nuevo arriba
+  return eventos.sort((a, b) =>
+    a.clave === b.clave ? b.orden - a.orden : a.clave < b.clave ? 1 : -1,
+  )
+}
+
+const ICONO_EVENTO: Record<TipoEventoAuditoria, typeof CalendarClock> = {
+  alta: CalendarClock,
+  nota: StickyNote,
+  pago: CreditCard,
+  correo: Mail,
+  guia: UserCheck,
+}
+
+function TabAuditoria({
+  reserva,
+  comunicaciones,
+}: {
+  reserva: Reserva
+  comunicaciones: EstadoComunicaciones
+}) {
+  const { items, error, recargar } = comunicaciones
+  const eventos = useMemo(() => armarEventos(reserva, items ?? []), [reserva, items])
 
   return (
-    <div className="space-y-2">
-      {eventos.map((ev, idx) => (
+    <div className="space-y-3">
+      <p className="text-xs text-verde-suave">
+        Del más reciente al más antiguo. Último cambio guardado:{' '}
+        {formatFechaHoraMexico(reserva.fecha_actualizacion)}.
+      </p>
+
+      {items === null && !error && (
+        <p className="text-xs text-verde-suave flex items-center gap-2">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+          Cargando los correos…
+        </p>
+      )}
+      {error && (
         <div
-          key={idx}
-          className="border border-neutro-borde rounded-lg p-3 bg-white flex gap-3"
+          role="alert"
+          className="bg-rojo-bg border border-rojo/30 rounded-lg p-2 text-xs text-rojo flex items-start gap-2"
         >
-          <CalendarClock
-            className="h-5 w-5 text-verde-suave flex-shrink-0 mt-0.5"
-            aria-hidden="true"
-          />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-verde">{ev.titulo}</p>
-            <p className="text-xs text-verde-suave">
-              {new Date(ev.ts).toLocaleString('es-MX')}
-            </p>
-            <p className="text-xs text-verde-suave">{ev.descripcion}</p>
-          </div>
+          <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="flex-1">No se pudieron cargar los correos (faltan en la lista): {error}</p>
+          <button type="button" onClick={() => recargar()} className="underline hover:no-underline">
+            Reintentar
+          </button>
         </div>
-      ))}
+      )}
+
+      <ol className="space-y-2">
+        {eventos.map((ev) => {
+          const Icono = ICONO_EVENTO[ev.tipo]
+          return (
+            <li
+              key={`${ev.tipo}-${ev.orden}`}
+              data-testid="auditoria-evento"
+              data-tipo={ev.tipo}
+              className="border border-neutro-borde rounded-lg p-3 bg-white flex gap-3"
+            >
+              <Icono className="h-5 w-5 text-verde-suave flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-verde">{ev.titulo}</p>
+                <p className="text-xs text-verde-suave">
+                  {pintarClave(ev)}
+                  {ev.quien ? ` · ${ev.quien}` : ''}
+                </p>
+                {ev.detalle && <p className="text-xs text-verde break-words mt-0.5">{ev.detalle}</p>}
+              </div>
+            </li>
+          )
+        })}
+      </ol>
+
       <p className="text-xs text-verde-suave italic">
-        El log completo de auditoria se incorpora en una fase posterior.
+        Aquí sale lo que queda registrado con fecha: el alta, las notas fechadas (cancelar,
+        reagendar, avisos del sistema), los pagos y links, los correos y los guías asignados. No se
+        registran los cambios sueltos de campos (invitados, precio, chinampa, notas sin fecha…) ni
+        quién los hizo.
       </p>
     </div>
   )
@@ -2406,6 +2816,12 @@ function TabAuditoria({ reserva }: { reserva: Reserva }) {
 // TAB 7 — Acciones
 // ============================================================================
 function TabAcciones({
+  cancelada,
+  pagosEnCamino: nPagosEnCamino,
+  linksPorVencer,
+  notificarCliente,
+  setNotificarCliente,
+  cancelando,
   flagSap,
   setFlagSap,
   numeroOvSap,
@@ -2418,6 +2834,14 @@ function TabAcciones({
   setProcesarReembolso,
   onCancelarReserva,
 }: {
+  cancelada: boolean
+  /** Pagos de MercadoPago sin acreditar (OXXO, en revisión): D15. */
+  pagosEnCamino: number
+  /** Links sin cobrar que se vencen al cancelar (CN1). */
+  linksPorVencer: number
+  notificarCliente: boolean
+  setNotificarCliente: (v: boolean) => void
+  cancelando: boolean
   flagSap: boolean
   setFlagSap: (v: boolean) => void
   numeroOvSap: string
@@ -2443,7 +2867,7 @@ function TabAcciones({
           />
           Reserva subida a SAP
         </label>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <label
             htmlFor="sap-ov"
             className="text-sm text-verde-suave whitespace-nowrap"
@@ -2456,7 +2880,7 @@ function TabAcciones({
             value={numeroOvSap}
             onChange={(e) => setNumeroOvSap(e.target.value)}
             placeholder="OV-12345"
-            className="flex-1 border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
+            className="flex-1 min-w-0 border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
           />
           <button
             type="button"
@@ -2471,13 +2895,15 @@ function TabAcciones({
       <div className="border border-azul/30 rounded-lg p-4 bg-azul-bg">
         <h3 className="text-sm font-semibold text-azul mb-2">Reagendar</h3>
         <p className="text-sm text-verde-suave mb-2">
-          Cambiar la fecha y hora de la experiencia. Por ahora no se le avisa al cliente por
-          correo: avísale tú.
+          {cancelada
+            ? 'Una reserva cancelada no se puede reagendar.'
+            : 'Cambia la fecha y la hora de inicio; la hora de término se mueve igual. Al reagendar eliges si se avisa por correo al cliente (con la plantilla Reagendamiento, cuando esté activa) y a los guías asignados que tengan correo.'}
         </p>
         <button
           type="button"
           onClick={onAbrirReagendar}
-          className="inline-flex items-center gap-2 bg-azul hover:opacity-90 text-white px-3 py-2 rounded-lg text-sm font-medium"
+          disabled={cancelada}
+          className="inline-flex items-center gap-2 bg-azul hover:opacity-90 text-white px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <CalendarClock className="h-4 w-4" aria-hidden="true" />
           Abrir reagendado
@@ -2489,37 +2915,96 @@ function TabAcciones({
           <AlertTriangle className="h-4 w-4" aria-hidden="true" />
           Cancelar reserva
         </h3>
-        <label
-          htmlFor="cancel-motivo"
-          className="block text-sm text-verde-suave mb-1"
-        >
-          Motivo
-        </label>
-        <textarea
-          id="cancel-motivo"
-          value={motivoCancelacion}
-          onChange={(e) => setMotivoCancelacion(e.target.value)}
-          rows={2}
-          className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rojo/30 focus:border-rojo"
-          placeholder="Razon de la cancelacion..."
-        />
-        <label className="flex items-center gap-2 text-sm text-verde cursor-pointer mt-2 mb-3">
-          <input
-            type="checkbox"
-            checked={procesarReembolso}
-            onChange={(e) => setProcesarReembolso(e.target.checked)}
-            className="w-4 h-4 text-rojo border-neutro-borde rounded focus:ring-rojo"
-          />
-          Procesar reembolso de pagos aprobados
-        </label>
-        <button
-          type="button"
-          onClick={onCancelarReserva}
-          className="inline-flex items-center gap-2 bg-rojo hover:opacity-90 text-white px-3 py-2 rounded-lg text-sm font-medium"
-        >
-          <Trash2 className="h-4 w-4" aria-hidden="true" />
-          Cancelar reserva
-        </button>
+        {cancelada ? (
+          <p className="text-sm text-verde">Esta reserva ya está cancelada.</p>
+        ) : (
+          <>
+            <label
+              htmlFor="cancel-motivo"
+              className="block text-sm text-verde-suave mb-1"
+            >
+              Motivo
+            </label>
+            <textarea
+              id="cancel-motivo"
+              value={motivoCancelacion}
+              onChange={(e) => setMotivoCancelacion(e.target.value)}
+              rows={2}
+              maxLength={1000}
+              className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rojo/30 focus:border-rojo"
+              placeholder="Razon de la cancelacion..."
+            />
+            <label className="flex items-center gap-2 text-sm text-verde cursor-pointer mt-2">
+              <input
+                type="checkbox"
+                checked={procesarReembolso}
+                onChange={(e) => setProcesarReembolso(e.target.checked)}
+                className="w-4 h-4 text-rojo border-neutro-borde rounded focus:ring-rojo"
+              />
+              Procesar reembolso de pagos aprobados
+            </label>
+            <label className="flex items-start gap-2 text-sm text-verde cursor-pointer mt-2">
+              <input
+                type="checkbox"
+                data-testid="cancel-notificar-cliente"
+                checked={notificarCliente}
+                onChange={(e) => setNotificarCliente(e.target.checked)}
+                className="w-4 h-4 mt-0.5 text-rojo border-neutro-borde rounded focus:ring-rojo"
+              />
+              <span>
+                Avisar al cliente por correo
+                <span className="block text-xs text-verde-suave">
+                  Con la plantilla Cancelación, solo si está activa en su idioma y el cliente tiene
+                  correo real (las reservas del Sheet y de reseller no reciben correos).
+                </span>
+              </span>
+            </label>
+
+            {(nPagosEnCamino > 0 || linksPorVencer > 0) && (
+              <div className="mt-3 space-y-2">
+                {nPagosEnCamino > 0 && (
+                  <p
+                    data-testid="cancel-aviso-en-camino"
+                    role="status"
+                    className="bg-amarillo-bg border border-amarillo/30 rounded-lg p-3 text-sm text-verde flex gap-2"
+                  >
+                    <AlertTriangle
+                      className="h-4 w-4 flex-shrink-0 mt-0.5 text-amarillo"
+                      aria-hidden="true"
+                    />
+                    <span>{AVISO_PAGO_EN_CAMINO}</span>
+                  </p>
+                )}
+                {linksPorVencer > 0 && (
+                  <p
+                    data-testid="cancel-aviso-links"
+                    className="bg-white border border-neutro-borde rounded-lg p-3 text-sm text-verde flex gap-2"
+                  >
+                    <Info className="h-4 w-4 flex-shrink-0 mt-0.5 text-azul" aria-hidden="true" />
+                    <span>
+                      {textoLinksPorVencer(linksPorVencer)} MercadoPago deja de aceptarlos; si no
+                      responde, te avisamos para vencerlos a mano.
+                    </span>
+                  </p>
+                )}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={onCancelarReserva}
+              disabled={cancelando}
+              className="mt-3 inline-flex items-center gap-2 bg-rojo hover:opacity-90 text-white px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {cancelando ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+              )}
+              Cancelar reserva
+            </button>
+          </>
+        )}
       </div>
     </div>
   )

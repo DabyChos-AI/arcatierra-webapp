@@ -8,6 +8,9 @@ export type PlantillaTipo =
   | 'cotizacion'
   | 'cancelacion'
   | 'reagendamiento'
+  // D14 (30-sep): correo del link de pago, editable. La base lo acepta cuando David corre el DDL
+  // de docs/fases/fase2-plantillas.sql (chk_plantilla_tipo); antes, crear una da error del servidor.
+  | 'link_pago'
 
 export type PlantillaIdioma = 'es' | 'en'
 
@@ -66,6 +69,15 @@ export const MOCK_PLANTILLA: Record<string, string> = {
   propina_monto: '2,310.00',
   guias_lista: 'Sofía Santiago, Daniela Alemán',
   idioma: 'es',
+  // Fase 2 (30-sep)
+  hora_fin: '12:30',
+  fecha_anterior: '2026-05-23',
+  hora_anterior: '08:00',
+  motivo_reagenda: 'Clima',
+  link_pago: 'https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=DEMO',
+  monto_link: '4,620.00',
+  concepto_link: 'Anticipo reserva AT-EXP-2026-05-001',
+  vence_link: '2026-06-06',
 }
 
 // Variables Jinja2 disponibles para los chips clickeables del editor.
@@ -83,6 +95,14 @@ export const VARIABLES_JINJA: { key: string; descripcion: string }[] = [
   { key: 'addons_lista', descripcion: 'HTML <li> con desglose de addons (C03)' },
   { key: 'propina_monto', descripcion: 'Propina sugerida (C09)' },
   { key: 'guias_lista', descripcion: 'Guías asignados (CSV)' },
+  { key: 'hora_fin', descripcion: 'Hora de término HH:MM (vacía si la reserva no la tiene)' },
+  { key: 'fecha_anterior', descripcion: 'Solo Reagendamiento: fecha antes del cambio' },
+  { key: 'hora_anterior', descripcion: 'Solo Reagendamiento: hora de inicio antes del cambio' },
+  { key: 'motivo_reagenda', descripcion: 'Solo Reagendamiento: motivo (Clima, A petición del cliente…)' },
+  { key: 'link_pago', descripcion: 'Solo Link de pago: la dirección del link de MercadoPago' },
+  { key: 'monto_link', descripcion: 'Solo Link de pago: monto del link con formato' },
+  { key: 'concepto_link', descripcion: 'Solo Link de pago: concepto que ve el cliente' },
+  { key: 'vence_link', descripcion: 'Solo Link de pago: último día para pagar (vacío = sin vencimiento)' },
 ]
 
 export const TIPO_LABELS: Record<PlantillaTipo, string> = {
@@ -91,6 +111,7 @@ export const TIPO_LABELS: Record<PlantillaTipo, string> = {
   cotizacion: 'Cotización',
   cancelacion: 'Cancelación',
   reagendamiento: 'Reagendamiento',
+  link_pago: 'Link de pago',
 }
 
 export const IDIOMA_LABELS: Record<PlantillaIdioma, string> = {

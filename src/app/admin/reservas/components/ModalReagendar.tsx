@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { AlertTriangle, Loader2, X } from 'lucide-react'
+import { Info, Loader2, X } from 'lucide-react'
 import { API_URL } from '@/lib/api'
-import type { MotivoReagenda } from '@/types/reservas'
+import { formatFechaMexico } from '@/lib/dates'
+import { hoyMexico, horaCorta } from '@/app/admin/eventos/components/fechas'
+import type { MotivoReagenda, ReagendarResponse } from '@/types/reservas'
 import { extraerMensajeError } from './errores'
 
 interface ModalReagendarProps {
@@ -12,24 +14,37 @@ interface ModalReagendarProps {
   bookingId?: string
   fechaActual: string
   horaActual: string
-  onSaved: () => void
+  /** HH:MM:SS o null. RG1: el back mueve la hora de término igual que el inicio. */
+  horaFinActual?: string | null
+  /** Guías asignados con correo y en total (el detalle los cuenta de `reserva.guias[].email`). */
+  guiasConCorreo: number
+  guiasTotal: number
+  onSaved: (res: ReagendarResponse) => void
   onClose: () => void
 }
 
+// Mismos textos que MOTIVOS_REAGENDA del backend: la nota interna y el correo los usan.
 const MOTIVOS: { value: MotivoReagenda; label: string }[] = [
-  { value: 'cliente_solicito', label: 'Cliente solicito' },
+  { value: 'cliente_solicito', label: 'A petición del cliente' },
   { value: 'clima', label: 'Clima' },
-  { value: 'logistica_interna', label: 'Logistica interna' },
+  { value: 'logistica_interna', label: 'Logística interna' },
   { value: 'fuerza_mayor', label: 'Fuerza mayor' },
   { value: 'otro', label: 'Otro' },
 ]
 
-function todayISO(): string {
-  const now = new Date()
-  const yyyy = now.getFullYear()
-  const mm = String(now.getMonth() + 1).padStart(2, '0')
-  const dd = String(now.getDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
+const MINUTOS_DIA = 24 * 60
+// ReagendarRequest.notas: max_length=1000
+const MAX_NOTAS = 1000
+
+function aMinutos(hora: string | null | undefined): number | null {
+  const m = /^(\d{2}):(\d{2})/.exec(hora ?? '')
+  return m ? Number(m[1]) * 60 + Number(m[2]) : null
+}
+
+function deMinutos(minutos: number): string {
+  const h = Math.floor(minutos / 60)
+  const m = minutos % 60
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
 
 export default function ModalReagendar({
@@ -37,6 +52,9 @@ export default function ModalReagendar({
   bookingId,
   fechaActual,
   horaActual,
+  horaFinActual,
+  guiasConCorreo,
+  guiasTotal,
   onSaved,
   onClose,
 }: ModalReagendarProps) {
@@ -44,14 +62,29 @@ export default function ModalReagendar({
   const token = session?.accessToken as string | undefined
 
   const [nuevaFecha, setNuevaFecha] = useState<string>(fechaActual)
-  const [nuevaHoraInicio, setNuevaHoraInicio] = useState<string>(
-    horaActual?.slice(0, 5) ?? '',
-  )
+  const [nuevaHoraInicio, setNuevaHoraInicio] = useState<string>(horaCorta(horaActual))
   const [motivo, setMotivo] = useState<MotivoReagenda>('cliente_solicito')
   const [notas, setNotas] = useState<string>('')
   const [notificarCliente, setNotificarCliente] = useState<boolean>(true)
+  const [notificarGuias, setNotificarGuias] = useState<boolean>(guiasConCorreo > 0)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const puedeAvisarGuias = guiasConCorreo > 0
+
+  // La duración se conserva: fin nuevo = inicio nuevo + (fin − inicio). Solo si hay un fin
+  // posterior al inicio (igual que el back); si cae en otro día, el back responde 400.
+  const finNuevo = useMemo(() => {
+    const inicio = aMinutos(horaActual)
+    const fin = aMinutos(horaFinActual)
+    const nuevoInicio = aMinutos(nuevaHoraInicio)
+    if (inicio === null || fin === null || nuevoInicio === null || fin <= inicio) return null
+    const minutos = nuevoInicio + (fin - inicio)
+    return { minutos, cruzaMedianoche: minutos >= MINUTOS_DIA }
+  }, [horaActual, horaFinActual, nuevaHoraInicio])
+
+  const sinCambios =
+    nuevaFecha === fechaActual && nuevaHoraInicio === horaCorta(horaActual)
 
   async function handleSubmit() {
     if (!token) {
@@ -60,6 +93,14 @@ export default function ModalReagendar({
     }
     if (!nuevaFecha || !nuevaHoraInicio) {
       setError('Fecha y hora son obligatorias')
+      return
+    }
+    if (sinCambios) {
+      setError('La nueva fecha y hora son iguales a las actuales.')
+      return
+    }
+    if (finNuevo?.cruzaMedianoche) {
+      setError('La experiencia terminaría después de la medianoche: elige una hora más temprana.')
       return
     }
     setSubmitting(true)
@@ -73,10 +114,14 @@ export default function ModalReagendar({
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+          // ReagendarRequest (C6): los seis campos en el primer nivel
           body: JSON.stringify({
             nueva_fecha: nuevaFecha,
             nueva_hora: nuevaHoraInicio,
             motivo,
+            notas: notas.trim() || null,
+            notificar_cliente: notificarCliente,
+            notificar_guias: puedeAvisarGuias && notificarGuias,
           }),
         },
       )
@@ -84,7 +129,8 @@ export default function ModalReagendar({
         const err = await res.json().catch(() => ({}))
         throw new Error(extraerMensajeError(err, res.status))
       }
-      onSaved()
+      const data = (await res.json()) as ReagendarResponse
+      onSaved(data)
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al reagendar')
@@ -93,15 +139,20 @@ export default function ModalReagendar({
     }
   }
 
+  const etiquetaGuias =
+    guiasTotal === 0
+      ? 'no hay guías asignados'
+      : `${guiasConCorreo} de ${guiasTotal} ${guiasTotal === 1 ? 'tiene' : 'tienen'} correo`
+
   return (
     <div
-      className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center px-4 pt-36 sm:pt-40 pb-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center px-4 pt-10 sm:pt-16 pb-4 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-reagendar-title"
     >
-      <div className="bg-white rounded-lg shadow-medium max-w-lg w-full max-h-[92vh] flex flex-col">
-        <header className="border-b border-neutro-borde px-6 py-4 flex items-center justify-between">
+      <div className="bg-white rounded-lg shadow-medium max-w-lg w-full max-h-[calc(100dvh-3.5rem)] sm:max-h-[calc(100dvh-5rem)] flex flex-col">
+        <header className="shrink-0 border-b border-neutro-borde px-4 sm:px-6 py-4 flex items-center justify-between">
           <div>
             <h2 id="modal-reagendar-title" className="font-display text-xl text-verde">
               Reagendar reserva
@@ -120,9 +171,9 @@ export default function ModalReagendar({
           </button>
         </header>
 
-        <div className="flex-1 overflow-auto px-6 py-4 space-y-4">
+        <div className="flex-1 overflow-auto px-4 sm:px-6 py-4 space-y-4">
           {error && (
-            <div className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo">
+            <div role="alert" className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo">
               {error}
             </div>
           )}
@@ -130,7 +181,8 @@ export default function ModalReagendar({
           <div className="bg-neutro-light rounded-lg p-3 text-sm">
             <p className="text-verde-suave">Fecha y hora actual</p>
             <p className="text-verde font-medium tabular-nums">
-              {fechaActual} · {horaActual?.slice(0, 5)}
+              {formatFechaMexico(fechaActual)} · {horaCorta(horaActual)}
+              {horaFinActual ? `–${horaCorta(horaFinActual)}` : ''}
             </p>
           </div>
 
@@ -145,7 +197,7 @@ export default function ModalReagendar({
               <input
                 id="reagendar-fecha"
                 type="date"
-                min={todayISO()}
+                min={hoyMexico()}
                 value={nuevaFecha}
                 onChange={(e) => setNuevaFecha(e.target.value)}
                 className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
@@ -163,10 +215,21 @@ export default function ModalReagendar({
                 type="time"
                 value={nuevaHoraInicio}
                 onChange={(e) => setNuevaHoraInicio(e.target.value)}
+                aria-describedby={finNuevo ? 'reagendar-fin' : undefined}
                 className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
               />
             </div>
           </div>
+          {finNuevo && (
+            <p
+              id="reagendar-fin"
+              className={`text-xs -mt-2 ${finNuevo.cruzaMedianoche ? 'text-rojo' : 'text-verde-suave'}`}
+            >
+              {finNuevo.cruzaMedianoche
+                ? 'La experiencia terminaría después de la medianoche: elige una hora más temprana.'
+                : `Terminará a las ${deMinutos(finNuevo.minutos)} (la duración no cambia).`}
+            </p>
+          )}
 
           <div>
             <label
@@ -194,38 +257,81 @@ export default function ModalReagendar({
               htmlFor="reagendar-notas"
               className="block text-sm font-medium text-verde mb-1"
             >
-              Notas
+              Notas internas (opcional)
             </label>
             <textarea
               id="reagendar-notas"
+              data-testid="reag-notas"
               value={notas}
               onChange={(e) => setNotas(e.target.value)}
               rows={3}
+              maxLength={MAX_NOTAS}
+              aria-describedby="reagendar-notas-ayuda"
               className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
-              placeholder="Comentarios adicionales..."
+              placeholder="Se guardan en la nota del reagendado; el cliente no las ve."
             />
+            <p id="reagendar-notas-ayuda" className="text-xs text-verde-suave mt-1">
+              {notas.length}/{MAX_NOTAS}
+            </p>
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-verde cursor-pointer">
-            <input
-              type="checkbox"
-              checked={notificarCliente}
-              onChange={(e) => setNotificarCliente(e.target.checked)}
-              className="w-4 h-4 text-terracota border-neutro-borde rounded focus:ring-terracota"
-            />
-            Notificar al cliente por email
-          </label>
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-medium text-verde mb-1">Avisos por correo</legend>
+            <label className="flex items-start gap-2 text-sm text-verde cursor-pointer">
+              <input
+                type="checkbox"
+                data-testid="reag-notificar-cliente"
+                checked={notificarCliente}
+                onChange={(e) => setNotificarCliente(e.target.checked)}
+                className="w-4 h-4 mt-0.5 text-terracota border-neutro-borde rounded focus:ring-terracota"
+              />
+              <span>Avisar al cliente por correo (plantilla Reagendamiento)</span>
+            </label>
+            <label
+              className={`flex items-start gap-2 text-sm ${
+                puedeAvisarGuias ? 'text-verde cursor-pointer' : 'text-verde-suave cursor-not-allowed'
+              }`}
+            >
+              <input
+                type="checkbox"
+                data-testid="reag-notificar-guias"
+                checked={puedeAvisarGuias && notificarGuias}
+                disabled={!puedeAvisarGuias}
+                onChange={(e) => setNotificarGuias(e.target.checked)}
+                className="w-4 h-4 mt-0.5 text-terracota border-neutro-borde rounded focus:ring-terracota disabled:opacity-50"
+              />
+              <span>Avisar por correo a los guías asignados ({etiquetaGuias})</span>
+            </label>
+          </fieldset>
 
-          <div className="bg-amarillo-bg border border-amarillo/30 rounded-lg p-3 text-sm text-amarillo flex gap-2">
-            <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
-            <p>
-              Al confirmar se actualiza BD, se libera slot original, se reasigna chinampa,
-              se envia email a cliente y guia, y se reprograman recordatorios.
-            </p>
+          <div
+            data-testid="reag-aviso"
+            className="bg-azul-bg border border-azul/30 rounded-lg p-3 text-sm text-verde flex gap-2"
+          >
+            <Info className="h-4 w-4 flex-shrink-0 mt-0.5 text-azul" aria-hidden="true" />
+            <div className="space-y-1">
+              <p>
+                Al confirmar se cambian la fecha y la hora de inicio
+                {finNuevo
+                  ? '; la hora de término se mueve igual'
+                  : ' (la reserva no tiene una hora de término que mover)'}
+                . El estado, la chinampa y
+                los guías no cambian, y el cambio queda en las notas internas. El recordatorio del
+                día anterior se calcula con la nueva fecha.
+              </p>
+              <p>
+                {notificarCliente
+                  ? 'Al cliente se le manda la plantilla Reagendamiento solo si está activa en su idioma y tiene correo real (las reservas del Sheet y de reseller no reciben correos).'
+                  : 'Al cliente no se le manda la plantilla Reagendamiento: avísale tú.'}{' '}
+                {puedeAvisarGuias && notificarGuias
+                  ? `${guiasConCorreo === 1 ? 'El guía con correo recibe' : `Los ${guiasConCorreo} guías con correo reciben`} el cambio de fecha (sin datos del cliente).`
+                  : 'A los guías no se les manda correo: avísales tú.'}
+              </p>
+            </div>
           </div>
         </div>
 
-        <footer className="border-t border-neutro-borde px-6 py-4 flex items-center justify-between">
+        <footer className="shrink-0 border-t border-neutro-borde px-4 sm:px-6 py-4 flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={onClose}
@@ -236,7 +342,9 @@ export default function ModalReagendar({
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={submitting || !nuevaFecha || !nuevaHoraInicio}
+            disabled={
+              submitting || !nuevaFecha || !nuevaHoraInicio || finNuevo?.cruzaMedianoche === true
+            }
             className="inline-flex items-center gap-2 bg-terracota hover:bg-terracota-dark text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}

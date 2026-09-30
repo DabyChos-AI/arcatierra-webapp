@@ -115,7 +115,9 @@ export default function AdminTopbar() {
 
   return (
     <>
-      <header className="bg-white border-b border-neutro-borde px-6 py-3 flex items-center gap-6">
+      {/* Fase 2 (T68): a 390 px la barra medía 511 y ensanchaba toda la página (los modales quedaban cortados).
+          En móvil: menos margen y el buscador se reduce al ícono; min-w-0 deja que el centro se encoja. */}
+      <header className="bg-white border-b border-neutro-borde px-4 sm:px-6 py-3 flex items-center gap-3 sm:gap-6">
         {/* IZQ: Titulo + breadcrumb */}
         <div className="min-w-0">
           <h1 className="font-display text-xl text-verde leading-tight truncate">{title}</h1>
@@ -123,15 +125,15 @@ export default function AdminTopbar() {
         </div>
 
         {/* CENTRO: Busqueda */}
-        <div className="flex-1 max-w-xl mx-auto">
+        <div className="flex-1 min-w-0 max-w-xl mx-auto">
           <button
             type="button"
             onClick={() => setSearchModalOpen(true)}
-            className="w-full flex items-center gap-2 px-3 py-2 bg-neutro-light hover:bg-neutro-borde/40 border border-neutro-borde rounded-lg text-sm text-verde-suave transition-colors"
+            className="w-full min-w-0 flex items-center gap-2 px-3 py-2 bg-neutro-light hover:bg-neutro-borde/40 border border-neutro-borde rounded-lg text-sm text-verde-suave transition-colors"
             aria-label="Buscar (Cmd+K)"
           >
             <Search className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
-            <span className="flex-1 text-left truncate">
+            <span className="hidden sm:block flex-1 text-left truncate">
               Buscar reservas, clientes, experiencias...
             </span>
             <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 bg-white border border-neutro-borde rounded text-xs text-verde-suave font-mono">

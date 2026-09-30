@@ -2,16 +2,20 @@
 
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { Loader2, X } from 'lucide-react'
+import { Info, Loader2, X } from 'lucide-react'
 import { API_URL } from '@/lib/api'
-import { formatMXN, type TipoPago } from '@/types/reservas'
+import { formatMXN, type PagoManualResponse, type TipoPago } from '@/types/reservas'
 import { extraerMensajeError } from './errores'
 
 interface ModalPagoManualProps {
   reservaId: string
   bookingId?: string
   saldoPendiente: number
-  onSaved: () => void
+  /** La reserva está en Tentativa: el pago la pasa a Confirmada (CF1). */
+  tentativa: boolean
+  /** Links de MercadoPago sin cobrar de la reserva (D5: los que pasen del saldo nuevo se vencen). */
+  linksPendientes: number
+  onSaved: (res: PagoManualResponse) => void
   onClose: () => void
 }
 
@@ -34,6 +38,8 @@ export default function ModalPagoManual({
   reservaId,
   bookingId,
   saldoPendiente,
+  tentativa,
+  linksPendientes,
   onSaved,
   onClose,
 }: ModalPagoManualProps) {
@@ -84,7 +90,8 @@ export default function ModalPagoManual({
         const err = await res.json().catch(() => ({}))
         throw new Error(extraerMensajeError(err, res.status))
       }
-      onSaved()
+      const data = (await res.json()) as PagoManualResponse
+      onSaved(data)
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al registrar pago')
@@ -95,13 +102,13 @@ export default function ModalPagoManual({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center px-4 pt-36 sm:pt-40 pb-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center px-4 pt-10 sm:pt-16 pb-4 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-pago-manual-title"
     >
-      <div className="bg-white rounded-lg shadow-medium max-w-lg w-full max-h-[92vh] flex flex-col">
-        <header className="border-b border-neutro-borde px-6 py-4 flex items-center justify-between">
+      <div className="bg-white rounded-lg shadow-medium max-w-lg w-full max-h-[calc(100dvh-3.5rem)] sm:max-h-[calc(100dvh-5rem)] flex flex-col">
+        <header className="shrink-0 border-b border-neutro-borde px-4 sm:px-6 py-4 flex items-center justify-between">
           <div>
             <h2 id="modal-pago-manual-title" className="font-display text-xl text-verde">
               Registrar pago manual
@@ -120,9 +127,9 @@ export default function ModalPagoManual({
           </button>
         </header>
 
-        <div className="flex-1 overflow-auto px-6 py-4 space-y-4">
+        <div className="flex-1 overflow-auto px-4 sm:px-6 py-4 space-y-4">
           {error && (
-            <div className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo">
+            <div role="alert" className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo">
               {error}
             </div>
           )}
@@ -229,9 +236,34 @@ export default function ModalPagoManual({
               placeholder="Comentarios..."
             />
           </div>
+
+          {(tentativa || linksPendientes > 0) && (
+            <div
+              data-testid="pago-aviso"
+              className="bg-azul-bg border border-azul/30 rounded-lg p-3 text-sm text-verde flex gap-2"
+            >
+              <Info className="h-4 w-4 flex-shrink-0 mt-0.5 text-azul" aria-hidden="true" />
+              <div className="space-y-1">
+                {tentativa && (
+                  <p>
+                    La reserva pasa de Tentativa a Confirmada y se le manda la confirmación al
+                    cliente solo si la plantilla está activa y tiene correo real (no del Sheet ni
+                    de reseller).
+                  </p>
+                )}
+                {linksPendientes > 0 && (
+                  <p>
+                    {linksPendientes === 1
+                      ? 'Hay 1 link de pago sin cobrar: se vence si pide más que el saldo que quede después de este pago.'
+                      : `Hay ${linksPendientes} links de pago sin cobrar: se vencen los que pidan más que el saldo que quede después de este pago.`}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
-        <footer className="border-t border-neutro-borde px-6 py-4 flex items-center justify-between">
+        <footer className="shrink-0 border-t border-neutro-borde px-4 sm:px-6 py-4 flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={onClose}
