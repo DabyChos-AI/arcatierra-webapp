@@ -11,6 +11,7 @@ import { ImageUploader, GalleryUploader } from '@/components/admin/ImageUploader
 import MapPicker from '@/components/admin/MapPicker'
 import { formatFechaMexico } from '@/lib/dates'
 import { CAPACIDAD_SIN_TOPE } from '@/types/catalogos'
+import { hoyMexico, horaCorta, horario, sinTope } from '@/app/admin/eventos/components/fechas'
 import DisplayCapacidad from './DisplayCapacidad'
 import DisplayDuracion from './DisplayDuracion'
 
@@ -24,11 +25,6 @@ const DIAS_SEMANA: { value: number; label: string }[] = [
   { value: 5, label: 'Vie' },
   { value: 6, label: 'Sáb' },
 ]
-
-// Normaliza "HH:MM:SS" o "HH:MM" a "HH:MM" (el backend puede devolver con segundos)
-function normalizaHora(h: string): string {
-  return h.slice(0, 5)
-}
 
 interface Experiencia {
   id: string
@@ -60,11 +56,14 @@ interface Evento {
   id: string
   nombre_evento: string
   fecha_evento: string
-  hora_inicio: string
+  // El back manda null si la fecha no tiene hora (experiencias_admin.py, listado de eventos)
+  hora_inicio: string | null
   hora_fin: string | null
-  capacidad_maxima: number
+  // null = sin cupo definido (propuesta de backend-1, pendiente del líder); hoy llega 0.
+  // sinTope() trata null y 999 como «sin tope» y entonces no se lee lugares_disponibles.
+  capacidad_maxima: number | null
   capacidad_ocupada: number
-  lugares_disponibles: number
+  lugares_disponibles: number | null
   precio_base: number | null
   estado: string
   notas_internas: string | null
@@ -463,7 +462,7 @@ export default function ExperienciasAdminPage({
       galeria_imagenes: exp.galeria_imagenes || [],
       disponible: exp.disponible,
       dias_disponibles: exp.dias_disponibles || [],
-      horarios_disponibles: (exp.horarios_disponibles || []).map(normalizaHora)
+      horarios_disponibles: (exp.horarios_disponibles || []).map((h) => horaCorta(h))
     })
     setActiveTab('info')
     setShowModal('editar')
@@ -1225,13 +1224,16 @@ export default function ExperienciasAdminPage({
                     {eventos.map((evento) => (
                       <div 
                         key={evento.id} 
+                        data-testid="exp-evento-fila"
                         className={`flex items-center justify-between p-3 rounded-lg border ${
                           evento.estado === 'activo' ? 'bg-white' : 'bg-gray-50'
                         }`}
                       >
                         <div className="flex items-center gap-4">
                           <button
+                            type="button"
                             onClick={() => handleToggleEvento(evento.id)}
+                            aria-label={evento.estado === 'activo' ? 'Desactivar esta fecha' : 'Activar esta fecha'}
                             className={`p-1.5 rounded ${
                               evento.estado === 'activo' 
                                 ? 'bg-green-100 text-green-600' 
@@ -1244,28 +1246,37 @@ export default function ExperienciasAdminPage({
                           </button>
                           
                           <div>
-                            <p className="font-medium text-sm">
-                              {formatFechaMexico(new Date(evento.fecha_evento + 'T00:00:00'), {
+                            <p className="font-medium text-sm" data-testid="exp-evento-fecha">
+                              {formatFechaMexico(evento.fecha_evento, {
                                 weekday: 'long',
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric'
                               })}
                             </p>
-                            <p className="text-xs text-gray-500">
-                              {evento.hora_inicio} {evento.hora_fin ? `- ${evento.hora_fin}` : ''}
+                            <p className="text-xs text-gray-500" data-testid="exp-evento-horario">
+                              {horario(evento.hora_inicio, evento.hora_fin)}
                             </p>
                           </div>
                         </div>
                         
                         <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            <p className="text-sm font-medium">
-                              {evento.capacidad_ocupada}/{evento.capacidad_maxima}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {evento.lugares_disponibles} disponibles
-                            </p>
+                          <div className="text-right" data-testid="exp-evento-cupo">
+                            {sinTope(evento.capacidad_maxima) ? (
+                              <>
+                                <p className="text-sm font-medium">{evento.capacidad_ocupada} reservados</p>
+                                <p className="text-xs text-gray-500 italic">sin tope</p>
+                              </>
+                            ) : (
+                              <>
+                                <p className="text-sm font-medium">
+                                  {evento.capacidad_ocupada}/{evento.capacidad_maxima}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {evento.lugares_disponibles} disponibles
+                                </p>
+                              </>
+                            )}
                           </div>
                           
                           <span className={`px-2 py-1 text-xs rounded-full ${
@@ -1279,7 +1290,9 @@ export default function ExperienciasAdminPage({
                           </span>
                           
                           <button
+                            type="button"
                             onClick={() => handleEliminarEvento(evento.id)}
+                            aria-label="Eliminar esta fecha"
                             className="p-1.5 text-red-500 hover:bg-red-50 rounded"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -1372,7 +1385,7 @@ export default function ExperienciasAdminPage({
                   type="date"
                   value={newEventForm.fecha_evento}
                   onChange={(e) => setNewEventForm(prev => ({ ...prev, fecha_evento: e.target.value }))}
-                  min={new Date().toISOString().split('T')[0]}
+                  min={hoyMexico()}
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 ${theme.ring}`}
                 />
               </div>

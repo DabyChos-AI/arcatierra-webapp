@@ -7,6 +7,8 @@ import { Calendar, Clock3, Users2, Star, MessageCircle, MapPin, CalendarDays, Lo
 import { Experiencia } from '@/data/experiencias';
 import { formatPrice } from '@/utils/formatters';
 import { API_URL } from '@/lib/api';
+import { formatFechaMexico } from '@/lib/dates';
+import { rutaExperiencia } from '@/app/experiencias/[slug]/slug';
 
 interface DisponibilidadData {
   fecha_evento: string;
@@ -95,13 +97,10 @@ export default function ExperienceCard({ experiencia, index }: ExperienceCardPro
         if (response.ok) {
           const data: DisponibilidadResponse = await response.json();
           
-          const fechasFormateadas = data.disponibilidad.slice(0, 2).map(item => {
-            const fecha = new Date(item.fecha_evento);
-            return fecha.toLocaleDateString('es-ES', { 
-              day: 'numeric', 
-              month: 'short' 
-            });
-          });
+          // WEB-f: `new Date('AAAA-MM-DD')` es medianoche UTC y en México pintaba el día anterior
+          const fechasFormateadas = data.disponibilidad.slice(0, 2).map(item =>
+            formatFechaMexico(item.fecha_evento, { year: undefined, day: 'numeric', month: 'short' })
+          );
           
           const espaciosTotales = data.disponibilidad.reduce((sum, item) => sum + item.disponibles_total, 0);
           
@@ -267,7 +266,7 @@ export default function ExperienceCard({ experiencia, index }: ExperienceCardPro
                     Ver Calendario
                   </button>
                 </Link>
-                <Link href={`/experiencias/${experiencia.slug}`}>
+                <Link href={rutaExperiencia(experiencia.slug)} data-testid="exp-card-detalles">
                   <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-4 rounded-xl font-semibold transition-all duration-300 hover:shadow-md">
                     Más Detalles
                   </button>
@@ -275,13 +274,13 @@ export default function ExperienceCard({ experiencia, index }: ExperienceCardPro
               </>
             ) : (
               <>
-                <Link href={`/experiencias/${experiencia.slug}?action=solicitar`} className="flex-1">
+                <Link href={`${rutaExperiencia(experiencia.slug)}?action=solicitar`} className="flex-1">
                   <button className="w-full bg-terracota hover:bg-terracota-oscuro text-white py-3 px-4 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
                     <MessageCircle className="w-4 h-4 inline mr-2" />
                     Solicitar Cotización
                   </button>
                 </Link>
-                <Link href={`/experiencias/${experiencia.slug}`}>
+                <Link href={rutaExperiencia(experiencia.slug)} data-testid="exp-card-detalles">
                   <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-4 rounded-xl font-semibold transition-all duration-300 hover:shadow-md">
                     Más Detalles
                   </button>

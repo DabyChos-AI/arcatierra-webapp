@@ -109,7 +109,10 @@ export default function PersonalPage() {
         per_page: String(PER_PAGE),
       })
       if (busqueda) params.set('search', busqueda)
+      // PE1: el backend filtra activo=true por omisión; sin «Solo activos» hay que
+      // pedir los inactivos explícitamente o nunca se ven (y no se pueden reactivar).
       if (soloActivos) params.set('activo', 'true')
+      else params.set('incluir_inactivos', 'true')
       if (soloExternos) params.set('es_externo', 'true')
       const res = await fetch(`${API_URL}/api/admin/personal?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -361,6 +364,7 @@ export default function PersonalPage() {
               type="checkbox"
               checked={soloActivos}
               onChange={(e) => setSoloActivos(e.target.checked)}
+              data-testid="personal-solo-activos"
               className="w-4 h-4 text-terracota border-neutro-borde rounded focus:ring-terracota"
             />
             Solo activos
@@ -430,7 +434,12 @@ export default function PersonalPage() {
                 </thead>
                 <tbody>
                   {items.map((p) => (
-                    <tr key={p.id} className="border-b border-neutro-borde hover:bg-neutro-light/50">
+                    <tr
+                      key={p.id}
+                      data-testid="personal-fila"
+                      data-activo={p.activo ? 'true' : 'false'}
+                      className="border-b border-neutro-borde hover:bg-neutro-light/50"
+                    >
                       <td className="px-4 py-3">
                         <div className="font-medium text-verde flex items-center gap-2 flex-wrap">
                           <span>
@@ -588,7 +597,11 @@ export default function PersonalPage() {
 
             <div className="p-6 space-y-5">
               {formError && (
-                <div className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-rojo">
+                <div
+                  role="alert"
+                  data-testid="personal-form-error"
+                  className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-rojo"
+                >
                   <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
                   <span>{formError}</span>
                 </div>
@@ -601,6 +614,7 @@ export default function PersonalPage() {
                   </label>
                   <input
                     id="per-nombre"
+                    maxLength={255}
                     type="text"
                     required
                     value={form.nombre}
@@ -615,6 +629,7 @@ export default function PersonalPage() {
                   </label>
                   <input
                     id="per-apellidos"
+                    maxLength={255}
                     type="text"
                     value={form.apellidos}
                     onChange={(e) => setForm({ ...form, apellidos: e.target.value })}
@@ -628,6 +643,7 @@ export default function PersonalPage() {
                   </label>
                   <input
                     id="per-email"
+                    maxLength={255}
                     type="email"
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -641,6 +657,7 @@ export default function PersonalPage() {
                   </label>
                   <input
                     id="per-telefono"
+                    maxLength={50}
                     type="tel"
                     value={form.telefono}
                     onChange={(e) => setForm({ ...form, telefono: e.target.value })}
@@ -654,6 +671,7 @@ export default function PersonalPage() {
                   </label>
                   <input
                     id="per-puesto"
+                    maxLength={120}
                     type="text"
                     value={form.puesto}
                     onChange={(e) => setForm({ ...form, puesto: e.target.value })}
@@ -746,6 +764,7 @@ export default function PersonalPage() {
                 </label>
                 <textarea
                   id="per-notas"
+                  maxLength={2000}
                   rows={2}
                   value={form.notas_internas}
                   onChange={(e) => setForm({ ...form, notas_internas: e.target.value })}
@@ -758,6 +777,7 @@ export default function PersonalPage() {
                   type="checkbox"
                   checked={form.activo}
                   onChange={(e) => setForm({ ...form, activo: e.target.checked })}
+                  data-testid="personal-activo"
                   className="w-4 h-4 text-terracota border-neutro-borde rounded focus:ring-terracota"
                 />
                 Persona activa
@@ -776,6 +796,7 @@ export default function PersonalPage() {
               <button
                 type="submit"
                 disabled={saving || rolesInvalidos}
+                data-testid="personal-guardar"
                 className="inline-flex items-center gap-2 bg-terracota hover:bg-terracota-dark text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {saving && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}

@@ -17,12 +17,8 @@ import {
   X,
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
-import {
-  formatMXN,
-  type Personal,
-  type Reserva,
-  type ReservaEstado,
-} from '@/types/reservas'
+import { useVendedoras } from '@/hooks/useVendedoras'
+import { formatMXN, type Reserva, type ReservaEstado } from '@/types/reservas'
 import BadgeEstado from '../../components/BadgeEstado'
 import BadgeEstadoPago from '../../components/BadgeEstadoPago'
 
@@ -87,7 +83,6 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
   const [vendedorIds, setVendedorIds] = useState<string[]>([])
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
-  const [vendedores, setVendedores] = useState<Personal[]>([])
 
   // Sort
   const [sortBy, setSortBy] = useState<SortKey>('fecha_experiencia')
@@ -114,25 +109,8 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
   }, [estados, vendedorIds, fechaDesde, fechaHasta, busqueda, perPage])
 
   const token = session?.accessToken as string | undefined
-
-  const fetchVendedoras = useCallback(async () => {
-    if (!token) return
-    try {
-      const res = await fetch(`${API_URL}/api/admin/personal?es_vendedor=true`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (!res.ok) return
-      const data = await res.json()
-      const arr: Personal[] = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.items)
-        ? data.items
-        : []
-      setVendedores(arr.filter((v) => v.activo !== false && v.es_vendedor))
-    } catch {
-      /* silencioso */
-    }
-  }, [token])
+  // LD2-a: la misma lista de vendedoras que Leads, el asistente y el detalle
+  const { vendedoras: vendedores } = useVendedoras(token)
 
   const fetchReservas = useCallback(async () => {
     if (!token) return
@@ -164,12 +142,6 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
       setLoading(false)
     }
   }, [token, page, perPage, estados, vendedorIds, fechaDesde, fechaHasta, busqueda])
-
-  useEffect(() => {
-    if (status === 'authenticated') {
-      fetchVendedoras()
-    }
-  }, [status, fetchVendedoras])
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -292,7 +264,7 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
           <FiltroMultiple
             id="filtro-vendedora"
             etiqueta="Vendedora"
-            opciones={vendedores.map((v) => ({ value: v.id, label: `${v.nombre}${v.apellidos ? ` ${v.apellidos}` : ''}` }))}
+            opciones={vendedores.map((v) => ({ value: v.id, label: v.nombre }))}
             seleccion={vendedorIds}
             onChange={setVendedorIds}
             resumen={
@@ -301,7 +273,7 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
                 : vendedorIds.length === 1
                   ? (() => {
                       const v = vendedores.find((x) => x.id === vendedorIds[0])
-                      return v ? `${v.nombre}${v.apellidos ? ` ${v.apellidos}` : ''}` : '1 vendedora'
+                      return v ? v.nombre : '1 vendedora'
                     })()
                   : `${vendedorIds.length} vendedoras`
             }

@@ -5,6 +5,8 @@ import { useSession } from 'next-auth/react'
 import { Loader2, Search, X } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { formatFechaMexico } from '@/lib/dates'
+import { useVendedoras, type Vendedora } from '@/hooks/useVendedoras'
+import { hoyMexico } from '@/app/admin/eventos/components/fechas'
 import type { ItemCatalogo, ListaCatalogo, TipoCatalogo } from '@/types/planeacion'
 import {
   calcularCotizacion,
@@ -27,6 +29,9 @@ interface ModalNuevaReservaProps {
   onClose: () => void
   /** `avisos`: lo que el paso 6 no pudo hacer (link MP, envio de la cotizacion). */
   onCreated: (id: string, bookingId: string, avisos?: string[]) => void
+  /** RC1: YYYY-MM-DD del día tocado en el calendario. Solo se precarga si es hoy o después
+   *  (hoy de México): el back todavía acepta fechas pasadas (PD1). */
+  fechaSugerida?: string
 }
 
 const STEPS: { num: number; label: string }[] = [
@@ -89,12 +94,21 @@ const RESELLERS_FALLBACK: Reseller[] = [
   activo: true,
 }))
 
+// Lo que el asistente lee de GET /api/admin/leads. `nombre` puede venir NULL (LD4): los leads
+// de la web con solo correo o teléfono.
 interface LeadMini {
   id: string
-  nombre: string
+  nombre: string | null
   email?: string | null
   telefono?: string | null
-  estado?: string | null
+  estado_lead?: string | null
+}
+
+const ESTADO_LEAD_LABEL: Record<string, string> = {
+  nuevo: 'Nuevo',
+  en_cotizacion: 'En cotización',
+  convertido_a_reserva: 'Convertido',
+  descartado: 'Descartado',
 }
 
 function wizardReducer(state: WizardData, action: WizardAction): WizardData {
@@ -170,14 +184,6 @@ function aplicarAccion(state: WizardData, action: WizardAction): WizardData {
   }
 }
 
-function todayISO(): string {
-  const now = new Date()
-  const yyyy = now.getFullYear()
-  const mm = String(now.getMonth() + 1).padStart(2, '0')
-  const dd = String(now.getDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
-}
-
 function sumarHoras(hora: string, horas: number): string {
   if (!hora || !horas) return ''
   const [h, m] = hora.split(':').map(Number)
@@ -188,11 +194,18 @@ function sumarHoras(hora: string, horas: number): string {
   return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`
 }
 
-export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaReservaProps) {
+export default function ModalNuevaReserva({
+  onClose,
+  onCreated,
+  fechaSugerida,
+}: ModalNuevaReservaProps) {
   const { data: session } = useSession()
   const token = session?.accessToken as string | undefined
 
-  const [wiz, dispatch] = useReducer(wizardReducer, initialWizardData)
+  // RC1: con un día pasado se abre sin fecha (el back no las rechaza todavía: PD1)
+  const [wiz, dispatch] = useReducer(wizardReducer, initialWizardData, (inicial) =>
+    fechaSugerida && fechaSugerida >= hoyMexico() ? { ...inicial, fecha: fechaSugerida } : inicial,
+  )
 
   // Al abrir, los invitados proponen las personas incluidas. Ya no es un mínimo
   // (29-sep, David): se pueden registrar menos para saber cuántos platos y sillas
@@ -211,7 +224,8 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
   const [experiencias, setExperiencias] = useState<ExperienciaCatalogo[]>([])
   const [addonsCat, setAddonsCat] = useState<ExperienciaCatalogo[]>([])
   const [resellers, setResellers] = useState<Reseller[]>(RESELLERS_FALLBACK)
-  const [vendedoras, setVendedoras] = useState<Personal[]>([])
+  // LD2-a: la misma lista de vendedoras que Leads, el detalle y la tabla
+  const vendedorasEstado = useVendedoras(token)
   const [guias, setGuias] = useState<Personal[]>([])
   const [catalogos, setCatalogos] = useState<Catalogos>(CATALOGOS_INICIALES)
 
@@ -287,22 +301,12 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
     }
   }, [token])
 
-  const fetchPersonal = useCallback(async () => {
+  const fetchGuias = useCallback(async () => {
     if (!token) return
     try {
-      const [resV, resG] = await Promise.all([
-        fetch(`${API_URL}/api/admin/personal?es_vendedor=true`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch(`${API_URL}/api/admin/personal?es_guia=true`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ])
-      if (resV.ok) {
-        const data = await resV.json()
-        const arr: Personal[] = Array.isArray(data) ? data : data?.items ?? []
-        setVendedoras(arr.filter((v) => v.activo !== false && v.es_vendedor))
-      }
+      const resG = await fetch(`${API_URL}/api/admin/personal?es_guia=true`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       if (resG.ok) {
         const data = await resG.json()
         const arr: Personal[] = Array.isArray(data) ? data : data?.items ?? []
@@ -390,9 +394,9 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
     if (!token) return
     fetchExperiencias()
     fetchResellers()
-    fetchPersonal()
+    fetchGuias()
     fetchCatalogos()
-  }, [token, fetchExperiencias, fetchResellers, fetchPersonal, fetchCatalogos])
+  }, [token, fetchExperiencias, fetchResellers, fetchGuias, fetchCatalogos])
 
   // === Validacion por paso ===
   const pasoValido = useMemo(() => {
@@ -539,7 +543,7 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
       type: 'PREFILL_FROM_LEAD',
       lead: {
         id: lead.id,
-        nombre: lead.nombre,
+        nombre: lead.nombre ?? '',
         email: lead.email ?? undefined,
         telefono: lead.telefono ?? undefined,
       },
@@ -552,7 +556,7 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
     if (!q) return leadsBuscados
     return leadsBuscados.filter(
       (l) =>
-        l.nombre.toLowerCase().includes(q) ||
+        (l.nombre ?? '').toLowerCase().includes(q) ||
         (l.email ?? '').toLowerCase().includes(q) ||
         (l.telefono ?? '').toLowerCase().includes(q),
     )
@@ -624,7 +628,9 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
             <Paso5Asignaciones
               wiz={wiz}
               dispatch={dispatch}
-              vendedoras={vendedoras}
+              vendedoras={vendedorasEstado.vendedoras}
+              vendedorasCargando={vendedorasEstado.cargando}
+              vendedorasError={vendedorasEstado.error}
               guias={guias}
               guiasPendientes={guiasPendientes}
             />
@@ -636,6 +642,8 @@ export default function ModalNuevaReserva({ onClose, onCreated }: ModalNuevaRese
               cot={cot}
               fuentes={catalogos.fuentes.items}
               cocinas={catalogos.cocinas.items}
+              resellers={resellers}
+              vendedoras={vendedorasEstado.vendedoras}
             />
           )}
         </div>
@@ -805,7 +813,18 @@ function Paso1Cliente({
             <p className="text-sm text-verde-suave">
               Datos del cliente
               {wiz.leadId && (
-                <span className="ml-2 text-xs text-terracota">(prellenado desde lead)</span>
+                <>
+                  <span className="ml-2 text-xs text-terracota">(prellenado desde lead)</span>
+                  {/* LD4: un lead ya convertido responde 409; así se puede seguir sin ligarlo */}
+                  <button
+                    type="button"
+                    data-testid="wiz-quitar-lead"
+                    onClick={() => dispatch({ type: 'SET_FIELD', field: 'leadId', value: undefined })}
+                    className="ml-2 text-xs text-verde-suave underline hover:text-verde"
+                  >
+                    Quitar lead
+                  </button>
+                </>
               )}
             </p>
             <button
@@ -1090,7 +1109,7 @@ function Paso2Experiencia({
           <input
             id="exp-fecha"
             type="date"
-            min={todayISO()}
+            min={hoyMexico()}
             value={wiz.fecha}
             onChange={(e) =>
               dispatch({ type: 'SET_FIELD', field: 'fecha', value: e.target.value })
@@ -1593,12 +1612,16 @@ function Paso5Asignaciones({
   wiz,
   dispatch,
   vendedoras,
+  vendedorasCargando,
+  vendedorasError,
   guias,
   guiasPendientes,
 }: {
   wiz: WizardData
   dispatch: React.Dispatch<WizardAction>
-  vendedoras: Personal[]
+  vendedoras: Vendedora[]
+  vendedorasCargando: boolean
+  vendedorasError: string | null
   guias: Personal[]
   guiasPendientes: string[]
 }) {
@@ -1623,10 +1646,17 @@ function Paso5Asignaciones({
           {vendedoras.map((v) => (
             <option key={v.id} value={v.id}>
               {v.nombre}
-              {v.apellidos ? ` ${v.apellidos}` : ''}
             </option>
           ))}
         </select>
+        {vendedorasCargando && (
+          <p className="mt-1 text-xs text-verde-suave">Cargando vendedoras…</p>
+        )}
+        {vendedorasError && (
+          <p data-testid="vendedoras-error" className="mt-1 text-xs text-terracota-dark">
+            No se pudo cargar la lista de vendedoras ({vendedorasError}).
+          </p>
+        )}
       </div>
 
       <MultiSelectGuias
@@ -1724,15 +1754,22 @@ function Paso6Confirmacion({
   cot,
   fuentes,
   cocinas,
+  resellers,
+  vendedoras,
 }: {
   wiz: WizardData
   dispatch: React.Dispatch<WizardAction>
   cot: ReturnType<typeof calcularCotizacion>
   fuentes: ItemCatalogo[]
   cocinas: ItemCatalogo[]
+  resellers: Reseller[]
+  vendedoras: Vendedora[]
 }) {
   const fuente = fuentes.find((f) => f.id === wiz.fuenteId)
   const cocina = cocinas.find((c) => c.id === wiz.cocinaId)
+  // WZ1: nombres, no IDs, con las listas que el asistente ya cargó
+  const reseller = resellers.find((r) => r.id === wiz.resellerId)
+  const vendedora = vendedoras.find((v) => v.id === wiz.vendedorId)
   return (
     <div className="space-y-4">
       <ResumenSeccion titulo="Cliente">
@@ -1756,9 +1793,15 @@ function Paso6Confirmacion({
             )}
           </>
         ) : (
-          <p>
-            Reseller ID: <strong>{wiz.resellerId ?? '—'}</strong>
-          </p>
+          <>
+            <p>
+              Reseller: <strong data-testid="wiz-resumen-reseller">{reseller?.nombre ?? '—'}</strong>
+            </p>
+            <p>
+              Huésped:{' '}
+              <strong data-testid="wiz-resumen-huesped">{wiz.clienteNombre.trim() || '—'}</strong>
+            </p>
+          </>
         )}
         <p>
           Idioma:{' '}
@@ -1870,7 +1913,7 @@ function Paso6Confirmacion({
 
       <ResumenSeccion titulo="Asignaciones">
         <p>
-          Vendedora ID: <strong>{wiz.vendedorId || '—'}</strong>
+          Vendedora: <strong data-testid="wiz-resumen-vendedora">{vendedora?.nombre ?? '—'}</strong>
         </p>
         <p>
           Guias asignados: <strong>{wiz.guiasIds.length}</strong>
@@ -1998,6 +2041,7 @@ function LeadPickerModal({
               placeholder="Buscar por nombre, email o telefono..."
               className="w-full pl-9 pr-3 py-2 border border-neutro-borde rounded-lg text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
               aria-label="Buscar lead"
+              data-testid="lead-picker-buscar"
             />
           </div>
         </div>
@@ -2015,13 +2059,16 @@ function LeadPickerModal({
                   <button
                     type="button"
                     onClick={() => onSelect(l)}
+                    data-testid="lead-picker-opcion"
                     className="w-full text-left px-3 py-2 rounded hover:bg-neutro-light"
                   >
-                    <p className="text-sm font-medium text-verde">{l.nombre}</p>
+                    <p className="text-sm font-medium text-verde">{l.nombre || 'Sin nombre'}</p>
                     <p className="text-xs text-verde-suave">
                       {l.email ?? 'sin email'}
                       {l.telefono ? ` · ${l.telefono}` : ''}
-                      {l.estado ? ` · ${l.estado}` : ''}
+                      {l.estado_lead
+                        ? ` · ${ESTADO_LEAD_LABEL[l.estado_lead] ?? l.estado_lead}`
+                        : ''}
                     </p>
                   </button>
                 </li>

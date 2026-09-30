@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import { useSearchParams } from 'next/navigation'
-import { Plus, FileText, Calendar as CalendarIcon, Table as TableIcon, Phone, AlertTriangle, X } from 'lucide-react'
+import { Plus, FileText, Calendar as CalendarIcon, Table as TableIcon, AlertTriangle, X } from 'lucide-react'
 import AdminTopbar from '../components/AdminTopbar'
 import ReservasKPIs from './components/ReservasKPIs'
 
@@ -45,6 +45,9 @@ function SkeletonBlock({ label }: { label: string }) {
 function ReservasPageInner() {
   const [tab, setTab] = useState<TabActiva>('tabla')
   const [showNueva, setShowNueva] = useState(false)
+  // RC1: el día que se tocó en el calendario (YYYY-MM-DD). El asistente solo lo usa si es
+  // hoy o después; el botón «Nueva Reserva» abre sin fecha.
+  const [fechaSugerida, setFechaSugerida] = useState<string | undefined>(undefined)
   const [detalleId, setDetalleId] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   // Lo que el paso 6 del wizard no pudo hacer (link MP / envio de cotizacion)
@@ -88,7 +91,10 @@ function ReservasPageInner() {
           </div>
           <button
             type="button"
-            onClick={() => setShowNueva(true)}
+            onClick={() => {
+              setFechaSugerida(undefined)
+              setShowNueva(true)
+            }}
             className="inline-flex items-center gap-2 bg-terracota hover:bg-terracota-dark text-white px-4 py-2 rounded-lg shadow-terracota transition-colors font-medium"
             aria-label="Crear nueva reserva"
           >
@@ -160,7 +166,10 @@ function ReservasPageInner() {
             <ReservasCalendario
               refreshKey={refreshKey}
               onEventClick={(id) => setDetalleId(id)}
-              onSlotClick={() => setShowNueva(true)}
+              onSlotClick={(fecha) => {
+                setFechaSugerida(fecha)
+                setShowNueva(true)
+              }}
             />
           )}
           {tab === 'manifest' && (
@@ -173,7 +182,11 @@ function ReservasPageInner() {
       </div>
 
       {showNueva && (
-        <ModalNuevaReserva onClose={handleClose} onCreated={handleCreated} />
+        <ModalNuevaReserva
+          onClose={handleClose}
+          onCreated={handleCreated}
+          fechaSugerida={fechaSugerida}
+        />
       )}
       {detalleId && (
         <ModalDetalleReserva

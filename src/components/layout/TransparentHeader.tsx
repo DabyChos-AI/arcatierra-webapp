@@ -616,6 +616,13 @@ const TransparentHeader: React.FC = () => {
     };
   }, []);
 
+  // HD1 (30-sep, decisión de David): el panel /admin trae su propia barra (AdminHeader con
+  // «Ver sitio» y «Salir»). Este navbar es fixed con z 1000 y la tapaba. Este return va
+  // DESPUÉS de todos los hooks para no cambiar su orden entre rutas.
+  if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+    return null;
+  }
+
   return (
     <header style={styles.header(isTransparent, isScrolled)}>
       <div style={styles.container}>

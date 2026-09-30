@@ -20,6 +20,31 @@ import {
 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { API_URL } from '@/lib/api'
+import { formatFechaMexico } from '@/lib/dates'
+import { normalizarSlug, rutaExperiencia } from '@/app/experiencias/[slug]/slug'
+
+// Fechas del feed (AAAA-MM-DD, columna DATE) con día de la semana. WEB-f: siempre con
+// formatFechaMexico; `new Date('AAAA-MM-DD')` es medianoche UTC y en México pinta un día antes.
+const FECHA_LARGA: Intl.DateTimeFormatOptions = {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+}
+
+/** AAAA-MM-DD de un día de la grilla (Date local), para compararlo con las fechas del feed. */
+function fechaISOLocal(fecha: Date): string {
+  const año = fecha.getFullYear()
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0')
+  const dia = String(fecha.getDate()).padStart(2, '0')
+  return `${año}-${mes}-${dia}`
+}
+
+/** «Más Información»: liga por el slug que manda el feed (C3); si viene null, la fórmula de antes. */
+function rutaDetalle(exp: { experiencia_slug: string | null; experiencia: string }): string {
+  return rutaExperiencia(exp.experiencia_slug || normalizarSlug(exp.experiencia.replace(/\s+/g, '-')))
+}
+
 // Días de la semana
 const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
@@ -129,6 +154,8 @@ export default function CalendarioPage() {
           evento_id: e.id,   // ID del evento (para referencia)
           fecha: e.fecha_evento,
           experiencia: e.nombre_evento,
+          // C1/C3: slug de la experiencia (mismo que GET /api/experiencias); null en feeds viejos
+          experiencia_slug: e.experiencia_slug ?? null,
           hora: e.hora_inicio,
           hora_fin: e.hora_fin,
           precio: e.precio_base || 0,
@@ -352,10 +379,7 @@ export default function CalendarioPage() {
 
   // Obtener experiencias de una fecha específica
   const getExperienciasDia = (fecha: Date) => {
-    const año = fecha.getFullYear()
-    const mes = String(fecha.getMonth() + 1).padStart(2, '0')
-    const dia = String(fecha.getDate()).padStart(2, '0')
-    const fechaStr = `${año}-${mes}-${dia}`
+    const fechaStr = fechaISOLocal(fecha)
     return experienciasCalendario.filter(exp => exp.fecha === fechaStr)
   }
 
@@ -528,11 +552,9 @@ export default function CalendarioPage() {
                     .sort((a, b) => a.fecha.localeCompare(b.fecha))
                     .find(exp => exp.fecha >= hoyStr)
                   
-                  const proximaFechaTexto = proximaExperienciaGlobal ? (() => {
-                    const [año, mes, dia] = proximaExperienciaGlobal.fecha.split('-').map(Number)
-                    const fecha = new Date(año, mes - 1, dia)
-                    return fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-                  })() : 'Sin fechas'
+                  const proximaFechaTexto = proximaExperienciaGlobal
+                    ? formatFechaMexico(proximaExperienciaGlobal.fecha, { year: undefined, day: 'numeric', month: 'short' })
+                    : 'Sin fechas'
 
                   const handleClickExperiencia = () => {
                     if (proximaExperienciaGlobal) {
@@ -711,7 +733,7 @@ export default function CalendarioPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
                       className={`p-6 rounded-xl border-2 transition-all duration-300 ${
-                        fechaSeleccionada?.toDateString() === new Date(exp.fecha).toDateString()
+                        fechaSeleccionada && fechaISOLocal(fechaSeleccionada) === exp.fecha
                           ? 'border-[#B15543] bg-gradient-to-r from-[#B15543]/10 to-[#D4735E]/10'
                           : 'border-[#CCBB9A]/30 bg-gradient-to-r from-[#F5F3F0] to-white hover:border-[#B15543]/50'
                       }`}
@@ -719,13 +741,8 @@ export default function CalendarioPage() {
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <h4 className="font-bold text-[#3A4741] text-lg">{exp.experiencia}</h4>
-                          <p className="text-[#475A52] text-sm">
-                            {new Date(exp.fecha).toLocaleDateString('es-ES', { 
-                              weekday: 'long', 
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric' 
-                            })}
+                          <p className="text-[#475A52] text-sm" data-testid="cal-exp-fecha">
+                            {formatFechaMexico(exp.fecha, FECHA_LARGA)}
                           </p>
                         </div>
                         <div className="text-right">
@@ -759,10 +776,11 @@ export default function CalendarioPage() {
                         </button>
                         <button
                           onClick={() => {
-                            if (exp.experiencia) {
-                              window.location.href = `/experiencias/${exp.experiencia.toLowerCase().replace(/\s+/g, '-').normalize('NFD').replace(/[\u0300-\u036f]/g, '')}`;
+                            if (exp.experiencia_slug || exp.experiencia) {
+                              window.location.href = rutaDetalle(exp);
                             }
                           }}
+                          data-testid="cal-exp-mas-info"
                           className="px-6 py-3 border-2 border-[#B15543] text-[#B15543] rounded-xl font-semibold hover:bg-[#B15543] hover:text-white transition-all duration-300"
                         >
                           Más Información
@@ -828,10 +846,11 @@ export default function CalendarioPage() {
                           </button>
                           <button
                             onClick={() => {
-                              if (exp.experiencia) {
-                                window.location.href = `/experiencias/${exp.experiencia.toLowerCase().replace(/\s+/g, '-').normalize('NFD').replace(/[\u0300-\u036f]/g, '')}`;
+                              if (exp.experiencia_slug || exp.experiencia) {
+                                window.location.href = rutaDetalle(exp);
                               }
                             }}
+                            data-testid="cal-dia-mas-info"
                             className="px-4 py-2 border border-[#B15543] text-[#B15543] rounded-lg text-sm font-medium hover:bg-[#B15543] hover:text-white transition-all duration-300"
                           >
                             Más Info
@@ -877,13 +896,8 @@ export default function CalendarioPage() {
 
                 <div className="mb-6">
                   <h4 className="font-bold text-[#3A4741] text-lg mb-2">{modalReserva.experiencia}</h4>
-                  <p className="text-[#475A52] mb-4">
-                    {new Date(modalReserva.fecha).toLocaleDateString('es-ES', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })} a las {modalReserva.hora}
+                  <p className="text-[#475A52] mb-4" data-testid="cal-modal-fecha">
+                    {formatFechaMexico(modalReserva.fecha, FECHA_LARGA)} a las {modalReserva.hora}
                   </p>
                   <div className="text-2xl font-bold text-[#B15543] mb-4">${modalReserva.precio}</div>
                 </div>

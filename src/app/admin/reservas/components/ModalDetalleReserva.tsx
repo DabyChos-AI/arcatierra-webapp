@@ -15,13 +15,21 @@ import {
   X,
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
-import { formatFechaMexico } from '@/lib/dates'
+import { formatFechaHoraMexico, formatFechaMexico } from '@/lib/dates'
 import type { ItemCatalogo, ListaCatalogo, TipoCatalogo } from '@/types/planeacion'
+import { TIPO_LABELS } from '@/types/plantillas-email'
+import {
+  useVendedoras,
+  vendedoraFueraDeLista,
+  type EstadoVendedoras,
+} from '@/hooks/useVendedoras'
 import { extraerMensajeError } from './errores'
 import {
   formatMXN,
   calcularCotizacion,
   initialWizardData,
+  type Comunicacion,
+  type ComunicacionesResponse,
   type Cotizacion,
   type ExperienciaCatalogo,
   type IdiomaCliente,
@@ -131,7 +139,8 @@ export default function ModalDetalleReserva({
   const [savingGuias, setSavingGuias] = useState(false)
 
   // Catalogos
-  const [vendedoras, setVendedoras] = useState<Personal[]>([])
+  // LD2-a: la misma lista de vendedoras que Leads, el asistente y la tabla
+  const vendedorasEstado = useVendedoras(token)
   const [guiasDisponibles, setGuiasDisponibles] = useState<Personal[]>([])
   const [addonsCat, setAddonsCat] = useState<ExperienciaCatalogo[]>([])
   const [catalogos, setCatalogos] = useState<CatalogosReserva>(CATALOGOS_VACIOS)
@@ -192,10 +201,7 @@ export default function ModalDetalleReserva({
   const fetchCatalogos = useCallback(async () => {
     if (!token) return
     try {
-      const [resV, resG, resA] = await Promise.all([
-        fetch(`${API_URL}/api/admin/personal?es_vendedor=true`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+      const [resG, resA] = await Promise.all([
         fetch(`${API_URL}/api/admin/personal?es_guia=true`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
@@ -204,11 +210,6 @@ export default function ModalDetalleReserva({
           { headers: { Authorization: `Bearer ${token}` } },
         ),
       ])
-      if (resV.ok) {
-        const data = await resV.json()
-        const arr: Personal[] = Array.isArray(data) ? data : data?.items ?? []
-        setVendedoras(arr.filter((v) => v.activo !== false && v.es_vendedor))
-      }
       if (resG.ok) {
         const data = await resG.json()
         const arr: Personal[] = Array.isArray(data) ? data : data?.items ?? []
@@ -348,7 +349,12 @@ export default function ModalDetalleReserva({
           // «Ninguna» limpia la chinampa (null explícito, contrato Ola 2 §1.4)
           chinampa_asignada: form.chinampa || null,
           idioma: form.idioma,
-          vendedor_id: form.vendedorId || undefined,
+          // LD2-a: solo si cambió. El back rechaza (400) a quien ya no es vendedora activa, y
+          // mandarla siempre impedía guardar cualquier cosa en esas reservas.
+          vendedor_id:
+            form.vendedorId && form.vendedorId !== (reserva.vendedor_id ?? '')
+              ? form.vendedorId
+              : undefined,
           nombre_cliente: form.nombreCliente.trim() || undefined,
           notas_internas: form.notasInternas,
           notas_alergias: form.notasAlergias,
@@ -769,7 +775,7 @@ export default function ModalDetalleReserva({
               reserva={reserva}
               form={form}
               setForm={setForm}
-              vendedoras={vendedoras}
+              vendedorasEstado={vendedorasEstado}
               guiasDisponibles={guiasDisponibles}
               selectedGuias={selectedGuias}
               setSelectedGuias={setSelectedGuias}
@@ -815,7 +821,7 @@ export default function ModalDetalleReserva({
               onAbrirLinkMP={() => setShowLinkMP(true)}
             />
           )}
-          {tab === 'comunicaciones' && <TabComunicaciones />}
+          {tab === 'comunicaciones' && <TabComunicaciones reservaId={reserva.id} token={token} />}
           {tab === 'auditoria' && <TabAuditoria reserva={reserva} />}
           {tab === 'acciones' && (
             <TabAcciones
@@ -898,7 +904,7 @@ function TabDatos({
   reserva,
   form,
   setForm,
-  vendedoras,
+  vendedorasEstado,
   guiasDisponibles,
   selectedGuias,
   setSelectedGuias,
@@ -913,7 +919,7 @@ function TabDatos({
   reserva: Reserva
   form: FormDatos
   setForm: React.Dispatch<React.SetStateAction<FormDatos | null>>
-  vendedoras: Personal[]
+  vendedorasEstado: EstadoVendedoras
   guiasDisponibles: Personal[]
   selectedGuias: string[]
   setSelectedGuias: React.Dispatch<React.SetStateAction<string[]>>
@@ -953,6 +959,12 @@ function TabDatos({
           nombre: `${reserva.cocina_nombre ?? 'Cocina guardada'}${catalogos.cocinas ? ' (archivada)' : ''}`,
         }
       : null
+  // LD2-a: la vendedora guardada que ya no está en la lista de activas se ve con su nombre
+  const vendedoraFuera = vendedoraFueraDeLista(
+    vendedorasEstado,
+    reserva.vendedor_id,
+    reserva.vendedor_nombre,
+  )
   const chinampaGuardada = reserva.chinampa_asignada ?? ''
   const chinampaFueraDeCatalogo =
     chinampaGuardada && !chinampas.some((c) => c.nombre === chinampaGuardada)
@@ -970,11 +982,15 @@ function TabDatos({
 
   return (
     <div className="space-y-4">
-      <div className="bg-azul-bg border border-azul/30 rounded-lg p-3 text-sm text-azul flex gap-2">
+      {/* DT1-a (30-sep): el aviso anterior prometía un correo al guardar que nunca se manda */}
+      <div
+        data-testid="detalle-aviso-sin-correo"
+        className="bg-azul-bg border border-azul/30 rounded-lg p-3 text-sm text-azul flex gap-2"
+      >
         <Info className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
         <p>
-          Cualquier cambio que afecte fecha, hora, # invitados o monto total disparara un
-          email de actualizacion al cliente al guardar.
+          Guardar estos cambios no le manda correo al cliente. Si cambias fecha, hora o
+          invitados, avísale tú. Los correos enviados se ven en la pestaña Comunicaciones.
         </p>
       </div>
 
@@ -1227,13 +1243,23 @@ function TabDatos({
             className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
           >
             <option value="">— Sin asignar —</option>
-            {vendedoras.map((v) => (
+            {vendedoraFuera && (
+              <option value={vendedoraFuera.id} disabled>
+                {vendedoraFuera.nombre}
+              </option>
+            )}
+            {vendedorasEstado.vendedoras.map((v) => (
               <option key={v.id} value={v.id}>
                 {v.nombre}
-                {v.apellidos ? ` ${v.apellidos}` : ''}
               </option>
             ))}
           </select>
+          {vendedorasEstado.error && (
+            <p data-testid="vendedoras-error" className="text-xs mt-1 text-terracota-dark">
+              No se pudo cargar la lista de vendedoras ({vendedorasEstado.error}). Se muestra la
+              guardada.
+            </p>
+          )}
         </Field>
       </div>
 
@@ -1436,7 +1462,11 @@ function TabAddons({
             ) : (
               addons.map((a) => (
                 <tr key={a.id} className="border-b border-neutro-borde">
-                  <td className="px-3 py-2 text-verde">{a.nombre}</td>
+                  <td data-testid="detalle-addon-nombre" className="px-3 py-2 text-verde">
+                    {a.addon_nombre ?? (
+                      <span className="italic text-verde-suave">Add-on eliminado</span>
+                    )}
+                  </td>
                   <td className="px-3 py-2 text-center text-verde tabular-nums">
                     {a.cantidad}
                   </td>
@@ -1450,7 +1480,7 @@ function TabAddons({
                     <button
                       type="button"
                       onClick={() => onDelete(a.id)}
-                      aria-label={`Eliminar ${a.nombre}`}
+                      aria-label={`Eliminar ${a.addon_nombre ?? 'add-on eliminado'}`}
                       className="p-1 rounded hover:bg-rojo/10 text-rojo"
                     >
                       <Trash2 className="h-4 w-4" aria-hidden="true" />
@@ -1721,7 +1751,7 @@ function TabManifest({
     personasIncluidas: cot?.invitados_incluidos ?? 9,
     addons: (reserva.addons ?? []).map((a) => ({
       id: a.addon_id,
-      nombre: a.nombre,
+      nombre: a.addon_nombre ?? a.nombre ?? "",
       cantidad: a.cantidad,
       precio_unitario: Number(a.precio_unitario),
     })),
@@ -2138,15 +2168,192 @@ function TabPagos({
 }
 
 // ============================================================================
-// TAB 5 — Comunicaciones (placeholder Fase D)
+// TAB 5 — Comunicaciones (DT1-a, 30-sep): los correos que el sistema mandó o intentó
+// mandar para esta reserva, de GET /api/admin/reservas/{id}/comunicaciones.
 // ============================================================================
-function TabComunicaciones() {
+const MAX_ERROR_DETALLE = 120
+
+function truncar(texto: string, max: number): string {
+  return texto.length > max ? `${texto.slice(0, max - 1)}…` : texto
+}
+
+/** Tipo de plantilla en español; los avisos sin plantilla (tipo NULL) se nombran por su asunto. */
+function etiquetaComunicacion(c: Comunicacion): string {
+  if (c.tipo) return (TIPO_LABELS as Record<string, string>)[c.tipo] ?? c.tipo
+  const asunto = (c.asunto ?? '').trim()
+  if (asunto.startsWith('Nueva reserva')) return 'Aviso interno: nueva reserva'
+  // _enviar_para_reserva registra «(plantilla <tipo>/<idioma> faltante)» cuando no hay plantilla
+  const faltante = /^\(plantilla ([a-z_]+)\/[a-z]+ faltante\)$/.exec(asunto)
+  if (faltante) {
+    const tipo = (TIPO_LABELS as Record<string, string>)[faltante[1]] ?? faltante[1]
+    return `${tipo} (sin plantilla)`
+  }
+  if (asunto.includes('falta email')) return 'Correo al cliente (sin correo registrado)'
+  if (asunto.includes('PDF cotizacion')) return 'Cotización (no se generó el PDF)'
+  return 'Aviso interno'
+}
+
+const ESTADO_CORREO: Record<string, { label: string; clase: string }> = {
+  enviado: { label: 'Enviado', clase: 'bg-verde/10 text-verde border border-verde/30' },
+  fallido: { label: 'No se envió', clase: 'bg-rojo-bg text-rojo border border-rojo/30' },
+}
+
+function TabComunicaciones({
+  reservaId,
+  token,
+}: {
+  reservaId: string
+  token: string | undefined
+}) {
+  const [items, setItems] = useState<Comunicacion[] | null>(null)
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Mismo patrón que fetchReserva: API_URL directo + Bearer
+  const fetchComunicaciones = useCallback(async () => {
+    if (!token) return
+    setCargando(true)
+    setError(null)
+    try {
+      const res = await fetch(`${API_URL}/api/admin/reservas/${reservaId}/comunicaciones`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, res.status))
+      }
+      const data = (await res.json()) as ComunicacionesResponse
+      setItems(data.items ?? [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cargar los correos')
+    } finally {
+      setCargando(false)
+    }
+  }, [token, reservaId])
+
+  useEffect(() => {
+    fetchComunicaciones()
+  }, [fetchComunicaciones])
+
+  if (cargando && !items) {
+    return (
+      <div
+        data-testid="comunicaciones-cargando"
+        className="flex items-center gap-2 text-sm text-verde-suave py-6 justify-center"
+      >
+        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+        Cargando correos…
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div
+        data-testid="comunicaciones-error"
+        role="alert"
+        className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo flex items-start gap-2"
+      >
+        <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
+        <p className="flex-1">No se pudieron cargar los correos: {error}</p>
+        <button
+          type="button"
+          onClick={fetchComunicaciones}
+          className="text-xs underline hover:no-underline"
+        >
+          Reintentar
+        </button>
+      </div>
+    )
+  }
+
+  const lista = items ?? []
+  if (lista.length === 0) {
+    return (
+      <div
+        data-testid="comunicaciones-vacio"
+        className="bg-neutro-light/40 border border-neutro-borde rounded-lg p-6 text-center"
+      >
+        <Info className="h-8 w-8 mx-auto text-verde-suave mb-2" aria-hidden="true" />
+        <p className="text-sm text-verde">Sin correos registrados</p>
+        <p className="text-xs text-verde-suave mt-1">
+          Aquí aparecen la confirmación, el recordatorio, la cotización y los avisos internos
+          que el sistema mande para esta reserva.
+        </p>
+      </div>
+    )
+  }
+
   return (
-    <div className="bg-neutro-light/40 border border-neutro-borde rounded-lg p-6 text-center">
-      <Info className="h-8 w-8 mx-auto text-verde-suave mb-2" aria-hidden="true" />
-      <p className="text-sm text-verde">
-        Sera alimentado en Fase D — emails transaccionales no enviados aun.
+    <div className="space-y-2">
+      <p className="text-xs text-verde-suave">
+        {lista.length} {lista.length === 1 ? 'correo' : 'correos'} (enviados o intentados), del
+        más reciente al más antiguo.
       </p>
+      <div className="bg-white border border-neutro-borde rounded-lg overflow-x-auto">
+        <table data-testid="comunicaciones-lista" className="w-full text-sm">
+          <thead>
+            <tr className="bg-neutro-light border-b border-neutro-borde">
+              <th scope="col" className="text-left px-3 py-2 font-medium text-verde">
+                Fecha
+              </th>
+              <th scope="col" className="text-left px-3 py-2 font-medium text-verde">
+                Tipo
+              </th>
+              <th scope="col" className="text-left px-3 py-2 font-medium text-verde">
+                Para
+              </th>
+              <th scope="col" className="text-left px-3 py-2 font-medium text-verde">
+                Asunto
+              </th>
+              <th scope="col" className="text-left px-3 py-2 font-medium text-verde">
+                Estado
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {lista.map((c) => {
+              const estado = ESTADO_CORREO[c.estado ?? ''] ?? {
+                label: c.estado ?? '—',
+                clase: 'bg-amarillo-bg text-verde border border-amarillo/30',
+              }
+              return (
+                <tr
+                  key={c.id}
+                  data-testid="comunicacion-fila"
+                  data-estado={c.estado ?? ''}
+                  className="border-b border-neutro-borde align-top"
+                >
+                  <td className="px-3 py-2 text-verde whitespace-nowrap">
+                    {formatFechaHoraMexico(c.enviado_at ?? c.enviado_fecha)}
+                  </td>
+                  <td data-testid="comunicacion-tipo" className="px-3 py-2 text-verde">
+                    {etiquetaComunicacion(c)}
+                  </td>
+                  <td className="px-3 py-2 text-verde break-all">
+                    {c.destinatario_email || '—'}
+                  </td>
+                  <td data-testid="comunicacion-asunto" className="px-3 py-2 text-verde">
+                    {c.asunto || '—'}
+                  </td>
+                  <td className="px-3 py-2">
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${estado.clase}`}
+                    >
+                      {estado.label}
+                    </span>
+                    {c.error_detalle && (
+                      <p data-testid="comunicacion-error" className="text-xs text-rojo mt-1">
+                        {truncar(c.error_detalle, MAX_ERROR_DETALLE)}
+                      </p>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
@@ -2264,7 +2471,8 @@ function TabAcciones({
       <div className="border border-azul/30 rounded-lg p-4 bg-azul-bg">
         <h3 className="text-sm font-semibold text-azul mb-2">Reagendar</h3>
         <p className="text-sm text-verde-suave mb-2">
-          Cambiar la fecha y hora de la experiencia, notificando al cliente.
+          Cambiar la fecha y hora de la experiencia. Por ahora no se le avisa al cliente por
+          correo: avísale tú.
         </p>
         <button
           type="button"

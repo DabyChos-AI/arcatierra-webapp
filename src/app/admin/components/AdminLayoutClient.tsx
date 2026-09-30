@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Menu } from 'lucide-react'
 import AdminSidebar from './AdminSidebar'
 import AdminHeader from './AdminHeader'
 
@@ -80,16 +79,12 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
         rolActivo={rolActivo}
         roles={roles}
         onSwitchRole={handleSwitchRole}
+        onAbrirMenu={() => setSidebarOpen(true)}
       />
 
-      {/* Boton hamburguesa mobile */}
-      <button
-        onClick={() => setSidebarOpen(true)}
-        className="lg:hidden fixed top-20 left-4 z-30 p-2 bg-white rounded-lg shadow-md"
-        aria-label="Abrir menu"
-      >
-        <Menu className="w-6 h-6" />
-      </button>
+      {/* HD1 (30-sep): el botón «Abrir menu» vivía aquí como `fixed top-20` y <main> llevaba
+          `pt-20` en móvil, solo para librar el navbar público (fixed, 82 px), que tapaba la barra
+          gris. Ese navbar ya no se pinta en /admin: el botón pasó a la barra (AdminHeader). */}
 
       <div className="flex">
         <AdminSidebar
@@ -99,7 +94,7 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
         />
         {/* PL1 (29-sep): min-w-0 deja que el contenido se encoja; sin él, una tabla ancha
             (Planeación semanal, 13 columnas) ensanchaba <main> y aplastaba el menú lateral. */}
-        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 pt-20 lg:pt-6">
+        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 lg:pt-6">
           {children}
         </main>
       </div>

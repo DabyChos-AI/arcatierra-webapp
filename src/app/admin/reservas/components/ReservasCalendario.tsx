@@ -17,7 +17,8 @@ import { ESTADOS_VISIBLES } from './estados'
 interface ReservasCalendarioProps {
   refreshKey: number
   onEventClick: (id: string) => void
-  onSlotClick: (date: Date) => void
+  /** RC1: el día tocado como YYYY-MM-DD (el día que se ve en la celda, hora local). */
+  onSlotClick: (fecha: string) => void
 }
 
 interface ListResponse {
@@ -131,7 +132,9 @@ export default function ReservasCalendario({
   }
 
   const handleSelect = (arg: DateSelectArg) => {
-    onSlotClick(arg.start)
+    // Sin esto el día queda sombreado al cerrar el asistente
+    arg.view.calendar.unselect()
+    onSlotClick(toISODate(arg.start))
   }
 
   return (

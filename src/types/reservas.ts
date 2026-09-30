@@ -83,14 +83,52 @@ export interface ExperienciaCatalogo {
   imagen_principal?: string | null
 }
 
+/**
+ * Un add-on tal como lo manda GET /api/admin/reservas/{id} (admin_reservas.py, bloque «Addons»).
+ * AO1 (30-sep): el back manda el nombre en `addon_nombre`; `nombre` nunca llegó y por eso la
+ * pestaña Add-ons salía sin nombres. `nombre` se conserva opcional solo para los objetos que el
+ * propio front arma antes de guardar.
+ */
 export interface AddonReserva {
   id: string
   addon_id: string
-  nombre: string
+  /** Nombre del add-on (JOIN con experiencias). NULL si el add-on ya no existe. */
+  addon_nombre: string | null
+  /** @deprecated el back no lo manda; usar `addon_nombre`. */
+  nombre?: string
   cantidad: number
   precio_unitario: number
   subtotal: number
   notas?: string | null
+  created_at?: string | null
+}
+
+/**
+ * Un correo (o intento) de una reserva: GET /api/admin/reservas/{id}/comunicaciones
+ * → `{ items: Comunicacion[], total }` (admin_reservas.py, sección 19). DT1-a, 30-sep.
+ */
+export interface Comunicacion {
+  id: string
+  /** confirmacion | recordatorio | cotizacion | …; NULL en los avisos internos sin plantilla. */
+  tipo: string | null
+  idioma: string | null
+  plantilla_id: string | null
+  destinatario_email: string | null
+  asunto: string | null
+  resend_id: string | null
+  /** 'enviado' | 'fallido' (y los que registre Resend) */
+  estado: string | null
+  /** Texto técnico del proveedor: truncarlo al mostrarlo. */
+  error_detalle: string | null
+  /** ISO con zona */
+  enviado_at: string | null
+  /** YYYY-MM-DD */
+  enviado_fecha: string | null
+}
+
+export interface ComunicacionesResponse {
+  items: Comunicacion[]
+  total: number
 }
 
 export interface PagoReserva {

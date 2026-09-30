@@ -20,8 +20,10 @@ import {
   Clock,
   Info,
 } from 'lucide-react'
+import { useSession } from 'next-auth/react'
 import { formatFechaHoraMexico } from '@/lib/dates'
 import { API_URL } from '@/lib/api'
+import { useVendedoras, vendedoraFueraDeLista, type Vendedora } from '@/hooks/useVendedoras'
 
 // ─── Types ───────────────────────────────────────────
 
@@ -95,26 +97,7 @@ interface LeadsStats {
   tasa_conversion: number
 }
 
-interface Vendedor {
-  id: string
-  nombre: string
-}
-
 // ─── Constants ───────────────────────────────────────
-
-// TODO Fase E: Reemplazar con fetch a /api/admin/personal cuando ese endpoint exista.
-// Estos UUIDs son los reales obtenidos de:
-//   docker exec arca-postgres psql -U arca_app -d arcatierra \
-//     -c "SELECT id, nombre, apellidos FROM personal WHERE activo=true AND es_vendedor=true ORDER BY nombre;"
-// Actualizado 2026-05-22 tras ejecutar FASE-A-ALINEACION-V10.sql (C04, C06, C10):
-//   - Removidas: Joy, Melissa Lopez, Santiago (ya no están en tabla `personal`)
-//   - Agregada: Daniela Alemán (vendedora + guía multi-rol, C10)
-const VENDEDORES_HARDCODED: Vendedor[] = [
-  { id: '75eb5a1d-b05d-4bf6-9c66-6778fd315262', nombre: 'Daniela Alemán' },
-  { id: '6041aa86-04d1-4da2-9b2d-f9e3b742e9ea', nombre: 'Sof Ortega' },
-  { id: '976ed503-db38-453a-9840-af12ddb0e770', nombre: 'Sofia Santiago' },
-  { id: '36d73a4b-4f14-4f42-97fa-243cef5e2798', nombre: 'Zara Arroyo' },
-]
 
 const ESTADO_BADGE: Record<EstadoLead, { label: string; classes: string }> = {
   nuevo: {
@@ -149,15 +132,24 @@ const PER_PAGE = 20
 
 // ─── Helpers ─────────────────────────────────────────
 
-function vendedorNombre(id: string | null): string {
-  if (!id) return 'Sin asignar'
-  const v = VENDEDORES_HARDCODED.find((x) => x.id === id)
+// El back manda `vendedor_nombre` (JOIN con personal); la lista solo cubre el caso raro de
+// que no venga.
+function vendedorNombre(lead: Lead, vendedoras: Vendedora[]): string {
+  if (!lead.vendedor_asignado_id) return 'Sin asignar'
+  if (lead.vendedor_nombre) return lead.vendedor_nombre
+  const v = vendedoras.find((x) => x.id === lead.vendedor_asignado_id)
   return v ? v.nombre : 'Vendedor desconocido'
 }
 
 // ─── Component ───────────────────────────────────────
 
 export default function AdminLeadsPage() {
+  // LD2-a (30-sep): vendedoras de Personal, no una lista fija en el código (se había quedado
+  // con quien ya no vende y sin las nuevas). Las llamadas de leads siguen por el proxy.
+  const { data: session } = useSession()
+  const vendedorasEstado = useVendedoras(session?.accessToken as string | undefined)
+  const { vendedoras } = vendedorasEstado
+
   // Datos
   const [leads, setLeads] = useState<Lead[]>([])
   const [stats, setStats] = useState<LeadsStats | null>(null)
@@ -552,6 +544,15 @@ export default function AdminLeadsPage() {
     ]
   }, [stats])
 
+  // Lead asignado a quien ya no es vendedora: se ve con su nombre, sin poder volver a elegirla
+  const vendedoraFueraLead = leadDetalle
+    ? vendedoraFueraDeLista(
+        vendedorasEstado,
+        leadDetalle.vendedor_asignado_id,
+        leadDetalle.vendedor_nombre,
+      )
+    : null
+
   // ─── Render ──────────────────────────────────────────
 
   return (
@@ -702,7 +703,7 @@ export default function AdminLeadsPage() {
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#33503E] focus:border-[#33503E]"
             >
               <option value="">Todos</option>
-              {VENDEDORES_HARDCODED.map((v) => (
+              {vendedoras.map((v) => (
                 <option key={v.id} value={v.id}>
                   {v.nombre}
                 </option>
@@ -875,8 +876,7 @@ export default function AdminLeadsPage() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-gray-700">
-                        {lead.vendedor_nombre ||
-                          vendedorNombre(lead.vendedor_asignado_id)}
+                        {vendedorNombre(lead, vendedoras)}
                       </td>
                       <td className="px-4 py-3 text-gray-600 text-xs">
                         {formatFechaHoraMexico(lead.fecha_solicitud)}
@@ -1100,13 +1100,22 @@ export default function AdminLeadsPage() {
                   className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#33503E] focus:border-[#33503E] w-full sm:w-auto"
                 >
                   <option value="">Sin asignar</option>
-                  {VENDEDORES_HARDCODED.map((v) => (
+                  {vendedoraFueraLead && (
+                    <option value={vendedoraFueraLead.id} disabled>
+                      {vendedoraFueraLead.nombre}
+                    </option>
+                  )}
+                  {vendedoras.map((v) => (
                     <option key={v.id} value={v.id}>
                       {v.nombre}
                     </option>
                   ))}
                 </select>
-                {/* TODO Fase E: dropdown alimentado por GET /api/admin/personal */}
+                {vendedorasEstado.error && (
+                  <p data-testid="vendedoras-error" className="mt-1 text-xs text-red-700">
+                    No se pudo cargar la lista de vendedoras ({vendedorasEstado.error}).
+                  </p>
+                )}
               </section>
 
               {/* Notas internas */}
@@ -1378,12 +1387,17 @@ export default function AdminLeadsPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B15543]/40"
                 >
                   <option value="">Sin asignar</option>
-                  {VENDEDORES_HARDCODED.map((v) => (
+                  {vendedoras.map((v) => (
                     <option key={v.id} value={v.id}>
                       {v.nombre}
                     </option>
                   ))}
                 </select>
+                {vendedorasEstado.error && (
+                  <p data-testid="vendedoras-error" className="mt-1 text-xs text-red-700">
+                    No se pudo cargar la lista de vendedoras ({vendedorasEstado.error}).
+                  </p>
+                )}
               </div>
 
               <div>

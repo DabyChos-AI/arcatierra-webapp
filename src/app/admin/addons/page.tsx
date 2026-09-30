@@ -18,7 +18,7 @@ import {
 import { API_URL } from '@/lib/api'
 import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
 import { formatMXN } from '@/types/reservas'
-import type { Addon, AddonListResponse } from '@/types/catalogos'
+import { CAPACIDAD_SIN_TOPE, type Addon, type AddonListResponse } from '@/types/catalogos'
 import AdminTopbar from '../components/AdminTopbar'
 import DisplayCapacidad from '../components/DisplayCapacidad'
 
@@ -36,8 +36,15 @@ const FORM_INICIAL: FormAddon = {
   nombre: '',
   descripcion: '',
   precio_por_persona: '0',
-  capacidad_maxima: '0',
+  // AD1: vacío = sin tope. El backend exige capacidad > 0 y usa 999 como «sin tope».
+  capacidad_maxima: '',
   disponible: true,
+}
+
+/** Vacío o 0 → CAPACIDAD_SIN_TOPE (999): el backend rechaza 0 (`gt=0`). */
+function capacidadParaGuardar(valor: string): number {
+  const n = Math.trunc(Number(valor))
+  return Number.isFinite(n) && n > 0 ? n : CAPACIDAD_SIN_TOPE
 }
 
 export default function AddonsPage() {
@@ -125,7 +132,8 @@ export default function AddonsPage() {
       nombre: a.nombre,
       descripcion: a.descripcion ?? '',
       precio_por_persona: String(a.precio_por_persona),
-      capacidad_maxima: String(a.capacidad_maxima),
+      // El 999 no se pinta nunca: sin tope se edita como campo vacío
+      capacidad_maxima: a.capacidad_maxima >= CAPACIDAD_SIN_TOPE ? '' : String(a.capacidad_maxima),
       disponible: a.disponible,
     })
     setFormError(null)
@@ -154,7 +162,7 @@ export default function AddonsPage() {
         nombre: form.nombre.trim(),
         descripcion: form.descripcion.trim() || null,
         precio_por_persona: Number(form.precio_por_persona) || 0,
-        capacidad_maxima: Number(form.capacidad_maxima) || 0,
+        capacidad_maxima: capacidadParaGuardar(form.capacidad_maxima),
         disponible: form.disponible,
       }
       const url = editId
@@ -504,7 +512,11 @@ export default function AddonsPage() {
 
             <div className="p-6 space-y-5">
               {formError && (
-                <div className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-rojo">
+                <div
+                  role="alert"
+                  data-testid="addon-form-error"
+                  className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-rojo"
+                >
                   <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
                   <span>{formError}</span>
                 </div>
@@ -548,11 +560,16 @@ export default function AddonsPage() {
                     id="addon-cap"
                     type="number"
                     min="0"
+                    step="1"
                     value={form.capacidad_maxima}
                     onChange={(e) => setForm({ ...form, capacidad_maxima: e.target.value })}
+                    placeholder="Sin tope"
+                    aria-describedby="addon-cap-ayuda"
                     className="w-full px-3 py-2 border border-neutro-borde rounded-lg text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
                   />
-                  <p className="text-xs text-verde-suave mt-1">0 = sin límite específico</p>
+                  <p id="addon-cap-ayuda" data-testid="addon-cap-ayuda" className="text-xs text-verde-suave mt-1">
+                    Vacío o 0 = sin tope de personas
+                  </p>
                 </div>
               </div>
 
@@ -592,6 +609,7 @@ export default function AddonsPage() {
               <button
                 type="submit"
                 disabled={saving}
+                data-testid="addon-guardar"
                 className="inline-flex items-center gap-2 bg-terracota hover:bg-terracota-dark text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {saving && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}

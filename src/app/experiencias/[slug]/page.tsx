@@ -10,6 +10,7 @@ import { Experiencia } from '@/data/experiencias';
 import { formatPrice } from '@/utils/formatters';
 import { useSession } from 'next-auth/react';
 import { API_URL } from '@/lib/api';
+import { decodificarSlug, normalizarSlug } from './slug';
 
 interface ExperienciaPageProps {
   params: Promise<{
@@ -144,8 +145,18 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
         if (response.ok) {
           const data = await response.json();
           
-          // Buscar experiencia por slug
-          const expEncontrada = data.items.find((exp: any) => exp.slug === slug);
+          // Buscar experiencia por slug. WEB-f: Next 15 entrega el parámetro codificado
+          // («bebidas-bald%C3%ADo») y la API manda «bebidas-baldío»: con === daba 404.
+          // Primero la coincidencia exacta; si no, normalizados (sin acentos, ñ→n), así
+          // abren /bebidas-baldío, /bebidas-bald%C3%ADo y /bebidas-baldio.
+          const pedido = decodificarSlug(slug);
+          const pedidoNormalizado = normalizarSlug(pedido);
+          const expEncontrada =
+            data.items.find((exp: { slug?: string | null }) => exp.slug === pedido) ??
+            data.items.find(
+              (exp: { slug?: string | null }) =>
+                typeof exp.slug === 'string' && normalizarSlug(exp.slug) === pedidoNormalizado
+            );
           
           if (expEncontrada) {
             // Mapear a formato local
