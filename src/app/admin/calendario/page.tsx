@@ -155,10 +155,31 @@ export default function CalendarioPage() {
     fetchEventos(true)
   }
 
-  const editar = (evento: EventoCalendario) => {
+  // CAL3 (29-sep): la lista viene de /planeacion/eventos, que ENMASCARA notas, descripción y nombre
+  // para guías y cocina. Editar con esos datos guardaba «[correo]»/«[teléfono]» encima del texto real.
+  // Antes de abrir el modal se relee el evento completo de /admin/eventos/{id} (permiso reservas).
+  const [abriendoEdicion, setAbriendoEdicion] = useState<string | null>(null)
+  const editar = async (evento: EventoCalendario) => {
+    if (!token || abriendoEdicion) return
+    setAbriendoEdicion(evento.id)
+    setError(null)
     setViendo(null)
-    if (evento.tipo === 'publica') setPlaneando(evento)
-    else if (evento.tipo === 'interno') setEditandoInterno(evento)
+    try {
+      const response = await fetch(`${API_URL}/api/admin/eventos/${evento.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, response.status))
+      }
+      const completo = (await response.json()) as EventoCalendario
+      if (completo.tipo === 'publica') setPlaneando(completo)
+      else if (completo.tipo === 'interno') setEditandoInterno(completo)
+    } catch (err) {
+      setError(`No se pudo abrir el evento para editarlo: ${err instanceof Error ? err.message : 'sin conexión'}`)
+    } finally {
+      setAbriendoEdicion(null)
+    }
   }
 
   return (
@@ -257,6 +278,7 @@ export default function CalendarioPage() {
                           <button
                             type="button"
                             onClick={() => editar(evento)}
+                            disabled={abriendoEdicion !== null}
                             aria-label={`Editar ${tituloDe(evento)}`}
                             data-testid={`calendario-editar-${evento.id}`}
                             className={`p-2 rounded-lg hover:bg-white/70 ${estilo.texto}`}

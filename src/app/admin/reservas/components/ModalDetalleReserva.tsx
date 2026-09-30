@@ -340,7 +340,10 @@ export default function ModalDetalleReserva({
           fecha_experiencia: form.fecha,
           hora_inicio: form.horaInicio,
           hora_fin: form.horaFin || undefined,
-          numero_invitados_min: form.invMin,
+          // PR1 (29-sep): solo si cambió. Con numero_invitados_min el backend RECALCULA el precio con
+          // el catálogo actual, y 434 reservas del Sheet traen otro precio: guardar una nota les
+          // cambiaba el total sin avisar.
+          numero_invitados_min: form.invMin !== reserva.numero_invitados_min ? form.invMin : undefined,
           numero_invitados_max: form.invMax || undefined,
           // «Ninguna» limpia la chinampa (null explícito, contrato Ola 2 §1.4)
           chinampa_asignada: form.chinampa || null,
