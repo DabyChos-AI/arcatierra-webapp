@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { X, Plus, Minus, ShoppingCart, Trash2, ChevronLeft, CalendarDays } from 'lucide-react'
+import { X, Plus, Minus, ShoppingCart, Trash2, ChevronLeft, CalendarDays, Truck, PartyPopper, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { calcularCostoEnvio } from '@/lib/envio'
 import { formatFechaMexico } from '@/lib/dates'
@@ -129,6 +129,8 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   // Misma fórmula que el checkout y que el backend (services/envio.py).
   const shipping = calcularCostoEnvio(subtotalProductos, 'envio_domicilio')
   const total = subtotal + shipping
+  // UI4: el mismo texto que la columna «Tu pedido» del checkout (sin productos no hay nada que enviar).
+  const textoEnvio = productos.length === 0 ? 'Sin envío' : shipping === 0 ? 'Gratis' : `$${shipping.toFixed(2)}`
 
   return (
     <>
@@ -281,19 +283,25 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 </div>
                 <div className="flex justify-between">
                   <span>Envío:</span>
-                  <span>{shipping === 0 ? 'GRATIS' : `$${shipping.toFixed(2)}`}</span>
+                  <span data-testid="carrito-envio">{textoEnvio}</span>
                 </div>
+                {/* UI4: íconos Lucide (los emoji se veían como un cuadro vacío donde no hay fuente de emoji). */}
                 {subtotalProductos > 0 && subtotalProductos < 1000 && (
-                  <div className="text-xs text-amber-300 bg-amber-900/30 p-2 rounded">
-                    💰 Te faltan ${(1000 - subtotalProductos).toFixed(2)} en productos para envío GRATIS
+                  <div className="flex items-start gap-1.5 text-xs text-amber-300 bg-amber-900/30 p-2 rounded" data-testid="carrito-nota-envio">
+                    <Truck className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    Te faltan ${(1000 - subtotalProductos).toFixed(2)} en productos para envío GRATIS
                   </div>
                 )}
                 {subtotalProductos >= 1000 && (
-                  <div className="text-xs text-green-300 bg-green-900/30 p-2 rounded">🎉 ¡Felicidades! Tu envío es GRATIS</div>
+                  <div className="flex items-start gap-1.5 text-xs text-green-300 bg-green-900/30 p-2 rounded" data-testid="carrito-nota-envio">
+                    <PartyPopper className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    ¡Felicidades! Tu envío es GRATIS
+                  </div>
                 )}
                 {subtotalProductos === 0 && subtotalExperiencias > 0 && (
-                  <div className="text-xs text-green-300 bg-green-900/30 p-2 rounded">
-                    ✨ Las experiencias no tienen costo de envío
+                  <div className="flex items-start gap-1.5 text-xs text-green-300 bg-green-900/30 p-2 rounded" data-testid="carrito-nota-envio">
+                    <Sparkles className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    Las experiencias no tienen costo de envío
                   </div>
                 )}
               </div>

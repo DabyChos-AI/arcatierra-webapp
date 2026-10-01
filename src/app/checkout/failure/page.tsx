@@ -5,39 +5,45 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { XCircle, RefreshCw, Home, HelpCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { apartadoVigente, horaVenceApartado } from '@/components/checkout/RelojApartado'
+import { apartadoVigente, contenidoDelCarrito, horaVenceApartado } from '@/components/checkout/RelojApartado'
 import { leerCarrito } from '@/lib/carrito'
+import { textoApartadoHasta } from '@/types/tienda'
 import { formatFechaMexico } from '@/lib/dates'
 import { linkWhatsApp } from '@/lib/whatsapp'
+
+interface DatosPagoFallido {
+  paymentId: string | null
+  status: string | null
+  statusDetail: string | null
+  preferenceId: string | null
+}
 
 function PagoFallidoContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [paymentData, setPaymentData] = useState<any>(null)
-  // F4: si el apartado de lugares sigue vigente (y es de este carrito), hasta qué hora (México).
-  const [apartadoHasta, setApartadoHasta] = useState<string | null>(null)
+  const [paymentData, setPaymentData] = useState<DatosPagoFallido | null>(null)
+  // F4 / R2: si el apartado sigue vigente (y es de este carrito), el aviso con la hora (México).
+  const [avisoApartado, setAvisoApartado] = useState<string | null>(null)
 
   useEffect(() => {
-    const apartado = apartadoVigente(leerCarrito())
-    setApartadoHasta(apartado ? horaVenceApartado(apartado) : null)
+    const items = leerCarrito()
+    const apartado = apartadoVigente(items)
+    setAvisoApartado(
+      apartado ? `${textoApartadoHasta(contenidoDelCarrito(items), horaVenceApartado(apartado))}: vuelve a intentar` : null
+    )
   }, [])
 
   useEffect(() => {
     // Obtener parámetros de la URL de Mercado Pago
-    const paymentId = searchParams.get('payment_id')
-    const status = searchParams.get('status')
-    const statusDetail = searchParams.get('status_detail')
-    const preferenceId = searchParams.get('preference_id')
-
     setPaymentData({
-      paymentId,
-      status,
-      statusDetail,
-      preferenceId
+      paymentId: searchParams.get('payment_id'),
+      status: searchParams.get('status'),
+      statusDetail: searchParams.get('status_detail'),
+      preferenceId: searchParams.get('preference_id'),
     })
   }, [searchParams])
 
-  const getStatusMessage = (status: string, statusDetail: string) => {
+  const getStatusMessage = (status: string, statusDetail: string | null) => {
     if (status === 'rejected') {
       switch (statusDetail) {
         case 'cc_rejected_insufficient_amount':
@@ -128,7 +134,7 @@ function PagoFallidoContent() {
                 <ul className="text-sm text-blue-700 space-y-1">
                   <li>• Verifica que los datos de tu tarjeta sean correctos</li>
                   <li>• Asegúrate de tener fondos suficientes</li>
-                  <li>• Intenta con otro método de pago</li>
+                  <li>• Intenta con otra tarjeta o con saldo de MercadoPago</li>
                   <li>• Contacta a tu banco si el problema persiste</li>
                   <li>• Puedes intentar el pago nuevamente</li>
                 </ul>
@@ -136,10 +142,10 @@ function PagoFallidoContent() {
             </div>
           </div>
 
-          {apartadoHasta && (
+          {avisoApartado && (
             <div className="bg-amarillo-bg border border-amarillo rounded-lg p-4 mb-6 text-left" role="status" data-testid="pago-apartado-vigente">
               <p className="text-sm font-medium text-verde-tipografia">
-                Tus lugares siguen apartados hasta las {apartadoHasta}: vuelve a intentar
+                {avisoApartado}
               </p>
             </div>
           )}

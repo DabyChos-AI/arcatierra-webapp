@@ -12,10 +12,12 @@ import {
   MAX_LUGARES_POR_COMPRA,
   esExperienciaVieja,
   esItemExperiencia,
+  firmaCarritoExperiencias,
   type ItemCarritoExperiencia,
 } from '@/types/compra-experiencias'
+import type { SyncCarritoRespuesta } from '@/types/tienda'
 
-type ItemCarrito = Record<string, unknown> & { id: string; quantity: number }
+export type ItemCarrito = Record<string, unknown> & { id: string; quantity: number }
 
 export function leerCarrito(): ItemCarrito[] {
   if (typeof window === 'undefined') return []
@@ -95,4 +97,49 @@ export function olvidarApartado(): void {
   } catch {
     /* sessionStorage bloqueado: no hay nada que olvidar */
   }
+}
+
+// ─── R2 (sesión 42): el apartado también es de los productos ──────────────────────────────────────────────────
+/**
+ * Firma del carrito COMPLETO para el apartado: los productos (`id` = itemcode, con su cantidad) y las experiencias
+ * (`firmaCarritoExperiencias`). El servidor solo acepta el apartado con las mismas cantidades que se apartaron
+ * (`tomar_apartado_productos`); si el cliente cambia algo (p. ej. desde el carrito lateral), el apartado guardado ya
+ * no sirve y hay que volver a sincronizar.
+ */
+export function firmaCarrito(items: unknown[]): string {
+  const productos = items
+    .filter((i): i is ItemCarrito => !esItemExperiencia(i) && !!i && typeof (i as ItemCarrito).id === 'string')
+    .map((i) => `p:${i.id}:${Number(i.quantity) || 0}`)
+    .sort()
+  const experiencias = firmaCarritoExperiencias(items)
+  return [...productos, ...(experiencias ? [experiencias] : [])].join('|')
+}
+
+/**
+ * Aplica al carrito lo que el servidor quitó (sin stock) o bajó (stock parcial) en el sync (DR7). Solo toca
+ * productos. Guarda (dispara `cartUpdated`) y devuelve el carrito resultante: el carrito lateral y los resúmenes
+ * ya no suman lo quitado.
+ */
+export function aplicarCambiosDelServidor(
+  cambios: Pick<SyncCarritoRespuesta, 'quitados' | 'ajustados'>,
+  items: ItemCarrito[] = leerCarrito()
+): ItemCarrito[] {
+  const quitados = new Set((cambios.quitados ?? []).map((q) => q.itemcode))
+  const ajustados = new Map((cambios.ajustados ?? []).map((a) => [a.itemcode, a.cantidad]))
+  const resultado: ItemCarrito[] = []
+  for (const item of items) {
+    if (esItemExperiencia(item)) {
+      resultado.push(item)
+      continue
+    }
+    if (quitados.has(item.id)) continue
+    const cantidad = ajustados.get(item.id)
+    if (cantidad === undefined) {
+      resultado.push(item)
+    } else if (cantidad > 0) {
+      resultado.push({ ...item, quantity: cantidad })
+    }
+  }
+  guardarCarrito(resultado)
+  return resultado
 }

@@ -2,38 +2,60 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Clock, Package, Home, ShoppingCart } from 'lucide-react'
+import { Clock, Package, Home, ShoppingCart, CreditCard } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { apartadoVigente, horaVenceApartado } from '@/components/checkout/RelojApartado'
+import { apartadoVigente, contenidoDelCarrito, horaVenceApartado } from '@/components/checkout/RelojApartado'
 import { leerCarrito } from '@/lib/carrito'
+import { textoApartadoHasta } from '@/types/tienda'
 import { formatFechaMexico } from '@/lib/dates'
 import { linkWhatsApp } from '@/lib/whatsapp'
+
+interface DatosPagoPendiente {
+  paymentId: string | null
+  status: string | null
+  merchantOrderId: string | null
+  preferenceId: string | null
+  /** `payment_type` que MercadoPago pone en la URL de regreso (`credit_card`, `ticket`, `bank_transfer`…). */
+  paymentType: string | null
+}
+
+/**
+ * DR7-b (R2): cuánto tarda en confirmarse, según CÓMO pagó el cliente (`payment_type` de la URL de MercadoPago).
+ * La tienda y las experiencias solo cobran con tarjeta o saldo de MercadoPago: ahí nunca se habla de OXXO. El efectivo
+ * y la transferencia solo aparecen si el pago de verdad fue así (un link de pago de una reserva, desde el panel).
+ */
+function tiempoDeConfirmacion(paymentType: string | null): string {
+  if (paymentType === 'ticket') return 'Pagaste en efectivo en una tienda: se confirma en hasta 24 horas.'
+  if (paymentType === 'bank_transfer' || paymentType === 'atm') {
+    return 'Pagaste con transferencia o en cajero: se confirma en 1 a 2 días hábiles.'
+  }
+  return 'Tu banco está revisando el pago con tarjeta o saldo de MercadoPago; normalmente se resuelve en minutos.'
+}
 
 function PagoPendienteContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [paymentData, setPaymentData] = useState<any>(null)
-  // F4: si el apartado de lugares sigue vigente (y es de este carrito), hasta qué hora (México).
-  const [apartadoHasta, setApartadoHasta] = useState<string | null>(null)
+  const [paymentData, setPaymentData] = useState<DatosPagoPendiente | null>(null)
+  // F4 / R2: si el apartado sigue vigente (y es de este carrito), el aviso con la hora (México).
+  const [avisoApartado, setAvisoApartado] = useState<string | null>(null)
 
   useEffect(() => {
-    const apartado = apartadoVigente(leerCarrito())
-    setApartadoHasta(apartado ? horaVenceApartado(apartado) : null)
+    const items = leerCarrito()
+    const apartado = apartadoVigente(items)
+    setAvisoApartado(
+      apartado ? `${textoApartadoHasta(contenidoDelCarrito(items), horaVenceApartado(apartado))}: vuelve a intentar` : null
+    )
   }, [])
 
   useEffect(() => {
     // Obtener parámetros de la URL de Mercado Pago
-    const paymentId = searchParams.get('payment_id')
-    const status = searchParams.get('status')
-    const merchantOrderId = searchParams.get('merchant_order_id')
-    const preferenceId = searchParams.get('preference_id')
-
     setPaymentData({
-      paymentId,
-      status,
-      merchantOrderId,
-      preferenceId
+      paymentId: searchParams.get('payment_id'),
+      status: searchParams.get('status'),
+      merchantOrderId: searchParams.get('merchant_order_id'),
+      preferenceId: searchParams.get('preference_id'),
+      paymentType: searchParams.get('payment_type'),
     })
   }, [searchParams])
 
@@ -87,10 +109,10 @@ function PagoPendienteContent() {
             </div>
           )}
 
-          {apartadoHasta && (
+          {avisoApartado && (
             <div className="bg-amarillo-bg border border-amarillo rounded-lg p-4 mb-6 text-left" role="status" data-testid="pago-apartado-vigente">
               <p className="text-sm font-medium text-verde-tipografia">
-                Tus lugares siguen apartados hasta las {apartadoHasta}: vuelve a intentar
+                {avisoApartado}
               </p>
               <Link href="/checkout" className="mt-2 inline-block text-sm font-medium text-[#B15543] hover:underline">
                 Volver a pagar
@@ -116,16 +138,15 @@ function PagoPendienteContent() {
             </div>
           </div>
 
-          {/* Métodos de pago específicos */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-8">
-            <h4 className="font-medium text-gray-800 mb-2">
-              💳 Tiempos de procesamiento típicos:
+          {/* Cuánto tarda, según cómo pagó (DR7-b: la tienda no ofrece OXXO) */}
+          <div className="bg-gray-50 rounded-lg p-4 mb-8 text-left">
+            <h4 className="flex items-center gap-2 font-medium text-gray-800 mb-2">
+              <CreditCard className="h-4 w-4 shrink-0 text-terracota" aria-hidden="true" />
+              ¿Cuánto tarda?
             </h4>
-            <div className="text-sm text-gray-600 space-y-1">
-              <p>• <strong>OXXO/7-Eleven:</strong> Hasta 24 horas</p>
-              <p>• <strong>Transferencia bancaria:</strong> 1-2 días hábiles</p>
-              <p>• <strong>Tarjeta de crédito:</strong> Minutos</p>
-            </div>
+            <p className="text-sm text-gray-600" data-testid="pago-pendiente-tiempo">
+              {tiempoDeConfirmacion(searchParams.get('payment_type'))}
+            </p>
           </div>
 
           {/* Botones de acción */}

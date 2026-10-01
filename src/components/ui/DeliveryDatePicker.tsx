@@ -3,8 +3,10 @@
 import { useState, useEffect, useMemo } from 'react'
 import { ChevronLeft, ChevronRight, MapPin, Calendar, Truck, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { hoyMexico, sumarDias } from '@/lib/dates'
 
-interface ZonaEntrega {
+/** Una zona de `GET /api/zonas-entrega/{cp}` (la misma forma que usa PostalCodeSelector). */
+export interface ZonaEntrega {
   id: number
   codigo_postal: string
   colonia: string
@@ -21,18 +23,50 @@ interface ZonaEntrega {
 
 interface DeliveryDatePickerProps {
   codigoPostal: string
-  onDateSelect: (date: Date | null, zona: ZonaEntrega | null) => void
+  /**
+   * `date` = medianoche LOCAL del día elegido (para pintarlo); `iso` = ese día como `AAAA-MM-DD`, que es lo que se
+   * manda al backend. Nunca `date.toISOString()`: fuera de UTC-6 corre el día (TZ1b).
+   */
+  onDateSelect: (date: Date | null, zona: ZonaEntrega | null, iso: string | null) => void
   selectedDate?: Date | null
 }
 
 const DIAS_SEMANA = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 
+// ─── TZ1b (R2, sesión 42): el calendario cuenta desde el «hoy» de MÉXICO, no desde el reloj del navegador ─────────
+// Cada celda es un día del calendario (año, mes, día), no un instante: se compara como `AAAA-MM-DD` contra
+// hoyMexico()/sumarDias(). Con el reloj del navegador, un cliente en Madrid o en Los Ángeles veía un día de más o de menos.
+
+/** El día de una celda (medianoche local) como `AAAA-MM-DD`, con sus propios componentes (sin zona). */
+function isoDeCelda(date: Date): string {
+  const mes = String(date.getMonth() + 1).padStart(2, '0')
+  const dia = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${mes}-${dia}`
+}
+
+/** `AAAA-MM-DD` → medianoche LOCAL de ese día (la forma de las celdas). */
+function celdaDeIso(iso: string): Date {
+  const [anio, mes, dia] = iso.split('-').map(Number)
+  return new Date(anio, mes - 1, dia)
+}
+
+/** Día de la semana (0 = domingo) de una fecha `AAAA-MM-DD`, sin que la zona del navegador lo corra. */
+function diaDeLaSemana(iso: string): number {
+  return new Date(`${iso}T12:00:00Z`).getUTCDay()
+}
+
+/** El primer día del mes de hoy en México (para abrir el calendario en el mes correcto). */
+function mesDeHoyMexico(): Date {
+  const [anio, mes] = hoyMexico().split('-').map(Number)
+  return new Date(anio, mes - 1, 1)
+}
+
 export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selectedDate }: DeliveryDatePickerProps) {
   const [zona, setZona] = useState<ZonaEntrega | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [currentMonth, setCurrentMonth] = useState(mesDeHoyMexico)
   const [selected, setSelected] = useState<Date | null>(selectedDate || null)
 
   // Buscar zona cuando cambia el CP
@@ -92,21 +126,17 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
     return days
   }, [currentMonth])
 
-  // Verificar si un día está disponible para entrega
-  const isDayAvailable = (date: Date): boolean => {
+  // Verificar si un día (`AAAA-MM-DD`) está disponible para entrega, contando desde el «hoy» de México
+  const isIsoAvailable = (iso: string): boolean => {
     if (!zona) return false
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    const minDate = new Date(today)
-    minDate.setDate(minDate.getDate() + (zona.tiempo_minimo_dias || 2))
+    const minimo = sumarDias(hoyMexico(), zona.tiempo_minimo_dias || 2)
 
-    // No disponible si es antes del mínimo
-    if (date < minDate) return false
+    // No disponible si es antes del mínimo (las fechas `AAAA-MM-DD` se comparan como texto)
+    if (iso < minimo) return false
 
     // Verificar día de la semana
-    const dayOfWeek = date.getDay()
+    const dayOfWeek = diaDeLaSemana(iso)
     const diasDisponibles = [
       zona.domingo,
       zona.lunes,
@@ -120,18 +150,16 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
     return diasDisponibles[dayOfWeek]
   }
 
-  // Verificar si un día ya pasó
-  const isPastDay = (date: Date): boolean => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return date < today
-  }
+  const isDayAvailable = (date: Date): boolean => isIsoAvailable(isoDeCelda(date))
+
+  // Verificar si un día ya pasó (en México)
+  const isPastDay = (date: Date): boolean => isoDeCelda(date) < hoyMexico()
 
   // Seleccionar fecha
   const handleSelectDate = (date: Date) => {
     if (!isDayAvailable(date)) return
     setSelected(date)
-    onDateSelect(date, zona)
+    onDateSelect(date, zona, isoDeCelda(date))
   }
 
   // Navegación de meses
@@ -152,13 +180,12 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
   // Obtener próximo día disponible
   const getNextAvailableDay = (): string | null => {
     if (!zona) return null
-    
-    const today = new Date()
+
+    const hoy = hoyMexico()
     for (let i = 0; i < 30; i++) {
-      const checkDate = new Date(today)
-      checkDate.setDate(checkDate.getDate() + i)
-      if (isDayAvailable(checkDate)) {
-        return formatSelectedDate(checkDate)
+      const iso = sumarDias(hoy, i)
+      if (isIsoAvailable(iso)) {
+        return formatSelectedDate(celdaDeIso(iso))
       }
     }
     return null
@@ -207,6 +234,8 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
               <button
                 type="button"
                 onClick={prevMonth}
+                aria-label="Mes anterior"
+                data-testid="entrega-mes-anterior"
                 className="p-2 hover:bg-white/10 rounded-full transition-colors"
               >
                 <ChevronLeft className="w-5 h-5 text-white" />
@@ -217,6 +246,8 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
               <button
                 type="button"
                 onClick={nextMonth}
+                aria-label="Mes siguiente"
+                data-testid="entrega-mes-siguiente"
                 className="p-2 hover:bg-white/10 rounded-full transition-colors"
               >
                 <ChevronRight className="w-5 h-5 text-white" />
@@ -243,14 +274,19 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
               const isAvailable = isDayAvailable(date)
               const isPast = isPastDay(date)
               const isSelected = selected && date.toDateString() === selected.toDateString()
-              const isToday = date.toDateString() === new Date().toDateString()
+              const isToday = isoDeCelda(date) === hoyMexico()
 
               return (
                 <button
-                  key={date.toISOString()}
+                  key={isoDeCelda(date)}
                   type="button"
                   onClick={() => handleSelectDate(date)}
                   disabled={!isAvailable}
+                  data-testid="entrega-dia"
+                  data-fecha={isoDeCelda(date)}
+                  data-disponible={isAvailable ? 'true' : 'false'}
+                  aria-label={`${formatSelectedDate(date)}${isAvailable ? '' : ' (sin entrega)'}`}
+                  aria-pressed={!!isSelected}
                   className={`
                     aspect-square rounded-xl text-sm font-medium
                     transition-all duration-200 ease-out

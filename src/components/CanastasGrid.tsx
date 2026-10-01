@@ -4,18 +4,34 @@ import { useState, useEffect } from 'react'
 import ProductCard, { Product } from '@/components/ProductCard'
 import { useFavoritos } from '@/hooks/useFavoritos'
 import { API_URL } from '@/lib/api'
+import { aNumero } from '@/types/tienda'
 
+/** Ficha pública (`GET /api/products/{itemcode}`). R2: `stock_actual` número (antes texto «90.0000»),
+ *  `disponible` y `en_venta` (DisponibilidadProducto); mientras convive el back viejo pueden no venir. */
 interface ApiProduct {
   itemcode: string
   nombre: string
   descripcion: string
   categoria?: string
   precio_unitario: string
-  stock_actual: number
+  stock_actual: number | string
+  disponible?: number | string
+  en_venta?: boolean
   unidad_medida?: string
   imagen_url?: string
   productor?: string
   ubicacion?: string
+}
+
+/** Unidades enteras que se pueden vender (`disponible`; si no viene, `stock_actual`). */
+function disponibleDe(p: ApiProduct): number {
+  const crudo = p.disponible !== undefined && p.disponible !== null ? p.disponible : p.stock_actual
+  return Math.max(0, Math.floor(aNumero(crudo)))
+}
+
+/** R2 (STK3-canastas): una canasta U agotada (o apartada completa por otros) no se ofrece. */
+function enVentaDe(p: ApiProduct): boolean {
+  return typeof p.en_venta === 'boolean' ? p.en_venta : disponibleDe(p) >= 1
 }
 
 // Helper: imagen de canastas por nombre
@@ -40,7 +56,7 @@ function mapApiProductToProduct(apiProduct: ApiProduct): Product {
     nombre: toTitleCase(apiProduct.nombre),
     descripcion: apiProduct.descripcion || '',
     precio: parseFloat(apiProduct.precio_unitario),
-    stock: apiProduct.stock_actual,
+    stock: disponibleDe(apiProduct),
     unidad: apiProduct.unidad_medida || 'unidad',
     imagen: getCanastaImage(apiProduct.nombre),
     // Datos ocultos - comentados por solicitud
@@ -57,6 +73,8 @@ function mapApiProductToProduct(apiProduct: ApiProduct): Product {
 export default function CanastasGrid() {
   const [canastas, setCanastas] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  // R2: distinguir «no se pudieron cargar» (ninguna respondió) de «todas agotadas» (respondieron, ninguna en venta)
+  const [algunaRespondio, setAlgunaRespondio] = useState(false)
   const { favoritos, toggleFavorito } = useFavoritos()
 
   // Fetch canastas desde API
@@ -70,11 +88,13 @@ export default function CanastasGrid() {
             .then(res => res.ok ? res.json() : null)
         )
         
-        const results = await Promise.all(promises)
-        const validProducts = results
-          .filter(Boolean)
+        const results: (ApiProduct | null)[] = await Promise.all(promises)
+        const respondieron = results.filter((r): r is ApiProduct => !!r)
+        const validProducts = respondieron
+          .filter(enVentaDe)
           .map(mapApiProductToProduct)
-        
+
+        setAlgunaRespondio(respondieron.length > 0)
         setCanastas(validProducts)
       } catch (error) {
         console.error('Error fetching canastas:', error)
@@ -134,8 +154,12 @@ export default function CanastasGrid() {
   }
 
   if (canastas.length === 0) {
-    return (
-      <div className="text-center py-12">
+    return algunaRespondio ? (
+      <div className="text-center py-12" data-testid="canastas-agotadas">
+        <p className="text-gray-600">Por ahora no hay canastas de compra única disponibles.</p>
+      </div>
+    ) : (
+      <div className="text-center py-12" data-testid="canastas-error">
         <p className="text-gray-600">No se pudieron cargar las canastas. Por favor intenta más tarde.</p>
       </div>
     )
@@ -144,14 +168,16 @@ export default function CanastasGrid() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
       {canastas.map((product) => (
-        <ProductCard
-          key={product.id}
-          product={product}
-          onAddToCart={addToCart}
-          onToggleFavorite={toggleFavorito}
-          isFavorite={favoritos.includes(product.id)}
-          showDualPricing={true}
-        />
+        // `contents`: el envoltorio no cuenta como celda del grid (solo lleva el testid)
+        <div key={product.id} className="contents" data-testid="canasta-card" data-itemcode={product.id}>
+          <ProductCard
+            product={product}
+            onAddToCart={addToCart}
+            onToggleFavorite={toggleFavorito}
+            isFavorite={favoritos.includes(product.id)}
+            showDualPricing={true}
+          />
+        </div>
       ))}
     </div>
   )

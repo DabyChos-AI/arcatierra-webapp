@@ -8,11 +8,18 @@ import Link from 'next/link'
 import { experienciasDelCarrito, leerCarrito, vaciarCarrito } from '@/lib/carrito'
 import { formatFechaMexico } from '@/lib/dates'
 
+interface DatosPagoExitoso {
+  paymentId: string | null
+  status: string | null
+  merchantOrderId: string | null
+  preferenceId: string | null
+}
+
 function PagoExitosoContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
-  const [paymentData, setPaymentData] = useState<any>(null)
+  const [paymentData, setPaymentData] = useState<DatosPagoExitoso | null>(null)
   // Lo que traía el carrito ANTES de vaciarlo (con `prev ||`: el segundo efecto de React ya lo ve vacío).
   const [conExperiencias, setConExperiencias] = useState(false)
   const [conProductos, setConProductos] = useState(false)

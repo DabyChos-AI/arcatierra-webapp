@@ -3,6 +3,36 @@
 import { useState, useEffect } from 'react'
 import { Package, TrendingUp, AlertCircle, Plus, Search, Edit2, Trash2, Eye, Upload, X, MapPin } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { aNumero } from '@/types/tienda'
+
+/**
+ * R2 (panel de productos): la lista sale de `GET /api/products/admin/lista` (solo admin) por el proxy del panel,
+ * que inyecta el JWT. El listado público ya no trae agotados ni respeta `solo_disponibles=false`/`incluir_inactivos`
+ * sin JWT. Mismos filtros y paginación que antes.
+ */
+const LISTA_ADMIN = '/api/admin/products/admin/lista'
+
+/** R2 (C5 · D1): `GET /api/products/admin/categorias` (admin) — TODAS las categorías, también las que hoy solo tienen
+ *  agotados u ocultos (el `/categories` público ya cuenta solo lo en venta). Ordenadas por nombre. */
+interface CategoriaAdmin {
+  nombre: string
+  total: number
+  en_venta: number
+}
+const CATEGORIAS_ADMIN = '/api/admin/products/admin/categorias'
+
+async function pedirListaAdmin(query: string): Promise<{ items?: any[]; total?: number }> {
+  const res = await fetch(`${LISTA_ADMIN}?${query}`)
+  if (!res.ok) {
+    const cuerpo = await res.json().catch(() => null)
+    throw new Error(
+      res.status === 401 || res.status === 403
+        ? 'Tu sesión venció o no tiene permiso. Vuelve a iniciar sesión.'
+        : (typeof cuerpo?.detail === 'string' && cuerpo.detail) || `No se pudo cargar la lista (HTTP ${res.status})`
+    )
+  }
+  return res.json()
+}
 
 interface Producto {
   id: string;
@@ -37,6 +67,8 @@ export default function ProductosPage() {
     total: 0
   })
   const [categorias, setCategorias] = useState<string[]>([])
+  // R2 (D6): la lista va por el proxy con JWT; un 401/5xx se dice en pantalla (antes: «No se encontraron productos»)
+  const [errorCarga, setErrorCarga] = useState<string | null>(null)
   const [agricultores, setAgricultores] = useState<{id: string, nombre: string, ubicacion: string}[]>([])
   const [showNewAgricultorForm, setShowNewAgricultorForm] = useState(false)
   const [newProduct, setNewProduct] = useState({
@@ -75,6 +107,9 @@ export default function ProductosPage() {
   const [selectedProductPreview, setSelectedProductPreview] = useState<Producto | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Producto | null>(null)
+  // R2: el stock que tenía el producto al ABRIR el editor. El PATCH manda `stock_actual` solo si el admin lo cambió;
+  // reenviarlo igual pisaba una venta hecha mientras el editor estaba abierto (lección s40).
+  const [stockAlAbrir, setStockAlAbrir] = useState<number | null>(null)
   const [showNewCategoriaInput, setShowNewCategoriaInput] = useState(false)
   const [newCategoriaName, setNewCategoriaName] = useState('')
   const [showNewCategoriaInputEdit, setShowNewCategoriaInputEdit] = useState(false)
@@ -91,6 +126,7 @@ export default function ProductosPage() {
   const fetchProductos = async () => {
     try {
       setLoading(true)
+      setErrorCarga(null)
       console.log('🔄 Iniciando fetchProductos con filtros:', filtros)
       
       // 🔧 SOLUCIÓN: Detectar si necesitamos filtrado local
@@ -107,9 +143,8 @@ export default function ProductosPage() {
         // 🚀 CARGAR TODOS LOS PRODUCTOS para filtrado local
         console.log('🔧 Filtrado local activado - cargando todos los productos...')
         
-        const firstResponse = await fetch(`${API_URL}/api/products?limit=200&page=1&solo_disponibles=false&incluir_inactivos=true`)
-        const firstData = await firstResponse.json()
-        const totalProductos = firstData.total
+        const firstData = await pedirListaAdmin('limit=200&page=1&solo_disponibles=false&incluir_inactivos=true')
+        const totalProductos = firstData.total || 0
         const totalPaginas = Math.ceil(totalProductos / 200)
         
         console.log(`📊 Total: ${totalProductos} productos en ${totalPaginas} páginas (incluye inactivos)`)
@@ -118,8 +153,7 @@ export default function ProductosPage() {
         const promesasPaginas = []
         for (let i = 1; i <= totalPaginas; i++) {
           promesasPaginas.push(
-            fetch(`${API_URL}/api/products?limit=200&page=${i}&solo_disponibles=false&incluir_inactivos=true`)
-              .then(res => res.json())
+            pedirListaAdmin(`limit=200&page=${i}&solo_disponibles=false&incluir_inactivos=true`)
           )
         }
         
@@ -133,7 +167,7 @@ export default function ProductosPage() {
           nombre: p.nombre,
           descripcion: p.descripcion || 'Sin descripción',
           precio: parseFloat(p.precio_unitario) || 0,
-          stock: parseFloat(p.stock_actual || '0') || 0,
+          stock: aNumero(p.stock_actual),
           categoria: p.categoria || 'Sin categoría',
           activo: p.visible_web !== false,
           visible_web: p.visible_web !== false
@@ -175,22 +209,16 @@ export default function ProductosPage() {
           params.append('order', filtros.order)
         }
         
-        const response = await fetch(`${API_URL}/api/products?${params}`)
-        
-        if (!response.ok) {
-          throw new Error('Error al cargar productos')
-        }
-        
-        const data = await response.json()
+        const data = await pedirListaAdmin(params.toString())
         
         // Mapear productos de API
-        productosApi = data.items.map((p: any) => ({
+        productosApi = (data.items || []).map((p: any) => ({
           id: p.itemcode,
           itemcode: p.itemcode,
           nombre: p.nombre,
           descripcion: p.descripcion || 'Sin descripción',
           precio: parseFloat(p.precio_unitario) || 0,
-          stock: parseFloat(p.stock_actual || '0') || 0,
+          stock: aNumero(p.stock_actual),
           categoria: p.categoria || 'Sin categoría',
           activo: p.visible_web !== false,
           visible_web: p.visible_web !== false
@@ -252,16 +280,32 @@ export default function ProductosPage() {
       
     } catch (error) {
       console.error('⚠️ Error cargando productos:', error)
-      console.log('⚠️ Error cargando productos, mostrando array vacío')
       setProductos([])
+      setErrorCarga(error instanceof Error && error.message ? error.message : 'No se pudo cargar la lista de productos.')
     } finally {
       setLoading(false)
       console.log('✅ fetchProductos finalizado, loading = false')
     }
   }
 
-  // ✅ Cargar categorías desde endpoint oficial
+  // ✅ Cargar categorías: primero la lista ADMIN (todas, por el proxy con JWT); si falla, la pública de antes
   const fetchCategorias = async () => {
+    try {
+      const resAdmin = await fetch(CATEGORIAS_ADMIN)
+      if (resAdmin.ok) {
+        const dataAdmin: { categorias?: CategoriaAdmin[] } = await resAdmin.json()
+        if (Array.isArray(dataAdmin?.categorias)) {
+          const nombres = dataAdmin.categorias
+            .map((c) => (typeof c?.nombre === 'string' ? c.nombre.trim() : ''))
+            .filter((c) => c !== '' && c !== 'Sin categoría' && c !== 'null')
+          setCategorias(['todas', ...Array.from(new Set(nombres))])
+          return
+        }
+      }
+      console.warn(`Categorías admin no disponibles (HTTP ${resAdmin.status}); uso la lista pública`)
+    } catch (error) {
+      console.warn('Categorías admin no disponibles; uso la lista pública', error)
+    }
     try {
       console.log('🔄 Cargando categorías desde /api/products/categories')
       const response = await fetch(`${API_URL}/api/products/categories`)
@@ -304,8 +348,9 @@ export default function ProductosPage() {
       try {
         console.log('📊 Cargando estadísticas dashboard...')
         // Obtener total y calcular páginas necesarias
-        const response = await fetch(`${API_URL}/api/products?limit=1&solo_disponibles=false`)
-        const data = await response.json()
+        // Las tarjetas cuentan solo productos VISIBLES (como antes con el listado público). admin/lista trae ocultos
+        // por omisión (incluir_inactivos=true), así que el false va explícito.
+        const data = await pedirListaAdmin('limit=1&solo_disponibles=false&incluir_inactivos=false')
         const total = data.total || 0
         const totalPaginas = Math.ceil(total / 200)
         
@@ -315,8 +360,7 @@ export default function ProductosPage() {
         const promesasPaginas = []
         for (let i = 1; i <= totalPaginas; i++) {
           promesasPaginas.push(
-            fetch(`${API_URL}/api/products?limit=200&page=${i}&solo_disponibles=false`)
-              .then(res => res.json())
+            pedirListaAdmin(`limit=200&page=${i}&solo_disponibles=false&incluir_inactivos=false`)
           )
         }
         
@@ -326,12 +370,12 @@ export default function ProductosPage() {
         console.log(`✅ Cargados ${todosProds.length} productos totales`)
         
         // Calcular estadísticas reales sobre TODOS los productos
-        const conStock = todosProds.filter((p: any) => parseFloat(p.stock_actual) > 0).length
+        const conStock = todosProds.filter((p: any) => aNumero(p.stock_actual) > 0).length
         const bajo = todosProds.filter((p: any) => {
-          const stock = parseFloat(p.stock_actual)
+          const stock = aNumero(p.stock_actual)
           return stock > 0 && stock <= 10
         }).length
-        const sinStock = todosProds.filter((p: any) => parseFloat(p.stock_actual) <= 0).length
+        const sinStock = todosProds.filter((p: any) => aNumero(p.stock_actual) <= 0).length
         
         console.log(`✅ Estadísticas: Total=${total}, EnStock=${conStock}, StockBajo=${bajo}, SinStock=${sinStock}`)
         
@@ -415,13 +459,22 @@ export default function ProductosPage() {
 
     try {
       // Preparar datos para actualización
-      const updateData = {
+      const updateData: {
+        nombre: string
+        categoria: string | null
+        precio_unitario: number
+        stock_actual?: number
+        descripcion: string | null
+        visible_web: boolean
+      } = {
         nombre: editingProduct.nombre,
         categoria: editingProduct.categoria || null,
         precio_unitario: editingProduct.precio,
-        stock_actual: editingProduct.stock,
         descripcion: editingProduct.descripcion || null,
         visible_web: editingProduct.activo
+      }
+      if (stockAlAbrir === null || aNumero(editingProduct.stock) !== aNumero(stockAlAbrir)) {
+        updateData.stock_actual = editingProduct.stock
       }
 
       // Enviar actualización al backend
@@ -443,15 +496,19 @@ export default function ProductosPage() {
         throw new Error(result.error || 'Error desconocido')
       }
 
-      // Actualizar estado local con datos actualizados
+      // Actualizar estado local; el stock, el que quedó en la base (puede haber cambiado por una venta)
+      const stockGuardado = result.product && result.product.stock_actual !== undefined
+        ? aNumero(result.product.stock_actual)
+        : editingProduct.stock
       const updatedProducts = productos.map(p => 
-        p.id === editingProduct.id ? editingProduct : p
+        p.id === editingProduct.id ? { ...editingProduct, stock: stockGuardado } : p
       )
       setProductos(updatedProducts)
       
       alert(`✅ Producto "${editingProduct.nombre}" actualizado exitosamente en la base de datos`)
       setShowEditModal(false)
       setEditingProduct(null)
+      setStockAlAbrir(null)
       
     } catch (error: any) {
       console.error('Error actualizando producto:', error)
@@ -909,6 +966,26 @@ export default function ProductosPage() {
         </div>
       </div>
 
+      {/* R2 (D6): la lista no se pudo cargar (sesión vencida, permiso o el servidor) */}
+      {errorCarga && (
+        <div
+          data-testid="productos-error"
+          role="alert"
+          className="bg-red-50 border border-red-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center gap-3"
+        >
+          <AlertCircle className="h-5 w-5 text-red-500 shrink-0" aria-hidden="true" />
+          <p className="flex-1 text-sm text-red-800">{errorCarga}</p>
+          <button
+            type="button"
+            data-testid="productos-reintentar"
+            onClick={() => fetchProductos()}
+            className="px-3 py-1.5 text-sm bg-red-100 text-red-800 rounded-md hover:bg-red-200"
+          >
+            Reintentar
+          </button>
+        </div>
+      )}
+
       {/* Products Table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
@@ -951,13 +1028,15 @@ export default function ProductosPage() {
               ) : productosFiltrados.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                    No se encontraron productos
+                    {errorCarga ? 'No se pudo cargar la lista (ver el aviso de arriba).' : 'No se encontraron productos'}
                   </td>
                 </tr>
               ) : (
                 productosFiltrados.map((producto: Producto) => (
                   <tr 
                     key={producto.id} 
+                    data-testid="producto-fila"
+                    data-itemcode={producto.itemcode}
                     className="hover:bg-gray-50 cursor-pointer"
                     onClick={() => {
                       console.log('🔍 Abriendo modal preview para:', producto.nombre)
@@ -999,6 +1078,8 @@ export default function ProductosPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                       <button 
+                        type="button"
+                        aria-label={`Ver ${producto.nombre}`}
                         onClick={(e) => {
                           e.stopPropagation()
                           console.log('👁️ Botón Ver clickeado para:', producto.nombre)
@@ -1007,26 +1088,32 @@ export default function ProductosPage() {
                         }}
                         className="text-blue-600 hover:text-blue-900 p-1 rounded-lg hover:bg-blue-50"
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-4 w-4" aria-hidden="true" />
                       </button>
                       <button 
+                        type="button"
+                        data-testid="producto-editar"
+                        aria-label={`Editar ${producto.nombre}`}
                         onClick={(e) => {
                           e.stopPropagation()
                           setEditingProduct(producto)
+                          setStockAlAbrir(producto.stock)
                           setShowEditModal(true)
                         }}
                         className="text-green-600 hover:text-green-900 p-1 rounded-lg hover:bg-green-50"
                       >
-                        <Edit2 className="h-4 w-4" />
+                        <Edit2 className="h-4 w-4" aria-hidden="true" />
                       </button>
                       <button 
+                        type="button"
+                        aria-label={`Eliminar ${producto.nombre}`}
                         onClick={(e) => {
                           e.stopPropagation()
                           handleDeleteProduct(producto)
                         }}
                         className="text-red-600 hover:text-red-900 p-1 rounded-lg hover:bg-red-50"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
                       </button>
                     </td>
                   </tr>
@@ -1675,13 +1762,15 @@ export default function ProductosPage() {
             <div className="p-6 border-b border-gray-200 flex justify-between items-center">
               <h2 className="text-2xl font-bold text-gray-900">Editar Producto</h2>
               <button 
+                type="button"
+                aria-label="Cerrar editor"
                 onClick={() => {
                   setShowEditModal(false)
                   setEditingProduct(null)
                 }}
                 className="text-gray-400 hover:text-gray-600"
               >
-                <X className="h-6 w-6" />
+                <X className="h-6 w-6" aria-hidden="true" />
               </button>
             </div>
 
@@ -1726,10 +1815,12 @@ export default function ProductosPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="editar-stock" className="block text-sm font-medium text-gray-700 mb-2">
                     Stock *
                   </label>
                   <input
+                    id="editar-stock"
+                    data-testid="editar-stock"
                     type="number"
                     step="0.01"
                     value={editingProduct.stock}
@@ -1759,6 +1850,12 @@ export default function ProductosPage() {
                       {categorias.filter(c => c !== 'todas').map((cat) => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
+                      {/* R2 (D1): si la lista no trae la categoría del producto, se conserva (no se ve «Sin categoría») */}
+                      {editingProduct.categoria &&
+                        editingProduct.categoria !== 'Sin categoría' &&
+                        !categorias.includes(editingProduct.categoria) && (
+                          <option value={editingProduct.categoria}>{editingProduct.categoria}</option>
+                        )}
                       <option value="__nueva__">➕ Crear nueva categoría...</option>
                     </select>
                   ) : (
@@ -1836,6 +1933,8 @@ export default function ProductosPage() {
                 Cancelar
               </button>
               <button
+                type="button"
+                data-testid="editar-guardar"
                 onClick={handleUpdateProduct}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
               >

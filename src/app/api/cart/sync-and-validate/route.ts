@@ -81,6 +81,9 @@ export async function POST(request: NextRequest) {
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      // A6 (R2, C6): la IP real firmada, como en crear-preferencia-pago: si el sync gana un límite por IP, cada
+      // cliente cuenta por separado y no todos como el servidor de Next.
+      ...cabecerasDelCliente(request.headers),
     };
     if (bearerToken) {
       headers['Authorization'] = `Bearer ${bearerToken}`;

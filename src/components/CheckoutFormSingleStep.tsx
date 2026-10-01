@@ -5,35 +5,57 @@ import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import CountryCodeSelector from '@/components/ui/CountryCodeSelector'
-import DeliveryDatePicker from '@/components/ui/DeliveryDatePicker'
+import DeliveryDatePicker, { type ZonaEntrega } from '@/components/ui/DeliveryDatePicker'
 import type { CanastaExtras } from '@/components/ui/ConMiCanasta'
-import RelojApartado, { apartadoVigente, guardarApartado, leerApartadoGuardado } from '@/components/checkout/RelojApartado'
+import RelojApartado, {
+  apartadoVigente,
+  guardarAlergiasDelApartado,
+  guardarApartado,
+  leerApartadoGuardado,
+  type AlergiasPorFecha,
+  type ApartadoConAlergias,
+} from '@/components/checkout/RelojApartado'
 import { formatFechaMexico, hoyMexico, sumarDias } from '@/lib/dates'
 import PostalCodeSelector from '@/components/ui/PostalCodeSelector'
-import { MapPin, CreditCard, User, Edit2, Calendar, CalendarDays, Tag } from 'lucide-react'
+import { MapPin, CreditCard, User, Edit2, Calendar, CalendarDays, Tag, PackageX } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { calcularCostoEnvio, subtotalProductos as calcSubtotalProductos } from '@/lib/envio'
-import { experienciasDelCarrito, guardarCarrito, leerCarrito, olvidarApartado, vaciarCarrito } from '@/lib/carrito'
+import {
+  aplicarCambiosDelServidor,
+  experienciasDelCarrito,
+  firmaCarrito,
+  guardarCarrito,
+  leerCarrito,
+  olvidarApartado,
+  vaciarCarrito,
+  type ItemCarrito,
+} from '@/lib/carrito'
 import {
   MAX_LUGARES_POR_COMPRA,
   MINUTOS_APARTADO,
-  TEXTO_APARTADO_VENCIDO,
   TEXTO_POLITICA_REEMBOLSO,
   TEXTO_SIN_CUPONES_EXPERIENCIAS,
   TEXTO_SOLO_TARJETA,
   esApartadoVencido,
   esItemExperiencia,
-  firmaCarritoExperiencias,
   subtotalExperiencia,
   textoPersonas,
-  type ApartadoGuardado,
   type ExperienciaParaPagar,
   type LineaExperienciaValidada,
-  type SyncValidateResponse,
 } from '@/types/compra-experiencias'
+import {
+  TEXTO_CARRITO_CAMBIO,
+  TEXTO_METODO_PAGO_CORTO,
+  TEXTO_PAGO_TIENDA,
+  carritoCambio,
+  textoApartado,
+  textoApartadoVencido,
+  textoCambiosCarrito,
+  type SyncCarritoRespuesta,
+} from '@/types/tienda'
 
 interface CheckoutFormProps {
-  cartItems: any[]
+  cartItems: ItemCarrito[]
   onOrderComplete: (orderId: string) => void
   tipoEntrega?: 'envio_domicilio' | 'recoger_almacen'
   costoEnvio?: number
@@ -41,6 +63,26 @@ interface CheckoutFormProps {
   onCuponChange?: (cupon: { codigo: string; descuento: number } | null) => void
   /** Extras que viajan con la canasta de una suscripción (SU2): envío $0, sin cupón, fecha de la canasta. */
   conCanasta?: CanastaExtras | null
+  /**
+   * El servidor quitó o bajó productos del carrito (DR7): los renglones del aviso, o null al limpiarlo. La página lo
+   * muestra si el carrito se quedó vacío (entonces este formulario ya no se pinta).
+   */
+  onCarritoCambio?: (lineas: string[] | null) => void
+}
+
+/** Resultado de sincronizar el carrito (apartar). */
+type ResultadoSync =
+  | { tipo: 'apartado'; apartado: ApartadoConAlergias; token: string | null }
+  | { tipo: 'cambio' } // el servidor quitó o bajó algo: se avisó y NO se va a pagar
+  | { tipo: 'error' } // el error ya está en pantalla (o se fue a iniciar sesión)
+
+/** Resultado de crear el pago. */
+type ResultadoPago = 'redirigido' | 'vencido' | 'error'
+
+/** Una línea de experiencia de `validated_items` con los precios del servidor. */
+function esLineaExperiencia(linea: unknown): linea is LineaExperienciaValidada {
+  const l = linea as Partial<LineaExperienciaValidada> | null
+  return !!l && l.tipo === 'experiencia' && typeof l.evento_id === 'string'
 }
 
 const DIRECCION_ALMACEN = 'RECOGER EN ALMACÉN - Calle Gobernador Antonio Díez de Bonilla #37, San Miguel Chapultepec, CDMX'
@@ -79,11 +121,14 @@ function fechaYHoraLarga(fecha: string, hora: string, horaFin: string | null): s
   return `${dia} · ${hora}${horaFin ? `–${horaFin}` : ''}`
 }
 
-export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tipoEntrega = 'envio_domicilio', costoEnvio = 0, onCuponChange, conCanasta = null }: CheckoutFormProps) {
+export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tipoEntrega = 'envio_domicilio', costoEnvio = 0, onCuponChange, conCanasta = null, onCarritoCambio }: CheckoutFormProps) {
   const { data: session } = useSession()
   const [loading, setLoading] = useState(false)
   const [loadingUserData, setLoadingUserData] = useState(true)
   const [editingAddress, setEditingAddress] = useState(false)
+  // El resumen verde de la dirección solo es para la que VINO del perfil. Antes dependía del texto vivo: un invitado
+  // escribía una letra y el editor (C.P. y calendario) se colapsaba al resumen (R2, sesión 42).
+  const [direccionDelPerfil, setDireccionDelPerfil] = useState(false)
 
   const [customerData, setCustomerData] = useState({
     nombre: '',
@@ -117,7 +162,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
 
   const [paymentMethod, setPaymentMethod] = useState('mercado_pago')
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<Date | null>(null)
-  const [zonaEntrega, setZonaEntrega] = useState<any>(null)
+  const [zonaEntrega, setZonaEntrega] = useState<ZonaEntrega | null>(null)
   // Código de descuento (N1, 2026-09-27). El backend lo valida con los precios
   // de la BD al aplicarlo y otra vez al pagar; aquí solo se muestra.
   const [codigoCupon, setCodigoCupon] = useState('')
@@ -125,8 +170,8 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
   const [cuponError, setCuponError] = useState<string | null>(null)
   const [aplicandoCupon, setAplicandoCupon] = useState(false)
 
-  // ─── Experiencias (F4, Fase 4 de PLAN-EXP-SIN-FALLAS): apartar 10 min y pagar con tarjeta ──────────────────
-  const [apartado, setApartado] = useState<ApartadoGuardado | null>(null)
+  // ─── Apartado de 10 min (F4 para experiencias; R2/DR7 también para productos) y pago con tarjeta o saldo de MP ──
+  const [apartado, setApartado] = useState<ApartadoConAlergias | null>(null)
   const [apartadoVencido, setApartadoVencido] = useState(false)
   const [apartando, setApartando] = useState(false)
   const [pagando, setPagando] = useState(false)
@@ -134,7 +179,10 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
   // El correo tiene cuenta (o es del equipo): el error trae el enlace para iniciar sesión (code 'inicia_sesion' del proxy).
   const [errorPideSesion, setErrorPideSesion] = useState(false)
   const [precioActualizado, setPrecioActualizado] = useState(false)
-  const [alergias, setAlergias] = useState<Record<string, string>>({})
+  // DR7: lo que el servidor quitó o bajó del carrito en el último sync (un renglón por producto), o null.
+  const [cambiosCarrito, setCambiosCarrito] = useState<string[] | null>(null)
+  // AP2: se guardan con el apartado (sessionStorage) y vuelven al regresar de MercadoPago con «atrás».
+  const [alergias, setAlergias] = useState<AlergiasPorFecha>({})
   // Token de invitado que dio el sync; solo en memoria. Si se pierde (recarga, «atrás» desde MercadoPago), el proxy
   // pide otro: guest-token reusa al mismo invitado por correo, así que el apartado sigue siendo suyo.
   const [guestToken, setGuestToken] = useState<string | null>(null)
@@ -146,10 +194,16 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
   const soloExperiencias = hayExperiencias && !hayProductos
   // Las experiencias se pagan aparte de los extras de una canasta (C3): con experiencias no hay canasta.
   const canasta = hayExperiencias ? null : conCanasta
-  const firma = firmaCarritoExperiencias(cartItems)
+  // R2: el apartado es del carrito COMPLETO (productos con su cantidad + experiencias).
+  const firma = firmaCarrito(cartItems)
+  // Reloj y «venció» según lo que se aparta (lugares, productos o los dos): textos del líder (C6).
+  const textos = {
+    reloj: textoApartado({ hayExperiencias, hayProductos }),
+    vencido: textoApartadoVencido({ hayExperiencias, hayProductos }),
+  }
 
   // Función para auto-validar código postal contra API de zonas
-  const autoValidatePostalCode = async (cp: string) => {
+  const autoValidatePostalCode = async (cp: string): Promise<ZonaEntrega | null> => {
     if (!cp || cp.length !== 5) return null
 
     try {
@@ -169,7 +223,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
   }
 
   // Función para calcular la próxima fecha de entrega disponible (`AAAA-MM-DD`), contando desde el «hoy» de México
-  const getNextDeliveryDate = (zona: any): string | null => {
+  const getNextDeliveryDate = (zona: ZonaEntrega | null): string | null => {
     if (!zona) return null
 
     const hoy = hoyMexico()
@@ -195,7 +249,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
           const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${(session as any).accessToken}`
+              'Authorization': `Bearer ${session.accessToken ?? ''}`
             },
           })
 
@@ -218,6 +272,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
               const cpMatch = userData.direccion_principal.match(/\b(\d{5})\b/)
               const extractedCP = cpMatch ? cpMatch[1] : ''
 
+              setDireccionDelPerfil(true)
               setDeliveryData(prev => ({
                 ...prev,
                 address: userData.direccion_principal,
@@ -304,8 +359,9 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
     onCuponChange?.(cupon ? { codigo: cupon.codigo, descuento: cupon.descuento } : null)
   }, [cupon, onCuponChange])
 
-  // El apartado guardado es de UNAS experiencias: si el carrito cambió (otra firma), no sirve. Al volver de
-  // MercadoPago con «atrás» (o al recargar) con la misma firma: si sigue vigente, reloj y «Pagar»; si ya venció, el aviso.
+  // El apartado guardado es de UN carrito (productos con su cantidad + experiencias): si el carrito cambió (otra
+  // firma), no sirve. Al volver de MercadoPago con «atrás» (o al recargar) con la misma firma: si sigue vigente, reloj
+  // y «Pagar»; si ya venció, el aviso. Las alergias vuelven en los dos casos (AP2): el cliente no las reescribe.
   useEffect(() => {
     if (!firma) {
       setApartado(null)
@@ -314,7 +370,12 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
     }
     const guardado = leerApartadoGuardado()
     if (guardado && guardado.firma === firma) {
-      const vigente = apartadoVigente(experiencias)
+      const guardadas = guardado.alergias ?? {}
+      if (Object.keys(guardadas).length > 0) {
+        // Lo que ya está en pantalla (p. ej. la página volvió de la memoria del navegador) gana.
+        setAlergias((prev) => ({ ...guardadas, ...prev }))
+      }
+      const vigente = apartadoVigente(cartItems)
       setApartado(vigente)
       setApartadoVencido(!vigente)
       if (!vigente) olvidarApartado()
@@ -323,9 +384,18 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
     if (guardado) olvidarApartado()
     setApartado(null)
     setApartadoVencido(false)
-    // `experiencias` sale de cartItems y cambia de identidad en cada render: la firma es lo que importa.
+    // `cartItems` cambia de identidad con cada `cartUpdated`: la firma es lo que importa.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [firma])
+
+  /**
+   * El aviso de «actualizamos tu carrito». Se le pasa a la página EN EL MOMENTO (no en un efecto): si el servidor
+   * quitó todo, la página pinta «Tu carrito está vacío» en el mismo render y este formulario ya no corre efectos.
+   */
+  const avisarCambiosCarrito = (lineas: string[] | null) => {
+    setCambiosCarrito(lineas)
+    onCarritoCambio?.(lineas)
+  }
 
   // «Atrás» desde MercadoPago con la página guardada en memoria (bfcache): el botón no se queda en «Procesando».
   useEffect(() => {
@@ -424,135 +494,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
 
   const correoDelCliente = () => (session?.user?.email || customerData.email).trim()
 
-  // ─── Solo productos: el flujo de siempre (un botón) ──────────────────────────────────────────────────────────
-  const handleSubmitOrder = async () => {
-    const email = correoDelCliente()
-    if (!email) {
-      alert('Por favor proporciona un email válido')
-      return
-    }
-
-    if (!customerData.nombre || !customerData.apellido || !customerData.telefono) {
-      alert('Por favor completa todos los campos requeridos')
-      return
-    }
-
-    if (!canasta && !deliveryData.address) {
-      alert('Por favor completa la dirección de entrega')
-      return
-    }
-
-    if (!canasta && !zonaEntrega) {
-      alert('El código postal no tiene cobertura de entrega. Por favor verifica tu código postal.')
-      return
-    }
-
-    if (!canasta && !selectedDeliveryDate) {
-      alert('Por favor selecciona una fecha de entrega')
-      return
-    }
-
-    mostrarError(null)
-    setLoading(true)
-
-    try {
-      // Usa proxy local que inyecta JWT desde la sesion
-      const syncResponse = await fetch(`/api/cart/sync-and-validate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email,
-          // Para que el proxy cree al invitado con sus datos (guest-token).
-          nombre: customerData.nombre,
-          apellidos: customerData.apellido,
-          telefono: customerData.telefono,
-          items: cartItems
-        })
-      })
-
-      if (!syncResponse.ok) {
-        const error = await syncResponse.json().catch(() => ({}))
-        if (syncResponse.status === 401) {
-          volverAIniciarSesion()
-          return
-        }
-        // En la pantalla (checkout-error), no en un alert: p. ej. «Este email tiene cuenta registrada…» + enlace.
-        mostrarErrorDelServidor(error, 'No se pudo validar el carrito. Intenta de nuevo.')
-        setLoading(false)
-        return
-      }
-
-      const syncResult = await syncResponse.json()
-      const { validated_items, _guest_token } = syncResult
-
-      // NO agregar envío aquí - el backend lo agrega como item separado
-      // basándose en costo_envio para evitar duplicación
-      const paymentData: Record<string, unknown> = {
-        items: validated_items,
-        email: email,
-        nombre: customerData.nombre,
-        apellido: customerData.apellido,
-        telefono: customerData.telefono,
-        codigo_pais: customerData.codigo_pais,
-        ...camposEntrega(),
-      }
-
-      // Si fue guest checkout, pasar el token al siguiente paso para reusarlo
-      if (_guest_token) {
-        paymentData._guest_token = _guest_token
-      }
-
-      // Usa proxy local que inyecta JWT desde la sesion
-      const response = await fetch(`/api/crear-preferencia-pago`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(paymentData),
-      })
-
-      const result = await response.json().catch(() => ({}))
-
-      // La sesión pudo morir entre la validación del carrito y el pago.
-      if (response.status === 401) {
-        volverAIniciarSesion()
-        return
-      }
-
-      // Un 400 trae un mensaje para el cliente (código vencido o ya usado, stock,
-      // fecha de entrega). Si había código, se quita para que vea el total real.
-      if (response.status === 400 && result.detail) {
-        if (cupon) setCupon(null)
-        mostrarError(`No se pudo completar el pago: ${textoDelServidor(result.detail) || 'revisa tu pedido e intenta de nuevo.'}`)
-        return
-      }
-      if (!response.ok && textoDelServidor(result.detail)) {
-        mostrarErrorDelServidor(result, 'No se pudo completar el pago. Intenta de nuevo.')
-        return
-      }
-
-      // Pedido sin costo: el backend no llamó a MercadoPago porque el total es
-      // $0 y MP no procesa importes de cero. El pedido ya quedó 'pagado', así
-      // que no hay a dónde redirigir a pagar — se va directo al comprobante.
-      if (result.sin_costo) {
-        vaciarCarrito()
-        window.location.href = result.redirect_url
-          || `/pago-exitoso?pedido=${result.numero_pedido}&sin_costo=1`
-        return
-      }
-
-      if (result.init_point || result.payment_url) {
-        window.location.href = result.payment_url || result.init_point
-      } else {
-        throw new Error('Error creando preferencia de pago')
-      }
-    } catch (error) {
-      console.error('❌ Error:', error)
-      alert('Error procesando la orden. Por favor intenta de nuevo.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // ─── Con experiencias: (1) apartar mis lugares → (2) pagar con tarjeta ───────────────────────────────────────
+  // ─── Validación del formulario (los dos flujos) ───────────────────────────────────────────────────────────────
   /** null = el formulario está completo. */
   const faltaEnElFormulario = (): string | null => {
     const email = correoDelCliente()
@@ -560,21 +502,21 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
     if (!customerData.nombre.trim() || !customerData.apellido.trim() || !customerData.telefono) {
       return 'Completa tu nombre, apellido y teléfono.'
     }
-    if (hayProductos) {
-      if (!deliveryData.address) return 'Completa la dirección de entrega de tus productos.'
+    // Con la canasta (SU2) la dirección, la zona y la fecha las pone el backend.
+    if (hayProductos && !canasta) {
+      if (!deliveryData.address) return hayExperiencias ? 'Completa la dirección de entrega de tus productos.' : 'Completa la dirección de entrega.'
       if (!zonaEntrega) return 'El código postal no tiene cobertura de entrega. Verifica tu código postal.'
-      if (!selectedDeliveryDate) return 'Elige el día de entrega de tus productos.'
+      if (!selectedDeliveryDate) return hayExperiencias ? 'Elige el día de entrega de tus productos.' : 'Elige el día de entrega.'
     }
     return null
   }
 
   /** El precio del servidor manda: si una fecha cambió de precio, el carrito (y los dos resúmenes) se corrigen. */
-  const actualizarPrecios = (lineas: SyncValidateResponse['validated_items']) => {
+  const actualizarPrecios = (lineas: unknown[]) => {
     const porEvento = new Map<string, LineaExperienciaValidada>()
-    for (const linea of lineas || []) {
-      if ((linea as LineaExperienciaValidada).tipo === 'experiencia') {
-        const l = linea as LineaExperienciaValidada
-        if (typeof l.precio_adulto === 'number' && typeof l.precio_nino === 'number') porEvento.set(l.evento_id, l)
+    for (const l of lineas || []) {
+      if (esLineaExperiencia(l) && typeof l.precio_adulto === 'number' && typeof l.precio_nino === 'number') {
+        porEvento.set(l.evento_id, l)
       }
     }
     let cambio = false
@@ -587,10 +529,204 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
       cambio = true
       return { ...item, price: l.precio_adulto, precio_nino: l.precio_nino }
     })
-    if (cambio) guardarCarrito(items) // no cambia la firma (fechas, adultos, niños): el apartado sigue
+    if (cambio) guardarCarrito(items) // no cambia la firma (cantidades, fechas, adultos, niños): el apartado sigue
     setPrecioActualizado(cambio)
   }
 
+  // ─── Paso 1 (los dos flujos): sincronizar el carrito = apartar productos y lugares 10 minutos (§3.3) ─────────
+  /**
+   * POST /api/cart/sync-and-validate. Si el servidor quitó o bajó productos (`carritoCambio`), se aplican al carrito,
+   * se avisa y NO se va a pagar: el cliente revisa. El apartado que el servidor ya dio (con lo que sí alcanzó) se
+   * guarda atado al carrito ajustado, así el siguiente «Pagar» no vuelve a apartar.
+   */
+  const sincronizar = async (): Promise<ResultadoSync> => {
+    const items = cartItems.map((item) =>
+      esItemExperiencia(item)
+        ? {
+            tipo: 'experiencia' as const,
+            id: item.evento_id,
+            evento_id: item.evento_id,
+            adultos: item.adultos,
+            ninos: item.ninos,
+            quantity: item.adultos + item.ninos,
+            // Solo para los mensajes de error y el histórico de carrito_items (el back cotiza por evento_id).
+            name: item.name,
+          }
+        : item
+    )
+    const res = await fetch('/api/cart/sync-and-validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: correoDelCliente(),
+        // Para que el proxy cree al invitado con sus datos (guest-token).
+        nombre: customerData.nombre,
+        apellidos: customerData.apellido,
+        telefono: customerData.telefono,
+        items,
+      }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (res.status === 401) {
+      volverAIniciarSesion()
+      return { tipo: 'error' }
+    }
+    if (!res.ok) {
+      if (esApartadoVencido(data.detail)) {
+        marcarVencido()
+        return { tipo: 'error' }
+      }
+      // 409 sin lugares, 400 (fecha que ya no se vende, más de 10…), «tiene cuenta»: el texto del servidor tal cual.
+      mostrarErrorDelServidor(
+        data,
+        hayExperiencias ? 'No pudimos apartar tus lugares. Intenta de nuevo.' : 'No pudimos validar tu carrito. Intenta de nuevo.'
+      )
+      return { tipo: 'error' }
+    }
+    const respuesta = data as SyncCarritoRespuesta & { _guest_token?: string }
+    const token = respuesta._guest_token ?? null
+    setGuestToken(token)
+    actualizarPrecios(respuesta.validated_items)
+
+    if (carritoCambio(respuesta)) {
+      // El carrito lateral y los dos resúmenes dejan de sumar lo quitado (lib/carrito dispara `cartUpdated`).
+      const ajustado = aplicarCambiosDelServidor(respuesta)
+      avisarCambiosCarrito(textoCambiosCarrito(respuesta))
+      if (respuesta.apartado) {
+        setApartado(guardarApartado(respuesta.apartado, ajustado, alergias))
+        setApartadoVencido(false)
+      } else {
+        olvidarApartado()
+        setApartado(null)
+      }
+      return { tipo: 'cambio' }
+    }
+    if (!respuesta.apartado) {
+      mostrarError(hayExperiencias ? 'No pudimos apartar tus lugares. Intenta de nuevo.' : 'No pudimos apartar tus productos. Intenta de nuevo.')
+      return { tipo: 'error' }
+    }
+    const guardado = guardarApartado(respuesta.apartado, cartItems, alergias)
+    setApartado(guardado)
+    setApartadoVencido(false)
+    return { tipo: 'apartado', apartado: guardado, token }
+  }
+
+  // ─── Paso 2 (los dos flujos): crear el pago con el apartado (§3.4) ───────────────────────────────────────────
+  const crearPreferencia = async (vigente: ApartadoConAlergias, token: string | null): Promise<ResultadoPago> => {
+    const experienciasParaPagar: ExperienciaParaPagar[] = experiencias.map((exp) => ({
+      tipo: 'experiencia',
+      evento_id: exp.evento_id,
+      adultos: exp.adultos,
+      ninos: exp.ninos,
+      alergias: (alergias[exp.evento_id] ?? '').trim().slice(0, MAX_ALERGIAS) || null,
+    }))
+    const rfc = customerData.rfc.trim().toUpperCase()
+    const body: Record<string, unknown> = {
+      // Los productos van como siempre ({id, quantity}); el backend relee precio y stock de la base y exige que
+      // las cantidades sean las del apartado.
+      items: [
+        ...productos.map((item) => ({ id: item.id, name: item.name, price: item.price, quantity: item.quantity })),
+        ...experienciasParaPagar,
+      ],
+      apartado_id: vigente.id,
+      email: correoDelCliente(),
+      nombre: customerData.nombre,
+      apellido: customerData.apellido,
+      telefono: customerData.telefono,
+      codigo_pais: customerData.codigo_pais,
+      // TEL1: el RFC solo si el cliente lo escribió (el backend valida el formato).
+      ...(rfc ? { rfc } : {}),
+      // Solo experiencias: SIN fecha_entrega, delivery_*, tipo_entrega ni codigo_cupon (C3).
+      ...(hayProductos ? camposEntrega() : {}),
+    }
+    if (token) body._guest_token = token
+
+    // AP2: si el cliente vuelve de MercadoPago con «atrás», las alergias siguen ahí.
+    guardarAlergiasDelApartado(alergias)
+
+    const res = await fetch('/api/crear-preferencia-pago', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    const result = await res.json().catch(() => ({}))
+    // La sesión pudo morir entre el apartado y el pago.
+    if (res.status === 401) {
+      volverAIniciarSesion()
+      return 'redirigido'
+    }
+    if (res.status === 409 && esApartadoVencido(result.detail)) return 'vencido'
+    if (!res.ok) {
+      // Un 400 trae un mensaje para el cliente (código vencido o ya usado, fecha de entrega…). Si había código,
+      // se quita para que vea el total real.
+      if (res.status === 400 && cupon) setCupon(null)
+      if (!hayExperiencias && res.status === 400 && textoDelServidor(result.detail)) {
+        mostrarError(`No se pudo completar el pago: ${textoDelServidor(result.detail)}`)
+      } else {
+        mostrarErrorDelServidor(result, 'No pudimos crear tu pago. Intenta de nuevo.')
+      }
+      return 'error'
+    }
+    // Pedido sin costo: el backend no llamó a MercadoPago (MP no procesa importes de cero). El pedido ya quedó
+    // 'pagado': se va directo al comprobante.
+    if (result.sin_costo) {
+      vaciarCarrito()
+      window.location.href = result.redirect_url || `/pago-exitoso?pedido=${result.numero_pedido}&sin_costo=1`
+      return 'redirigido'
+    }
+    const url = result.payment_url || result.init_point
+    if (!url) {
+      mostrarError('No pudimos crear tu pago. Intenta de nuevo.')
+      return 'error'
+    }
+    // El apartado se queda en sessionStorage: si el cliente vuelve con «atrás», sigue el reloj.
+    window.location.href = url
+    return 'redirigido'
+  }
+
+  // ─── Solo productos: UN botón (sync → pago); con el apartado vigente de este carrito va directo al pago ──────
+  const pagarSoloProductos = async () => {
+    const falta = faltaEnElFormulario()
+    if (falta) {
+      mostrarError(falta)
+      return
+    }
+    mostrarError(null)
+    avisarCambiosCarrito(null)
+    setLoading(true)
+    let redirigiendo = false
+    try {
+      let vigente = apartado && !apartadoVencido ? apartadoVigente(cartItems) : null
+      let token = guestToken
+      // Un 409 `apartado_vencido` (venció o cambió algo) re-sincroniza UNA vez y vuelve a intentar el pago.
+      for (let intento = 0; intento < 2; intento++) {
+        if (!vigente) {
+          const sync = await sincronizar()
+          if (sync.tipo !== 'apartado') return
+          vigente = sync.apartado
+          token = sync.token
+        }
+        const pago = await crearPreferencia(vigente, token)
+        if (pago === 'redirigido') {
+          redirigiendo = true
+          return
+        }
+        if (pago === 'error') return
+        // 409: sin mostrar «venció» todavía (se re-sincroniza en silencio).
+        olvidarApartado()
+        setApartado(null)
+        vigente = null
+      }
+      // Dos 409 seguidos: el aviso de «venció» y el botón para volver a intentar.
+      marcarVencido()
+    } catch {
+      mostrarError('No pudimos conectar. Revisa tu conexión e intenta de nuevo.')
+    } finally {
+      if (!redirigiendo) setLoading(false)
+    }
+  }
+
+  // ─── Con experiencias: (1) apartar mis lugares → (2) pagar con tarjeta o saldo de MercadoPago ────────────────
   const apartarLugares = async () => {
     const falta = faltaEnElFormulario()
     if (falta) {
@@ -598,56 +734,10 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
       return
     }
     mostrarError(null)
+    avisarCambiosCarrito(null)
     setApartando(true)
     try {
-      const items = cartItems.map((item) =>
-        esItemExperiencia(item)
-          ? {
-              tipo: 'experiencia' as const,
-              id: item.evento_id,
-              evento_id: item.evento_id,
-              adultos: item.adultos,
-              ninos: item.ninos,
-              quantity: item.adultos + item.ninos,
-              // Solo para los mensajes de error y el histórico de carrito_items (el back cotiza por evento_id).
-              name: item.name,
-            }
-          : item
-      )
-      const res = await fetch('/api/cart/sync-and-validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: correoDelCliente(),
-          nombre: customerData.nombre,
-          apellidos: customerData.apellido,
-          telefono: customerData.telefono,
-          items,
-        }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (res.status === 401) {
-        volverAIniciarSesion()
-        return
-      }
-      if (!res.ok) {
-        if (esApartadoVencido(data.detail)) {
-          marcarVencido()
-          return
-        }
-        // 409 sin lugares, 400 (fecha que ya no se vende, más de 10…): el texto del servidor tal cual.
-        mostrarErrorDelServidor(data, 'No pudimos apartar tus lugares. Intenta de nuevo.')
-        return
-      }
-      const respuesta = data as SyncValidateResponse & { _guest_token?: string }
-      if (!respuesta.apartado) {
-        mostrarError('No pudimos apartar tus lugares. Intenta de nuevo.')
-        return
-      }
-      setGuestToken(respuesta._guest_token ?? null)
-      setApartado(guardarApartado(respuesta.apartado, cartItems))
-      setApartadoVencido(false)
-      actualizarPrecios(respuesta.validated_items)
+      await sincronizar()
     } catch {
       mostrarError('No pudimos conectar. Revisa tu conexión e intenta de nuevo.')
     } finally {
@@ -663,66 +753,14 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
       return
     }
     mostrarError(null)
+    avisarCambiosCarrito(null)
     setPagando(true)
     let redirigiendo = false
     try {
-      const experienciasParaPagar: ExperienciaParaPagar[] = experiencias.map((exp) => ({
-        tipo: 'experiencia',
-        evento_id: exp.evento_id,
-        adultos: exp.adultos,
-        ninos: exp.ninos,
-        alergias: (alergias[exp.evento_id] ?? '').trim().slice(0, MAX_ALERGIAS) || null,
-      }))
-      const body: Record<string, unknown> = {
-        // Los productos van como siempre ({id, quantity}); el backend relee precio y stock de la base.
-        items: [
-          ...productos.map((item) => ({ id: item.id, name: item.name, price: item.price, quantity: item.quantity })),
-          ...experienciasParaPagar,
-        ],
-        apartado_id: apartado.id,
-        email: correoDelCliente(),
-        nombre: customerData.nombre,
-        apellido: customerData.apellido,
-        telefono: customerData.telefono,
-        codigo_pais: customerData.codigo_pais,
-        // Solo experiencias: SIN fecha_entrega, delivery_*, tipo_entrega ni codigo_cupon (C3).
-        ...(hayProductos ? camposEntrega() : {}),
-      }
-      if (guestToken) body._guest_token = guestToken
-
-      const res = await fetch('/api/crear-preferencia-pago', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      const result = await res.json().catch(() => ({}))
-      if (res.status === 401) {
-        volverAIniciarSesion()
-        return
-      }
-      if (res.status === 409 && esApartadoVencido(result.detail)) {
-        marcarVencido()
-        return
-      }
-      if (!res.ok) {
-        if (res.status === 400 && cupon) setCupon(null)
-        mostrarErrorDelServidor(result, 'No pudimos crear tu pago. Intenta de nuevo.')
-        return
-      }
-      if (result.sin_costo) {
-        vaciarCarrito()
-        redirigiendo = true
-        window.location.href = result.redirect_url || `/pago-exitoso?pedido=${result.numero_pedido}&sin_costo=1`
-        return
-      }
-      const url = result.payment_url || result.init_point
-      if (!url) {
-        mostrarError('No pudimos crear tu pago. Intenta de nuevo.')
-        return
-      }
-      // El apartado se queda en sessionStorage: si el cliente vuelve con «atrás», sigue el reloj.
-      redirigiendo = true
-      window.location.href = url
+      const pago = await crearPreferencia(apartado, guestToken)
+      if (pago === 'redirigido') redirigiendo = true
+      // Como en la Fase 4a: «Apartar de nuevo» (el cliente vuelve a sincronizar con un clic).
+      if (pago === 'vencido') marcarVencido()
     } catch {
       mostrarError('No pudimos conectar. Revisa tu conexión e intenta de nuevo.')
     } finally {
@@ -743,6 +781,25 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
           Iniciar sesión (tu carrito se conserva)
         </a>
       )}
+    </div>
+  )
+
+  // DR7: el servidor quitó o bajó productos. El carrito ya se corrigió; el cliente revisa y vuelve a pagar.
+  const avisoCambios = cambiosCarrito && cambiosCarrito.length > 0 && (
+    <div
+      className="rounded-lg border border-amarillo bg-amarillo-bg p-3 text-sm text-verde-tipografia"
+      role="alert"
+      data-testid="checkout-carrito-cambio"
+    >
+      <p className="flex items-start gap-2 font-medium">
+        <PackageX className="mt-0.5 h-4 w-4 shrink-0 text-terracota" aria-hidden="true" />
+        {TEXTO_CARRITO_CAMBIO}
+      </p>
+      <ul className="mt-2 list-disc space-y-1 pl-6">
+        {cambiosCarrito.map((linea) => (
+          <li key={linea} data-testid="checkout-carrito-cambio-linea">{linea}</li>
+        ))}
+      </ul>
     </div>
   )
 
@@ -864,6 +921,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
             </label>
             <Input
               id="checkout-rfc"
+              data-testid="checkout-rfc"
               value={customerData.rfc}
               onChange={(e) => setCustomerData({...customerData, rfc: e.target.value.toUpperCase()})}
               placeholder="XAXX010101000"
@@ -883,7 +941,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
               <MapPin className="w-5 h-5 text-[#B15543]" />
               <h3 className="text-lg font-semibold">{hayExperiencias ? 'Entrega de tus productos' : 'Dirección de Entrega'}</h3>
             </div>
-            {deliveryData.address && !editingAddress && !canasta && (
+            {direccionDelPerfil && deliveryData.address && !editingAddress && !canasta && (
               <button
                 onClick={() => setEditingAddress(true)}
                 className="flex items-center gap-1 text-sm text-[#B15543] hover:text-[#9a4a3a]"
@@ -913,7 +971,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
                 rows={2}
               />
             </div>
-          ) : (!deliveryData.address || editingAddress) ? (
+          ) : (!direccionDelPerfil || !deliveryData.address || editingAddress) ? (
             <>
               <div className="mb-4">
                 <label htmlFor="checkout-direccion" className="block text-sm font-medium text-gray-700 mb-1">
@@ -959,10 +1017,11 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
                   <DeliveryDatePicker
                     codigoPostal={deliveryData.postal_code}
                     selectedDate={selectedDeliveryDate}
-                    onDateSelect={(date, zona) => {
+                    onDateSelect={(date, _zona, iso) => {
                       setSelectedDeliveryDate(date)
-                      if (date) {
-                        setDeliveryData({...deliveryData, preferred_date: date.toISOString().split('T')[0]})
+                      // TZ1b: el día elegido tal cual (`AAAA-MM-DD`); `toISOString()` lo corría fuera de UTC-6.
+                      if (date && iso) {
+                        setDeliveryData((prev) => ({ ...prev, preferred_date: iso }))
                       }
                     }}
                   />
@@ -1093,16 +1152,19 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
               />
               <div>
                 <div className="font-medium">Mercado Pago</div>
+                {/* DR7-b: la tienda, las experiencias y los extras con canasta se pagan igual (sin efectivo ni OXXO). */}
                 <div className="text-sm text-gray-500" data-testid="metodo-pago-detalle">
-                  {hayExperiencias
-                    ? 'Tarjeta o saldo de MercadoPago: se paga al momento'
-                    : canasta
-                      ? 'Tarjeta o saldo de Mercado Pago: se paga al momento'
-                      : 'Tarjetas, OXXO, transferencias bancarias'}
+                  {TEXTO_METODO_PAGO_CORTO}
                 </div>
               </div>
             </label>
           </div>
+          {hayProductos && (
+            <p className="mt-2 flex items-start gap-2 text-sm text-verde-tipografia" data-testid="checkout-pago-tienda">
+              <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-terracota" aria-hidden="true" />
+              {TEXTO_PAGO_TIENDA}
+            </p>
+          )}
 
           {/* Resumen de la orden */}
           <div className="bg-gray-50 rounded-lg p-4 mt-6">
@@ -1209,17 +1271,18 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
           /* Dos pasos: apartar (reloj de 10 min) y pagar con tarjeta */
           <div className="space-y-3" data-testid="checkout-pasos">
             {bloqueError}
+            {avisoCambios}
             {precioActualizado && apartado && (
               <p className="rounded-lg bg-azul-bg p-3 text-sm text-azul" role="status" data-testid="checkout-precio-actualizado">
                 Actualizamos el precio de tus experiencias con el de la fecha: el total ya es el que vas a pagar.
               </p>
             )}
             {apartado && !apartadoVencido && (
-              <RelojApartado venceLocalMs={apartado.vence_local_ms} onVencido={marcarVencido} />
+              <RelojApartado venceLocalMs={apartado.vence_local_ms} onVencido={marcarVencido} texto={textos.reloj} />
             )}
             {apartadoVencido && (
               <p className="rounded-lg border border-rojo bg-rojo-bg p-4 text-sm text-rojo" role="alert" data-testid="apartado-vencido">
-                {TEXTO_APARTADO_VENCIDO}
+                {textos.vencido}
               </p>
             )}
             {!apartado && (
@@ -1259,14 +1322,24 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
             </Button>
           </div>
         ) : (
-        /* Botón de pago */
-        <div className="space-y-3">
+        /* Solo productos: un botón (aparta 10 min y va a pagar) */
+        <div className="space-y-3" data-testid="checkout-pago-productos">
         {bloqueError}
+        {avisoCambios}
+        {apartado && !apartadoVencido && (
+          <RelojApartado venceLocalMs={apartado.vence_local_ms} onVencido={marcarVencido} texto={textos.reloj} />
+        )}
+        {apartadoVencido && (
+          <p className="rounded-lg border border-rojo bg-rojo-bg p-4 text-sm text-rojo" role="alert" data-testid="apartado-vencido">
+            {textos.vencido}
+          </p>
+        )}
         <Button
-          onClick={handleSubmitOrder}
+          onClick={pagarSoloProductos}
+          data-testid="checkout-pagar-productos"
           disabled={loading || !customerData.nombre || !customerData.apellido || !customerData.telefono ||
                    (!canasta && (!deliveryData.address || !zonaEntrega || !selectedDeliveryDate))}
-          className="w-full bg-[#B15543] hover:bg-[#9a4a3a] text-white text-lg py-6"
+          className="w-full h-auto whitespace-normal bg-[#B15543] hover:bg-[#9a4a3a] text-white text-lg py-6"
         >
           {loading ? (
             <div className="flex items-center gap-2">

@@ -20,15 +20,20 @@ import { destacadosSemana } from '@/data/destacados'
 import { useFavoritos } from '@/hooks/useFavoritos'
 import { API_URL } from '@/lib/api'
 import { precioLegible, esGratuito } from '@/lib/precio'
+import { aNumero, TEXTO_AGOTADO } from '@/types/tienda'
 
 // TIPOS DEFINIDOS
+/** R2: `stock_actual` llega como NÚMERO y vienen `disponible`/`en_venta` (DisponibilidadProducto); el listado viejo
+ *  mandaba «90.0000» como texto y sin las llaves nuevas. Se aceptan las dos formas mientras convive el despliegue. */
 interface ApiProduct {
   itemcode: string
   nombre: string
   descripcion: string
   categoria?: string
   precio_unitario: string
-  stock_actual: number
+  stock_actual: number | string
+  disponible?: number | string
+  en_venta?: boolean
   unidad_medida?: string
   imagen_url?: string
   productor?: string
@@ -36,6 +41,39 @@ interface ApiProduct {
   rating?: number
   reviews?: number
 }
+
+/**
+ * Un producto de la tienda con su estado de venta (R2, STK3-tienda). `stock` = unidades ENTERAS que se pueden
+ * comprar ahora (`disponible`, que ya descuenta lo apartado por otros); `enVenta` manda sobre el número.
+ */
+type ProductoTienda = Product & { enVenta: boolean }
+
+/** Datos de la canasta de COMPRA ÚNICA (itemcode con U), por itemcode de la canasta base (suscripción). */
+interface CanastaCompraUnica {
+  precio: number
+  stock: number
+  enVenta: boolean
+}
+
+function disponibleDe(item: Pick<ApiProduct, 'disponible' | 'stock_actual'>): number {
+  const crudo = item.disponible !== undefined && item.disponible !== null ? item.disponible : item.stock_actual
+  return Math.max(0, Math.floor(aNumero(crudo)))
+}
+
+function enVentaDe(item: Pick<ApiProduct, 'en_venta' | 'disponible' | 'stock_actual'>): boolean {
+  return typeof item.en_venta === 'boolean' ? item.en_venta : disponibleDe(item) >= 1
+}
+
+/** Respaldo local (si la API no responde): el mismo criterio con el stock del archivo. */
+function conVentaLocal(p: Product): ProductoTienda {
+  const stock = Math.max(0, Math.floor(aNumero(p.stock)))
+  return { ...p, stock, enVenta: stock >= 1 }
+}
+
+const productosLocalTienda: ProductoTienda[] = productosLocal.map(conVentaLocal)
+
+/** «¡Solo quedan N disponibles!» solo con pocas unidades (N entero, nunca «5.0000»). */
+const UMBRAL_QUEDAN_POCOS = 10
 
 interface SearchSuggestionsProps {
   searchTerm: string
@@ -449,7 +487,7 @@ function TiendaPageContent() {
   const [viewMode, setViewMode] = useState<'1' | '2' | '3'>('2')
   const [cartItems, setCartItems] = useState<any[]>([])
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
-  const [productoQuickView, setProductoQuickView] = useState<Product | null>(null)
+  const [productoQuickView, setProductoQuickView] = useState<ProductoTienda | null>(null)
   const toast = useToast()
   const [sortBy, setSortBy] = useState('mas-recientes')
   const [showFavorites, setShowFavorites] = useState(false)
@@ -477,10 +515,11 @@ function TiendaPageContent() {
   })
   
   // NUEVO: Estado para productos de la API
-  const [productos, setProductos] = useState<Product[]>(productosLocal)
+  const [productos, setProductos] = useState<ProductoTienda[]>(productosLocalTienda)
   const [isLoading, setIsLoading] = useState(true)
   const [apiCategories, setApiCategories] = useState<any[]>([])
-  const [preciosCompraUnica, setPreciosCompraUnica] = useState<Record<string, number>>({})
+  // R2: la canasta U usa SU precio, SU stock y SU en_venta (no los de la canasta de suscripción)
+  const [compraUnica, setCompraUnica] = useState<Record<string, CanastaCompraUnica>>({})
 
   // NUEVO: Cargar productos desde la API
   useEffect(() => {
@@ -495,19 +534,22 @@ function TiendaPageContent() {
           const data = await response.json()
           
           // Mapear productos de la API al formato local
-          const mappedProducts: Product[] = data.items.map((item: ApiProduct) => ({
+          const mappedProducts: ProductoTienda[] = data.items.map((item: ApiProduct) => {
+            const enVenta = enVentaDe(item)
+            return {
             id: item.itemcode,
             nombre: toSentenceCase(item.nombre),
             categoria: item.categoria || 'sin-categoria',
             precio: parseFloat(item.precio_unitario),
             imagen: item.imagen_url || '',
             descripcion: item.descripcion || '',
-            stock: item.stock_actual,
+            stock: enVenta ? disponibleDe(item) : 0,
+            enVenta,
             unidad: item.unidad_medida || '',
             productor: item.productor || 'Agricultor Local',
             ubicacion: item.ubicacion || 'México',
-            // Solo mostrar badge "Agotado" cuando stock = 0, no mostrar "Disponible"
-            badges: item.stock_actual === 0 ? ['Agotado'] : [],
+            // Solo mostrar la insignia de agotado, no «Disponible»
+            badges: enVenta ? [] : [TEXTO_AGOTADO],
             rating: item.rating || 4.5,
             reviews: item.reviews || 0,
             metricas: {
@@ -517,18 +559,23 @@ function TiendaPageContent() {
             },
             storytelling: item.descripcion || 'Producto fresco y local',
             ctaType: 'add' as const
-          }))
+            }
+          })
           
-          // Separar canastas: crear mapa de precios de compra única
-          const preciosCompraUnicaMap: Record<string, number> = {}
-          const productosFiltrados: Product[] = []
+          // Separar canastas: la versión de compra única (U) guarda su precio, stock y en_venta
+          const compraUnicaMap: Record<string, CanastaCompraUnica> = {}
+          const productosFiltrados: ProductoTienda[] = []
           
           mappedProducts.forEach(product => {
             if (esCanasta(product.id)) {
               if (product.id.endsWith('U')) {
-                // Es versión de compra única - guardar precio
+                // Es versión de compra única
                 const itemcodeSusc = product.id.replace('U', '')
-                preciosCompraUnicaMap[itemcodeSusc] = product.precio
+                compraUnicaMap[itemcodeSusc] = {
+                  precio: product.precio,
+                  stock: product.stock,
+                  enVenta: product.enVenta,
+                }
               } else {
                 // Es versión de suscripción - agregar a la lista
                 productosFiltrados.push(product)
@@ -539,12 +586,12 @@ function TiendaPageContent() {
             }
           })
           
-          setPreciosCompraUnica(preciosCompraUnicaMap)
+          setCompraUnica(compraUnicaMap)
           setProductos(productosFiltrados)
           console.log(`Cargados ${mappedProducts.length} productos desde la API`)
         } else {
           console.error('Error cargando productos de la API, usando productos locales')
-          setProductos(productosLocal)
+          setProductos(productosLocalTienda)
         }
 
         // Cargar categorías
@@ -556,7 +603,7 @@ function TiendaPageContent() {
         
       } catch (error) {
         console.error('Error conectando con la API:', error)
-        setProductos(productosLocal)
+        setProductos(productosLocalTienda)
       } finally {
         setIsLoading(false)
       }
@@ -812,7 +859,7 @@ function TiendaPageContent() {
         return 'bg-purple-600 hover:bg-purple-700'
       case 'Disponible':
         return 'bg-green-600 hover:bg-green-700'
-      case 'Agotado':
+      case TEXTO_AGOTADO:
         return 'bg-red-600 hover:bg-red-700'
       default:
         return 'bg-gray-500 hover:bg-gray-600'
@@ -859,14 +906,16 @@ function TiendaPageContent() {
   }
 
   // Abrir vista rápida
-  const openQuickView = (product: Product, e?: any) => {
+  const openQuickView = (product: ProductoTienda, e?: any) => {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation()
     setProductoQuickView({ ...product, imagen: getCanastaImage(product.nombre, product.imagen) })
   }
 
   // Agregar al carrito y mostrar toast
-  const addToCart = (product: Product, e?: any) => {
+  const addToCart = (product: ProductoTienda, e?: any) => {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation()
+    // R2: un agotado no se agrega (el listado público ya no los trae; esto cubre la convivencia con el back viejo)
+    if (!product.enVenta) return
     
     // CRÍTICO: Usar itemcode real de BD (no UUID)
     const cartItem = {
@@ -900,7 +949,7 @@ function TiendaPageContent() {
   }
 
   // Manejar redirección a suscripciones con pre-carga
-  const handleSuscripcion = (product: Product) => {
+  const handleSuscripcion = (product: ProductoTienda) => {
     const itemcodeSuscripcion = obtenerItemcodeSuscripcion(product.id)
     const canastaId = CANASTA_MAP[itemcodeSuscripcion]
     
@@ -922,7 +971,7 @@ function TiendaPageContent() {
   // Productos destacados de la semana - ahora usando productos del estado
   const featuredProducts = destacadosSemana
     .map(id => productos.find(p => p.id === id))
-    .filter((p): p is Product => Boolean(p))
+    .filter((p): p is ProductoTienda => Boolean(p))
 
   return (
     <div className="min-h-screen bg-[#F5F2E8] pt-20">
@@ -1267,9 +1316,17 @@ function TiendaPageContent() {
                   ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2'
                   : 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3'
               }`}>
-              {sortedProducts.map((product) => (
+              {sortedProducts.map((product) => {
+                // R2: la canasta de compra única (U) se vende con SU stock; si no vino en el listado, está agotada
+                const cu = esCanasta(product.id) ? compraUnica[product.id] : undefined
+                const cuEnVenta = !!cu && cu.enVenta
+                const quedan = esCanasta(product.id) ? (cuEnVenta ? cu.stock : 0) : (product.enVenta ? product.stock : 0)
+                return (
                 <div
                   key={product.id}
+                  data-testid="tienda-producto"
+                  data-itemcode={product.id}
+                  data-en-venta={(esCanasta(product.id) ? cuEnVenta : product.enVenta) ? 'true' : 'false'}
                   className="bg-white rounded-2xl shadow-sm border border-[#E3DBCB] overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer"
                   onClick={() => goToProductDetail(product.id)}
                   onMouseEnter={() => setHoveredProduct(product.id)}
@@ -1407,34 +1464,44 @@ function TiendaPageContent() {
                           <div className="flex items-center justify-between mb-2">
                             <div>
                               <div className="text-xs text-gray-600 font-medium">Compra Única</div>
-                              <div className="flex items-baseline gap-1">
-                                <span className="text-xl font-bold text-[#B15543]">
-                                  {precioLegible(preciosCompraUnica[product.id] || product.precio)}
-                                </span>
-                                {!esGratuito(preciosCompraUnica[product.id] || product.precio) && (
-                                  <span className="text-xs text-gray-500">/ {product.unidad}</span>
-                                )}
-                              </div>
+                              {cu && cuEnVenta ? (
+                                <div className="flex items-baseline gap-1">
+                                  <span data-testid="tienda-cu-precio" className="text-xl font-bold text-[#B15543]">
+                                    {precioLegible(cu.precio)}
+                                  </span>
+                                  {!esGratuito(cu.precio) && (
+                                    <span className="text-xs text-gray-500">/ {product.unidad}</span>
+                                  )}
+                                </div>
+                              ) : (
+                                <p data-testid="tienda-cu-agotado" className="text-sm font-semibold text-red-700">
+                                  {TEXTO_AGOTADO}
+                                </p>
+                              )}
                             </div>
                           </div>
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              // Crear producto con itemcode de compra única (con U)
-                              const productCompraUnica = {
-                                ...product,
-                                id: obtenerItemcodeCompraUnica(product.id),
-                                precio: preciosCompraUnica[product.id] || product.precio
-                              }
-                              addToCart(productCompraUnica, e)
-                            }}
-                            className="w-full bg-[#B15543] hover:bg-[#9d4a39] text-white"
-                            size="sm"
-                            disabled={product.stock === 0}
-                          >
-                            <ShoppingCart className="w-4 h-4 mr-1" />
-                            {product.stock > 0 ? 'Agregar al Carrito' : 'Agotado'}
-                          </Button>
+                          {cu && cuEnVenta && (
+                            <Button
+                              data-testid="tienda-cu-agregar"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                // Crear producto con itemcode de compra única (con U), con SU precio y stock
+                                const productCompraUnica: ProductoTienda = {
+                                  ...product,
+                                  id: obtenerItemcodeCompraUnica(product.id),
+                                  precio: cu.precio,
+                                  stock: cu.stock,
+                                  enVenta: cu.enVenta,
+                                }
+                                addToCart(productCompraUnica, e)
+                              }}
+                              className="w-full bg-[#B15543] hover:bg-[#9d4a39] text-white"
+                              size="sm"
+                            >
+                              <ShoppingCart className="w-4 h-4 mr-1" />
+                              Agregar al Carrito
+                            </Button>
+                          )}
                         </div>
 
                         {/* Opción 2: Suscripción */}
@@ -1479,22 +1546,28 @@ function TiendaPageContent() {
                             <span className="text-gray-500 text-sm ml-1">/ {product.unidad}</span>
                           )}
                         </div>
-                        <Button
-                          onClick={(e) => addToCart(product, e)}
-                          className="bg-[#B15543] hover:bg-[#9d4a39] text-white px-4 py-2"
-                          size="sm"
-                          disabled={product.stock === 0}
-                        >
-                          <ShoppingCart className="w-4 h-4 mr-1" />
-                          {product.stock > 0 ? 'Agregar' : 'Agotado'}
-                        </Button>
+                        {product.enVenta ? (
+                          <Button
+                            data-testid="tienda-agregar"
+                            onClick={(e) => addToCart(product, e)}
+                            className="bg-[#B15543] hover:bg-[#9d4a39] text-white px-4 py-2"
+                            size="sm"
+                          >
+                            <ShoppingCart className="w-4 h-4 mr-1" />
+                            Agregar
+                          </Button>
+                        ) : (
+                          <span data-testid="tienda-agotado" className="text-sm font-semibold text-red-700">
+                            {TEXTO_AGOTADO}
+                          </span>
+                        )}
                       </div>
                     )}
 
-                    {/* Stock disponible (si viene de la API) */}
-                    {product.stock !== undefined && product.stock > 0 && product.stock < 10 && (
-                      <p className="text-xs text-orange-600 mb-2">
-                        ¡Solo quedan {product.stock} disponibles!
+                    {/* Pocas unidades disponibles (canasta: las de compra única). Entero, nunca «5.0000» */}
+                    {quedan > 0 && quedan < UMBRAL_QUEDAN_POCOS && (
+                      <p data-testid="tienda-quedan" className="text-xs text-orange-600 mb-2">
+                        ¡Solo quedan {quedan} disponibles!
                       </p>
                     )}
 
@@ -1506,7 +1579,8 @@ function TiendaPageContent() {
                     </div>
                   </div>
                 </div>
-              ))}
+                )
+              })}
               </div>
             )}
           </div>
@@ -1519,7 +1593,9 @@ function TiendaPageContent() {
           isOpen={!!productoQuickView}
           onClose={() => setProductoQuickView(null)}
           product={productoQuickView}
-          onAddToCart={(product: Product) => {
+          onAddToCart={(product: ProductoTienda) => {
+            // R2: un agotado no se agrega
+            if (!product.enVenta) return
             const cartItem = {
               id: product.id,
               itemcode: product.id, // Agregar itemcode

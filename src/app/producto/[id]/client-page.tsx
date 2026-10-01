@@ -10,6 +10,20 @@ import { Product } from '@/data/productos'
 import { useToast } from '@/components/ui/Toast'
 import ProductTraceability from '@/components/ProductTraceability'
 import { API_URL } from '@/lib/api'
+import { leerCarrito, guardarCarrito } from '@/lib/carrito'
+import { aNumero, TEXTO_AGOTADO } from '@/types/tienda'
+
+/**
+ * R2 (STK3-ficha): la ficha de un agotado responde 200 con `en_venta=false` → «Agotado por ahora», sin selector ni
+ * botón (DR7, C2 de David). `stock` = unidades enteras disponibles (`disponible`; si el back viejo no lo manda,
+ * `stock_actual`, que podía llegar como texto «90.0000»).
+ */
+type ProductoFicha = Product & { enVenta: boolean }
+
+function disponibleDe(api: { disponible?: unknown; stock_actual?: unknown }): number {
+  const crudo = api.disponible !== undefined && api.disponible !== null ? api.disponible : api.stock_actual
+  return Math.max(0, Math.floor(aNumero(crudo)))
+}
 
 // Helper: imagen de canastas por nombre
 function getCanastaImage(nombre: string, original?: string): string {
@@ -27,10 +41,9 @@ type ClientProductoPageProps = {
 
 export default function ClientProductoPage({ id }: ClientProductoPageProps) {
   const router = useRouter()
-  const [producto, setProducto] = useState<Product | null>(null)
+  const [producto, setProducto] = useState<ProductoFicha | null>(null)
   const [cantidad, setCantidad] = useState(1)
   const [favoritos, setFavoritos] = useState<string[]>([])
-  const [carrito, setCarrito] = useState<any[]>([])
   const toast = useToast() // Usar el sistema global de toast
   const [imagenSeleccionada, setImagenSeleccionada] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
@@ -47,19 +60,22 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
           const apiProduct = await response.json()
           
           // Mapear producto de la API al formato local
-          const mappedProduct: Product = {
+          const disponible = disponibleDe(apiProduct)
+          const enVenta = typeof apiProduct.en_venta === 'boolean' ? apiProduct.en_venta : disponible >= 1
+          const mappedProduct: ProductoFicha = {
             id: apiProduct.itemcode,
             nombre: apiProduct.nombre,
             categoria: apiProduct.categoria || 'sin-categoria',
             precio: parseFloat(apiProduct.precio_unitario),
             imagen: apiProduct.imagen_url || '',
             descripcion: apiProduct.descripcion || '',
-            stock: apiProduct.stock_actual,
+            stock: enVenta ? disponible : 0,
+            enVenta,
             unidad: apiProduct.unidad_medida || '',
             productor: apiProduct.productor || 'Agricultor Local',
             ubicacion: apiProduct.ubicacion || 'México',
-            // Solo mostrar badge "Agotado" cuando stock = 0, no mostrar "Disponible"
-            badges: apiProduct.stock_actual === 0 ? ['Agotado'] : [],
+            // El estado de venta ya se pinta junto al precio (ficha-estado); sin insignia duplicada
+            badges: [],
             rating: apiProduct.rating || 4.5,
             reviews: apiProduct.reviews || 0,
             metricas: {
@@ -87,16 +103,11 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
 
     fetchProduct()
 
-    // Cargar favoritos y carrito desde localStorage
+    // Cargar favoritos desde localStorage
     try {
       const savedFavoritos = localStorage.getItem('arcaTierraFavoritos')
       if (savedFavoritos) {
         setFavoritos(JSON.parse(savedFavoritos))
-      }
-
-      const savedCarrito = localStorage.getItem('carrito')
-      if (savedCarrito) {
-        setCarrito(JSON.parse(savedCarrito))
       }
     } catch (error) {
       console.error('Error al cargar datos del localStorage:', error)
@@ -127,9 +138,11 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
     })
   }
 
-  // Función para añadir al carrito
-  const addToCart = async () => {
-    if (!producto) return
+  // Función para añadir al carrito.
+  // R2 (STK3-ficha): ya NO llama a /api/cart/add (descontaba stock al agregar y el sync lo volvía a descontar).
+  // Agrega al carrito local como la tienda; el stock se aparta en el checkout (sync-and-validate) y baja al pagar.
+  const addToCart = () => {
+    if (!producto || !producto.enVenta) return
 
     const cartItem = {
       id: producto.id,
@@ -143,45 +156,14 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
     }
 
     try {
-      // 1. Guardar en backend (PostgreSQL)
-      const session = await fetch('/api/auth/session').then(r => r.json())
-      
-      if (session?.user) {
-        const payload = {
-          tipo: 'producto',
-          producto_id: producto.id,
-          cantidad: cantidad
-        };
-        
-        const response = await fetch('/api/cart/add', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(payload)
-        })
-
-        if (!response.ok) {
-          const error = await response.json()
-          throw new Error(error.detail || 'Error al agregar al carrito')
-        }
-      }
-
-      // 2. Guardar en localStorage (para UI)
-      const existingCart = JSON.parse(localStorage.getItem('arcaTierraCart') || '[]')
-      const existingItemIndex = existingCart.findIndex((item: any) => item.id === cartItem.id)
-
-      if (existingItemIndex >= 0) {
-        existingCart[existingItemIndex].quantity += cantidad
+      const items = leerCarrito()
+      const existente = items.find((item) => item.id === cartItem.id)
+      if (existente) {
+        existente.quantity = aNumero(existente.quantity) + cantidad
       } else {
-        existingCart.push(cartItem)
+        items.push(cartItem)
       }
-
-      localStorage.setItem('arcaTierraCart', JSON.stringify(existingCart))
-      setCarrito(existingCart)
-
-      // 3. Disparar evento para actualizar UI
-      window.dispatchEvent(new Event('cartUpdated'))
+      guardarCarrito(items) // escribe arcaTierraCart y dispara 'cartUpdated'
 
       // Toast deshabilitado - era molesto al agregar múltiples productos
       // toast.cart(`${cantidad} x ${producto.nombre} agregado al carrito`, {
@@ -193,8 +175,7 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
       // })
     } catch (error) {
       console.error('Error al guardar carrito:', error)
-      // Mostrar error al usuario
-      alert('Error al agregar al carrito. Por favor intenta de nuevo.')
+      toast.error('No pudimos agregarlo al carrito. Intenta de nuevo.', { title: 'Carrito' })
     }
   }
 
@@ -269,11 +250,15 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
               <span className="text-3xl font-bold">${producto.precio.toFixed(2)}</span>
               <span className="ml-2 text-sm text-gray-500">/ {producto.unidad}</span>
             </div>
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-2 ${
-              producto.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-            }`}>
-              <span className={`h-2 w-2 rounded-full mr-1 ${producto.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`}></span>
-              {producto.stock > 0 ? `En stock (${producto.stock} disponibles)` : 'Agotado'}
+            <span
+              data-testid="ficha-estado"
+              data-en-venta={producto.enVenta ? 'true' : 'false'}
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-2 ${
+                producto.enVenta ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}
+            >
+              <span className={`h-2 w-2 rounded-full mr-1 ${producto.enVenta ? 'bg-green-500' : 'bg-red-500'}`} aria-hidden="true"></span>
+              {producto.enVenta ? `En stock (${producto.stock} disponibles)` : TEXTO_AGOTADO}
             </span>
           </div>
 
@@ -348,40 +333,58 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
             ))}
           </div>
 
-          {/* Selector de cantidad */}
-          <div>
-            <h3 className="text-sm font-medium mb-2">Cantidad</h3>
-            <div className="flex items-center border border-gray-200 rounded w-32">
-              <button 
-                className="px-3 py-1 bg-gray-100 hover:bg-gray-200"
-                onClick={() => setCantidad(prev => Math.max(1, prev - 1))}
-                disabled={cantidad <= 1}
-              >
-                -
-              </button>
-              <span className="flex-1 text-center py-1">{cantidad}</span>
-              <button 
-                className="px-3 py-1 bg-gray-100 hover:bg-gray-200"
-                onClick={() => setCantidad(prev => Math.min(producto.stock, prev + 1))}
-                disabled={cantidad >= producto.stock}
-              >
-                +
-              </button>
+          {/* Selector de cantidad: solo si está en venta (R2: un agotado no se ofrece) */}
+          {producto.enVenta ? (
+            <div data-testid="ficha-cantidad">
+              <h3 className="text-sm font-medium mb-2">Cantidad</h3>
+              <div className="flex items-center border border-gray-200 rounded w-32">
+                <button
+                  type="button"
+                  data-testid="ficha-cantidad-menos"
+                  aria-label="Quitar uno"
+                  className="px-3 py-1 bg-gray-100 hover:bg-gray-200"
+                  onClick={() => setCantidad(prev => Math.max(1, prev - 1))}
+                  disabled={cantidad <= 1}
+                >
+                  -
+                </button>
+                <span data-testid="ficha-cantidad-valor" className="flex-1 text-center py-1">{cantidad}</span>
+                <button
+                  type="button"
+                  data-testid="ficha-cantidad-mas"
+                  aria-label="Agregar uno"
+                  className="px-3 py-1 bg-gray-100 hover:bg-gray-200"
+                  onClick={() => setCantidad(prev => Math.min(producto.stock, prev + 1))}
+                  disabled={cantidad >= producto.stock}
+                >
+                  +
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <p
+              data-testid="ficha-agotado"
+              role="status"
+              className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800"
+            >
+              {TEXTO_AGOTADO}
+            </p>
+          )}
 
           {/* Botones de acción */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            <Button 
-              onClick={addToCart}
-              disabled={producto.stock <= 0}
-              className="flex-1 gap-2"
-              size="lg"
-            >
-              <ShoppingCart className="h-4 w-4" />
-              Añadir al carrito
-            </Button>
-            <Button 
+            {producto.enVenta && (
+              <Button
+                data-testid="ficha-agregar"
+                onClick={addToCart}
+                className="flex-1 gap-2"
+                size="lg"
+              >
+                <ShoppingCart className="h-4 w-4" />
+                Añadir al carrito
+              </Button>
+            )}
+            <Button
               variant="outline"
               onClick={toggleFavorito}
               className="gap-2"

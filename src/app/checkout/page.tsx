@@ -8,16 +8,39 @@ import CheckoutFormSingleStep from '@/components/CheckoutFormSingleStep'
 import DeliveryTypeSelector from '@/components/ui/DeliveryTypeSelector'
 import ConMiCanasta, { type CanastaExtras } from '@/components/ui/ConMiCanasta'
 import { API_URL } from '@/lib/api'
-import { ShoppingCart, ArrowLeft, CalendarDays } from 'lucide-react'
+import {
+  ShoppingCart,
+  ArrowLeft,
+  CalendarDays,
+  PackageX,
+  ShoppingBasket,
+  Store,
+  Truck,
+  PartyPopper,
+  Sparkles,
+  Sprout,
+} from 'lucide-react'
 import Link from 'next/link'
 import { calcularCostoEnvio, subtotalProductos as calcSubtotalProductos } from '@/lib/envio'
 import { formatFechaMexico } from '@/lib/dates'
-import { leerCarrito, limpiarExperienciasViejas, vaciarCarrito } from '@/lib/carrito'
+import { experienciasDelCarrito, leerCarrito, limpiarExperienciasViejas, vaciarCarrito, type ItemCarrito } from '@/lib/carrito'
 import { esItemExperiencia, subtotalExperiencia, textoPersonas } from '@/types/compra-experiencias'
+import { TEXTO_CARRITO_CAMBIO } from '@/types/tienda'
 
 /** Lo que cuesta un renglón: una experiencia es adultos × precio + niños × precio de niño. */
 function subtotalRenglon(item: { price?: unknown; quantity?: unknown }): number {
   return esItemExperiencia(item) ? subtotalExperiencia(item) : (Number(item.price) || 0) * (Number(item.quantity) || 0)
+}
+
+/** La foto del renglón (los productos la traen como `image`), o null. */
+function imagenDe(item: ItemCarrito): string | null {
+  return typeof item.image === 'string' && item.image ? item.image : null
+}
+
+/** kg de CO₂ que ahorra el renglón (`environmental_metrics.co2_saved` por unidad, si el producto lo trae). */
+function co2Ahorrado(item: ItemCarrito): number {
+  const metricas = item.environmental_metrics as { co2_saved?: unknown } | null | undefined
+  return (Number(metricas?.co2_saved) || 0) * (Number(item.quantity) || 0)
 }
 
 function textoExperienciasQuitadas(n: number): string {
@@ -30,7 +53,7 @@ export default function CheckoutPage() {
   const sessionResult = useSession()
   const { data: session, status } = sessionResult || { data: null, status: 'loading' }
   const router = useRouter()
-  const [cartItems, setCartItems] = useState<any[]>([])
+  const [cartItems, setCartItems] = useState<ItemCarrito[]>([])
   const [carritoCargado, setCarritoCargado] = useState(false)
   const [experienciasQuitadas, setExperienciasQuitadas] = useState(0)
   const [tipoEntrega, setTipoEntrega] = useState<'envio_domicilio' | 'recoger_almacen'>('envio_domicilio')
@@ -41,7 +64,10 @@ export default function CheckoutPage() {
   // al botón que los agregaba sin cobrarlos.
   const [canastas, setCanastas] = useState<CanastaExtras[]>([])
   const [conCanasta, setConCanasta] = useState<CanastaExtras | null>(null)
-  const accessToken = (session as any)?.accessToken as string | undefined
+  // DR7: lo que el servidor quitó o bajó del carrito al pagar. El formulario lo muestra; si el carrito se quedó
+  // vacío (el formulario ya no se pinta), lo muestra esta página.
+  const [cambiosCarrito, setCambiosCarrito] = useState<string[] | null>(null)
+  const accessToken = session?.accessToken
 
   const hayExperiencias = cartItems.some(esItemExperiencia)
   const hayProductos = cartItems.some((item) => !esItemExperiencia(item))
@@ -64,7 +90,7 @@ export default function CheckoutPage() {
   }, [hayExperiencias])
 
   // El envío de las dos columnas sale de aquí: con la canasta es gratis. Solo cuentan los productos.
-  const envioPedido = (items: any[]) =>
+  const envioPedido = (items: ItemCarrito[]) =>
     conCanasta ? 0 : calcularCostoEnvio(calcSubtotalProductos(items), tipoEntrega)
 
   useEffect(() => {
@@ -110,6 +136,23 @@ export default function CheckoutPage() {
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-2xl mx-auto px-4 text-center">
           {avisoQuitadas}
+          {cambiosCarrito && cambiosCarrito.length > 0 && (
+            <div
+              className="mb-6 rounded-lg border border-amarillo bg-amarillo-bg p-3 text-left text-sm text-verde-tipografia"
+              role="alert"
+              data-testid="checkout-carrito-cambio"
+            >
+              <p className="flex items-start gap-2 font-medium">
+                <PackageX className="mt-0.5 h-4 w-4 shrink-0 text-terracota" aria-hidden="true" />
+                {TEXTO_CARRITO_CAMBIO}
+              </p>
+              <ul className="mt-2 list-disc space-y-1 pl-6">
+                {cambiosCarrito.map((linea) => (
+                  <li key={linea} data-testid="checkout-carrito-cambio-linea">{linea}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           <ShoppingCart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Tu carrito está vacío
@@ -130,10 +173,11 @@ export default function CheckoutPage() {
   }
 
   const subtotalProductos = calcSubtotalProductos(cartItems)
-  const subtotalExperiencias = cartItems.filter(esItemExperiencia).reduce((sum, exp) => sum + subtotalExperiencia(exp), 0)
+  const subtotalExperiencias = experienciasDelCarrito(cartItems).reduce((sum, exp) => sum + subtotalExperiencia(exp), 0)
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    // pb-28 a 390: el botón de pagar no queda debajo de la burbuja de WhatsApp (fija abajo a la derecha).
+    <div className="min-h-screen bg-gray-50 pt-12 pb-28 sm:pb-12">
       <div className="max-w-4xl mx-auto px-4">
         <h1 className="sr-only">Finalizar compra</h1>
         <div className="mb-6">
@@ -176,6 +220,7 @@ export default function CheckoutPage() {
               costoEnvio={envioPedido(cartItems)}
               onCuponChange={setCuponAplicado}
               conCanasta={conCanasta}
+              onCarritoCambio={setCambiosCarrito}
             />
           </div>
 
@@ -185,12 +230,15 @@ export default function CheckoutPage() {
               <h3 className="text-lg font-semibold mb-4">Tu pedido</h3>
 
               <div className="space-y-3 mb-4">
-                {cartItems.map((item: any) => (
+                {cartItems.map((item) => {
+                  const imagen = imagenDe(item)
+                  const nombre = String(item.name ?? '')
+                  return (
                   <div key={item.id} className="flex items-center gap-3">
-                    {item.image ? (
+                    {imagen ? (
                       <Image
-                        src={item.image}
-                        alt={item.name}
+                        src={imagen}
+                        alt={nombre}
                         width={48}
                         height={48}
                         className="w-12 h-12 shrink-0 object-cover rounded"
@@ -201,7 +249,7 @@ export default function CheckoutPage() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm">{item.name}</h4>
+                      <h4 className="font-medium text-sm">{nombre}</h4>
                       {esItemExperiencia(item) ? (
                         <p className="text-xs text-gray-500">
                           {formatFechaMexico(item.fecha, { day: 'numeric', month: 'short', year: undefined })} · {item.hora} ·{' '}
@@ -209,7 +257,7 @@ export default function CheckoutPage() {
                         </p>
                       ) : (
                         <p className="text-xs text-gray-500">
-                          {item.quantity} x ${item.price}
+                          {item.quantity} x ${String(item.price ?? '')}
                         </p>
                       )}
                     </div>
@@ -217,7 +265,8 @@ export default function CheckoutPage() {
                       ${subtotalRenglon(item).toFixed(2)}
                     </span>
                   </div>
-                ))}
+                  )
+                })}
               </div>
 
               <div className="border-t pt-4 space-y-2 text-sm">
@@ -240,36 +289,44 @@ export default function CheckoutPage() {
                   </span>
                 </div>
                 {(() => {
+                  // UI4: íconos Lucide (los emoji se veían como un cuadro vacío donde no hay fuente de emoji).
+                  const nota = 'flex items-start gap-1.5 text-xs p-2 rounded'
+                  const icono = 'mt-px h-3.5 w-3.5 shrink-0'
                   if (conCanasta) {
                     return (
-                      <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
-                        🧺 Llega con tu canasta de suscripción, sin costo de envío
+                      <div className={`${nota} text-green-600 bg-green-50`} data-testid="envio-nota">
+                        <ShoppingBasket className={icono} aria-hidden="true" />
+                        Llega con tu canasta de suscripción, sin costo de envío
                       </div>
                     )
                   }
                   if (tipoEntrega === 'recoger_almacen' && hayProductos) {
                     return (
-                      <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
-                        🏪 Recoger en: Gob. Antonio Díez de Bonilla #37, San Miguel Chapultepec
+                      <div className={`${nota} text-green-600 bg-green-50`} data-testid="envio-nota">
+                        <Store className={icono} aria-hidden="true" />
+                        Recoger en: Gob. Antonio Díez de Bonilla #37, San Miguel Chapultepec
                       </div>
                     )
                   }
                   if (subtotalProductos > 0 && subtotalProductos < 1000) {
                     return (
-                      <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
-                        💰 Te faltan ${(1000 - subtotalProductos).toFixed(2)} en productos para envío GRATIS
+                      <div className={`${nota} text-amber-600 bg-amber-50`} data-testid="envio-nota">
+                        <Truck className={icono} aria-hidden="true" />
+                        Te faltan ${(1000 - subtotalProductos).toFixed(2)} en productos para envío GRATIS
                       </div>
                     )
                   } else if (subtotalProductos >= 1000) {
                     return (
-                      <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
-                        🎉 ¡Felicidades! Tu envío es GRATIS
+                      <div className={`${nota} text-green-600 bg-green-50`} data-testid="envio-nota">
+                        <PartyPopper className={icono} aria-hidden="true" />
+                        ¡Felicidades! Tu envío es GRATIS
                       </div>
                     )
                   } else if (subtotalProductos === 0 && subtotalExperiencias > 0) {
                     return (
-                      <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
-                        ✨ Las experiencias no tienen costo de envío
+                      <div className={`${nota} text-green-600 bg-green-50`} data-testid="envio-nota">
+                        <Sparkles className={icono} aria-hidden="true" />
+                        Las experiencias no tienen costo de envío
                       </div>
                     )
                   }
@@ -291,13 +348,14 @@ export default function CheckoutPage() {
 
               {hayProductos && (
               <div className="mt-4 p-3 bg-green-50 rounded-lg">
-                <p className="text-xs text-green-700">
-                  🌱 Con tu compra ahorras aproximadamente{' '}
-                  <strong>
-                    {cartItems.reduce((sum: number, item: any) =>
-                      sum + (item.environmental_metrics?.co2_saved || 0) * item.quantity, 0
-                    ).toFixed(1)} kg de CO₂
-                  </strong>
+                <p className="flex items-start gap-1.5 text-xs text-green-700">
+                  <Sprout className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span>
+                    Con tu compra ahorras aproximadamente{' '}
+                    <strong>
+                      {cartItems.reduce((sum, item) => sum + co2Ahorrado(item), 0).toFixed(1)} kg de CO₂
+                    </strong>
+                  </span>
                 </p>
               </div>
               )}

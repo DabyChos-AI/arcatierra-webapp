@@ -8,6 +8,13 @@ import {
 } from 'lucide-react'
 import { formatFechaHoraMexico, formatFechaMexico } from '@/lib/dates'
 import { textoPersonas } from '@/types/compra-experiencias'
+import {
+  aNumero,
+  ESTADO_PAGADO_SIN_STOCK,
+  ETIQUETA_PAGADO_SIN_STOCK,
+  TEXTO_PAGADO_SIN_STOCK,
+  type StockFaltante,
+} from '@/types/tienda'
 
 /** Pedido de solo experiencias (Fase 4a, C3): sin envío ni fecha de entrega. */
 const TIPO_ENTREGA_EXPERIENCIA = 'experiencia'
@@ -26,6 +33,27 @@ interface Pedido {
   cliente_nombre: string
   cliente_email: string
   cliente_telefono: string
+  /** R2 (STK4): lo que no se pudo descontar al llegar el pago; null si no faltó nada. */
+  stock_faltante?: StockFaltante[] | null
+}
+
+/** Renglones válidos de `stock_faltante` (lista o null; si un JSONB llegara como texto, se lee igual). */
+function faltanteDe(p: { stock_faltante?: unknown } | null | undefined): StockFaltante[] {
+  let lista: unknown = p?.stock_faltante
+  if (typeof lista === 'string') {
+    try {
+      lista = JSON.parse(lista)
+    } catch {
+      lista = null
+    }
+  }
+  return Array.isArray(lista) ? lista.filter((f): f is StockFaltante => !!f && typeof f === 'object') : []
+}
+
+/** Cantidades de producto: enteras sin decimales; fraccionarias (granel viejo) con dos. */
+function cantidadLegible(valor: unknown): string {
+  const n = aNumero(valor)
+  return Number.isInteger(n) ? String(n) : n.toFixed(2)
 }
 
 /**
@@ -109,6 +137,8 @@ const ESTADOS_BADGE: Record<string, { bg: string; text: string }> = {
   esperando_pago: { bg: 'bg-gray-100', text: 'text-gray-700' },
   pendiente: { bg: 'bg-yellow-100', text: 'text-yellow-700' },
   pagado: { bg: 'bg-green-100', text: 'text-green-700' },
+  // R2 (STK4): llegó el pago sin stock — alguien tiene que resolverlo (cambio o reembolso)
+  [ESTADO_PAGADO_SIN_STOCK]: { bg: 'bg-orange-600', text: 'text-white' },
   confirmado: { bg: 'bg-green-100', text: 'text-green-700' },
   preparando: { bg: 'bg-amber-100', text: 'text-amber-700' },
   empacado: { bg: 'bg-indigo-100', text: 'text-indigo-700' },
@@ -122,6 +152,7 @@ const ESTADO_LABELS: Record<string, string> = {
   esperando_pago: 'Esperando pago',
   pendiente: 'Pendiente',
   pagado: 'Pagado',
+  [ESTADO_PAGADO_SIN_STOCK]: ETIQUETA_PAGADO_SIN_STOCK,
   confirmado: 'Confirmado',
   preparando: 'Preparando',
   empacado: 'Empacado',
@@ -132,7 +163,7 @@ const ESTADO_LABELS: Record<string, string> = {
 }
 
 const FILTRO_ESTADOS = [
-  'todos', 'esperando_pago', 'pendiente', 'pagado', 'confirmado',
+  'todos', 'esperando_pago', 'pendiente', 'pagado', ESTADO_PAGADO_SIN_STOCK, 'confirmado',
   'preparando', 'empacado', 'en_ruta', 'entregado', 'cancelado', 'reembolsado'
 ]
 
@@ -140,6 +171,8 @@ const TRANSICIONES_VALIDAS: Record<string, string[]> = {
   esperando_pago: ['pagado', 'cancelado'],
   pendiente: ['pagado', 'confirmado', 'cancelado'],
   pagado: ['confirmado', 'preparando', 'cancelado', 'reembolsado'],
+  // R2 (STK4): se resuelve a mano; el backend valida (admin_pedidos.TRANSICIONES_VALIDAS) y no ajusta stock solo
+  [ESTADO_PAGADO_SIN_STOCK]: ['pagado', 'cancelado', 'reembolsado'],
   confirmado: ['preparando', 'cancelado', 'reembolsado'],
   preparando: ['empacado', 'cancelado'],
   empacado: ['en_ruta', 'cancelado'],
@@ -169,7 +202,9 @@ export default function AdminPedidosPage() {
   const [cambiandoEstado, setCambiandoEstado] = useState(false)
   // C10: al cancelar/reembolsar un pedido con experiencias, el back dice qué lugares liberó y si hay reembolso.
   // El modal se cierra al guardar, así que el aviso queda en la página hasta que lo cierren.
-  const [avisoEstado, setAvisoEstado] = useState<{ numero: string; texto: string } | null>(null)
+  // R2 (C8): pasar a «pagado» un pedido sin descontar descuenta stock; si no alcanza, el estado FINAL es
+  // pagado_sin_stock y llega `aviso_stock` (se muestra aparte, en `pedido-aviso-stock`).
+  const [avisoEstado, setAvisoEstado] = useState<{ numero: string; texto: string | null; textoStock: string | null } | null>(null)
 
   const fetchStats = useCallback(async () => {
     try {
@@ -240,9 +275,16 @@ export default function AdminPedidosPage() {
         alert(err.detail || 'Error al cambiar estado')
         return
       }
-      const data: { aviso?: unknown } | null = await res.json().catch(() => null)
-      if (data && typeof data.aviso === 'string' && data.aviso.trim()) {
-        setAvisoEstado({ numero: detalle.numero_pedido, texto: data.aviso })
+      const data: { aviso?: unknown; aviso_stock?: unknown; estado_nuevo?: unknown } | null =
+        await res.json().catch(() => null)
+      const texto = data && typeof data.aviso === 'string' && data.aviso.trim() ? data.aviso : null
+      let textoStock = data && typeof data.aviso_stock === 'string' && data.aviso_stock.trim() ? data.aviso_stock : null
+      if (!textoStock && data?.estado_nuevo === ESTADO_PAGADO_SIN_STOCK && nuevoEstado !== ESTADO_PAGADO_SIN_STOCK) {
+        // Pediste «pagado» y quedó sin stock: aunque el back no mande el texto, se dice
+        textoStock = `quedó como «${ETIQUETA_PAGADO_SIN_STOCK}». ${TEXTO_PAGADO_SIN_STOCK}`
+      }
+      if (texto || textoStock) {
+        setAvisoEstado({ numero: detalle.numero_pedido, texto, textoStock })
       }
       // Refresh
       setModalOpen(false)
@@ -279,6 +321,9 @@ export default function AdminPedidosPage() {
 
   // PED1 (R1): lo que se compró, productos (pedido_items) y fechas de experiencia (`experiencias`)
   const productosDetalle = detalle?.items ?? []
+  // R2 (STK4): pagado sin stock — el texto de qué hacer y lo que faltó (producto, pedido, disponible al pagar)
+  const faltanteDetalle = faltanteDe(detalle)
+  const sinStockDetalle = detalle?.estado === ESTADO_PAGADO_SIN_STOCK
   const experienciasDetalle: ExperienciaPedido[] = Array.isArray(detalle?.experiencias)
     ? detalle.experiencias.filter((e): e is ExperienciaPedido => !!e && typeof e === 'object')
     : []
@@ -333,6 +378,9 @@ export default function AdminPedidosPage() {
             {FILTRO_ESTADOS.map(e => (
               <button
                 key={e}
+                type="button"
+                data-testid={`filtro-estado-${e}`}
+                aria-pressed={filtroEstado === e}
                 onClick={() => handleFiltroEstado(e)}
                 className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
                   filtroEstado === e
@@ -381,10 +429,23 @@ export default function AdminPedidosPage() {
           className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3"
         >
           <Ticket className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="flex-1 text-sm text-amber-900">
-            <span className="font-semibold">Pedido {avisoEstado.numero}: </span>
-            {avisoEstado.texto}
-          </p>
+          <div className="flex-1 space-y-1 text-sm text-amber-900">
+            {avisoEstado.texto && (
+              <p>
+                <span className="font-semibold">Pedido {avisoEstado.numero}: </span>
+                {avisoEstado.texto}
+              </p>
+            )}
+            {avisoEstado.textoStock && (
+              <p data-testid="pedido-aviso-stock" className="flex items-start gap-1.5 text-orange-900">
+                <AlertTriangle className="h-4 w-4 text-orange-600 shrink-0 mt-0.5" aria-hidden="true" />
+                <span>
+                  <span className="font-semibold">Pedido {avisoEstado.numero}: </span>
+                  {avisoEstado.textoStock}
+                </span>
+              </p>
+            )}
+          </div>
           <button
             type="button"
             onClick={() => setAvisoEstado(null)}
@@ -455,7 +516,14 @@ export default function AdminPedidosPage() {
                         {formatMoney(pedido.total)}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}>
+                        <span
+                          data-testid="pedido-estado"
+                          data-estado={pedido.estado}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${badge.bg} ${badge.text}`}
+                        >
+                          {pedido.estado === ESTADO_PAGADO_SIN_STOCK && (
+                            <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                          )}
                           {ESTADO_LABELS[pedido.estado] || pedido.estado}
                         </span>
                       </td>
@@ -549,15 +617,24 @@ export default function AdminPedidosPage() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gray-50 rounded-lg p-4">
                   <div>
                     <span className="text-sm text-gray-500">Estado actual:</span>
-                    <span className={`ml-2 inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                      ESTADOS_BADGE[detalle.estado]?.bg || 'bg-gray-100'
-                    } ${ESTADOS_BADGE[detalle.estado]?.text || 'text-gray-700'}`}>
+                    <span
+                      data-testid="pedido-detalle-estado"
+                      data-estado={detalle.estado}
+                      className={`ml-2 inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
+                        ESTADOS_BADGE[detalle.estado]?.bg || 'bg-gray-100'
+                      } ${ESTADOS_BADGE[detalle.estado]?.text || 'text-gray-700'}`}
+                    >
+                      {detalle.estado === ESTADO_PAGADO_SIN_STOCK && (
+                        <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      )}
                       {ESTADO_LABELS[detalle.estado] || detalle.estado}
                     </span>
                   </div>
                   {TRANSICIONES_VALIDAS[detalle.estado]?.length > 0 && (
                     <div className="flex items-center gap-2">
                       <select
+                        data-testid="pedido-cambiar-estado"
+                        aria-label="Nuevo estado del pedido"
                         value={nuevoEstado}
                         onChange={e => setNuevoEstado(e.target.value)}
                         className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
@@ -568,6 +645,8 @@ export default function AdminPedidosPage() {
                         ))}
                       </select>
                       <button
+                        type="button"
+                        data-testid="pedido-actualizar-estado"
                         onClick={cambiarEstado}
                         disabled={!nuevoEstado || cambiandoEstado}
                         className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50"
@@ -577,6 +656,61 @@ export default function AdminPedidosPage() {
                     </div>
                   )}
                 </div>
+
+                {/* R2 (STK4): el pago llegó sin stock. Se resuelve con «Cambiar a…» (pagado, cancelado o reembolsado);
+                    nada se devuelve ni se ajusta solo. Si ya se resolvió, la tabla queda como historial. */}
+                {(sinStockDetalle || faltanteDetalle.length > 0) && (
+                  <div
+                    data-testid="pedido-sin-stock"
+                    role={sinStockDetalle ? 'alert' : undefined}
+                    className={`rounded-lg border p-4 space-y-3 ${
+                      sinStockDetalle ? 'border-orange-300 bg-orange-50' : 'border-gray-200 bg-gray-50'
+                    }`}
+                  >
+                    {sinStockDetalle ? (
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="h-5 w-5 text-orange-600 shrink-0 mt-0.5" aria-hidden="true" />
+                        <p data-testid="pedido-sin-stock-texto" className="text-sm text-orange-900">
+                          <span className="font-semibold">{ETIQUETA_PAGADO_SIN_STOCK}. </span>
+                          {TEXTO_PAGADO_SIN_STOCK}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-sm font-medium text-gray-700">Al llegar el pago faltó stock de:</p>
+                    )}
+                    {faltanteDetalle.length > 0 && (
+                      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+                        <table data-testid="pedido-stock-faltante" className="w-full text-sm">
+                          <thead>
+                            <tr className="bg-gray-50">
+                              <th className="text-left px-3 py-2 font-medium text-gray-600">Producto</th>
+                              <th className="text-center px-3 py-2 font-medium text-gray-600">Pedido</th>
+                              <th className="text-center px-3 py-2 font-medium text-gray-600">Disponible</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {faltanteDetalle.map((f, i) => (
+                              <tr
+                                key={`${f.itemcode}-${i}`}
+                                data-testid="pedido-stock-faltante-fila"
+                                className="border-t border-gray-100"
+                              >
+                                <td className="px-3 py-2">
+                                  <div className="font-medium">{f.nombre || f.itemcode}</div>
+                                  {f.nombre && <div className="text-xs text-gray-500">{f.itemcode}</div>}
+                                </td>
+                                <td className="px-3 py-2 text-center">{cantidadLegible(f.cantidad)}</td>
+                                <td className="px-3 py-2 text-center font-semibold text-orange-700">
+                                  {cantidadLegible(f.disponible)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Cliente */}
                 <div>

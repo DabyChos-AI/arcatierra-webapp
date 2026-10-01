@@ -9,6 +9,7 @@ import DeliveryDatePicker from '@/components/ui/DeliveryDatePicker'
 import PostalCodeSelector from '@/components/ui/PostalCodeSelector'
 import { MapPin, CreditCard, User, Phone, Mail, Edit2, Calendar, Leaf, Package } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { TEXTO_METODO_PAGO_CORTO } from '@/types/tienda'
 
 interface SubscriptionPlan {
   id: string
@@ -521,8 +522,9 @@ export default function SubscriptionCheckoutForm({
               />
               <div>
                 <div className="font-medium">Mercado Pago</div>
+                {/* La suscripción es un cobro recurrente (preapproval) de MercadoPago: sin OXXO ni transferencia (C6). */}
                 <div className="text-sm text-gray-500">
-                  Tarjetas, OXXO, transferencias bancarias
+                  {TEXTO_METODO_PAGO_CORTO}
                 </div>
               </div>
             </label>

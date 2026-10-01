@@ -83,6 +83,9 @@ export async function POST(request: NextRequest) {
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      // A6 (R2): crear-preferencia-pago tiene límite por IP. Lo pide el SERVIDOR de Next: sin la IP real firmada,
+      // todos los clientes de la tienda contarían como uno solo (mismo patrón que guest-token, A13).
+      ...cabecerasDelCliente(request.headers),
     };
     if (bearerToken) {
       headers['Authorization'] = `Bearer ${bearerToken}`;

@@ -20,11 +20,14 @@ export default function WhatsAppChat() {
   const [message, setMessage] = useState('')
   const [showQuickMessages, setShowQuickMessages] = useState(true)
   // G3/ADM1 (Fase 4): la burbuja es del sitio público; en el panel tapaba la pantalla a 390 px.
-  const enAdmin = usePathname()?.startsWith('/admin') ?? false
+  const pathname = usePathname()
+  const enAdmin = pathname?.startsWith('/admin') ?? false
+  // UI4 (R2, C6): en /checkout* la burbuja se queda cerrada; abierta sola tapaba el formulario y el botón de pagar a 390 px.
+  const enCheckout = pathname?.startsWith('/checkout') ?? false
 
-  // Auto-abrir el chat después de 30 segundos (solo la primera vez, y nunca dentro del panel)
+  // Auto-abrir el chat después de 30 segundos (solo la primera vez, y nunca dentro del panel ni del checkout)
   useEffect(() => {
-    if (enAdmin) return
+    if (enAdmin || enCheckout) return
     const hasSeenChat = localStorage.getItem('whatsapp-chat-seen')
     if (!hasSeenChat) {
       const timer = setTimeout(() => {
@@ -33,7 +36,7 @@ export default function WhatsAppChat() {
       }, 30000)
       return () => clearTimeout(timer)
     }
-  }, [enAdmin])
+  }, [enAdmin, enCheckout])
 
   const sendToWhatsApp = (text: string) => {
     window.open(linkWhatsApp(text), '_blank')
