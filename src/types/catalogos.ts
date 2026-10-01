@@ -80,9 +80,13 @@ export type ResellerTipo =
   | 'restaurante'
   | 'otro'
 
+// RS1 (Fase 4b, D16): las tarifas de reseller van SOLO en pesos. El backend rechaza 'USD' desde la 4b; el tipo lo
+// conserva para leer filas viejas (hoy hay 0 tarifas capturadas).
 export type MonedaTarifa = 'MXN' | 'USD'
 
 export interface TarifaNegociada {
+  /** RS1 (D16): el precio del GRUPO (cubre las `personas_incluidas` de la experiencia). Reemplaza el precio base del
+   * catálogo en las reservas de este reseller; los adicionales y los niños se cobran con el catálogo. */
   precio_pp: number
   moneda: MonedaTarifa
 }
@@ -109,6 +113,8 @@ export interface Reseller {
 
 /** Una reserva ligada al reseller (GET /{id}). */
 export interface ReservaResumenReseller {
+  /** Fase 4b: el id de la reserva, para abrir su detalle (`/admin/reservas?reserva_id=`). */
+  id?: string
   booking_id: string
   fecha_experiencia: string
   monto_total: number | null
@@ -164,6 +170,8 @@ export interface ExperienciaPrivada {
   tipo_experiencia: string
   precio_por_persona: number
   precio_persona_adicional: number
+  /** Las que cubre el precio del grupo (ya lo manda la API). */
+  personas_incluidas: number
   capacidad_maxima: number
   duracion_horas: number
   disponible: boolean
@@ -175,3 +183,39 @@ export interface ExperienciaPrivada {
 
 /** Valor centinela que el backend usa para "sin tope". NUNCA renderizar literal. */
 export const CAPACIDAD_SIN_TOPE = 999
+
+// ─── Fase 4b de PLAN-EXP-SIN-FALLAS (sesión 40, 1-oct-2026) · RS1: comisión del reseller ───
+
+/** Un mes de la tabla de comisiones (`GET /api/admin/resellers/{id}/comisiones?anio=`). `mes` = 'YYYY-MM' de la
+ * FECHA DE LA EXPERIENCIA. Cuentan las reservas Confirmadas, Pagadas y Realizadas (no tentativas ni canceladas). */
+export interface ComisionMes {
+  mes: string
+  reservas: number
+  personas: number
+  /** Suma de `monto_total` (lo que paga el cliente, con propina). */
+  total_vendido: number
+  /** Suma de `monto_total − propina_monto`: la comisión se calcula sin la propina. */
+  base_comision: number
+  /** Suma de base × el % guardado EN CADA RESERVA al crearla. */
+  comision: number
+  /** Reservas sin % guardado (el reseller no tenía comisión al crearla): cuentan $0. */
+  sin_porcentaje: number
+}
+
+export interface ComisionesReseller {
+  reseller_id: string
+  nombre: string
+  /** El % que tiene HOY el reseller (lo que se guardará en sus reservas nuevas). */
+  comision_porcentaje_actual: number | null
+  anio: number
+  /** Los 12 meses del año, aunque estén en cero, de enero a diciembre. */
+  meses: ComisionMes[]
+  totales: Omit<ComisionMes, 'mes'>
+  /** Estados que cuentan: ['confirmada', 'pagada', 'realizada']. */
+  estados: string[]
+}
+
+/** El CSV de la ficha: `GET /api/admin/resellers/{id}/comisiones.csv?anio=` (una fila por reserva). */
+export function urlComisionesCsv(apiUrl: string, resellerId: string, anio: number): string {
+  return `${apiUrl}/api/admin/resellers/${encodeURIComponent(resellerId)}/comisiones.csv?anio=${anio}`
+}

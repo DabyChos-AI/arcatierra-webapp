@@ -28,17 +28,20 @@ import {
   type EstadoVendedoras,
 } from '@/hooks/useVendedoras'
 import { extraerMensajeError } from './errores'
+import LineaCotizacion, { textoAdultosAdicionales, textoNinosAdicionales } from './LineaCotizacion'
 import {
   formatMXN,
   calcularCotizacion,
   initialWizardData,
   MOTIVO_NO_ENVIO_TEXTO,
   puedeMarcarRealizada,
+  redondearCentavos,
   textoCorreo,
+  textoCupon,
   type CancelarResponse,
   type Comunicacion,
   type ComunicacionesResponse,
-  type Cotizacion,
+  type CuponEvaluado,
   type ExperienciaCatalogo,
   type IdiomaCliente,
   type ManifestInvitado,
@@ -49,15 +52,6 @@ import {
   type Reserva,
   type ResultadoGuias,
 } from '@/types/reservas'
-
-// El backend expone en `cotizacion` el precio base, el adicional por persona y
-// cuantas personas cubre el base (`invitados_incluidos`, dato de la experiencia).
-// No estan en el tipo Cotizacion base; los leemos con esta extension.
-interface CotizacionConCatalogo extends Cotizacion {
-  precio_base_experiencia?: number
-  precio_adicional_por_persona?: number
-  invitados_incluidos?: number
-}
 import BadgeEstado from '../../components/BadgeEstado'
 import BadgeEstadoPago from '../../components/BadgeEstadoPago'
 import MultiSelectGuias from '../../components/MultiSelectGuias'
@@ -185,6 +179,32 @@ function textoGuias(g: ResultadoGuias | null | undefined): string {
   return `No se avisó a los guías: ${motivo}.`
 }
 
+// ─── Fase 4b (sesión 40): NI1, CP1 y RS1 en el detalle (contrato F2) ───────────────────────
+
+/** Respuesta del PATCH (C5): el detalle + el cupón, solo si se evaluó un código NUEVO. */
+type RespuestaEdicion = Reserva & { cupon?: CuponEvaluado | null }
+
+/** Lo que dijo el servidor del último código nuevo que se guardó (`detalle-cupon-estado`). */
+interface EstadoCuponGuardado {
+  cupon: CuponEvaluado
+  /** Lo que de verdad descontó en la reserva (`monto_cupon` guardado). */
+  monto: number
+}
+
+const TEXTO_SIN_REPRECIO =
+  'Reserva del Sheet: su precio no se recalcula al cambiar invitados o niños'
+
+/** NI1 (D-c, C11): la ayuda del campo Niños con lo que trae `cotizacion`. */
+function textoNinosDetalle(reserva: Reserva): string {
+  const cot = reserva.cotizacion
+  if (!cot) return 'De los invitados, cuántos son niños.'
+  if (!cot.se_reprecia) return 'Reserva del Sheet: el precio no cambia'
+  if (Number(cot.precio_nino_adicional) !== Number(cot.precio_adicional_por_persona)) {
+    return `Los niños llenan primero los lugares adicionales y ahí pagan ${formatMXN(Number(cot.precio_nino_adicional))} cada uno; dentro de las ${cot.invitados_incluidos} incluidas el precio no cambia.`
+  }
+  return 'Sin precio de niño: pagan como adulto.'
+}
+
 /** Los avisos del back (D4, D15) no se pueden perder en un toast: van en un alert. */
 function mostrarAvisos(avisos: string[] | null | undefined) {
   if (Array.isArray(avisos) && avisos.length > 0) window.alert(avisos.join('\n\n'))
@@ -247,6 +267,8 @@ export default function ModalDetalleReserva({
   const [selectedGuias, setSelectedGuias] = useState<string[]>([])
   const [savingDatos, setSavingDatos] = useState(false)
   const [savingGuias, setSavingGuias] = useState(false)
+  // F2: lo que el servidor dijo del código nuevo al guardar (null = no se evaluó ninguno)
+  const [cuponGuardado, setCuponGuardado] = useState<EstadoCuponGuardado | null>(null)
 
   // Catalogos
   // LD2-a: la misma lista de vendedoras que Leads, el asistente y la tabla
@@ -462,6 +484,10 @@ export default function ModalDetalleReserva({
       return
     }
     const cambiaCortesia = form.cortesia !== (reserva.cortesia === true)
+    // F2 (C5): el código va SOLO si cambió. Reenviarlo en cada guardado haría que, el día que exista
+    // un cupón con el mismo texto que un folio del Sheet, re-guardar una reserva vieja lo aplicara.
+    const codigoNuevo = form.codigoPromocional.trim()
+    const cambiaCodigo = codigoNuevo !== (reserva.codigo_promocional ?? '').trim()
     setSavingDatos(true)
     try {
       const res = await fetch(`${API_URL}/api/admin/reservas/${reserva.id}`, {
@@ -492,11 +518,11 @@ export default function ModalDetalleReserva({
           notas_internas: form.notasInternas,
           notas_alergias: form.notasAlergias,
           notas_cliente: form.notasCliente,
-          // PS1: siempre presentes; null limpia
+          // PS1: siempre presentes; null limpia (el código, solo si cambió: arriba)
           ninos: form.ninos,
           staff: form.staff,
           cortesia: form.cortesia,
-          codigo_promocional: form.codigoPromocional.trim() || null,
+          codigo_promocional: cambiaCodigo ? codigoNuevo || null : undefined,
           contacto: form.contacto.trim() || null,
           fuente_id: form.fuenteId || null,
           cocina_id: form.cocinaId || null,
@@ -516,7 +542,13 @@ export default function ModalDetalleReserva({
       )
       // El PATCH responde el detalle completo (con montos recalculados si cambió
       // la cortesía): refresco silencioso sin vaciar el estado.
-      const data = (await res.json().catch(() => null)) as Reserva | null
+      const data = (await res.json().catch(() => null)) as RespuestaEdicion | null
+      // `cupon` solo llega si el servidor evaluó un código NUEVO; si no, no se dice nada
+      setCuponGuardado(
+        data?.cupon
+          ? { cupon: data.cupon, monto: Number(data.monto_cupon ?? data.cupon.descuento ?? 0) }
+          : null,
+      )
       if (data && data.id === reserva.id && data.booking_id) setReserva(data)
       else await fetchReserva(true)
       onUpdated()
@@ -1006,6 +1038,8 @@ export default function ModalDetalleReserva({
               saveGuias={saveGuias}
               savingDatos={savingDatos}
               savingGuias={savingGuias}
+              cuponGuardado={cuponGuardado}
+              onCambiaCodigo={() => setCuponGuardado(null)}
             />
           )}
           {tab === 'addons' && (
@@ -1146,6 +1180,8 @@ function TabDatos({
   saveGuias,
   savingDatos,
   savingGuias,
+  cuponGuardado,
+  onCambiaCodigo,
 }: {
   reserva: Reserva
   form: FormDatos
@@ -1161,7 +1197,13 @@ function TabDatos({
   saveGuias: () => Promise<void>
   savingDatos: boolean
   savingGuias: boolean
+  cuponGuardado: EstadoCuponGuardado | null
+  onCambiaCodigo: () => void
 }) {
+  const cot = reserva.cotizacion
+  // F2: las del Sheet nunca se re-precian (C5)
+  const sinReprecio = cot?.se_reprecia === false
+  const textoCuponGuardado = cuponGuardado ? textoCupon(cuponGuardado.cupon, cuponGuardado.monto) : ''
   const updateForm = <K extends keyof FormDatos>(field: K, value: FormDatos[K]) => {
     setForm((prev) => (prev ? { ...prev, [field]: value } : prev))
   }
@@ -1338,6 +1380,17 @@ function TabDatos({
         </Field>
       </div>
 
+      {sinReprecio && (
+        <p
+          data-testid="detalle-sin-reprecio"
+          role="note"
+          className="bg-neutro-light/60 border border-neutro-borde rounded-lg p-3 text-sm text-verde flex gap-2"
+        >
+          <Info className="h-4 w-4 flex-shrink-0 mt-0.5 text-verde-suave" aria-hidden="true" />
+          <span>{TEXTO_SIN_REPRECIO}</span>
+        </p>
+      )}
+
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Field label="Invitados min" htmlFor="d-inv-min">
           <input
@@ -1374,11 +1427,10 @@ function TabDatos({
           />
           <p
             id="d-ninos-ayuda"
+            data-testid="detalle-ninos-ayuda"
             className={`text-xs mt-1 ${ninosExcede ? 'text-rojo' : 'text-verde-suave'}`}
           >
-            {ninosExcede
-              ? `Máximo ${form.invMin} (los invitados)`
-              : 'Pagan y cuentan; el precio no cambia'}
+            {ninosExcede ? `Máximo ${form.invMin} (los invitados)` : textoNinosDetalle(reserva)}
           </p>
         </Field>
         <Field label="Staff" htmlFor="d-staff">
@@ -1501,12 +1553,29 @@ function TabDatos({
             id="d-codigo"
             type="text"
             value={form.codigoPromocional}
-            onChange={(e) => updateForm('codigoPromocional', e.target.value)}
+            onChange={(e) => {
+              updateForm('codigoPromocional', e.target.value)
+              onCambiaCodigo()
+            }}
             placeholder="Opcional"
             maxLength={50}
+            aria-describedby={textoCuponGuardado ? 'd-codigo-estado' : undefined}
             data-testid="detalle-codigo"
             className={inputClass}
           />
+          {/* F2: lo que dijo el servidor del código NUEVO (aplicado en verde; referencia en gris) */}
+          {cuponGuardado && textoCuponGuardado && (
+            <p
+              id="d-codigo-estado"
+              data-testid="detalle-cupon-estado"
+              role="status"
+              className={`text-xs mt-1 ${
+                cuponGuardado.cupon.aplicado ? 'font-medium text-verde' : 'text-verde-suave'
+              }`}
+            >
+              {textoCuponGuardado}
+            </p>
+          )}
         </Field>
         <div className="pt-6">
           <label
@@ -1651,6 +1720,10 @@ function TabAddons({
   onDelete: (id: string) => void
 }) {
   const addons = reserva.addons ?? []
+  // CP1 (D-d, C11): el cupón va aparte del descuento manual
+  const montoCupon = Number(reserva.monto_cupon ?? 0)
+  const codigoCupon =
+    reserva.cotizacion?.cupon?.codigo ?? reserva.cupon_codigo ?? reserva.codigo_promocional ?? ''
   // Cortesía: la experiencia y los add-ons quedan como valor de referencia y el
   // total es $0. La fila "Cortesía" cuadra la suma con el total que manda el backend.
   const ajusteCortesia = reserva.cortesia
@@ -1658,6 +1731,7 @@ function TabAddons({
       Number(reserva.monto_addons) +
       Number(reserva.propina_monto) -
       Number(reserva.monto_descuento) -
+      montoCupon -
       Number(reserva.monto_total)
     : 0
 
@@ -1757,6 +1831,17 @@ function TabAddons({
                 </td>
                 <td className="px-3 py-2 text-right text-rojo tabular-nums">
                   -{formatMXN(Number(reserva.monto_descuento))}
+                </td>
+                <td />
+              </tr>
+            )}
+            {montoCupon > 0 && (
+              <tr data-testid="detalle-addons-cupon">
+                <td colSpan={3} className="px-3 py-2 text-right text-verde-suave">
+                  Cupón {codigoCupon}
+                </td>
+                <td className="px-3 py-2 text-right text-rojo tabular-nums">
+                  −{formatMXN(montoCupon)}
                 </td>
                 <td />
               </tr>
@@ -1974,23 +2059,41 @@ function TabManifest({
   const excedeCotizacion = manifestCount > cotizados
 
   const totalActual = Number(reserva.monto_total)
-  const cot = reserva.cotizacion as CotizacionConCatalogo | undefined
+  // F2: la misma cuenta que hará el servidor al aceptar (precios GUARDADOS, niños, cupón ligado y,
+  // en las del Sheet, su subtotal fijo)
+  const cot = reserva.cotizacion
   const nuevaCotizacion = calcularCotizacion({
     ...initialWizardData,
     invMin: manifestCount,
+    ninos: reserva.ninos ?? 0,
     precioBase: cot?.precio_base_experiencia ?? 0,
     precioAdicional: cot?.precio_adicional_por_persona ?? 0,
+    precioNinoAdicional: cot?.precio_nino_adicional ?? cot?.precio_adicional_por_persona ?? 0,
     personasIncluidas: cot?.invitados_incluidos ?? 9,
     addons: (reserva.addons ?? []).map((a) => ({
       id: a.addon_id,
-      nombre: a.addon_nombre ?? a.nombre ?? "",
+      nombre: a.addon_nombre ?? a.nombre ?? '',
       cantidad: a.cantidad,
       precio_unitario: Number(a.precio_unitario),
     })),
     propinaPct: Number(reserva.propina_pct),
-    descuento: Number(reserva.monto_descuento),
-    anticipo: Number(reserva.monto_anticipo),
+    descuento: cot?.monto_descuento ?? Number(reserva.monto_descuento),
+    cuponEvaluado: cot?.cupon
+      ? {
+          codigo: cot.cupon.codigo,
+          es_cupon: true,
+          aplicado: true,
+          cupon_id: reserva.cupon_id ?? null,
+          tipo: cot.cupon.tipo,
+          valor: cot.cupon.valor,
+          descuento: 0,
+          motivo: null,
+        }
+      : null,
     cortesia: reserva.cortesia === true,
+    subtotalFijo: cot && !cot.se_reprecia ? cot.subtotal_experiencia : null,
+    // C11: el backend no recalcula la propina de las del Sheet (propina_fija); en las del panel, el %
+    propinaFija: cot && !cot.se_reprecia ? cot.propina_monto : null,
   })
   const nuevoTotal = nuevaCotizacion.total
 
@@ -2047,6 +2150,7 @@ function TabManifest({
           {!confirmando ? (
             <button
               type="button"
+              data-testid="manifest-actualizar-cotizacion"
               onClick={() => setConfirmando(true)}
               disabled={savingCotizacion}
               className="inline-flex items-center gap-1 bg-terracota hover:bg-terracota-dark text-white px-3 py-1.5 rounded-lg text-sm font-medium disabled:opacity-50"
@@ -2059,12 +2163,18 @@ function TabManifest({
               <p className="text-sm text-verde">
                 Esto recalculará el precio de{' '}
                 <strong className="tabular-nums">{formatMXN(totalActual)}</strong> a{' '}
-                <strong className="tabular-nums text-terracota">{formatMXN(nuevoTotal)}</strong>{' '}
+                <strong data-testid="manifest-total-previsto" className="tabular-nums text-terracota">
+                  {formatMXN(nuevoTotal)}
+                </strong>{' '}
                 (para {manifestCount} invitados). ¿Continuar?
               </p>
+              {cot && !cot.se_reprecia && (
+                <p className="text-xs text-verde-suave">{TEXTO_SIN_REPRECIO}.</p>
+              )}
               <div className="flex gap-2">
                 <button
                   type="button"
+                  data-testid="manifest-confirmar-actualizacion"
                   onClick={async () => {
                     await onActualizarCotizacion(manifestCount)
                     setConfirmando(false)
@@ -2220,6 +2330,8 @@ function TabPagos({
 
   return (
     <div className="space-y-4">
+      <DesgloseCotizacion reserva={reserva} />
+
       {cortesia && (
         <div
           role="status"
@@ -2396,6 +2508,134 @@ function TabPagos({
         </div>
       )}
     </div>
+  )
+}
+
+/** «12 %», «12.5 %» */
+function textoPorcentaje(pct: number): string {
+  return `${Number(pct).toLocaleString('es-MX', { maximumFractionDigits: 2 })} %`
+}
+
+// F2: el desglose de `reserva.cotizacion` (C5). Las cifras de desglose salen de cotizar() sobre lo
+// guardado; los montos (subtotal, propina, total…) son los GUARDADOS.
+function DesgloseCotizacion({ reserva }: { reserva: Reserva }) {
+  const cot = reserva.cotizacion
+  if (!cot) return null
+  const fijo = !cot.se_reprecia
+  const montoCupon = Number(cot.monto_cupon ?? 0)
+  const codigoCupon = cot.cupon?.codigo ?? reserva.cupon_codigo ?? reserva.codigo_promocional ?? ''
+  const comision = cot.comision_pct ?? reserva.comision_pct ?? null
+  const cortesia = reserva.cortesia === true
+  // Cortesía: los renglones son de referencia; este cuadra la suma con el total ($0)
+  const ajusteCortesia = cortesia
+    ? redondearCentavos(
+        cot.subtotal_experiencia +
+          cot.subtotal_addons +
+          cot.propina_monto -
+          cot.monto_descuento -
+          montoCupon -
+          cot.monto_total,
+      )
+    : 0
+
+  return (
+    <section
+      data-testid="detalle-cotizacion"
+      aria-labelledby="detalle-cotizacion-titulo"
+      className="bg-white border border-neutro-borde rounded-lg p-3 space-y-1"
+    >
+      <div className="flex flex-wrap items-center gap-2 mb-1">
+        <h3 id="detalle-cotizacion-titulo" className="text-sm font-semibold text-verde">
+          Cotización
+        </h3>
+        {cot.fuente_precio === 'tarifa_reseller' && (
+          <span
+            data-testid="detalle-tarifa"
+            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-verde/10 text-verde border border-verde/30"
+          >
+            Tarifa de reseller
+          </span>
+        )}
+      </div>
+
+      {fijo ? (
+        <LineaCotizacion
+          testid="detalle-linea-experiencia-sheet"
+          etiqueta="Experiencia (precio guardado del Sheet)"
+          monto={cot.subtotal_experiencia}
+        />
+      ) : (
+        <>
+          <LineaCotizacion
+            testid="detalle-linea-grupo"
+            etiqueta={`Grupo (hasta ${cot.invitados_incluidos} personas)`}
+            monto={cot.precio_base_experiencia}
+          />
+          {cot.adultos_adicionales > 0 && (
+            <LineaCotizacion
+              testid="detalle-linea-adultos-adicionales"
+              etiqueta={textoAdultosAdicionales(cot.adultos_adicionales, cot.precio_adicional_por_persona)}
+              monto={redondearCentavos(cot.adultos_adicionales * cot.precio_adicional_por_persona)}
+            />
+          )}
+          {cot.ninos_adicionales > 0 && (
+            <LineaCotizacion
+              testid="detalle-linea-ninos-adicionales"
+              etiqueta={textoNinosAdicionales(cot.ninos_adicionales, cot.precio_nino_adicional)}
+              monto={redondearCentavos(cot.ninos_adicionales * cot.precio_nino_adicional)}
+            />
+          )}
+          <LineaCotizacion
+            testid="detalle-linea-subtotal-experiencia"
+            etiqueta="Subtotal experiencia"
+            monto={cot.subtotal_experiencia}
+            fuerte
+          />
+        </>
+      )}
+      {cot.subtotal_addons > 0 && (
+        <LineaCotizacion testid="detalle-linea-addons" etiqueta="Add-ons" monto={cot.subtotal_addons} />
+      )}
+      {!cortesia && (
+        <LineaCotizacion
+          testid="detalle-linea-propina"
+          etiqueta={`Propina (${textoPorcentaje(cot.propina_pct)})`}
+          monto={cot.propina_monto}
+        />
+      )}
+      {cot.monto_descuento > 0 && (
+        <LineaCotizacion
+          testid="detalle-linea-descuento"
+          etiqueta={reserva.motivo_descuento ? `Descuento (${reserva.motivo_descuento})` : 'Descuento'}
+          monto={cot.monto_descuento}
+          negativo
+        />
+      )}
+      {montoCupon > 0 && (
+        <LineaCotizacion
+          testid="detalle-cupon"
+          etiqueta={`Cupón ${codigoCupon}:`}
+          monto={montoCupon}
+          negativo
+        />
+      )}
+      {ajusteCortesia > 0 && (
+        <LineaCotizacion
+          testid="detalle-linea-cortesia"
+          etiqueta="Cortesía (no se cobra)"
+          monto={ajusteCortesia}
+          negativo
+        />
+      )}
+      <div className="border-t border-neutro-borde pt-1">
+        <LineaCotizacion testid="detalle-total" etiqueta="Total" monto={cot.monto_total} fuerte />
+      </div>
+      {comision != null && (
+        <p data-testid="detalle-comision" className="text-xs text-verde-suave pt-1">
+          Comisión del reseller: {textoPorcentaje(comision)}
+        </p>
+      )}
+    </section>
   )
 }
 

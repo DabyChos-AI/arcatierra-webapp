@@ -117,19 +117,24 @@ function validarReglaNino(f: ReglaNino): string | null {
 
 const formatoPorcentaje = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 })
 
-/** «Un niño de hasta 12 años paga $550.00 (50 % de $1,100.00)» — con `precioNino()`, el espejo del backend. */
-function vistaPreviaNino(f: ReglaNino, precioAdulto: number): string {
+/** «Un niño de hasta 12 años paga $550.00 (50 % de $1,100.00)» — con `precioNino()`, el espejo del backend.
+ * Privadas (Fase 4b, D16-1/F5): `precioAdulto` = precio por persona ADICIONAL, porque el niño solo paga distinto en los
+ * lugares adicionales: «Un niño adicional de hasta 12 años paga $550.00 (50 % de $1,100.00 por persona adicional)». */
+function vistaPreviaNino(f: ReglaNino, precioAdulto: number, esPrivada = false): string {
   const r = reglaNinoDelForm(f)
   if (r.tipo_precio_nino == null || validarReglaNino(f)) {
     return 'Llena la edad máxima y el precio para ver cuánto paga un niño.'
   }
   const paga = precioNino(r, precioAdulto)
-  const inicio = `Un niño de hasta ${r.edad_maxima_nino} años paga ${formatMXN(paga)}`
+  const nino = esPrivada ? 'Un niño adicional' : 'Un niño'
+  const inicio = `${nino} de hasta ${r.edad_maxima_nino} años paga ${formatMXN(paga)}`
   if (r.tipo_precio_nino === 'porcentaje') {
-    return `${inicio} (${formatoPorcentaje.format(r.porcentaje_nino as number)} % de ${formatMXN(precioAdulto)})`
+    const base = esPrivada ? `${formatMXN(precioAdulto)} por persona adicional` : formatMXN(precioAdulto)
+    return `${inicio} (${formatoPorcentaje.format(r.porcentaje_nino as number)} % de ${base})`
   }
   const tope = (r.precio_nino as number) > precioAdulto ? '; nunca más que un adulto' : ''
-  return `${inicio} (monto fijo; un adulto paga ${formatMXN(precioAdulto)}${tope})`
+  const adulto = esPrivada ? 'un adulto adicional' : 'un adulto'
+  return `${inicio} (monto fijo; ${adulto} paga ${formatMXN(precioAdulto)}${tope})`
 }
 
 /** Leer un input numérico: vacío o inválido = null. */
@@ -1458,7 +1463,8 @@ export default function ExperienciasAdminPage({
                                       checked={formData.tipo_precio_nino === 'porcentaje'}
                                       onChange={() => cambiarRegla({ tipo_precio_nino: 'porcentaje' })}
                                     />
-                                    % del precio de adulto
+                                    {/* Privadas (Fase 4b, C11): el % es del precio por persona ADICIONAL */}
+                                    {esPrivada ? '% del precio por persona adicional' : '% del precio de adulto'}
                                   </label>
                                   <label className="flex items-center gap-2 text-sm cursor-pointer">
                                     <input
@@ -1475,7 +1481,9 @@ export default function ExperienciasAdminPage({
                               {formData.tipo_precio_nino === 'porcentaje' ? (
                                 <div>
                                   <label htmlFor="exp-nino-porcentaje" className="block text-xs text-gray-600 mb-1">
-                                    Porcentaje del precio de adulto (%)
+                                    {esPrivada
+                                      ? 'Porcentaje del precio por persona adicional (%)'
+                                      : 'Porcentaje del precio de adulto (%)'}
                                   </label>
                                   <input
                                     id="exp-nino-porcentaje"
@@ -1512,11 +1520,16 @@ export default function ExperienciasAdminPage({
                               )}
                             </div>
                             <p data-testid="exp-nino-preview" aria-live="polite" className="text-sm font-medium text-blue-900">
-                              {vistaPreviaNino(formData, formData.precio_por_persona)}
+                              {esPrivada
+                                ? vistaPreviaNino(formData, formData.precio_persona_adicional, true)
+                                : vistaPreviaNino(formData, formData.precio_por_persona)}
                             </p>
-                            <p className="text-xs text-gray-500">
-                              Si una fecha tiene precio propio, el precio del niño se calcula sobre el de esa fecha.
-                            </p>
+                            {/* Las fechas con precio propio solo existen en públicas (Fase 4b, C11) */}
+                            {!esPrivada && (
+                              <p className="text-xs text-gray-500">
+                                Si una fecha tiene precio propio, el precio del niño se calcula sobre el de esa fecha.
+                              </p>
+                            )}
                           </>
                         )}
 
@@ -1538,7 +1551,9 @@ export default function ExperienciasAdminPage({
                         )}
                         {esPrivada && (
                           <p data-testid="exp-nino-privadas" className="text-xs text-gray-600">
-                            En las reservas privadas del panel, por ahora, los niños pagan como adulto.
+                            En las reservas privadas, los niños llenan primero los lugares adicionales y ahí pagan
+                            este precio; dentro de las {formData.personas_incluidas} incluidas el precio del grupo no
+                            cambia.
                           </p>
                         )}
                       </div>

@@ -12,9 +12,14 @@ import {
   calcularCotizacion,
   formatMXN,
   initialWizardData,
+  redondearCentavos,
+  textoCupon,
+  type CuponEvaluado,
   type ExperienciaCatalogo,
   type IdiomaCliente,
   type Personal,
+  type PreciosReserva,
+  type Reserva,
   type Reseller,
   type WizardAction,
   type WizardAddon,
@@ -24,6 +29,7 @@ import {
 import WizardSteps from '../../components/WizardSteps'
 import MultiSelectGuias from '../../components/MultiSelectGuias'
 import { extraerMensajeError } from './errores'
+import LineaCotizacion, { textoAdultosAdicionales, textoNinosAdicionales } from './LineaCotizacion'
 
 interface ModalNuevaReservaProps {
   onClose: () => void
@@ -129,6 +135,56 @@ const ESTADO_LEAD_LABEL: Record<string, string> = {
   descartado: 'Descartado',
 }
 
+// ─── Fase 4b (sesión 40): precios del servidor (C2) y cupones (C3) ───────────────────────
+
+/** GET /api/admin/reservas/precios para (experiencia, reseller). `ok` = el asistente ya cotiza con ellos. */
+type EstadoPrecios =
+  | { tipo: 'sin_experiencia' }
+  | { tipo: 'cargando' }
+  | { tipo: 'ok' }
+  | { tipo: 'error'; mensaje: string }
+
+/** POST /api/admin/reservas/evaluar-cupon. El resultado vive en `wiz.cuponEvaluado` (SET_CUPON). */
+type EstadoRevisionCupon =
+  | { tipo: 'quieto' }
+  | { tipo: 'revisando' }
+  | { tipo: 'error'; mensaje: string }
+
+/** Respuesta del alta (C5): el detalle de la reserva + `avisos` + el cupón que evaluó el servidor. */
+type RespuestaAlta = Reserva & { avisos?: string[]; cupon?: CuponEvaluado | null }
+
+/** Para comparar el código escrito con el evaluado (el backend lo normaliza igual: strip + mayúsculas). */
+function normalizarCodigo(codigo: string): string {
+  return codigo.trim().toUpperCase()
+}
+
+/** Los precios del catálogo de una experiencia (lo que se usa mientras llegan los del servidor). */
+function accionExperiencia(exp: ExperienciaCatalogo, horaFinSugerida?: string): WizardAction {
+  return {
+    type: 'SET_EXPERIENCIA',
+    id: exp.id,
+    nombre: exp.nombre,
+    precioBase: Number(exp.precio_por_persona ?? 0),
+    precioAdicional: Number(exp.precio_persona_adicional ?? 0),
+    personasIncluidas: Number(exp.personas_incluidas ?? 9),
+    horaFinSugerida,
+  }
+}
+
+/** RS1: «Tarifa de {reseller}: $X el grupo (catálogo $Y)»; null si el precio es el del catálogo. */
+function textoTarifa(wiz: WizardData, resellers: Reseller[]): string | null {
+  if (wiz.fuentePrecio !== 'tarifa_reseller') return null
+  const nombre = resellers.find((r) => r.id === wiz.resellerId)?.nombre ?? 'el reseller'
+  return `Tarifa de ${nombre}: ${formatMXN(wiz.precioBase)} el grupo (catálogo ${formatMXN(wiz.precioCatalogo)})`
+}
+
+/** NI1: la ayuda del campo Niños. La regla solo se afirma cuando los precios del servidor ya llegaron. */
+function textoNinosAyuda(wiz: WizardData, preciosListos: boolean): string {
+  if (!wiz.experienciaId || !preciosListos) return 'De los invitados, cuántos son niños.'
+  if (!wiz.reglaNino) return 'Esta experiencia no tiene precio de niño: los niños pagan como adulto.'
+  return `Los niños de hasta ${wiz.reglaNino.edad_maxima} años llenan primero los lugares adicionales y ahí pagan ${formatMXN(wiz.precioNinoAdicional)} cada uno; dentro de las ${wiz.personasIncluidas} incluidas el precio no cambia.`
+}
+
 function wizardReducer(state: WizardData, action: WizardAction): WizardData {
   const next = aplicarAccion(state, action)
   // Los niños son parte de los invitados: si los invitados bajan (a mano o al
@@ -158,6 +214,13 @@ function aplicarAccion(state: WizardData, action: WizardAction): WizardData {
         precioBase: action.precioBase,
         precioAdicional: action.precioAdicional,
         personasIncluidas: action.personasIncluidas,
+        // Fase 4b: lo del catálogo mientras llegan los precios del servidor (SET_PRECIOS).
+        // Sin regla conocida, un niño adicional paga como adulto (si quedara en 0, saldría gratis).
+        precioNinoAdicional: action.precioAdicional,
+        fuentePrecio: 'catalogo',
+        reglaNino: null,
+        precioCatalogo: action.precioBase,
+        comisionPct: null,
         // Si los invitados seguian en las incluidas de la experiencia anterior (no
         // se tocaron), siguen a las de ESTA. Si se escribió otro número, se respeta,
         // aunque sea menor: se registran los invitados reales (29-sep).
@@ -165,6 +228,32 @@ function aplicarAccion(state: WizardData, action: WizardAction): WizardData {
           state.invMin === state.personasIncluidas ? action.personasIncluidas : state.invMin,
         horaFin: action.horaFinSugerida ?? state.horaFin,
       }
+    // F1 (C2): los precios con que cotiza el servidor para (experiencia, reseller)
+    case 'SET_PRECIOS': {
+      const p = action.precios
+      // Una respuesta que llegó tarde, de otra experiencia, no pisa la elegida
+      if (p.experiencia_id && p.experiencia_id.toLowerCase() !== state.experienciaId.toLowerCase()) {
+        return state
+      }
+      const incluidas = Number(p.personas_incluidas) || state.personasIncluidas
+      return {
+        ...state,
+        precioBase: Number(p.precio_grupo),
+        precioAdicional: Number(p.precio_adicional),
+        // Sin regla de niño el servidor manda el adicional; si llegara vacío, NO puede quedar en 0
+        precioNinoAdicional: Number(p.precio_nino_adicional ?? p.precio_adicional),
+        personasIncluidas: incluidas,
+        // La misma regla que SET_EXPERIENCIA
+        invMin: state.invMin === state.personasIncluidas ? incluidas : state.invMin,
+        fuentePrecio: p.fuente_precio,
+        reglaNino: p.regla_nino ?? null,
+        precioCatalogo: Number(p.precio_catalogo ?? p.precio_grupo),
+        comisionPct: p.comision_pct == null ? null : Number(p.comision_pct),
+      }
+    }
+    // F1 (C3): el código evaluado (null = sin código o sin revisar)
+    case 'SET_CUPON':
+      return { ...state, cuponEvaluado: action.cupon }
     case 'TOGGLE_ADDON': {
       const exists = state.addons.find((a) => a.id === action.addon.id)
       if (exists) {
@@ -273,6 +362,16 @@ export default function ModalNuevaReserva({
   const [error, setError] = useState<string | null>(null)
 
   const cot = useMemo(() => calcularCotizacion(wiz), [wiz])
+
+  // Fase 4b: precios del servidor (C2) y revisión del código promocional (C3)
+  const [precios, setPrecios] = useState<EstadoPrecios>({ tipo: 'sin_experiencia' })
+  const [revisionCupon, setRevisionCupon] = useState<EstadoRevisionCupon>({ tipo: 'quieto' })
+  // Con qué código (normalizado) y base se pidió la última revisión: decide si hace falta otra
+  const ultimaRevision = useRef<{ codigo: string; base: number } | null>(null)
+  // Solo la respuesta de la revisión más reciente cuenta
+  const revisionVigente = useRef(0)
+  // La base del cupón (D16-4 / §1.1): experiencia + add-ons, sin propina
+  const baseCupon = redondearCentavos(cot.subtotal_experiencia + cot.subtotal_addons)
 
   // === Fetch catalogos ===
   // Backend correcto: /api/experiencias/admin (no /api/admin/experiencias).
@@ -613,8 +712,21 @@ export default function ModalNuevaReserva({
         const err = await res.json().catch(() => ({}))
         throw new Error(extraerMensajeError(err, res.status))
       }
-      const data = await res.json()
-      onCreated(data.id, data.booking_id, Array.isArray(data.avisos) ? data.avisos : [])
+      const data = (await res.json()) as RespuestaAlta
+      const avisos = Array.isArray(data.avisos) ? [...data.avisos] : []
+      // F1: el servidor recotiza y es la autoridad. Si su total o su cupón no son los que se
+      // veían en el asistente, la página lo dice junto a los demás avisos del alta.
+      const totalServidor = Number(data.monto_total)
+      if (Number.isFinite(totalServidor) && Math.abs(totalServidor - cot.total) > 0.01) {
+        avisos.push(
+          `El total lo calculó el servidor: ${formatMXN(totalServidor)} (el asistente mostraba ${formatMXN(cot.total)}).`,
+        )
+      }
+      if (data.cupon && data.cupon.aplicado !== (wiz.cuponEvaluado?.aplicado === true)) {
+        const aviso = textoCupon(data.cupon, Number(data.monto_cupon ?? data.cupon.descuento))
+        if (aviso) avisos.push(aviso)
+      }
+      onCreated(data.id, data.booking_id, avisos)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al crear reserva')
     } finally {
@@ -630,18 +742,146 @@ export default function ModalNuevaReserva({
       const horaFinSugerida = wiz.horaInicio
         ? sumarHoras(wiz.horaInicio, exp.duracion_horas ?? 0)
         : undefined
-      dispatch({
-        type: 'SET_EXPERIENCIA',
-        id: exp.id,
-        nombre: exp.nombre,
-        precioBase: Number(exp.precio_por_persona ?? 0),
-        precioAdicional: Number(exp.precio_persona_adicional ?? 0),
-        personasIncluidas: Number(exp.personas_incluidas ?? 9),
-        horaFinSugerida,
-      })
+      dispatch(accionExperiencia(exp, horaFinSugerida))
     },
     [experiencias, wiz.horaInicio],
   )
+
+  // === F1 (C2): precios del servidor para (experiencia, reseller) ===
+  // Un reseller de la lista de respaldo (sin conexión) no tiene id real: se cotiza con el catálogo.
+  const resellerParaPrecios =
+    wiz.tipoCliente === 'reseller' && wiz.resellerId && !wiz.resellerId.startsWith('fallback-')
+      ? wiz.resellerId
+      : ''
+
+  // Vuelve a los precios del catálogo (sin tocar la hora de fin ni los invitados escritos)
+  const restaurarPreciosCatalogo = useCallback(
+    (id: string) => {
+      const exp = experiencias.find((e) => e.id === id)
+      if (exp) dispatch(accionExperiencia(exp))
+    },
+    [experiencias],
+  )
+
+  // Al cambiar experiencia, tipo de cliente o reseller: mientras carga, lo del catálogo; luego,
+  // lo del servidor (tarifa del reseller, precio de niño, comisión). Si falla, se queda el catálogo
+  // y el servidor recotiza al crear (F1: el total del servidor manda).
+  useEffect(() => {
+    if (!token || !wiz.experienciaId) {
+      setPrecios({ tipo: 'sin_experiencia' })
+      return
+    }
+    let cancelado = false
+    restaurarPreciosCatalogo(wiz.experienciaId)
+    setPrecios({ tipo: 'cargando' })
+    const params = new URLSearchParams({ experiencia_id: wiz.experienciaId })
+    if (resellerParaPrecios) params.set('reseller_id', resellerParaPrecios)
+    const cargar = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/admin/reservas/precios?${params.toString()}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!res.ok) {
+          const payload = await res.json().catch(() => null)
+          if (!cancelado) setPrecios({ tipo: 'error', mensaje: extraerMensajeError(payload, res.status) })
+          return
+        }
+        const data = (await res.json()) as PreciosReserva
+        if (cancelado) return
+        dispatch({ type: 'SET_PRECIOS', precios: data })
+        setPrecios({ tipo: 'ok' })
+      } catch {
+        if (!cancelado) setPrecios({ tipo: 'error', mensaje: 'sin conexión con el servidor' })
+      }
+    }
+    cargar()
+    return () => {
+      cancelado = true
+    }
+  }, [token, wiz.experienciaId, resellerParaPrecios, restaurarPreciosCatalogo])
+
+  // === F1 (C3): el código promocional se revisa en el servidor ===
+  // Un código que no es cupón NO es error: queda como referencia (D12). Solo un fallo de red o del
+  // servidor es error, y entonces no se descuenta nada (el servidor lo revisa al crear).
+  const evaluarCupon = useCallback(
+    async (codigoEscrito: string, base: number) => {
+      const codigo = codigoEscrito.trim()
+      const id = ++revisionVigente.current
+      if (!codigo) {
+        ultimaRevision.current = null
+        dispatch({ type: 'SET_CUPON', cupon: null })
+        setRevisionCupon({ tipo: 'quieto' })
+        return
+      }
+      if (!token) return
+      ultimaRevision.current = { codigo: normalizarCodigo(codigo), base }
+      setRevisionCupon({ tipo: 'revisando' })
+      const fallar = (mensaje: string) => {
+        if (id !== revisionVigente.current) return
+        ultimaRevision.current = null
+        dispatch({ type: 'SET_CUPON', cupon: null })
+        setRevisionCupon({ tipo: 'error', mensaje })
+      }
+      try {
+        const res = await fetch(`${API_URL}/api/admin/reservas/evaluar-cupon`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ codigo, subtotal_reserva: base }),
+        })
+        if (!res.ok) {
+          const payload = await res.json().catch(() => null)
+          fallar(extraerMensajeError(payload, res.status))
+          return
+        }
+        const data = (await res.json()) as CuponEvaluado
+        if (id !== revisionVigente.current) return
+        dispatch({ type: 'SET_CUPON', cupon: data })
+        setRevisionCupon({ tipo: 'quieto' })
+      } catch {
+        fallar('sin conexión con el servidor')
+      }
+    },
+    [token],
+  )
+
+  // Escribir otro código invalida el evaluado (si no, se descontaría un cupón que ya no está escrito)
+  const cambiarCodigo = useCallback(
+    (valor: string) => {
+      dispatch({ type: 'SET_FIELD', field: 'codigoPromocional', value: valor })
+      if (wiz.cuponEvaluado || revisionCupon.tipo !== 'quieto') {
+        revisionVigente.current += 1
+        ultimaRevision.current = null
+        dispatch({ type: 'SET_CUPON', cupon: null })
+        setRevisionCupon({ tipo: 'quieto' })
+      }
+    },
+    [wiz.cuponEvaluado, revisionCupon.tipo],
+  )
+
+  // Al salir del campo: se revisa, salvo que ya esté revisado ese mismo código con esa misma base
+  const salirDelCodigo = useCallback(() => {
+    const codigo = wiz.codigoPromocional.trim()
+    const u = ultimaRevision.current
+    if (codigo && u && wiz.cuponEvaluado && u.codigo === normalizarCodigo(codigo) && u.base === baseCupon) {
+      return
+    }
+    evaluarCupon(codigo, baseCupon)
+  }, [wiz.codigoPromocional, wiz.cuponEvaluado, baseCupon, evaluarCupon])
+
+  // Si cambia la base (invitados, niños, add-ons, tarifa) de un cupón ya revisado: otra revisión
+  // a los 400 ms (el mínimo de compra puede cumplirse o dejar de cumplirse)
+  useEffect(() => {
+    const u = ultimaRevision.current
+    const c = wiz.cuponEvaluado
+    if (!u || !c || !c.es_cupon || u.base === baseCupon) return
+    const codigo = wiz.codigoPromocional.trim()
+    if (normalizarCodigo(codigo) !== u.codigo) return
+    const t = setTimeout(() => evaluarCupon(codigo, baseCupon), 400)
+    return () => clearTimeout(t)
+  }, [baseCupon, wiz.cuponEvaluado, wiz.codigoPromocional, evaluarCupon])
 
   // LD2-b: la experiencia del lead se elige cuando la lista ya cargó, con el mismo camino que
   // usa el usuario. Si no está (pública, archivada o inactiva), se avisa y se elige a mano.
@@ -784,12 +1024,24 @@ export default function ModalNuevaReserva({
               chinampas={catalogos.chinampas}
               cocinas={catalogos.cocinas}
               onSelectExperiencia={selectExperiencia}
+              precios={precios}
+              tarifa={textoTarifa(wiz, resellers)}
             />
           )}
           {wiz.step === 3 && (
             <Paso3Addons wiz={wiz} dispatch={dispatch} addonsCat={addonsCat} />
           )}
-          {wiz.step === 4 && <Paso4Cotizacion wiz={wiz} dispatch={dispatch} cot={cot} />}
+          {wiz.step === 4 && (
+            <Paso4Cotizacion
+              wiz={wiz}
+              dispatch={dispatch}
+              cot={cot}
+              tarifa={textoTarifa(wiz, resellers)}
+              revisionCupon={revisionCupon}
+              onCambiarCodigo={cambiarCodigo}
+              onSalirDelCodigo={salirDelCodigo}
+            />
+          )}
           {wiz.step === 5 && (
             <Paso5Asignaciones
               wiz={wiz}
@@ -1229,6 +1481,8 @@ function Paso2Experiencia({
   chinampas,
   cocinas,
   onSelectExperiencia,
+  precios,
+  tarifa,
 }: {
   wiz: WizardData
   dispatch: React.Dispatch<WizardAction>
@@ -1236,6 +1490,8 @@ function Paso2Experiencia({
   chinampas: EstadoCatalogo
   cocinas: EstadoCatalogo
   onSelectExperiencia: (id: string) => void
+  precios: EstadoPrecios
+  tarifa: string | null
 }) {
   return (
     <div className="space-y-4">
@@ -1263,6 +1519,27 @@ function Paso2Experiencia({
           <p className="mt-1 text-xs text-verde-suave">
             Precio base 1-{wiz.personasIncluidas} personas: {formatMXN(wiz.precioBase)} · Adicional:{' '}
             {formatMXN(wiz.precioAdicional)}/persona
+          </p>
+        )}
+        {wiz.experienciaId && tarifa && (
+          <p data-testid="wiz-tarifa-reseller" className="mt-1 text-xs font-medium text-verde">
+            {tarifa}
+          </p>
+        )}
+        {precios.tipo === 'cargando' && (
+          <p
+            data-testid="wiz-precios-cargando"
+            role="status"
+            className="mt-1 inline-flex items-center gap-1 text-xs text-verde-suave"
+          >
+            <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+            Actualizando precios…
+          </p>
+        )}
+        {precios.tipo === 'error' && (
+          <p data-testid="wiz-precios-error" className="mt-1 text-xs text-terracota-dark">
+            No se pudieron leer los precios de esta reserva ({precios.mensaje}). Se muestra el
+            catálogo; el total final lo calcula el servidor al crearla.
           </p>
         )}
       </div>
@@ -1367,8 +1644,8 @@ function Paso2Experiencia({
             aria-describedby="wiz-ninos-ayuda"
             className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
           />
-          <p id="wiz-ninos-ayuda" className="mt-1 text-xs text-verde-suave">
-            De los invitados, cuántos son niños. Pagan y cuentan igual.
+          <p id="wiz-ninos-ayuda" data-testid="wiz-ninos-ayuda" className="mt-1 text-xs text-verde-suave">
+            {textoNinosAyuda(wiz, precios.tipo === 'ok')}
           </p>
         </div>
         <div>
@@ -1539,11 +1816,20 @@ function Paso4Cotizacion({
   wiz,
   dispatch,
   cot,
+  tarifa,
+  revisionCupon,
+  onCambiarCodigo,
+  onSalirDelCodigo,
 }: {
   wiz: WizardData
   dispatch: React.Dispatch<WizardAction>
   cot: ReturnType<typeof calcularCotizacion>
+  tarifa: string | null
+  revisionCupon: EstadoRevisionCupon
+  onCambiarCodigo: (valor: string) => void
+  onSalirDelCodigo: () => void
 }) {
+  const estadoCupon = textoCupon(wiz.cuponEvaluado, cot.monto_cupon)
   function cambiarCortesia(activa: boolean) {
     dispatch({ type: 'SET_FIELD', field: 'cortesia', value: activa })
     // Cortesía: sin anticipo, link de pago ni cotización (no se cotiza). Al quitarla
@@ -1555,16 +1841,43 @@ function Paso4Cotizacion({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between border-b border-neutro-borde pb-2">
-        <div>
-          <p className="font-medium text-verde">{wiz.experienciaNombre ?? 'Experiencia'}</p>
-          <p className="text-xs text-verde-suave">
-            {wiz.invMin} invitados ({cot.adicionales} adicionales sobre {wiz.personasIncluidas})
-          </p>
-        </div>
-        <p className="font-medium text-verde tabular-nums">
-          {formatMXN(cot.subtotal_experiencia)}
+      {/* F1: desglose del precio de GRUPO (C02 + NI1), todo de calcularCotizacion(wiz) */}
+      <div className="border-b border-neutro-borde pb-2 space-y-1">
+        <p className="font-medium text-verde">{wiz.experienciaNombre ?? 'Experiencia'}</p>
+        <p className="text-xs text-verde-suave">
+          {wiz.invMin} invitados ({cot.adicionales} adicionales sobre {wiz.personasIncluidas})
+          {wiz.ninos > 0 && ` · ${wiz.ninos} ${wiz.ninos === 1 ? 'niño' : 'niños'}`}
         </p>
+        <LineaCotizacion
+          testid="wiz-linea-grupo"
+          etiqueta={`Grupo (hasta ${wiz.personasIncluidas} personas)`}
+          monto={wiz.precioBase}
+        />
+        {tarifa && (
+          <p data-testid="wiz-tarifa-reseller" className="text-xs font-medium text-verde-suave">
+            {tarifa}
+          </p>
+        )}
+        {cot.adultos_adicionales > 0 && (
+          <LineaCotizacion
+            testid="wiz-linea-adultos-adicionales"
+            etiqueta={textoAdultosAdicionales(cot.adultos_adicionales, wiz.precioAdicional)}
+            monto={redondearCentavos(cot.adultos_adicionales * wiz.precioAdicional)}
+          />
+        )}
+        {cot.ninos_adicionales > 0 && (
+          <LineaCotizacion
+            testid="wiz-linea-ninos-adicionales"
+            etiqueta={textoNinosAdicionales(cot.ninos_adicionales, wiz.precioNinoAdicional)}
+            monto={redondearCentavos(cot.ninos_adicionales * wiz.precioNinoAdicional)}
+          />
+        )}
+        <LineaCotizacion
+          testid="wiz-linea-subtotal-experiencia"
+          etiqueta="Subtotal experiencia"
+          monto={cot.subtotal_experiencia}
+          fuerte
+        />
       </div>
 
       {wiz.addons.length > 0 && (
@@ -1598,7 +1911,7 @@ function Paso4Cotizacion({
         </>
       )}
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <label htmlFor="cot-descuento" className="text-sm text-verde w-32">
           Descuento (MXN):
         </label>
@@ -1628,30 +1941,57 @@ function Paso4Cotizacion({
           }
           placeholder="Motivo"
           aria-label="Motivo del descuento"
-          className="border border-neutro-borde rounded px-2 py-1 flex-1 text-sm"
+          className="border border-neutro-borde rounded px-2 py-1 flex-1 min-w-[8rem] text-sm"
         />
       </div>
 
-      <div className="flex items-center gap-2">
-        <label htmlFor="wiz-codigo-promocional" className="text-sm text-verde w-32">
-          Código promocional:
-        </label>
-        <input
-          id="wiz-codigo-promocional"
-          data-testid="wiz-codigo-promocional"
-          type="text"
-          maxLength={50}
-          value={wiz.codigoPromocional}
-          onChange={(e) =>
-            dispatch({
-              type: 'SET_FIELD',
-              field: 'codigoPromocional',
-              value: e.target.value,
-            })
-          }
-          placeholder="Opcional"
-          className="border border-neutro-borde rounded px-2 py-1 w-48 text-sm"
-        />
+      {/* CP1 (C3): se revisa al salir del campo; un código que no es cupón queda de referencia */}
+      <div>
+        <div className="flex flex-wrap items-center gap-2">
+          <label htmlFor="wiz-codigo-promocional" className="text-sm text-verde w-32">
+            Código promocional:
+          </label>
+          <input
+            id="wiz-codigo-promocional"
+            data-testid="wiz-codigo-promocional"
+            type="text"
+            maxLength={50}
+            value={wiz.codigoPromocional}
+            onChange={(e) => onCambiarCodigo(e.target.value)}
+            onBlur={onSalirDelCodigo}
+            placeholder="Opcional"
+            aria-describedby="wiz-codigo-promocional-ayuda"
+            className="border border-neutro-borde rounded px-2 py-1 w-48 max-w-full text-sm"
+          />
+        </div>
+        <div id="wiz-codigo-promocional-ayuda" className="mt-1 text-xs" aria-live="polite">
+          {revisionCupon.tipo === 'revisando' ? (
+            <p
+              data-testid="wiz-cupon-revisando"
+              className="inline-flex items-center gap-1 text-verde-suave"
+            >
+              <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+              Revisando el código…
+            </p>
+          ) : revisionCupon.tipo === 'error' ? (
+            <p data-testid="wiz-cupon-error" className="text-terracota-dark">
+              No se pudo revisar el código ({revisionCupon.mensaje}). Se guarda tal cual y el
+              servidor lo revisa al crear la reserva.
+            </p>
+          ) : estadoCupon ? (
+            <p
+              data-testid="wiz-cupon-estado"
+              className={wiz.cuponEvaluado?.aplicado ? 'font-medium text-verde' : 'text-verde-suave'}
+            >
+              {estadoCupon}
+            </p>
+          ) : (
+            <p className="text-verde-suave">
+              Si es un cupón activo, descuenta y se suma al descuento manual. Si no, se guarda como
+              referencia.
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-2">
@@ -1719,6 +2059,16 @@ function Paso4Cotizacion({
         </div>
       )}
 
+      {/* CP1: el cupón se SUMA al descuento manual; su monto ya trae el tope (calcularCotizacion) */}
+      {cot.monto_cupon > 0 && wiz.cuponEvaluado && (
+        <LineaCotizacion
+          testid="wiz-linea-cupon"
+          etiqueta={`Cupón ${wiz.cuponEvaluado.codigo}:`}
+          monto={cot.monto_cupon}
+          negativo
+        />
+      )}
+
       <div className="flex justify-between border-t border-neutro-borde pt-3 text-lg font-display font-semibold text-verde">
         <span>TOTAL</span>
         <span data-testid="wiz-total" className="tabular-nums">
@@ -1728,7 +2078,7 @@ function Paso4Cotizacion({
 
       {!wiz.cortesia && (
         <>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <label htmlFor="cot-anticipo" className="text-sm text-verde w-32">
               Anticipo (MXN):
             </label>
@@ -1933,6 +2283,7 @@ function Paso6Confirmacion({
 }) {
   const fuente = fuentes.find((f) => f.id === wiz.fuenteId)
   const cocina = cocinas.find((c) => c.id === wiz.cocinaId)
+  const tarifa = textoTarifa(wiz, resellers)
   // WZ1: nombres, no IDs, con las listas que el asistente ya cargó
   const reseller = resellers.find((r) => r.id === wiz.resellerId)
   const vendedora = vendedoras.find((v) => v.id === wiz.vendedorId)
@@ -2038,6 +2389,11 @@ function Paso6Confirmacion({
           Subtotal experiencia:{' '}
           <strong className="tabular-nums">{formatMXN(cot.subtotal_experiencia)}</strong>
         </p>
+        {tarifa && (
+          <p data-testid="wiz-resumen-tarifa" className="text-verde-suave">
+            {tarifa}
+          </p>
+        )}
         <p>
           Add-ons:{' '}
           <strong className="tabular-nums">{formatMXN(cot.subtotal_addons)}</strong>
@@ -2056,6 +2412,15 @@ function Paso6Confirmacion({
             {wiz.codigoPromocional.trim() || '—'}
           </strong>
         </p>
+        {wiz.codigoPromocional.trim() && (
+          <p
+            data-testid="wiz-resumen-cupon"
+            className={wiz.cuponEvaluado?.aplicado ? 'font-medium' : 'text-verde-suave'}
+          >
+            {textoCupon(wiz.cuponEvaluado, cot.monto_cupon) ||
+              'Código sin revisar: el servidor lo revisa al crear la reserva.'}
+          </p>
+        )}
         {!wiz.cortesia && (
           <p>
             Propina ({wiz.propinaPct}%):{' '}

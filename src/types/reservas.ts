@@ -352,12 +352,19 @@ export interface Reserva {
   fecha_subida_sap?: string | null
   propina_pct: number
   propina_monto: number
+  // Fase 4b (sesión 40): CP1 y RS1. `monto_descuento` sigue siendo SOLO el manual; el cupón va aparte.
+  cupon_id?: string | null
+  cupon_codigo?: string | null
+  monto_cupon?: number
+  /** % de comisión del reseller guardado al crear la reserva (null = sin reseller o sin comisión). */
+  comision_pct?: number | null
   fecha_creacion: string
   fecha_actualizacion: string
   guias?: Guia[]
   addons?: AddonReserva[]
   pagos?: PagoReserva[]
-  cotizacion?: Cotizacion
+  // Desde la 4b, la forma real del backend (C5). `Cotizacion` queda solo por compatibilidad de nombre.
+  cotizacion?: CotizacionReserva
 }
 
 // Contrato de GET /api/admin/reservas/stats (backend lo alineo el 2026-09-25:
@@ -414,10 +421,26 @@ export interface WizardData {
   clienteInternacional: boolean
   experienciaId: string
   experienciaNombre?: string
+  // Precio del GRUPO (cubre hasta personasIncluidas). Desde la 4b lo da el servidor (`PreciosReserva`): el del
+  // catálogo o la tarifa del reseller (RS1).
   precioBase: number
   precioAdicional: number
   // Personas que cubre precioBase; tambien el minimo de invitados (antes 9 fijo)
   personasIncluidas: number
+  // Fase 4b (NI1): lo que paga un niño que ocupa un lugar ADICIONAL (= precioAdicional si la experiencia no tiene regla)
+  precioNinoAdicional: number
+  fuentePrecio: FuentePrecio
+  reglaNino: ReglaNinoPrecio | null
+  /** El precio del grupo del catálogo, para mostrar «Catálogo: $X» junto a una tarifa de reseller. */
+  precioCatalogo: number
+  /** La comisión que el reseller tiene hoy (se guarda en la reserva al crearla). */
+  comisionPct: number | null
+  /** CP1: el resultado de `POST /api/admin/reservas/evaluar-cupon` para `codigoPromocional` (null = sin evaluar). */
+  cuponEvaluado: CuponEvaluado | null
+  /** Reservas del Sheet: el subtotal guardado NO se re-precia (null en el asistente). */
+  subtotalFijo: number | null
+  /** La propina GUARDADA tal cual (Sheet; add-ons): espejo de `propina_fija` del backend. null = se calcula con el %. */
+  propinaFija: number | null
   fecha: string
   horaInicio: string
   horaFin: string
@@ -460,6 +483,9 @@ export type WizardAction =
   | { type: 'UPDATE_ADDON_CANTIDAD'; addonId: string; cantidad: number }
   | { type: 'TOGGLE_GUIA'; guiaId: string }
   | { type: 'PREFILL_FROM_LEAD'; lead: { id: string; nombre: string; email?: string; telefono?: string } }
+  // Fase 4b: precios que da el servidor para (experiencia, reseller) y el cupón evaluado
+  | { type: 'SET_PRECIOS'; precios: PreciosReserva }
+  | { type: 'SET_CUPON'; cupon: CuponEvaluado | null }
 
 export const initialWizardData: WizardData = {
   step: 1,
@@ -476,6 +502,14 @@ export const initialWizardData: WizardData = {
   precioBase: 0,
   precioAdicional: 0,
   personasIncluidas: 9,
+  precioNinoAdicional: 0,
+  fuentePrecio: 'catalogo',
+  reglaNino: null,
+  precioCatalogo: 0,
+  comisionPct: null,
+  cuponEvaluado: null,
+  subtotalFijo: null,
+  propinaFija: null,
   fecha: '',
   horaInicio: '',
   horaFin: '',
@@ -503,27 +537,76 @@ export const initialWizardData: WizardData = {
   enviarCotizacionPdf: true,
 }
 
-// Helper de cotizacion (C02 + C03 + C09)
-// IMPORTANTE: precio_base cubre 1..personasIncluidas personas (dato de cada
-// experiencia, antes 9 fijo). Adicional = MAX(0, invitados - personasIncluidas).
-// Propina 15% se aplica SOLO sobre subtotal_experiencia (NO sobre addons).
-export function calcularCotizacion(data: WizardData) {
-  const adicionales = Math.max(0, data.invMin - (data.personasIncluidas || 9))
-  const subtotal_experiencia = data.precioBase + adicionales * data.precioAdicional
-  const subtotal_addons = data.addons.reduce(
-    (sum, a) => sum + a.cantidad * a.precio_unitario,
-    0
+// Helper de cotizacion (C02 + C03 + C09) — ESPEJO EXACTO de `cotizar()` en `arca_tierra_api/services/precio_privada.py`
+// (Fase 4b, sesión 40). Los mismos casos viven en sus doctests; si cambias uno, cambia el otro.
+// - Precio de GRUPO: precioBase cubre hasta personasIncluidas; cada adicional paga precioAdicional.
+// - NI1 (D16): los niños llenan PRIMERO los lugares adicionales y ahí pagan precioNinoAdicional; dentro de las
+//   incluidas no cambia nada.
+// - Propina sobre el subtotal de la EXPERIENCIA, antes de descuentos (NO sobre addons).
+// - CP1 (D16): el cupón se SUMA al descuento manual; su base es experiencia + add-ons y nunca deja lo facturable
+//   bajo cero.
+// - Cortesía: lo cobrable en $0 (subtotales de referencia). Sheet (`subtotalFijo`): el subtotal guardado tal cual.
+// - `propinaFija` (Sheet, add-ons): la propina guardada tal cual (en cortesía, 0).
+export type CotizableData = Pick<
+  WizardData,
+  | 'invMin' | 'ninos' | 'precioBase' | 'precioAdicional' | 'personasIncluidas' | 'precioNinoAdicional' | 'addons'
+  | 'propinaPct' | 'descuento' | 'anticipo' | 'cortesia' | 'cuponEvaluado' | 'subtotalFijo'
+> & Partial<Pick<WizardData, 'propinaFija'>>
+
+/** Centavos con redondeo comercial (como `dinero()` del backend): 1500.485 → 1500.49. */
+export function redondearCentavos(n: number): number {
+  return Math.round(Number((n * 100).toFixed(4))) / 100
+}
+
+/** Espejo de `cupones.calcular_descuento`: porcentaje sobre la base o fijo sin pasar de la base. */
+export function descuentoDeCupon(tipo: string | null | undefined, valor: number | null | undefined, base: number): number {
+  if (base <= 0 || valor == null) return 0
+  if (tipo === 'porcentaje') return redondearCentavos((base * valor) / 100)
+  if (tipo === 'fijo') return Math.min(redondearCentavos(valor), redondearCentavos(base))
+  return 0
+}
+
+export function calcularCotizacion(data: CotizableData) {
+  const incluidas = data.personasIncluidas || 9
+  const adicionales = Math.max(0, data.invMin - incluidas)
+  const ninos_adicionales = Math.min(Math.max(0, data.ninos || 0), adicionales)
+  const adultos_adicionales = adicionales - ninos_adicionales
+  const precioNino = data.precioNinoAdicional ?? data.precioAdicional
+  const subtotal_experiencia =
+    data.subtotalFijo != null
+      ? redondearCentavos(data.subtotalFijo)
+      : redondearCentavos(
+          data.precioBase + adultos_adicionales * data.precioAdicional + ninos_adicionales * precioNino,
+        )
+  const subtotal_addons = redondearCentavos(
+    data.addons.reduce((sum, a) => sum + a.cantidad * a.precio_unitario, 0),
   )
-  // Cortesía (PS1): lo cobrado es $0. subtotal_experiencia y subtotal_addons se conservan
-  // como valor de referencia (el backend guarda lo mismo: precio_base/monto_addons).
-  const propina_monto = data.cortesia ? 0 : subtotal_experiencia * (data.propinaPct / 100)
-  const total = data.cortesia ? 0 : subtotal_experiencia + subtotal_addons + propina_monto - data.descuento
-  const balance = data.cortesia ? 0 : total - data.anticipo
+  const descuento = redondearCentavos(data.descuento || 0)
+  let propina_monto = 0
+  let monto_cupon = 0
+  let total = 0
+  if (!data.cortesia) {
+    propina_monto =
+      data.propinaFija != null
+        ? redondearCentavos(data.propinaFija)
+        : redondearCentavos((subtotal_experiencia * data.propinaPct) / 100)
+    const cupon = data.cuponEvaluado
+    if (cupon && cupon.aplicado && (cupon.tipo === 'porcentaje' || cupon.tipo === 'fijo')) {
+      const base = subtotal_experiencia + subtotal_addons
+      const tope = Math.max(0, redondearCentavos(base - descuento))
+      monto_cupon = Math.min(descuentoDeCupon(cupon.tipo, cupon.valor, base), tope)
+    }
+    total = redondearCentavos(subtotal_experiencia + propina_monto + subtotal_addons - descuento - monto_cupon)
+  }
+  const balance = data.cortesia ? 0 : redondearCentavos(total - data.anticipo)
   return {
     adicionales,
+    ninos_adicionales,
+    adultos_adicionales,
     subtotal_experiencia,
     subtotal_addons,
     propina_monto,
+    monto_cupon,
     total: Math.max(0, total),
     balance: Math.max(0, balance),
   }
@@ -577,4 +660,85 @@ export function puedeMarcarRealizada(
     return { puede: false, motivo: 'Se puede marcar desde el día de la experiencia.' }
   }
   return { puede: true, motivo: null }
+}
+
+// ─── Fase 4b de PLAN-EXP-SIN-FALLAS (sesión 40, 1-oct-2026) · contrato EXP-FASE4B-CONTRATO.md ───
+
+/** De dónde salió el precio del grupo: el catálogo o la tarifa negociada del reseller (RS1). */
+export type FuentePrecio = 'catalogo' | 'tarifa_reseller'
+
+/** La regla de niño de la experiencia (NI1): `valor` = % del precio ADICIONAL o monto fijo. */
+export interface ReglaNinoPrecio {
+  edad_maxima: number
+  tipo: 'porcentaje' | 'monto'
+  valor: number
+}
+
+/** `GET /api/admin/reservas/precios?experiencia_id=&reseller_id=` (C2): los precios con que el asistente cotiza. */
+export interface PreciosReserva {
+  experiencia_id: string
+  reseller_id: string | null
+  precio_grupo: number
+  precio_adicional: number
+  precio_nino_adicional: number
+  personas_incluidas: number
+  fuente_precio: FuentePrecio
+  regla_nino: ReglaNinoPrecio | null
+  /** El precio del grupo del CATÁLOGO (igual a precio_grupo si no hay tarifa). */
+  precio_catalogo: number
+  /** La comisión del reseller hoy (null sin reseller o sin comisión). */
+  comision_pct: number | null
+}
+
+/** `POST /api/admin/reservas/evaluar-cupon` (C3). Un código que no es cupón NO es error: queda como referencia. */
+export interface CuponEvaluado {
+  codigo: string
+  /** true = existe un cupón con ese código (activo o no). */
+  es_cupon: boolean
+  /** true = descuenta en esta reserva. */
+  aplicado: boolean
+  cupon_id: string | null
+  tipo: 'porcentaje' | 'fijo' | 'envio_gratis' | null
+  valor: number | null
+  /** Lo que descuenta sobre la base enviada (antes del tope por el descuento manual). */
+  descuento: number
+  /** Por qué no aplica, o el texto para mostrar («No es un cupón: se guarda como referencia»). null si aplicó. */
+  motivo: string | null
+}
+
+/** El objeto `cotizacion` de `GET /api/admin/reservas/{id}` desde la 4b (C5). */
+export interface CotizacionReserva {
+  /** = precio del grupo GUARDADO en la reserva (el del catálogo si la reserva es anterior a la 4b). */
+  precio_base_experiencia: number
+  precio_adicional_por_persona: number
+  precio_nino_adicional: number
+  invitados: number
+  invitados_incluidos: number
+  adicionales_cobrados: number
+  ninos: number
+  ninos_adicionales: number
+  adultos_adicionales: number
+  subtotal_experiencia: number
+  subtotal_addons: number
+  propina_pct: number
+  propina_monto: number
+  /** Solo el descuento manual. */
+  monto_descuento: number
+  monto_cupon: number
+  cupon: { codigo: string; tipo: 'porcentaje' | 'fijo'; valor: number } | null
+  /** null = reserva del Sheet o anterior a la 4b sin precios guardados. */
+  fuente_precio: FuentePrecio | null
+  /** false = reserva del Sheet: su subtotal nunca se re-precia. */
+  se_reprecia: boolean
+  monto_total: number
+  monto_pagado_acumulado: number
+  monto_balance: number
+  comision_pct: number | null
+}
+
+/** «Cupón X aplicado: −$Y» / el motivo de por qué no. Para el asistente y el detalle. */
+export function textoCupon(c: CuponEvaluado | null | undefined, montoAplicado?: number): string {
+  if (!c || !c.codigo) return ''
+  if (c.aplicado) return `Cupón ${c.codigo} aplicado: −${formatMXN(montoAplicado ?? c.descuento)}`
+  return c.motivo || `«${c.codigo}» se guarda como referencia, sin descuento`
 }

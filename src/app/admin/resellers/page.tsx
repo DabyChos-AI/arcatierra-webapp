@@ -17,6 +17,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { formatFechaMexico } from '@/lib/dates'
 import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
 import { formatMXN } from '@/types/reservas'
 import type {
@@ -25,10 +26,10 @@ import type {
   ResellerListResponse,
   ResellerTipo,
   ExperienciaPrivada,
-  MonedaTarifa,
   TarifasNegociadas,
 } from '@/types/catalogos'
 import AdminTopbar from '../components/AdminTopbar'
+import FichaComisiones from './components/FichaComisiones'
 
 const PER_PAGE = 20
 
@@ -46,10 +47,10 @@ function tipoLabel(tipo: string): string {
   return TIPOS.find((t) => t.value === tipo)?.label ?? tipo
 }
 
+// RS1 (Fase 4b, D16-2): la tarifa es el precio del GRUPO y va SOLO en pesos (sin selector de moneda).
 interface TarifaRow {
   expId: string
   precio: number
-  moneda: MonedaTarifa
 }
 
 interface FormReseller {
@@ -81,7 +82,7 @@ const FORM_INICIAL: FormReseller = {
 function rowsToRecord(rows: TarifaRow[]): TarifasNegociadas {
   const rec: TarifasNegociadas = {}
   for (const r of rows) {
-    if (r.expId) rec[r.expId] = { precio_pp: r.precio, moneda: r.moneda }
+    if (r.expId) rec[r.expId] = { precio_pp: r.precio, moneda: 'MXN' }
   }
   return rec
 }
@@ -89,8 +90,7 @@ function rowsToRecord(rows: TarifaRow[]): TarifasNegociadas {
 function recordToRows(rec: TarifasNegociadas): TarifaRow[] {
   return Object.entries(rec).map(([expId, t]) => ({
     expId,
-    precio: t.precio_pp,
-    moneda: t.moneda,
+    precio: Number(t?.precio_pp) || 0,
   }))
 }
 
@@ -272,7 +272,7 @@ export default function ResellersPage() {
   }
 
   const addTarifaRow = () =>
-    syncRows([...tarifaRows, { expId: '', precio: 0, moneda: 'MXN' }])
+    syncRows([...tarifaRows, { expId: '', precio: 0 }])
 
   const updateTarifaRow = (idx: number, patch: Partial<TarifaRow>) =>
     syncRows(tarifaRows.map((r, i) => (i === idx ? { ...r, ...patch } : r)))
@@ -602,55 +602,66 @@ export default function ResellersPage() {
                         {expanded && (
                           <tr className="bg-neutro-light/30">
                             <td colSpan={7} className="px-4 py-3">
-                              {detalleLoading ? (
-                                <div className="flex items-center gap-2 text-sm text-verde-suave">
-                                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                                  Cargando reservas...
-                                </div>
-                              ) : !detalle || detalle.reservas.length === 0 ? (
-                                <p className="text-sm text-verde-suave italic">
-                                  Sin reservas registradas para este reseller.
-                                </p>
-                              ) : (
-                                <div className="space-y-1">
-                                  <p className="text-xs font-medium text-verde mb-2">
-                                    Últimas reservas ({detalle.reservas.length})
-                                  </p>
-                                  <div className="overflow-x-auto">
-                                    <table className="w-full text-xs">
-                                      <thead>
-                                        <tr className="text-left text-verde-suave">
-                                          <th className="px-2 py-1 font-medium">Booking</th>
-                                          <th className="px-2 py-1 font-medium">Fecha</th>
-                                          <th className="px-2 py-1 font-medium text-right">Monto</th>
-                                          <th className="px-2 py-1 font-medium">Estado</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {detalle.reservas.map((rv) => (
-                                          <tr key={rv.booking_id} className="border-t border-neutro-borde">
-                                            <td className="px-2 py-1 font-mono">
-                                              <a
-                                                href="/admin/reservas"
-                                                className="text-terracota hover:underline"
-                                              >
-                                                {rv.booking_id}
-                                              </a>
-                                            </td>
-                                            <td className="px-2 py-1 text-verde">
-                                              {rv.fecha_experiencia}
-                                            </td>
-                                            <td className="px-2 py-1 text-right tabular-nums text-verde">
-                                              {rv.monto_total != null ? formatMXN(rv.monto_total) : '—'}
-                                            </td>
-                                            <td className="px-2 py-1 text-verde-suave">{rv.estado}</td>
-                                          </tr>
-                                        ))}
-                                      </tbody>
-                                    </table>
+                              {/* La ficha se queda a la vista (sticky) aunque la tabla de resellers se desplace a lo
+                                  ancho en el celular; su propia tabla de meses tiene su overflow-x-auto. */}
+                              <div className="sticky left-0 max-w-[calc(100vw-5rem)] space-y-3">
+                                {detalleLoading ? (
+                                  <div className="flex items-center gap-2 text-sm text-verde-suave">
+                                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                                    Cargando reservas...
                                   </div>
-                                </div>
-                              )}
+                                ) : !detalle || detalle.reservas.length === 0 ? (
+                                  <p className="text-sm text-verde-suave italic">
+                                    Sin reservas registradas para este reseller.
+                                  </p>
+                                ) : (
+                                  <div className="space-y-1">
+                                    <p className="text-xs font-medium text-verde mb-2">
+                                      {detalle.reservas_count > detalle.reservas.length
+                                        ? `Últimas ${detalle.reservas.length} de ${detalle.reservas_count} reservas`
+                                        : `Últimas reservas (${detalle.reservas.length})`}
+                                    </p>
+                                    <div className="overflow-x-auto">
+                                      <table className="w-full text-xs">
+                                        <thead>
+                                          <tr className="text-left text-verde-suave">
+                                            <th className="px-2 py-1 font-medium">Booking</th>
+                                            <th className="px-2 py-1 font-medium">Fecha</th>
+                                            <th className="px-2 py-1 font-medium text-right">Monto</th>
+                                            <th className="px-2 py-1 font-medium">Estado</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {detalle.reservas.map((rv) => (
+                                            <tr key={rv.booking_id} className="border-t border-neutro-borde">
+                                              <td className="px-2 py-1 font-mono">
+                                                <a
+                                                  href={
+                                                    rv.id
+                                                      ? `/admin/reservas?reserva_id=${encodeURIComponent(rv.id)}`
+                                                      : '/admin/reservas'
+                                                  }
+                                                  className="text-terracota hover:underline"
+                                                >
+                                                  {rv.booking_id}
+                                                </a>
+                                              </td>
+                                              <td className="px-2 py-1 text-verde whitespace-nowrap">
+                                                {formatFechaMexico(rv.fecha_experiencia)}
+                                              </td>
+                                              <td className="px-2 py-1 text-right tabular-nums text-verde">
+                                                {rv.monto_total != null ? formatMXN(rv.monto_total) : '—'}
+                                              </td>
+                                              <td className="px-2 py-1 text-verde-suave">{rv.estado}</td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                )}
+                                <FichaComisiones token={token} resellerId={r.id} />
+                              </div>
                             </td>
                           </tr>
                         )}
@@ -815,6 +826,7 @@ export default function ResellersPage() {
                     </label>
                     <input
                       id="res-comision"
+                      data-testid="res-comision"
                       type="number"
                       min="0"
                       max="100"
@@ -822,8 +834,16 @@ export default function ResellersPage() {
                       value={form.comision_porcentaje}
                       onChange={(e) => setForm({ ...form, comision_porcentaje: e.target.value })}
                       placeholder="Ej: 10"
+                      aria-describedby="res-comision-ayuda"
                       className="w-full px-3 py-2 border border-neutro-borde rounded-lg text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
                     />
+                    <p
+                      id="res-comision-ayuda"
+                      data-testid="res-comision-ayuda"
+                      className="text-xs text-verde-suave mt-1"
+                    >
+                      Se guarda en cada reserva al crearla; no se resta del precio al cliente.
+                    </p>
                   </div>
                   <div>
                     <label htmlFor="res-idioma" className="block text-xs text-verde-suave mb-1">
@@ -867,65 +887,73 @@ export default function ResellersPage() {
                       Sin tarifas configuradas. Agrega una fila para negociar precios por experiencia.
                     </p>
                   )}
-                  {tarifaRows.map((row, idx) => (
-                    <div key={idx} className="flex items-end gap-2 flex-wrap">
-                      <div className="flex-1 min-w-[180px]">
-                        <label htmlFor={`tarifa-exp-${idx}`} className="block text-xs text-verde-suave mb-1">
-                          Experiencia
-                        </label>
-                        <select
-                          id={`tarifa-exp-${idx}`}
-                          value={row.expId}
-                          onChange={(e) => updateTarifaRow(idx, { expId: e.target.value })}
-                          className="w-full px-3 py-2 border border-neutro-borde rounded-lg text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
+                  {tarifaRows.map((row, idx) => {
+                    // RS1 (D16-2): el precio de la tarifa REEMPLAZA el precio base del grupo de la experiencia
+                    const exp = experiencias.find((e) => e.id === row.expId)
+                    const cubre = exp?.personas_incluidas
+                      ? `cubre hasta ${exp.personas_incluidas} personas`
+                      : 'cubre las personas incluidas'
+                    return (
+                      <div key={idx} className="space-y-1">
+                        <div className="flex items-end gap-2 flex-wrap">
+                          <div className="flex-1 min-w-[180px]">
+                            <label htmlFor={`tarifa-exp-${idx}`} className="block text-xs text-verde-suave mb-1">
+                              Experiencia
+                            </label>
+                            <select
+                              id={`tarifa-exp-${idx}`}
+                              data-testid={`tarifa-exp-${idx}`}
+                              value={row.expId}
+                              onChange={(e) => updateTarifaRow(idx, { expId: e.target.value })}
+                              className="w-full px-3 py-2 border border-neutro-borde rounded-lg text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
+                            >
+                              <option value="">— Selecciona experiencia —</option>
+                              {experiencias.map((e) => (
+                                <option key={e.id} value={e.id}>
+                                  {e.nombre}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="w-40">
+                            <label htmlFor={`tarifa-precio-${idx}`} className="block text-xs text-verde-suave mb-1">
+                              Precio del grupo (MXN)
+                            </label>
+                            <input
+                              id={`tarifa-precio-${idx}`}
+                              data-testid={`tarifa-precio-${idx}`}
+                              type="number"
+                              inputMode="decimal"
+                              min="0.01"
+                              step="0.01"
+                              value={row.precio || ''}
+                              placeholder="Ej: 8000"
+                              aria-describedby={`tarifa-ayuda-${idx}`}
+                              onChange={(e) => updateTarifaRow(idx, { precio: Number(e.target.value) || 0 })}
+                              className="w-full px-3 py-2 border border-neutro-borde rounded-lg text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeTarifaRow(idx)}
+                            aria-label={`Quitar tarifa ${nombreExperiencia(row.expId)}`}
+                            className="p-2 text-rojo hover:bg-rojo/10 rounded-lg mb-0.5"
+                          >
+                            <Trash2 className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                        </div>
+                        <p
+                          id={`tarifa-ayuda-${idx}`}
+                          data-testid={`tarifa-ayuda-${idx}`}
+                          className="text-xs text-verde-suave"
                         >
-                          <option value="">— Selecciona experiencia —</option>
-                          {experiencias.map((exp) => (
-                            <option key={exp.id} value={exp.id}>
-                              {exp.nombre}
-                            </option>
-                          ))}
-                        </select>
+                          Reemplaza el precio base de la experiencia ({cubre}). Los adicionales y los niños se cobran
+                          con el catálogo.
+                          {exp && ` Catálogo: ${formatMXN(exp.precio_por_persona)} el grupo.`}
+                        </p>
                       </div>
-                      <div className="w-28">
-                        <label htmlFor={`tarifa-precio-${idx}`} className="block text-xs text-verde-suave mb-1">
-                          Precio p/p
-                        </label>
-                        <input
-                          id={`tarifa-precio-${idx}`}
-                          type="number"
-                          min="0"
-                          value={row.precio}
-                          onChange={(e) => updateTarifaRow(idx, { precio: Number(e.target.value) || 0 })}
-                          className="w-full px-3 py-2 border border-neutro-borde rounded-lg text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
-                        />
-                      </div>
-                      <div className="w-24">
-                        <label htmlFor={`tarifa-moneda-${idx}`} className="block text-xs text-verde-suave mb-1">
-                          Moneda
-                        </label>
-                        <select
-                          id={`tarifa-moneda-${idx}`}
-                          value={row.moneda}
-                          onChange={(e) =>
-                            updateTarifaRow(idx, { moneda: e.target.value as MonedaTarifa })
-                          }
-                          className="w-full px-3 py-2 border border-neutro-borde rounded-lg text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
-                        >
-                          <option value="MXN">MXN</option>
-                          <option value="USD">USD</option>
-                        </select>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeTarifaRow(idx)}
-                        aria-label={`Quitar tarifa ${nombreExperiencia(row.expId)}`}
-                        className="p-2 text-rojo hover:bg-rojo/10 rounded-lg mb-0.5"
-                      >
-                        <Trash2 className="h-4 w-4" aria-hidden="true" />
-                      </button>
-                    </div>
-                  ))}
+                    )
+                  })}
                   <button
                     type="button"
                     onClick={addTarifaRow}

@@ -32,6 +32,7 @@ import {
   Tags,
   CalendarRange,
   Ticket,
+  TicketPercent,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -115,6 +116,8 @@ const NAV_SECTIONS: NavSection[] = [
       { href: '/admin/pedidos', label: 'Pedidos', icon: ShoppingCart, permiso: 'pedidos' },
       { href: '/admin/productos', label: 'Productos', icon: Leaf, permiso: 'productos' },
       { href: '/admin/suscripciones', label: 'Suscripciones', icon: Repeat, permiso: 'suscripciones' },
+      // Fase 4b (sesión 40): cupones de la tienda y de las reservas privadas (CP1). Permiso nuevo `cupones` (admin y super_admin).
+      { href: '/admin/cupones', label: 'Cupones', icon: TicketPercent, permiso: 'cupones' },
     ],
   },
   {
