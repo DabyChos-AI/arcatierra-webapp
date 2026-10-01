@@ -765,7 +765,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
         <h2 className="text-2xl font-bold text-[#33503E] mb-2">Finalizar Compra</h2>
         <p className="text-sm text-gray-600">
           {hayExperiencias
-            ? 'Completa tus datos, aparta tus lugares y paga con tarjeta'
+            ? 'Completa tus datos, aparta tus lugares y paga con tarjeta o saldo de MercadoPago'
             : session?.user?.email ? 'Verifica tus datos y confirma tu pedido' : 'Completa tus datos para continuar'}
         </p>
       </div>
@@ -1095,7 +1095,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
                 <div className="font-medium">Mercado Pago</div>
                 <div className="text-sm text-gray-500" data-testid="metodo-pago-detalle">
                   {hayExperiencias
-                    ? 'Tarjeta de crédito o débito: se paga al momento'
+                    ? 'Tarjeta o saldo de MercadoPago: se paga al momento'
                     : canasta
                       ? 'Tarjeta o saldo de Mercado Pago: se paga al momento'
                       : 'Tarjetas, OXXO, transferencias bancarias'}
@@ -1239,7 +1239,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
             )}
             {!apartado && !apartadoVencido && (
               <p className="text-center text-xs text-gray-500" data-testid="checkout-apartar-ayuda">
-                Apartamos tus lugares {MINUTOS_APARTADO} minutos; en ese tiempo pagas con tarjeta.
+                Apartamos tus lugares {MINUTOS_APARTADO} minutos; en ese tiempo pagas con tarjeta o saldo de MercadoPago.
               </p>
             )}
             <Button
