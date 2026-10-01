@@ -45,6 +45,7 @@ import {
   type ExperienciaCatalogo,
   type IdiomaCliente,
   type ManifestInvitado,
+  type MotivoNoEnvio,
   type PagoManualResponse,
   type PagoReserva,
   type Personal,
@@ -179,16 +180,48 @@ function textoGuias(g: ResultadoGuias | null | undefined): string {
   return `No se avisó a los guías: ${motivo}.`
 }
 
+// ─── R1 (sesión 41): COT1 · reenviar la cotización desde Pagos (contrato R1 §3.5) ────────────
+
+/** POST /api/admin/reservas/{id}/cotizacion-pdf. `encolado`/`motivo` son de R1 (convención de la
+ *  Fase 2); las llaves de antes se conservan. `email_enviado` NO dice que salió: solo que se pidió. */
+interface CotizacionPdfResponse {
+  pdf_url: string
+  pdf_path: string
+  email_enviado: boolean
+  encolado?: boolean
+  motivo?: MotivoNoEnvio | null
+}
+
+type EstadoReenvioCotizacion =
+  | { tipo: 'quieto' }
+  | { tipo: 'enviando' }
+  | { tipo: 'ok'; texto: string }
+  | { tipo: 'error'; mensaje: string }
+
+/** Nunca prometer el correo: con `encolado` se usa textoCorreo(); sin él, no se afirma nada. */
+function textoReenvioCotizacion(res: CotizacionPdfResponse): string {
+  if (typeof res.encolado === 'boolean') {
+    return `Cotización generada. ${textoCorreo({ encolado: res.encolado, motivo: res.motivo ?? null })}`
+  }
+  return 'Cotización generada. El servidor no dijo si el correo puede salir: revisa la pestaña Comunicaciones.'
+}
+
 // ─── Fase 4b (sesión 40): NI1, CP1 y RS1 en el detalle (contrato F2) ───────────────────────
 
 /** Respuesta del PATCH (C5): el detalle + el cupón, solo si se evaluó un código NUEVO. */
-type RespuestaEdicion = Reserva & { cupon?: CuponEvaluado | null }
+type RespuestaEdicion = Reserva & {
+  cupon?: CuponEvaluado | null
+  /** CUP2 / DR5 (R1, C19): por qué el código NO descontó al marcar o quitar la cortesía (null = nada que avisar). */
+  cupon_motivo?: string | null
+}
 
 /** Lo que dijo el servidor del último código nuevo que se guardó (`detalle-cupon-estado`). */
 interface EstadoCuponGuardado {
-  cupon: CuponEvaluado
+  cupon: CuponEvaluado | null
   /** Lo que de verdad descontó en la reserva (`monto_cupon` guardado). */
   monto: number
+  /** C19 (CUP2): la frase del servidor; si viene, se muestra en lugar de textoCupon(). */
+  motivo: string | null
 }
 
 const TEXTO_SIN_REPRECIO =
@@ -311,6 +344,9 @@ export default function ModalDetalleReserva({
 
   // B6 / D9: «Marcar como realizada»
   const [marcandoRealizada, setMarcandoRealizada] = useState(false)
+
+  // COT1 (R1): «Reenviar cotización» en Pagos
+  const [reenvioCotizacion, setReenvioCotizacion] = useState<EstadoReenvioCotizacion>({ tipo: 'quieto' })
 
   // Correos de la reserva: los comparten las pestañas Comunicaciones y Auditoría (DT1-b)
   const comunicaciones = useComunicaciones(reservaId, token)
@@ -544,9 +580,14 @@ export default function ModalDetalleReserva({
       // la cortesía): refresco silencioso sin vaciar el estado.
       const data = (await res.json().catch(() => null)) as RespuestaEdicion | null
       // `cupon` solo llega si el servidor evaluó un código NUEVO; si no, no se dice nada
+      const motivoCupon = data?.cupon_motivo?.trim() || null
       setCuponGuardado(
-        data?.cupon
-          ? { cupon: data.cupon, monto: Number(data.monto_cupon ?? data.cupon.descuento ?? 0) }
+        data?.cupon || motivoCupon
+          ? {
+              cupon: data?.cupon ?? null,
+              monto: Number(data?.monto_cupon ?? data?.cupon?.descuento ?? 0),
+              motivo: motivoCupon,
+            }
           : null,
       )
       if (data && data.id === reserva.id && data.booking_id) setReserva(data)
@@ -888,6 +929,44 @@ export default function ModalDetalleReserva({
     }
   }
 
+  // COT1 (R1 §3.5): genera el PDF con los montos de hoy y pide mandarlo al correo de la reserva
+  // (email_destino null). La guardia del back decide si sale; aquí solo se dice lo que respondió.
+  async function reenviarCotizacion() {
+    if (!token || !reserva || reserva.cortesia) return
+    if (
+      !window.confirm(
+        `¿Reenviar la cotización de la reserva ${reserva.booking_id}? Se genera el PDF con los montos de hoy y se pide mandarlo al correo del cliente.`,
+      )
+    ) {
+      return
+    }
+    setReenvioCotizacion({ tipo: 'enviando' })
+    try {
+      const res = await fetch(`${API_URL}/api/admin/reservas/${reserva.id}/cotizacion-pdf`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ enviar_por_email: true, email_destino: null }),
+      })
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, res.status))
+      }
+      const data = (await res.json()) as CotizacionPdfResponse
+      setReenvioCotizacion({ tipo: 'ok', texto: textoReenvioCotizacion(data) })
+    } catch (err) {
+      setReenvioCotizacion({
+        tipo: 'error',
+        mensaje:
+          err instanceof Error && !(err instanceof TypeError)
+            ? err.message
+            : 'sin conexión con el servidor',
+      })
+    }
+  }
+
   // Resultados de los sub-modales (Fase 2): un toast que dice qué pasó con los correos y links
   function alReagendar(res: ReagendarResponse) {
     mostrarAvisos(res.avisos)
@@ -1073,6 +1152,8 @@ export default function ModalDetalleReserva({
               cortesia={reserva.cortesia === true}
               onAbrirPagoManual={() => setShowPagoManual(true)}
               onAbrirLinkMP={() => setShowLinkMP(true)}
+              reenvioCotizacion={reenvioCotizacion}
+              onReenviarCotizacion={reenviarCotizacion}
             />
           )}
           {tab === 'comunicaciones' && <TabComunicaciones estado={comunicaciones} />}
@@ -1203,7 +1284,12 @@ function TabDatos({
   const cot = reserva.cotizacion
   // F2: las del Sheet nunca se re-precian (C5)
   const sinReprecio = cot?.se_reprecia === false
-  const textoCuponGuardado = cuponGuardado ? textoCupon(cuponGuardado.cupon, cuponGuardado.monto) : ''
+  // C19 (CUP2/DR5): la frase del servidor manda; si no viene, la del cupón evaluado
+  const textoCuponGuardado = cuponGuardado
+    ? cuponGuardado.motivo ||
+      (cuponGuardado.cupon ? textoCupon(cuponGuardado.cupon, cuponGuardado.monto) : '')
+    : ''
+  const cuponGuardadoAplicado = !!cuponGuardado?.cupon?.aplicado && !cuponGuardado.motivo
   const updateForm = <K extends keyof FormDatos>(field: K, value: FormDatos[K]) => {
     setForm((prev) => (prev ? { ...prev, [field]: value } : prev))
   }
@@ -1570,7 +1656,7 @@ function TabDatos({
               data-testid="detalle-cupon-estado"
               role="status"
               className={`text-xs mt-1 ${
-                cuponGuardado.cupon.aplicado ? 'font-medium text-verde' : 'text-verde-suave'
+                cuponGuardadoAplicado ? 'font-medium text-verde' : 'text-verde-suave'
               }`}
             >
               {textoCuponGuardado}
@@ -2314,6 +2400,8 @@ function TabPagos({
   cortesia,
   onAbrirPagoManual,
   onAbrirLinkMP,
+  reenvioCotizacion,
+  onReenviarCotizacion,
 }: {
   reserva: Reserva
   totalPagado: number
@@ -2321,6 +2409,8 @@ function TabPagos({
   cortesia: boolean
   onAbrirPagoManual: () => void
   onAbrirLinkMP: () => void
+  reenvioCotizacion: EstadoReenvioCotizacion
+  onReenviarCotizacion: () => void
 }) {
   const pagos = reserva.pagos ?? []
   const total = Number(reserva.monto_total)
@@ -2403,7 +2493,9 @@ function TabPagos({
         </div>
       )}
 
-      <div className="bg-white border border-neutro-borde rounded-lg overflow-hidden">
+      {/* R1: a 390 px las 6 columnas no caben; la tabla se desplaza aquí dentro (antes se cortaban
+          Estado y Ref MP con overflow-hidden) */}
+      <div className="bg-white border border-neutro-borde rounded-lg overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-neutro-light border-b border-neutro-borde">
@@ -2488,7 +2580,7 @@ function TabPagos({
       </div>
 
       {!cortesia && (
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={onAbrirPagoManual}
@@ -2505,7 +2597,40 @@ function TabPagos({
             <CreditCard className="h-4 w-4" aria-hidden="true" />
             Generar link MP
           </button>
+          {/* COT1 (R1): si el correo de la cotización falló, se reenvía desde aquí (antes, a mano) */}
+          <button
+            type="button"
+            data-testid="detalle-reenviar-cotizacion"
+            onClick={onReenviarCotizacion}
+            disabled={reenvioCotizacion.tipo === 'enviando'}
+            className="inline-flex items-center gap-2 border border-neutro-borde text-verde hover:bg-neutro-light px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {reenvioCotizacion.tipo === 'enviando' ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <Mail className="h-4 w-4" aria-hidden="true" />
+            )}
+            Reenviar cotización
+          </button>
         </div>
+      )}
+      {!cortesia && reenvioCotizacion.tipo === 'ok' && (
+        <p
+          data-testid="detalle-cotizacion-resultado"
+          role="status"
+          className="bg-verde/10 border border-verde/30 rounded-lg p-3 text-sm text-verde"
+        >
+          {reenvioCotizacion.texto}
+        </p>
+      )}
+      {!cortesia && reenvioCotizacion.tipo === 'error' && (
+        <p
+          data-testid="detalle-cotizacion-error"
+          role="alert"
+          className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo"
+        >
+          No se pudo reenviar la cotización: {reenvioCotizacion.mensaje}
+        </p>
       )}
     </div>
   )
@@ -2706,13 +2831,23 @@ function truncar(texto: string, max: number): string {
   return texto.length > max ? `${texto.slice(0, max - 1)}…` : texto
 }
 
-/** Tipo de plantilla en español; los avisos sin plantilla (tipo NULL) se nombran por su asunto. */
+/** EM1 (R1 §3.7): `tipo` de los correos SIN plantilla, que desde R1 también llegan en `tipo`
+ *  (COALESCE(e.tipo, p.tipo), §3.6). Los de plantilla se nombran con TIPO_LABELS. */
+const TIPO_CORREO_SIN_PLANTILLA: Record<string, string> = {
+  interna: 'Aviso interno',
+  guias: 'Aviso a guías',
+  catering: 'Correo de catering',
+  aviso_movida: 'Aviso web: fecha movida',
+  aviso_cancelada: 'Aviso web: fecha cancelada',
+  aviso_reactivada: 'Aviso web: fecha reactivada',
+  recordatorio_web: 'Recordatorio (compra web)',
+}
+
+/** Tipo de plantilla en español; los avisos sin plantilla se nombran por su asunto. Los asuntos
+ *  especiales (sin plantilla, sin correo, PDF fallido) van primero: desde R1 esas filas también
+ *  traen `tipo` y si no se perdería el porqué. */
 function etiquetaComunicacion(c: Comunicacion): string {
-  if (c.tipo) return (TIPO_LABELS as Record<string, string>)[c.tipo] ?? c.tipo
   const asunto = (c.asunto ?? '').trim()
-  if (asunto.startsWith('Nueva reserva')) return 'Aviso interno: nueva reserva'
-  // RG1: avisar_guias_reagendamiento (asunto exacto «Cambio de fecha: {folio} — {experiencia}»)
-  if (asunto.startsWith('Cambio de fecha:')) return 'Aviso a guía: cambio de fecha'
   // _enviar_para_reserva registra «(plantilla <tipo>/<idioma> faltante)» cuando no hay plantilla
   const faltante = /^\(plantilla ([a-z_]+)\/[a-z]+ faltante\)$/.exec(asunto)
   if (faltante) {
@@ -2721,6 +2856,12 @@ function etiquetaComunicacion(c: Comunicacion): string {
   }
   if (asunto.includes('falta email')) return 'Correo al cliente (sin correo registrado)'
   if (asunto.includes('PDF cotizacion')) return 'Cotización (no se generó el PDF)'
+  const deplantilla = c.tipo ? (TIPO_LABELS as Record<string, string>)[c.tipo] : undefined
+  if (deplantilla) return deplantilla
+  if (asunto.startsWith('Nueva reserva')) return 'Aviso interno: nueva reserva'
+  // RG1: avisar_guias_reagendamiento (asunto exacto «Cambio de fecha: {folio} — {experiencia}»)
+  if (asunto.startsWith('Cambio de fecha:')) return 'Aviso a guía: cambio de fecha'
+  if (c.tipo) return TIPO_CORREO_SIN_PLANTILLA[c.tipo] ?? c.tipo
   return 'Aviso interno'
 }
 

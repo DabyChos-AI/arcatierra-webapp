@@ -81,6 +81,14 @@ export const MOCK_PLANTILLA: Record<string, string> = {
   // Fase 3 (N4b): la propina aparte, como recomendación (monto_total la incluye)
   total_sin_propina: '13,090.00',
   total_con_propina: '15,400.00',
+  // TPL1 (R1): las 4 del cupón (Fase 4b, CP1), con los MISMOS nombres que `_construir_contexto_reserva`
+  // de services/email_reservas.py. La muestra lleva un cupón fijo de $1,000 para que la vista previa
+  // nunca las pinte vacías, y cuadra con los totales de arriba: experiencia + add-ons 14,090.00
+  // − cupón 1,000.00 = total_sin_propina 13,090.00; + propina 2,310.00 = monto_total 15,400.00.
+  monto_cupon: '1,000.00',
+  codigo_cupon: 'BIENVENIDA',
+  descuento_manual: '0.00',
+  monto_descuento: '1,000.00',
 }
 
 // Variables Jinja2 disponibles para los chips clickeables del editor.
@@ -99,6 +107,10 @@ export const VARIABLES_JINJA: { key: string; descripcion: string }[] = [
   { key: 'propina_monto', descripcion: 'Propina sugerida (opcional, no facturable)' },
   { key: 'total_sin_propina', descripcion: 'Total de la experiencia SIN propina (lo facturable)' },
   { key: 'total_con_propina', descripcion: 'Total con la propina sugerida (= monto_total)' },
+  { key: 'monto_cupon', descripcion: 'Descuento del cupón con formato (0.00 si no lleva cupón)' },
+  { key: 'codigo_cupon', descripcion: 'Código del cupón aplicado (vacío si no lleva cupón)' },
+  { key: 'descuento_manual', descripcion: 'Descuento manual con formato (sin el cupón)' },
+  { key: 'monto_descuento', descripcion: 'Descuento total = manual + cupón (lo que el cliente ve como descuento)' },
   { key: 'guias_lista', descripcion: 'Guías asignados (CSV)' },
   { key: 'hora_fin', descripcion: 'Hora de término HH:MM (vacía si la reserva no la tiene)' },
   { key: 'fecha_anterior', descripcion: 'Solo Reagendamiento: fecha antes del cambio' },

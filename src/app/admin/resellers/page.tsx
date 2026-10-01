@@ -510,7 +510,9 @@ export default function ResellersPage() {
               <p className="text-sm mt-1">Ajusta los filtros o agrega un nuevo reseller.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            // UI6 (R1): el contenedor con scroll es un «container» (inline-size) para que la ficha
+            // expandida mida exactamente su ancho visible (100cqw), no el de la pantalla.
+            <div className="overflow-x-auto [container-type:inline-size]">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-neutro-light border-b border-neutro-borde text-left">
@@ -601,10 +603,16 @@ export default function ResellersPage() {
                         </tr>
                         {expanded && (
                           <tr className="bg-neutro-light/30">
-                            <td colSpan={7} className="px-4 py-3">
+                            <td colSpan={7} className="p-0">
                               {/* La ficha se queda a la vista (sticky) aunque la tabla de resellers se desplace a lo
-                                  ancho en el celular; su propia tabla de meses tiene su overflow-x-auto. */}
-                              <div className="sticky left-0 max-w-[calc(100vw-5rem)] space-y-3">
+                                  ancho en el celular; su propia tabla de meses tiene su overflow-x-auto.
+                                  UI6 (R1): mide el ancho VISIBLE del contenedor (100cqw) y la celda va sin
+                                  padding. Antes medía 100vw-5rem: a 390 px eran 18 px más que lo visible y el
+                                  sticky la dejaba corrida (a la derecha sin desplazar, a la izquierda al final). */}
+                              <div
+                                data-testid="reseller-detalle"
+                                className="sticky left-0 w-[100cqw] px-4 py-3 space-y-3"
+                              >
                                 {detalleLoading ? (
                                   <div className="flex items-center gap-2 text-sm text-verde-suave">
                                     <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />

@@ -99,6 +99,18 @@ const nextConfig = {
     return config
   },
 
+  // ── Páginas retiradas (R1 · sesión 41, decisiones de David) ──────────
+  // DR2: /experiencias-antigua y /experiencias-privadas; C1 (12:16 UTC): /experiencias-premium, huérfana y con un
+  // formulario que fingía enviar. Su código se queda (no se borra nada); el visitante y las ligas viejas llegan a
+  // /experiencias. `permanent: true` = 308 (los buscadores cambian la liga guardada).
+  async redirects() {
+    return [
+      { source: '/experiencias-antigua', destination: '/experiencias', permanent: true },
+      { source: '/experiencias-privadas', destination: '/experiencias', permanent: true },
+      { source: '/experiencias-premium', destination: '/experiencias', permanent: true },
+    ]
+  },
+
   // ── Headers de seguridad ─────────────────────────────────────────────
   // OJO: estos headers vivían en `next.config.ts`, pero Next da precedencia
   // a `.js` sobre `.ts`, así que NUNCA se aplicaron en producción (verificado

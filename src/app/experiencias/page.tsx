@@ -6,8 +6,30 @@ import HeroCarousel from '@/components/HeroCarousel';
 import ExperienceCard from '@/components/ExperienceCard';
 import { Experiencia } from '@/data/experiencias';
 import { API_URL } from '@/lib/api';
+import { textoGrupoPrivada } from '@/app/experiencias/[slug]/precio-privada';
 
 type FiltroTipo = 'todas' | 'publica' | 'privada' | 'destacados';
+
+/** Lo que esta página lee de un item de GET /api/experiencias (ExperienciaResponse del backend). */
+interface ExperienciaApi {
+  id: string;
+  slug: string;
+  nombre: string;
+  tipo: string;
+  precio: number;
+  precio_nino?: number | null; // el esquema público no lo trae (R1 §8)
+  precio_persona_adicional: number;
+  personas_incluidas: number | null;
+  descripcion: string;
+  duracion_horas: number;
+  incluye: string[];
+  imagen_principal: string;
+  disponible: boolean;
+}
+
+/** SL1 (R1): 100 por página y se recorren las que haya, con tope (antes `limit=50` cortaba la lista). */
+const EXPERIENCIAS_POR_PAGINA = 100;
+const MAX_PAGINAS = 10;
 
 // Helper: convertir nombres de mayúsculas a sentence case
 function toSentenceCase(text: string): string {
@@ -46,6 +68,8 @@ function ExperienciasPageContent() {
   const [filtroActivo, setFiltroActivo] = useState<FiltroTipo>(tipoParam || 'todas');
   const [experiencias, setExperiencias] = useState<Experiencia[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // La API no respondió (sin experiencias que mostrar): se dice, en vez de dejar las secciones vacías
+  const [errorCarga, setErrorCarga] = useState(false);
 
   // Aplicar filtro desde URL al cargar y hacer scroll a experiencias
   useEffect(() => {
@@ -67,19 +91,24 @@ function ExperienciasPageContent() {
     const fetchExperiencias = async () => {
       setIsLoading(true);
       try {
-        // Intentar primero con la URL externa, luego con localhost como fallback
-        let response = await fetch(`${API_URL}/api/experiencias?limit=50`);
-        
-        if (!response.ok) {
-          console.log('Intentando con localhost como fallback...');
-          response = await fetch('http://localhost:8000/api/experiencias?limit=50');
+        // Todas las páginas (100 por página, tope MAX_PAGINAS). Si una falla, se muestra lo que ya llegó.
+        const items: ExperienciaApi[] = [];
+        let paginas = 1;
+        let fallo = false;
+        for (let page = 1; page <= Math.min(paginas, MAX_PAGINAS); page++) {
+          const response = await fetch(`${API_URL}/api/experiencias?limit=${EXPERIENCIAS_POR_PAGINA}&page=${page}`);
+          if (!response.ok) {
+            fallo = true;
+            break;
+          }
+          const data: { items?: ExperienciaApi[]; pages?: number } = await response.json();
+          items.push(...(Array.isArray(data.items) ? data.items : []));
+          paginas = typeof data.pages === 'number' ? data.pages : 1;
         }
         
-        if (response.ok) {
-          const data = await response.json();
-          
+        if (items.length > 0 || !fallo) {
           // Mapear experiencias de API a formato local
-          const experienciasMapeadas: Experiencia[] = data.items.map((exp: any) => {
+          const experienciasMapeadas: Experiencia[] = items.map((exp) => {
             // Mapear tipo de experiencia (ya viene correcto desde API)
             const tipoMapeado = mapearTipoExperiencia(exp.tipo || '')
             
@@ -91,7 +120,9 @@ function ExperienciasPageContent() {
             precio: {
               base: exp.precio,
               nino: exp.precio_nino || null,
-              capacidad: tipoMapeado === 'publica' ? 'por persona' : 'hasta 10 personas'
+              adicional: exp.precio_persona_adicional || 0,
+              // WEB2 (DR4): una privada se cobra por grupo con las personas que dice la API (antes «hasta 10» fijo)
+              capacidad: tipoMapeado === 'publica' ? 'por persona' : textoGrupoPrivada(exp.personas_incluidas)
             },
             seo: {
               title: `${toSentenceCase(exp.nombre)} - Arca Tierra`,
@@ -120,11 +151,11 @@ function ExperienciasPageContent() {
           console.log(`Cargadas ${experienciasMapeadas.length} experiencias desde la API`);
         } else {
           console.error('Error cargando experiencias de la API');
-          // Aquí podrías cargar datos de fallback si es necesario
+          setErrorCarga(true);
         }
       } catch (error) {
         console.error('Error conectando con la API de experiencias:', error);
-        // Aquí podrías cargar datos de fallback si es necesario
+        setErrorCarga(true);
       } finally {
         setIsLoading(false);
       }
@@ -222,6 +253,14 @@ function ExperienciasPageContent() {
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-verde-principal mx-auto mb-4"></div>
             <p className="text-lg text-gray-600">Cargando experiencias...</p>
           </div>
+        </section>
+      )}
+
+      {!isLoading && errorCarga && (
+        <section className="py-12 px-4 md:px-8">
+          <p data-testid="exp-error" role="alert" className="max-w-7xl mx-auto text-center text-lg text-gray-600">
+            No pudimos cargar las experiencias. Recarga la página en un momento.
+          </p>
         </section>
       )}
 

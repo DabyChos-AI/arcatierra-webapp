@@ -171,6 +171,7 @@ export type MotivoNoEnvio =
   | 'no_solicitado'
   | 'reserva_no_encontrada'
   | 'sin_guias'
+  | 'cortesia'
 
 export const MOTIVO_NO_ENVIO_TEXTO: Record<MotivoNoEnvio, string> = {
   origen_sheet: 'la reserva viene del Sheet de planeación (esas no reciben correos)',
@@ -183,6 +184,8 @@ export const MOTIVO_NO_ENVIO_TEXTO: Record<MotivoNoEnvio, string> = {
   no_solicitado: 'no se pidió avisar',
   reserva_no_encontrada: 'no se encontró la reserva',
   sin_guias: 'la reserva no tiene guías asignados',
+  // R1 (C6): la casilla «Enviar cotización» en una cortesía (las cortesías no se cotizan)
+  cortesia: 'es una cortesía (las cortesías no se cotizan)',
 }
 
 /** Resultado de un correo que el endpoint encoló (o no) al CLIENTE. */

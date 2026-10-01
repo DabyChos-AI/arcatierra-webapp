@@ -20,6 +20,7 @@ import {
 import { formatFechaHoraMexico } from '@/lib/dates'
 import { formatMXN } from '@/types/reservas'
 import { API_URL } from '@/lib/api'
+import { useVendedoras, vendedoraFueraDeLista } from '@/hooks/useVendedoras'
 import {
   CateringItem,
   CateringListResponse,
@@ -53,7 +54,13 @@ export default function CateringPage() {
   // Datos
   const [items, setItems] = useState<CateringItem[]>([])
   const [stats, setStats] = useState<CateringStats | null>(null)
-  const [vendedores, setVendedores] = useState<Vendedor[]>([])
+  // VD1 (R1): la misma lista de vendedoras que Leads y Reservas (fuente única, `useVendedoras`).
+  // Aquí se ordena por nombre, como antes.
+  const vendedorasEstado = useVendedoras(token)
+  const vendedores = useMemo<Vendedor[]>(
+    () => [...vendedorasEstado.vendedoras].sort((a, b) => a.nombre.localeCompare(b.nombre)),
+    [vendedorasEstado.vendedoras],
+  )
   const [loading, setLoading] = useState(true)
   const [statsLoading, setStatsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -72,6 +79,14 @@ export default function CateringPage() {
   // Modales
   const [nuevaOpen, setNuevaOpen] = useState(false)
   const [detalle, setDetalle] = useState<CateringItem | null>(null)
+
+  // Una solicitud asignada a quien ya no vende: su nombre se sigue viendo en el detalle (no «Sin asignar»)
+  const vendedoresDetalle = useMemo<Vendedor[]>(() => {
+    const fuera = detalle
+      ? vendedoraFueraDeLista(vendedorasEstado, detalle.vendedor_asignado_id, detalle.vendedor_nombre)
+      : null
+    return fuera ? [...vendedores, fuera] : vendedores
+  }, [detalle, vendedorasEstado, vendedores])
 
   // ─── Fetchers ──────────────────────────────────────────────
   const fetchStats = useCallback(async () => {
@@ -128,42 +143,6 @@ export default function CateringPage() {
     }
   }, [token, page, filtroEstado, filtroVendedor, fechaDesde, fechaHasta, busqueda])
 
-  // Vendedores para el dropdown (fallback silencioso si falla)
-  const fetchVendedores = useCallback(async () => {
-    if (!token) return
-    try {
-      const res = await fetch(
-        `${API_URL}/api/admin/personal?es_vendedor=true`,
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
-      if (!res.ok) return
-      const data = await res.json()
-      // Tolera tanto {items:[...]} (contrato Fase E) como un array plano.
-      const arr: Array<{
-        id: string
-        nombre: string
-        apellidos?: string | null
-        activo?: boolean
-        es_vendedor?: boolean
-      }> = Array.isArray(data?.items)
-        ? data.items
-        : Array.isArray(data)
-          ? data
-          : []
-      setVendedores(
-        arr
-          .filter((p) => p.activo !== false)
-          .map((p) => ({
-            id: String(p.id),
-            nombre: `${p.nombre}${p.apellidos ? ` ${p.apellidos}` : ''}`.trim(),
-          }))
-          .sort((a, b) => a.nombre.localeCompare(b.nombre)),
-      )
-    } catch {
-      /* dropdown vacío si falla — el filtro "Todos" sigue funcionando */
-    }
-  }, [token])
-
   // Reset page al cambiar filtros
   useEffect(() => {
     setPage(1)
@@ -176,10 +155,6 @@ export default function CateringPage() {
   useEffect(() => {
     fetchStats()
   }, [fetchStats])
-
-  useEffect(() => {
-    fetchVendedores()
-  }, [fetchVendedores])
 
   // Debounce búsqueda 300ms
   useEffect(() => {
@@ -377,6 +352,23 @@ export default function CateringPage() {
                 </option>
               ))}
             </select>
+            {vendedorasEstado.error && (
+              <p
+                data-testid="catering-vendedoras-error"
+                role="alert"
+                className="flex flex-wrap items-center gap-2 text-xs text-rojo"
+              >
+                No se pudo cargar la lista de vendedoras ({vendedorasEstado.error}).
+                <button
+                  type="button"
+                  data-testid="catering-vendedoras-reintentar"
+                  onClick={vendedorasEstado.recargar}
+                  className="underline hover:no-underline"
+                >
+                  Reintentar
+                </button>
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col gap-1">
@@ -607,7 +599,7 @@ export default function CateringPage() {
           key={detalle.id}
           item={detalle}
           token={token}
-          vendedores={vendedores}
+          vendedores={vendedoresDetalle}
           onClose={() => setDetalle(null)}
           onChanged={handleChanged}
           onDeleted={handleDeleted}

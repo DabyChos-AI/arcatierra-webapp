@@ -17,6 +17,7 @@ import { formatMXN } from '@/types/reservas';
 import type { FechaPublica } from '@/types/compra-experiencias';
 import SelectorFecha, { esVendible } from '@/components/experiencias/SelectorFecha';
 import { decodificarSlug, normalizarSlug } from './slug';
+import { personasIncluidasValidas, textoAdicionalPrivada, textoGrupoPrivada } from './precio-privada';
 
 // ─── Rama pública: compra en línea de una fecha (F2, Fase 4a de PLAN-EXP-SIN-FALLAS) ─────
 /** Cuántas próximas fechas de la experiencia se ofrecen en «Reservar Ahora». */
@@ -81,6 +82,25 @@ function detalleLegible(detail: unknown): string {
   return 'Revisa los datos del formulario.';
 }
 
+/** Lo que esta página lee de un item de GET /api/experiencias (ExperienciaResponse del backend). */
+interface ExperienciaApi {
+  id: string;
+  slug: string;
+  nombre: string;
+  tipo: 'publica' | 'privada';
+  precio: number;
+  precio_nino?: number | null; // el esquema público no lo trae (R1 §8): queda null
+  precio_persona_adicional: number;
+  personas_incluidas: number | null;
+  descripcion: string;
+  duracion_horas: number;
+  incluye: string[];
+  informacion_importante: string[];
+  imagen_principal: string;
+  galeria_imagenes: string[];
+  disponible: boolean;
+}
+
 interface ExperienciaPageProps {
   params: Promise<{
     slug: string;
@@ -93,6 +113,9 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
   const { data: session } = useSession();
   const [experiencia, setExperiencia] = useState<Experiencia | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  // SL1: la API falló (distinto de «no existe», que da notFound()). `intentoCarga` vuelve a pedirla.
+  const [errorCarga, setErrorCarga] = useState(false);
+  const [intentoCarga, setIntentoCarga] = useState(0);
   const [showReservationModal, setShowReservationModal] = useState(false);
   const [galeriaIndex, setGaleriaIndex] = useState(0);
 
@@ -252,31 +275,25 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
   useEffect(() => {
     const fetchExperiencia = async () => {
       setIsLoading(true);
+      setErrorCarga(false);
       try {
-        // Primero obtener todas las experiencias para encontrar por slug
-        let response = await fetch(`${API_URL}/api/experiencias?limit=50`);
-        
-        if (!response.ok) {
-          console.log('Intentando con localhost como fallback...');
-          response = await fetch('http://localhost:8000/api/experiencias?limit=50');
-        }
-        
+        // SL1 (R1): la API busca por slug (`?slug=`, 0 o 1 item). Antes se bajaban 50 y se buscaba aquí:
+        // la experiencia 51 daba 404. WEB-f: Next 15 entrega el parámetro codificado («bebidas-bald%C3%ADo»);
+        // se manda decodificado y la API normaliza igual que slug.ts.
+        const pedido = decodificarSlug(slug);
+        const response = await fetch(`${API_URL}/api/experiencias?slug=${encodeURIComponent(pedido)}`);
+
         if (response.ok) {
-          const data = await response.json();
-          
-          // Buscar experiencia por slug. WEB-f: Next 15 entrega el parámetro codificado
-          // («bebidas-bald%C3%ADo») y la API manda «bebidas-baldío»: con === daba 404.
-          // Primero la coincidencia exacta; si no, normalizados (sin acentos, ñ→n), así
-          // abren /bebidas-baldío, /bebidas-bald%C3%ADo y /bebidas-baldio.
-          const pedido = decodificarSlug(slug);
+          const data: { items?: ExperienciaApi[] } = await response.json();
+          const items = Array.isArray(data.items) ? data.items : [];
+
+          // La misma comparación de siempre como resguardo (exacta y luego normalizada: abren
+          // /bebidas-baldío, /bebidas-bald%C3%ADo y /bebidas-baldio): solo se pinta la que coincide.
           const pedidoNormalizado = normalizarSlug(pedido);
           const expEncontrada =
-            data.items.find((exp: { slug?: string | null }) => exp.slug === pedido) ??
-            data.items.find(
-              (exp: { slug?: string | null }) =>
-                typeof exp.slug === 'string' && normalizarSlug(exp.slug) === pedidoNormalizado
-            );
-          
+            items.find((exp) => exp.slug === pedido) ??
+            items.find((exp) => typeof exp.slug === 'string' && normalizarSlug(exp.slug) === pedidoNormalizado);
+
           if (expEncontrada) {
             // Mapear a formato local
             const experienciaMapeada: Experiencia = {
@@ -288,7 +305,8 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                 base: expEncontrada.precio,
                 nino: expEncontrada.precio_nino || null,
                 adicional: expEncontrada.precio_persona_adicional || 0,
-                capacidad: expEncontrada.tipo === 'publica' ? 'por persona' : 'hasta 10 personas'
+                // WEB2 (DR4): una privada se cobra por grupo con las personas que dice la API (antes «hasta 10» fijo)
+                capacidad: expEncontrada.tipo === 'publica' ? 'por persona' : textoGrupoPrivada(expEncontrada.personas_incluidas)
               },
               seo: {
                 title: `${expEncontrada.nombre} - Arca Tierra`,
@@ -316,29 +334,30 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
             
             setExperiencia(experienciaMapeada);
             // Pista del formulario privado: solo con un número real de la API (C4).
-            const incluidas: unknown = expEncontrada.personas_incluidas;
-            setPersonasIncluidas(
-              typeof incluidas === 'number' && Number.isInteger(incluidas) && incluidas > 0
-                ? incluidas
-                : null
-            );
+            setPersonasIncluidas(personasIncluidasValidas(expEncontrada.personas_incluidas));
             console.log(`Experiencia ${slug} cargada desde la API`);
           } else {
             console.error(`Experiencia con slug "${slug}" no encontrada`);
             // No setear experiencia, quedará null para trigger notFound()
           }
+        } else if (response.status === 400 || response.status === 404 || response.status === 422) {
+          // Un slug que la API rechaza (p. ej. de más de 300 caracteres) es una experiencia que no existe: notFound()
+          console.error(`Experiencia con slug "${slug}" rechazada por la API (${response.status})`);
         } else {
+          // SL1: una falla de la API no es «no existe» (antes daba la página 404)
           console.error('Error cargando experiencias de la API');
+          setErrorCarga(true);
         }
       } catch (error) {
         console.error('Error conectando con la API de experiencias:', error);
+        setErrorCarga(true);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchExperiencia();
-  }, [slug]);
+  }, [slug, intentoCarga]);
 
   // Rama pública: próximas fechas de esta experiencia (feed público filtrado por experiencia_id, hasta 6)
   const experienciaIdPublica = experiencia && experiencia.tipo !== 'privada' ? experiencia.id : null;
@@ -348,11 +367,16 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
     const cargarFechas = async () => {
       setErrorFechasWeb(null);
       try {
-        const res = await fetch(`${API_URL}/api/calendario/eventos?limit=100`);
+        // FEED1 (R1): el feed filtra por experiencia en el servidor. Antes se bajaban 100 fechas de todas y se
+        // filtraba aquí: una experiencia con fechas más allá de la 100 se quedaba sin ellas.
+        const res = await fetch(
+          `${API_URL}/api/calendario/eventos?experiencia_id=${encodeURIComponent(experienciaIdPublica)}&limit=${MAX_FECHAS_SLUG}`
+        );
         if (!res.ok) throw new Error(String(res.status));
         const data: { items?: FechaPublica[] } = await res.json();
         const items = Array.isArray(data.items) ? data.items : [];
         if (vigente) {
+          // El filtro se queda como resguardo: solo fechas de ESTA experiencia
           setFechasWeb(items.filter((f) => f.experiencia_id === experienciaIdPublica).slice(0, MAX_FECHAS_SLUG));
         }
       } catch {
@@ -383,6 +407,25 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-verde-principal mx-auto mb-4"></div>
           <p className="text-lg text-gray-600">Cargando experiencia...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!experiencia && errorCarga) {
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-24 flex items-center justify-center px-4">
+        <div data-testid="slug-error-carga" role="alert" className="text-center max-w-md">
+          <h1 className="text-2xl font-playfair font-bold text-gray-800 mb-3">No pudimos cargar la experiencia</h1>
+          <p className="text-gray-600 mb-6">Intenta de nuevo en un momento.</p>
+          <button
+            type="button"
+            data-testid="slug-reintentar"
+            onClick={() => setIntentoCarga((n) => n + 1)}
+            className="bg-terracota text-white py-3 px-6 rounded-full font-semibold hover:bg-terracota-oscuro transition-colors duration-300"
+          >
+            Reintentar
+          </button>
         </div>
       </main>
     );
@@ -570,7 +613,7 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                   <div className="text-3xl font-bold text-terracota mb-2">
                     ${formatPrice(experiencia.precio.base)}
                   </div>
-                  <div className="text-gray-600">
+                  <div className="text-gray-600" data-testid="slug-precio-capacidad">
                     {experiencia.precio.capacidad}
                   </div>
                   {isPrivate && experiencia.precio.nino && (
@@ -593,11 +636,11 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                       </div>
                     </div>
                   )}
-                  {isPrivate && experiencia.precio.adicional && experiencia.precio.adicional > 0 && (
+                  {/* WEB2 (DR4): «+ $X por persona adicional» solo si es > 0 (antes un 0 se pintaba como «0») */}
+                  {isPrivate && textoAdicionalPrivada(experiencia.precio.adicional) && (
                     <div className="mt-3 pt-3 border-t border-gray-200">
-                      <div className="text-sm text-gray-600">Persona adicional:</div>
-                      <div className="text-xl font-semibold text-verde-principal">
-                        +${formatPrice(experiencia.precio.adicional)}
+                      <div data-testid="slug-precio-adicional" className="text-base font-semibold text-verde-principal">
+                        {textoAdicionalPrivada(experiencia.precio.adicional)}
                       </div>
                     </div>
                   )}
@@ -679,10 +722,14 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
             {isPrivate && (
               <>
                 <h4 className="font-medium text-gray-900 mb-1">{experiencia.nombre}</h4>
-                <p className="text-xl font-bold text-terracota mb-6">
-                  ${formatPrice(experiencia.precio.base)}
-                  <span className="text-sm font-normal"> / por persona</span>
-                </p>
+                {/* WEB2 (DR4): una privada no se cobra «por persona» sino por grupo */}
+                <div data-testid="priv-modal-precio" className="mb-6">
+                  <p className="text-xl font-bold text-terracota">${formatPrice(experiencia.precio.base)}</p>
+                  <p className="text-sm text-gray-600">{experiencia.precio.capacidad}</p>
+                  {textoAdicionalPrivada(experiencia.precio.adicional) && (
+                    <p className="text-sm text-gray-600">{textoAdicionalPrivada(experiencia.precio.adicional)}</p>
+                  )}
+                </div>
               </>
             )}
 

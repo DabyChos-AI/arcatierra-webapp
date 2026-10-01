@@ -4,46 +4,56 @@ import { useState, useEffect } from 'react'
 import ExperienceCard from '@/components/ExperienceCard'
 import { Experiencia } from '@/data/experiencias'
 import { API_URL } from '@/lib/api'
+import { textoGrupoPrivada } from '@/app/experiencias/[slug]/precio-privada'
 
+/**
+ * Lo que la portada lee de un item de GET /api/experiencias (ExperienciaResponse del backend).
+ * WEB2 (R1 · sesión 41): antes leía un arreglo plano y campos que la API no manda (`experiencia_id`, `precio_base`,
+ * `capacidad_min/max`): el `.filter` sobre el sobre `{items, …}` fallaba y la sección quedaba en «No hay
+ * experiencias»; de haber cargado, inventaba «4-30 personas» y un precio de $990. Hoy (1-oct) la sección de
+ * experiencias de la portada está comentada en `app/page.tsx` («TEMPORALMENTE DESHABILITADO»): esto la deja bien
+ * para cuando se vuelva a encender.
+ */
 interface ApiExperiencia {
-  experiencia_id: string
+  id: string
   nombre: string
   descripcion: string
-  descripcion_corta?: string
   slug: string
   tipo: string
-  duracion: string
-  precio_base: number
-  precio_ninos?: number
-  capacidad_min: number
-  capacidad_max: number
-  imagen_principal?: string
-  ubicacion?: string
-  estado?: string
+  duracion_horas: number
+  precio: number
+  precio_persona_adicional: number
+  personas_incluidas: number | null
+  imagen_principal: string
 }
+
+/** Cuántas experiencias públicas muestra la portada. */
+const EXPERIENCIAS_PORTADA = 3
 
 // Helper: mapear API a formato Experiencia
 function mapApiExperiencia(api: ApiExperiencia): Experiencia {
+  const tipo: 'publica' | 'privada' = api.tipo === 'publica' ? 'publica' : 'privada'
   return {
-    id: api.experiencia_id,
+    id: api.id,
     nombre: api.nombre,
     slug: api.slug,
-    tipo: api.tipo as 'publica' | 'privada',
-    descripcionCorta: api.descripcion_corta || api.descripcion || '',
+    tipo,
+    descripcionCorta: api.descripcion || '',
     descripcionCompleta: api.descripcion || '',
-    duracion: api.duracion || '3-4 horas',
+    duracion: `${api.duracion_horas} horas`,
     precio: {
-      base: api.precio_base || 990,
-      nino: api.precio_ninos || null,
-      capacidad: api.capacidad_max ? `${api.capacidad_min}-${api.capacidad_max} personas` : '4-30 personas'
+      base: api.precio,
+      adicional: api.precio_persona_adicional || 0,
+      // Pública: por persona. Privada (WEB2, DR4): por grupo con las personas que dice la API.
+      capacidad: tipo === 'publica' ? 'por persona' : textoGrupoPrivada(api.personas_incluidas)
     },
     seo: {
       title: api.nombre,
-      description: api.descripcion_corta || api.descripcion || ''
+      description: api.descripcion || ''
     },
     imagen: api.imagen_principal || '/images/home/chinampas_xochimilco.png',
     badges: [
-      api.tipo === 'publica' 
+      tipo === 'publica' 
         ? { type: 'publica' as const, label: 'Pública', color: 'text-white', bgColor: 'bg-verde-principal', icon: '👥' }
         : { type: 'privada' as const, label: 'Privada', color: 'text-white', bgColor: 'bg-terracota', icon: '🔒' }
     ],
@@ -56,31 +66,30 @@ function mapApiExperiencia(api: ApiExperiencia): Experiencia {
 export default function ExperienciasGrid() {
   const [experiencias, setExperiencias] = useState<Experiencia[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     const fetchExperiencias = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/experiencias`)
+        // Las primeras públicas (la API ordena por nombre), como antes: filtrar públicas y tomar 3
+        const response = await fetch(`${API_URL}/api/experiencias?tipo=publica&limit=${EXPERIENCIAS_PORTADA}`)
         
         if (response.ok) {
-          const data: ApiExperiencia[] = await response.json()
-          
-          // Filtrar solo públicas y tomar las primeras 3
-          const experienciasPublicas = data
+          const data: { items?: ApiExperiencia[] } = await response.json()
+          const experienciasPublicas = (Array.isArray(data.items) ? data.items : [])
             .filter(exp => exp.tipo === 'publica')
-            .slice(0, 3)
+            .slice(0, EXPERIENCIAS_PORTADA)
             .map(mapApiExperiencia)
           
           setExperiencias(experienciasPublicas)
-          console.log(`✅ ${experienciasPublicas.length} experiencias públicas cargadas desde API`, experienciasPublicas)
         } else {
           console.error('API experiencias respondió con error:', response.status)
           throw new Error(`API error: ${response.status}`)
         }
       } catch (error) {
         console.error('Error fetching experiencias:', error)
-        // Fallback: sin experiencias en caso de error
         setExperiencias([])
+        setError(true)
       } finally {
         setLoading(false)
       }
@@ -107,7 +116,11 @@ export default function ExperienciasGrid() {
   if (experiencias.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600">No hay experiencias disponibles en este momento.</p>
+        <p className="text-gray-600" data-testid={error ? 'grid-error' : 'grid-vacio'} role={error ? 'alert' : undefined}>
+          {error
+            ? 'No pudimos cargar las experiencias. Recarga la página en un momento.'
+            : 'No hay experiencias disponibles en este momento.'}
+        </p>
       </div>
     )
   }

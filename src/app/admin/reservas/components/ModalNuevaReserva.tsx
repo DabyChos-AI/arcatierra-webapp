@@ -13,6 +13,7 @@ import {
   formatMXN,
   initialWizardData,
   redondearCentavos,
+  textoCorreo,
   textoCupon,
   type CuponEvaluado,
   type ExperienciaCatalogo,
@@ -20,6 +21,7 @@ import {
   type Personal,
   type PreciosReserva,
   type Reserva,
+  type ResultadoCorreo,
   type Reseller,
   type WizardAction,
   type WizardAddon,
@@ -85,23 +87,13 @@ const GRUPOS_COCINA: GrupoCatalogo[] = [
   { tipo: 'chef_invitado', etiqueta: 'Chef invitado' },
 ]
 
-const RESELLERS_FALLBACK: Reseller[] = [
-  'Journey',
-  'Jaunt',
-  'Across Mexico',
-  'Santander',
-  'Culinary Backstreets',
-  'Four Seasons',
-  'Hyatt',
-  'TCM',
-  'NOMA',
-  'Embajada Suiza',
-].map((nombre) => ({
-  id: `fallback-${nombre.toLowerCase().replace(/\s+/g, '-')}`,
-  nombre,
-  tipo: 'reseller',
-  activo: true,
-}))
+// RF1 (R1): la lista de resellers sale SOLO de la API. Antes, si fallaba, se ofrecía una lista fija
+// con ids «fallback-*» y el alta mandaba un id falso (400 «reseller_id inválido»). Ahora: aviso,
+// botón de reintentar y el select sin opciones (sin reseller no se avanza; «Cliente directo» sí).
+type EstadoResellers =
+  | { tipo: 'cargando' }
+  | { tipo: 'ok' }
+  | { tipo: 'error'; mensaje: string }
 
 // Lo que el asistente lee de GET /api/admin/leads. `nombre` puede venir NULL (LD4): los leads
 // de la web con solo correo o teléfono.
@@ -150,8 +142,19 @@ type EstadoRevisionCupon =
   | { tipo: 'revisando' }
   | { tipo: 'error'; mensaje: string }
 
-/** Respuesta del alta (C5): el detalle de la reserva + `avisos` + el cupón que evaluó el servidor. */
-type RespuestaAlta = Reserva & { avisos?: string[]; cupon?: CuponEvaluado | null }
+/** Respuesta del alta (C5): el detalle de la reserva + `avisos` + el cupón que evaluó el servidor.
+ *  R1 (C6): `cotizacion_correo` = cómo quedó el correo de la cotización (convención `{encolado, motivo}`
+ *  de la Fase 2); no viene en la API vieja. */
+type RespuestaAlta = Reserva & {
+  avisos?: string[]
+  cupon?: CuponEvaluado | null
+  /** CUP2 / DR5 (R1, C19): por qué el código NO descontó (cortesía, vencido, agotado…); null = nada que avisar. */
+  cupon_motivo?: string | null
+  cotizacion_correo?: ResultadoCorreo | null
+}
+
+/** El aviso que la API vieja mandaba por su cuenta cuando no había correo (con la llave nueva no se repite). */
+const AVISO_COTIZACION_SIN_CORREO_VIEJO = 'La cotización no se envió'
 
 /** Para comparar el código escrito con el evaluado (el backend lo normaliza igual: strip + mayúsculas). */
 function normalizarCodigo(codigo: string): string {
@@ -291,6 +294,16 @@ function aplicarAccion(state: WizardData, action: WizardAction): WizardData {
   }
 }
 
+/** UI5 (R1): el cupón dejó el total en $0 (sin ser cortesía). */
+function totalCubiertoPorCupon(cot: ReturnType<typeof calcularCotizacion>): boolean {
+  return cot.total <= 0 && cot.monto_cupon > 0
+}
+
+/** Con total $0 no hay nada que cobrar: MercadoPago rechaza un link en $0 (el back avisaría el fallo). */
+function sinCobro(wiz: WizardData, cot: ReturnType<typeof calcularCotizacion>): boolean {
+  return wiz.cortesia || cot.total <= 0
+}
+
 function sumarHoras(hora: string, horas: number): string {
   if (!hora || !horas) return ''
   const [h, m] = hora.split(':').map(Number)
@@ -331,7 +344,8 @@ export default function ModalNuevaReserva({
   // Catalogos
   const [experiencias, setExperiencias] = useState<ExperienciaCatalogo[]>([])
   const [addonsCat, setAddonsCat] = useState<ExperienciaCatalogo[]>([])
-  const [resellers, setResellers] = useState<Reseller[]>(RESELLERS_FALLBACK)
+  const [resellers, setResellers] = useState<Reseller[]>([])
+  const [estadoResellers, setEstadoResellers] = useState<EstadoResellers>({ tipo: 'cargando' })
   // LD2-a: la misma lista de vendedoras que Leads, el detalle y la tabla
   const vendedorasEstado = useVendedoras(token)
   const [guias, setGuias] = useState<Personal[]>([])
@@ -417,20 +431,30 @@ export default function ModalNuevaReserva({
 
   const fetchResellers = useCallback(async () => {
     if (!token) return
+    setEstadoResellers({ tipo: 'cargando' })
     try {
       const res = await fetch(`${API_URL}/api/admin/resellers`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      if (!res.ok) return
-      const data = await res.json()
-      const arr: Reseller[] = Array.isArray(data)
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        setEstadoResellers({ tipo: 'error', mensaje: extraerMensajeError(payload, res.status) })
+        return
+      }
+      const data: unknown = await res.json()
+      const items = Array.isArray(data)
         ? data
-        : Array.isArray(data?.items)
-        ? data.items
-        : []
-      if (arr.length > 0) setResellers(arr.filter((r) => r.activo !== false))
+        : Array.isArray((data as { items?: unknown } | null)?.items)
+        ? (data as { items: unknown[] }).items
+        : null
+      if (!items) {
+        setEstadoResellers({ tipo: 'error', mensaje: 'respuesta inesperada del servidor' })
+        return
+      }
+      setResellers((items as Reseller[]).filter((r) => r.activo !== false))
+      setEstadoResellers({ tipo: 'ok' })
     } catch {
-      /* fallback hardcoded ya inicializado */
+      setEstadoResellers({ tipo: 'error', mensaje: 'sin conexión con el servidor' })
     }
   }, [token])
 
@@ -624,8 +648,10 @@ export default function ModalNuevaReserva({
       case 3:
         return true
       case 4:
-        // Cortesía: total $0 a propósito
-        return wiz.cortesia || (cot.total > 0 && wiz.anticipo <= cot.total)
+        // Cortesía: total $0 a propósito. UI5 (R1): un cupón que cubre todo también deja $0 y se
+        // puede seguir (sin link de pago: paso 6). Un $0 sin cupón ni cortesía sigue bloqueado.
+        // (con $0 por cupón el anticipo no aplica: se manda 0)
+        return wiz.cortesia || totalCubiertoPorCupon(cot) || (cot.total > 0 && wiz.anticipo <= cot.total)
       case 5:
         return wiz.vendedorId.trim().length > 0
       case 6:
@@ -690,13 +716,14 @@ export default function ModalNuevaReserva({
         monto_descuento: wiz.descuento,
         motivo_descuento: wiz.motivoDescuento || undefined,
         propina_pct: wiz.propinaPct,
-        monto_anticipo: wiz.cortesia ? 0 : wiz.anticipo,
+        monto_anticipo: sinCobro(wiz, cot) ? 0 : wiz.anticipo,
         vendedor_id: wiz.vendedorId,
         guias_ids: wiz.guiasIds,
         notas_internas: wiz.notasInternas || undefined,
         notas_alergias: wiz.notasAlergias || undefined,
         notas_cliente: wiz.notasCliente || undefined,
-        generar_link_mp: wiz.cortesia ? false : wiz.generarLinkMp,
+        // UI5: con total $0 (cupón que cubre todo) no hay link que generar
+        generar_link_mp: sinCobro(wiz, cot) ? false : wiz.generarLinkMp,
         // Las cortesías no se cotizan (David, 30-sep)
         enviar_cotizacion_pdf: wiz.cortesia ? false : wiz.enviarCotizacionPdf,
       }
@@ -722,11 +749,32 @@ export default function ModalNuevaReserva({
           `El total lo calculó el servidor: ${formatMXN(totalServidor)} (el asistente mostraba ${formatMXN(cot.total)}).`,
         )
       }
-      if (data.cupon && data.cupon.aplicado !== (wiz.cuponEvaluado?.aplicado === true)) {
+      // C19 (CUP2/DR5): si el servidor explica por qué el código no descontó, esa frase manda
+      // (p. ej. cortesía con código: no gasta usos). Si no, el aviso de antes.
+      const motivoCupon = data.cupon_motivo?.trim()
+      if (motivoCupon) {
+        avisos.push(motivoCupon)
+      } else if (data.cupon && data.cupon.aplicado !== (wiz.cuponEvaluado?.aplicado === true)) {
         const aviso = textoCupon(data.cupon, Number(data.monto_cupon ?? data.cupon.descuento))
         if (aviso) avisos.push(aviso)
       }
-      onCreated(data.id, data.booking_id, avisos)
+      // C6 (R1): si se pidió mandar la cotización y NO salió, se dice por qué (textoCorreo). Si se
+      // encoló no es un pendiente: la página solo lista pendientes. Sin la llave (API vieja) no se
+      // promete nada: quedan los avisos del servidor tal cual.
+      // Con cortesía el servidor ya agrega «Cortesía: no se envía cotización.» (TP27): no se repite.
+      const correoCotizacion = data.cotizacion_correo
+      const avisosFinales =
+        body.enviar_cotizacion_pdf === true &&
+        correoCotizacion &&
+        !correoCotizacion.encolado &&
+        correoCotizacion.motivo !== 'no_solicitado' &&
+        correoCotizacion.motivo !== 'cortesia'
+          ? [
+              ...avisos.filter((a) => !a.startsWith(AVISO_COTIZACION_SIN_CORREO_VIEJO)),
+              textoCorreo(correoCotizacion, 'de la cotización al cliente'),
+            ]
+          : avisos
+      onCreated(data.id, data.booking_id, avisosFinales)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al crear reserva')
     } finally {
@@ -748,11 +796,8 @@ export default function ModalNuevaReserva({
   )
 
   // === F1 (C2): precios del servidor para (experiencia, reseller) ===
-  // Un reseller de la lista de respaldo (sin conexión) no tiene id real: se cotiza con el catálogo.
-  const resellerParaPrecios =
-    wiz.tipoCliente === 'reseller' && wiz.resellerId && !wiz.resellerId.startsWith('fallback-')
-      ? wiz.resellerId
-      : ''
+  // RF1: ya no hay lista de respaldo con ids falsos; todo reseller elegido viene de la API.
+  const resellerParaPrecios = wiz.tipoCliente === 'reseller' && wiz.resellerId ? wiz.resellerId : ''
 
   // Vuelve a los precios del catálogo (sin tocar la hora de fin ni los invitados escritos)
   const restaurarPreciosCatalogo = useCallback(
@@ -1012,6 +1057,8 @@ export default function ModalNuevaReserva({
               wiz={wiz}
               dispatch={dispatch}
               resellers={resellers}
+              estadoResellers={estadoResellers}
+              onReintentarResellers={fetchResellers}
               fuentes={catalogos.fuentes}
               onAbrirLeadPicker={abrirLeadPicker}
             />
@@ -1132,15 +1179,20 @@ function Paso1Cliente({
   wiz,
   dispatch,
   resellers,
+  estadoResellers,
+  onReintentarResellers,
   fuentes,
   onAbrirLeadPicker,
 }: {
   wiz: WizardData
   dispatch: React.Dispatch<WizardAction>
   resellers: Reseller[]
+  estadoResellers: EstadoResellers
+  onReintentarResellers: () => void
   fuentes: EstadoCatalogo
   onAbrirLeadPicker: () => void
 }) {
+  const resellersListos = estadoResellers.tipo === 'ok' && resellers.length > 0
   return (
     <div className="space-y-4">
       <fieldset>
@@ -1191,11 +1243,14 @@ function Paso1Cliente({
           </label>
           <select
             id="reseller-select"
+            data-testid="wiz-reseller-select"
             value={wiz.resellerId ?? ''}
             onChange={(e) =>
               dispatch({ type: 'SET_FIELD', field: 'resellerId', value: e.target.value })
             }
-            className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
+            disabled={!resellersListos}
+            aria-describedby={resellersListos ? undefined : 'wiz-resellers-estado'}
+            className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota disabled:bg-neutro-light disabled:cursor-not-allowed"
           >
             <option value="">— Selecciona reseller —</option>
             {resellers.map((r) => (
@@ -1204,6 +1259,45 @@ function Paso1Cliente({
               </option>
             ))}
           </select>
+          {/* RF1: sin lista de la API no se ofrece ningún reseller (nunca ids inventados) */}
+          <div id="wiz-resellers-estado" className="mt-1 text-xs">
+            {estadoResellers.tipo === 'cargando' && (
+              <p
+                data-testid="wiz-resellers-cargando"
+                role="status"
+                className="inline-flex items-center gap-1 text-verde-suave"
+              >
+                <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+                Cargando resellers…
+              </p>
+            )}
+            {estadoResellers.tipo === 'error' && (
+              <div
+                data-testid="wiz-resellers-error"
+                role="alert"
+                className="flex flex-wrap items-center gap-2 bg-rojo-bg border border-rojo/30 rounded-lg p-2 text-rojo"
+              >
+                <span className="flex-1 min-w-0">
+                  No se pudo cargar la lista de resellers ({estadoResellers.mensaje}). Sin la lista no
+                  se puede ligar la reserva a un reseller: reintenta o regístrala como cliente directo.
+                </span>
+                <button
+                  type="button"
+                  data-testid="wiz-resellers-reintentar"
+                  onClick={onReintentarResellers}
+                  className="shrink-0 px-2 py-1 rounded bg-rojo/10 hover:bg-rojo/20 font-medium"
+                >
+                  Reintentar
+                </button>
+              </div>
+            )}
+            {estadoResellers.tipo === 'ok' && resellers.length === 0 && (
+              <p data-testid="wiz-resellers-vacio" className="text-verde-suave">
+                No hay resellers activos. Dalos de alta en Resellers / B2B o registra la reserva como
+                cliente directo.
+              </p>
+            )}
+          </div>
           <label
             htmlFor="cliente-nombre-reseller"
             className="block text-sm font-medium text-verde mb-1 mt-4"
@@ -2076,7 +2170,27 @@ function Paso4Cotizacion({
         </span>
       </div>
 
-      {!wiz.cortesia && (
+      {/* UI5 (R1): por qué un total en $0 deja seguir (cupón) o no (sin cupón ni cortesía) */}
+      {!wiz.cortesia && totalCubiertoPorCupon(cot) && (
+        <p
+          data-testid="wiz-total-cero"
+          className="bg-verde/5 border border-verde/20 rounded-lg p-3 text-sm text-verde"
+        >
+          El cupón cubre todo el total: la reserva queda en $0 sin anticipo ni link de pago. Si en
+          realidad no se va a cobrar, márcala como Cortesía.
+        </p>
+      )}
+      {!wiz.cortesia && cot.total <= 0 && !totalCubiertoPorCupon(cot) && (
+        <p
+          data-testid="wiz-total-cero-sin-cupon"
+          className="bg-amarillo-bg border border-amarillo/40 rounded-lg p-3 text-sm text-verde"
+        >
+          El total quedó en $0. Para registrarla sin cobro marca «Cortesía»; si no, revisa el
+          descuento.
+        </p>
+      )}
+
+      {!sinCobro(wiz, cot) && (
         <>
           <div className="flex flex-wrap items-center gap-2">
             <label htmlFor="cot-anticipo" className="text-sm text-verde w-32">
@@ -2287,6 +2401,8 @@ function Paso6Confirmacion({
   // WZ1: nombres, no IDs, con las listas que el asistente ya cargó
   const reseller = resellers.find((r) => r.id === wiz.resellerId)
   const vendedora = vendedoras.find((v) => v.id === wiz.vendedorId)
+  // UI5: cortesía o total $0 (cupón que cubre todo) = nada que cobrar
+  const sinCobroReserva = sinCobro(wiz, cot)
   return (
     <div className="space-y-4">
       <ResumenSeccion titulo="Cliente">
@@ -2430,7 +2546,7 @@ function Paso6Confirmacion({
         <p className="text-lg font-display text-verde">
           TOTAL: <strong className="tabular-nums">{formatMXN(cot.total)}</strong>
         </p>
-        {!wiz.cortesia && (
+        {!sinCobro(wiz, cot) && (
           <>
             <p>
               Anticipo: <strong className="tabular-nums">{formatMXN(wiz.anticipo)}</strong>
@@ -2454,14 +2570,14 @@ function Paso6Confirmacion({
       <div className="space-y-2 border-t border-neutro-borde pt-4">
         <label
           className={`flex items-center gap-2 text-sm text-verde ${
-            wiz.cortesia ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+            sinCobroReserva ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
           }`}
         >
           <input
             type="checkbox"
             data-testid="wiz-generar-link-mp"
-            checked={wiz.generarLinkMp && !wiz.cortesia}
-            disabled={wiz.cortesia}
+            checked={wiz.generarLinkMp && !sinCobroReserva}
+            disabled={sinCobroReserva}
             onChange={(e) =>
               dispatch({
                 type: 'SET_FIELD',
@@ -2472,8 +2588,12 @@ function Paso6Confirmacion({
             className="w-4 h-4 text-terracota border-neutro-borde rounded focus:ring-terracota"
           />
           Generar link de pago MercadoPago automaticamente
-          {wiz.cortesia && (
+          {wiz.cortesia ? (
             <span className="text-xs text-verde-suave">(no aplica: es cortesía)</span>
+          ) : (
+            sinCobroReserva && (
+              <span className="text-xs text-verde-suave">(no aplica: el total es $0)</span>
+            )
           )}
         </label>
         <label

@@ -6,7 +6,8 @@ import {
   Search, ChevronLeft, ChevronRight, X, Truck, Store,
   AlertTriangle, Eye, Ticket
 } from 'lucide-react'
-import { formatFechaHoraMexico } from '@/lib/dates'
+import { formatFechaHoraMexico, formatFechaMexico } from '@/lib/dates'
+import { textoPersonas } from '@/types/compra-experiencias'
 
 /** Pedido de solo experiencias (Fase 4a, C3): sin envío ni fecha de entrega. */
 const TIPO_ENTREGA_EXPERIENCIA = 'experiencia'
@@ -27,6 +28,39 @@ interface Pedido {
   cliente_telefono: string
 }
 
+/**
+ * PED1 (R1): una línea de `experiencias` del detalle (`GET /api/admin/pedidos/{id}`, C10 de la Fase 4a):
+ * las fechas compradas en la página, de `pedidos.contenido_carrito.experiencias`
+ * (`_contenido_experiencia` de routers/payments.py). Todo opcional: el checkout viejo
+ * (routers/checkout.py) guardaba otra forma, sin evento_id ni fecha.
+ */
+interface ExperienciaPedido {
+  evento_id?: string
+  experiencia_id?: string
+  nombre?: string
+  fecha?: string // AAAA-MM-DD
+  hora_inicio?: string // HH:MM
+  hora_fin?: string | null
+  punto_encuentro?: string | null
+  adultos?: number
+  ninos?: number
+  cantidad?: number
+  precio_adulto?: number
+  precio_nino?: number
+  precio?: number
+  subtotal?: number
+  comprador?: { alergias?: string | null } | null
+}
+
+/** Personas de una línea: con adultos/niños («3 personas (2 adultos, 1 niño)») o solo la cantidad. */
+function personasDeLinea(e: ExperienciaPedido): string {
+  if (typeof e.adultos === 'number' || typeof e.ninos === 'number') {
+    return textoPersonas(Number(e.adultos ?? 0), Number(e.ninos ?? 0))
+  }
+  const n = Number(e.cantidad ?? 0)
+  return `${n} ${n === 1 ? 'persona' : 'personas'}`
+}
+
 interface PedidoDetalle extends Pedido {
   sub_total: number
   impuestos: number
@@ -40,6 +74,8 @@ interface PedidoDetalle extends Pedido {
     precio_unitario_al_momento: number
     subtotal: number
   }[]
+  /** PED1: la API siempre la manda (lista vacía si el pedido no tiene experiencias). */
+  experiencias?: ExperienciaPedido[]
   pagos: {
     id: string
     mp_payment_id: string
@@ -241,6 +277,12 @@ export default function AdminPedidosPage() {
     return `$${(amount || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }
 
+  // PED1 (R1): lo que se compró, productos (pedido_items) y fechas de experiencia (`experiencias`)
+  const productosDetalle = detalle?.items ?? []
+  const experienciasDetalle: ExperienciaPedido[] = Array.isArray(detalle?.experiencias)
+    ? detalle.experiencias.filter((e): e is ExperienciaPedido => !!e && typeof e === 'object')
+    : []
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -436,9 +478,10 @@ export default function AdminPedidosPage() {
                         <button
                           type="button"
                           onClick={e => { e.stopPropagation(); e.preventDefault(); openDetalle(pedido.id) }}
+                          aria-label={`Ver pedido ${pedido.numero_pedido}`}
                           className="p-1.5 rounded-lg hover:bg-green-50 text-green-600"
                         >
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-4 w-4" aria-hidden="true" />
                         </button>
                       </td>
                     </tr>
@@ -487,8 +530,12 @@ export default function AdminPedidosPage() {
               <h2 className="text-xl font-bold text-gray-900">
                 {detalle ? `Pedido ${detalle.numero_pedido}` : 'Cargando...'}
               </h2>
-              <button onClick={() => { setModalOpen(false); setDetalle(null) }} className="p-2 hover:bg-gray-100 rounded-full bg-white shadow-sm">
-                <X className="h-5 w-5" />
+              <button
+                onClick={() => { setModalOpen(false); setDetalle(null) }}
+                aria-label="Cerrar detalle del pedido"
+                className="p-2 hover:bg-gray-100 rounded-full bg-white shadow-sm"
+              >
+                <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
 
@@ -575,10 +622,69 @@ export default function AdminPedidosPage() {
                   </div>
                 )}
 
-                {/* Items */}
-                <div>
+                {/* PED1 (R1): las fechas de experiencia compradas en la página. Antes solo se pintaban
+                    los productos y un pedido de experiencia decía «Items (0)». */}
+                {experienciasDetalle.length > 0 && (
+                  <div data-testid="pedido-experiencias">
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">
+                      Experiencias ({experienciasDetalle.length})
+                    </h3>
+                    {/* Lista (no tabla): a 390 px cuatro columnas no caben en el modal */}
+                    <ul className="border border-gray-200 rounded-lg divide-y divide-gray-100">
+                      {experienciasDetalle.map((e, i) => {
+                        const horas = e.hora_inicio
+                          ? `${e.hora_inicio}${e.hora_fin ? `–${e.hora_fin}` : ''}`
+                          : ''
+                        const alergias = e.comprador?.alergias?.trim()
+                        const subtotal =
+                          typeof e.subtotal === 'number'
+                            ? e.subtotal
+                            : Number(e.precio ?? 0) * Number(e.cantidad ?? 0)
+                        const precios =
+                          typeof e.precio_adulto === 'number'
+                            ? `${formatMoney(e.precio_adulto)} por adulto${
+                                Number(e.ninos ?? 0) > 0 && typeof e.precio_nino === 'number'
+                                  ? ` · ${formatMoney(e.precio_nino)} por niño`
+                                  : ''
+                              }`
+                            : `${formatMoney(Number(e.precio ?? 0))} por persona`
+                        return (
+                          <li
+                            key={e.evento_id ?? `${e.experiencia_id ?? 'exp'}-${i}`}
+                            data-testid="pedido-experiencia"
+                            className="flex items-start justify-between gap-3 px-3 py-2 text-sm"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium">{e.nombre || 'Experiencia'}</p>
+                              {(e.fecha || horas) && (
+                                <p className="text-xs text-gray-500">
+                                  {e.fecha ? formatFechaMexico(e.fecha) : ''}
+                                  {e.fecha && horas ? ' · ' : ''}
+                                  {horas}
+                                </p>
+                              )}
+                              {e.punto_encuentro && (
+                                <p className="text-xs text-gray-500">{e.punto_encuentro}</p>
+                              )}
+                              <p className="mt-0.5">{personasDeLinea(e)}</p>
+                              <p className="text-xs text-gray-500">{precios}</p>
+                              {alergias && (
+                                <p className="text-xs text-amber-700 mt-0.5">Alergias: {alergias}</p>
+                              )}
+                            </div>
+                            <p className="font-medium whitespace-nowrap">{formatMoney(subtotal)}</p>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Productos (pedido_items). Un pedido de solo experiencias no lleva esta sección. */}
+                {(productosDetalle.length > 0 || experienciasDetalle.length === 0) && (
+                <div data-testid="pedido-productos">
                   <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">
-                    Items ({detalle.items?.length || 0})
+                    Productos ({productosDetalle.length})
                   </h3>
                   <div className="border border-gray-200 rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
@@ -591,21 +697,30 @@ export default function AdminPedidosPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {detalle.items?.map((item, i) => (
-                          <tr key={i} className="border-t border-gray-100">
-                            <td className="px-3 py-2">
-                              <div className="font-medium">{item.producto_nombre || item.producto_id}</div>
-                              {item.categoria && <div className="text-xs text-gray-500">{item.categoria}</div>}
+                        {productosDetalle.length === 0 ? (
+                          <tr>
+                            <td colSpan={4} className="px-3 py-4 text-center text-gray-500">
+                              Sin productos
                             </td>
-                            <td className="px-3 py-2 text-center">{item.cantidad}</td>
-                            <td className="px-3 py-2 text-right">{formatMoney(item.precio_unitario_al_momento)}</td>
-                            <td className="px-3 py-2 text-right font-medium">{formatMoney(item.subtotal)}</td>
                           </tr>
-                        ))}
+                        ) : (
+                          productosDetalle.map((item, i) => (
+                            <tr key={i} className="border-t border-gray-100">
+                              <td className="px-3 py-2">
+                                <div className="font-medium">{item.producto_nombre || item.producto_id}</div>
+                                {item.categoria && <div className="text-xs text-gray-500">{item.categoria}</div>}
+                              </td>
+                              <td className="px-3 py-2 text-center">{item.cantidad}</td>
+                              <td className="px-3 py-2 text-right">{formatMoney(item.precio_unitario_al_momento)}</td>
+                              <td className="px-3 py-2 text-right font-medium">{formatMoney(item.subtotal)}</td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
                 </div>
+                )}
 
                 {/* Resumen financiero */}
                 <div className="bg-gray-50 rounded-lg p-4">

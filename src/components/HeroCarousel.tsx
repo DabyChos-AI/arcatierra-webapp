@@ -179,28 +179,38 @@ export default function HeroCarousel() {
 
       {/* Controles de navegación mejorados */}
       <button
+        type="button"
         onClick={goToPrevious}
+        aria-label="Imagen anterior"
+        data-testid="hero-anterior"
         className="absolute left-6 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-4 rounded-full transition-all duration-300 hover:scale-110 shadow-lg"
       >
-        <ChevronLeft className="w-6 h-6" />
+        <ChevronLeft className="w-6 h-6" aria-hidden="true" />
       </button>
 
       <button
+        type="button"
         onClick={goToNext}
+        aria-label="Imagen siguiente"
+        data-testid="hero-siguiente"
         className="absolute right-6 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-4 rounded-full transition-all duration-300 hover:scale-110 shadow-lg"
       >
-        <ChevronRight className="w-6 h-6" />
+        <ChevronRight className="w-6 h-6" aria-hidden="true" />
       </button>
 
       {/* Control de autoplay mejorado */}
       <button
+        type="button"
         onClick={toggleAutoPlay}
+        aria-label={isAutoPlaying ? 'Pausar carrusel' : 'Reanudar carrusel'}
+        aria-pressed={!isAutoPlaying}
+        data-testid="hero-autoplay"
         className="absolute top-24 right-6 bg-white/25 hover:bg-white/40 text-white p-3 rounded-full transition-all duration-300 shadow-lg z-20"
       >
         {isAutoPlaying ? (
-          <Pause className="w-5 h-5" />
+          <Pause className="w-5 h-5" aria-hidden="true" />
         ) : (
-          <Play className="w-5 h-5" />
+          <Play className="w-5 h-5" aria-hidden="true" />
         )}
       </button>
 
@@ -209,7 +219,11 @@ export default function HeroCarousel() {
         {carouselImages.map((_, index) => (
           <button
             key={index}
+            type="button"
             onClick={() => goToSlide(index)}
+            aria-label={`Ir a la imagen ${index + 1} de ${carouselImages.length}`}
+            aria-current={index === currentIndex ? 'true' : undefined}
+            data-testid="hero-indicador"
             className={`relative transition-all duration-300 ${
               index === currentIndex
                 ? 'w-12 h-3 bg-[#B15543] rounded-full'

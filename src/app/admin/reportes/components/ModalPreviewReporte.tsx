@@ -185,6 +185,14 @@ export default function ModalPreviewReporte({
     ([k, v]) => META_ETIQUETAS[k] && typeof v !== 'object'
   )
 
+  // M11 (R1): el corte del día manda en `meta.consolidado_sin_mapear` los nombres de producto que no
+  // tienen equivalencia en el catálogo (services/consolidado.py). El Excel los imprime al pie del
+  // resumen; la vista previa los descartaba por ser lista. Se muestran ANTES de descargar.
+  const sinMapear = preview?.meta?.consolidado_sin_mapear
+  const sinEquivalencia = Array.isArray(sinMapear)
+    ? sinMapear.filter((n): n is string => typeof n === 'string' && n.trim() !== '')
+    : []
+
   return (
     <div
       className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/50 p-4 sm:p-8"
@@ -265,6 +273,27 @@ export default function ModalPreviewReporte({
                   {META_ETIQUETAS[k]}: <strong className="text-verde">{String(v)}</strong>
                 </span>
               ))}
+            </div>
+          )}
+
+          {sinEquivalencia.length > 0 && (
+            <div
+              data-testid="reporte-sin-equivalencia"
+              role="status"
+              className="mb-3 rounded-lg border border-amarillo/40 bg-amarillo-bg px-3 py-2 text-xs text-verde-tipografia"
+            >
+              <p className="font-semibold">
+                Sin equivalencia en el catálogo (se sumaron tal como vinieron): {sinEquivalencia.length}
+              </p>
+              <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
+                {sinEquivalencia.map((nombre) => (
+                  <li key={nombre}>{nombre}</li>
+                ))}
+              </ul>
+              <p className="mt-1 text-verde-suave">
+                En el consolidado del Excel cada uno suma aparte de su producto: pide que se agreguen
+                a la tabla de equivalencias.
+              </p>
             </div>
           )}
 

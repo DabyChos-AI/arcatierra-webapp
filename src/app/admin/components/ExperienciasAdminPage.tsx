@@ -961,12 +961,14 @@ export default function ExperienciasAdminPage({
             <option value="inactivas">⬜ Inactivas</option>
           </select>
           
+          {/* A11Y1 (R1): todo botón de solo ícono lleva aria-label (el title no basta) */}
           <button
             onClick={fetchExperiencias}
             className="p-2 border rounded-lg hover:bg-gray-50"
             title="Actualizar"
+            aria-label="Actualizar lista de experiencias"
           >
-            <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -1009,13 +1011,14 @@ export default function ExperienciasAdminPage({
                             : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
                         } disabled:opacity-50`}
                         title={exp.disponible ? 'Desactivar' : 'Activar'}
+                        aria-label={`${exp.disponible ? 'Desactivar' : 'Activar'} ${exp.nombre}`}
                       >
                         {loadingAction === exp.id ? (
-                          <Loader2 className="h-5 w-5 animate-spin" />
+                          <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
                         ) : exp.disponible ? (
-                          <ToggleRight className="h-5 w-5" />
+                          <ToggleRight className="h-5 w-5" aria-hidden="true" />
                         ) : (
-                          <ToggleLeft className="h-5 w-5" />
+                          <ToggleLeft className="h-5 w-5" aria-hidden="true" />
                         )}
                       </button>
                     </td>
@@ -1074,15 +1077,17 @@ export default function ExperienciasAdminPage({
                           onClick={() => abrirModalEditar(exp)}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
                           title="Editar"
+                          aria-label={`Editar ${exp.nombre}`}
                         >
-                          <Edit2 className="h-4 w-4" />
+                          <Edit2 className="h-4 w-4" aria-hidden="true" />
                         </button>
                         <button
                           onClick={() => { setSelectedExperiencia(exp); setShowModal('eliminar') }}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
                           title="Eliminar"
+                          aria-label={`Eliminar ${exp.nombre}`}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
                         </button>
                       </div>
                     </td>
@@ -1102,9 +1107,10 @@ export default function ExperienciasAdminPage({
               <button
                 onClick={() => setPaginacion(prev => ({ ...prev, pagina: prev.pagina - 1 }))}
                 disabled={paginacion.pagina === 1}
+                aria-label="Página anterior"
                 className="p-2 border rounded-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-4 w-4" aria-hidden="true" />
               </button>
               <span className="px-3 py-1 text-sm">
                 {paginacion.pagina} / {paginacion.paginas}
@@ -1112,9 +1118,10 @@ export default function ExperienciasAdminPage({
               <button
                 onClick={() => setPaginacion(prev => ({ ...prev, pagina: prev.pagina + 1 }))}
                 disabled={paginacion.pagina === paginacion.paginas}
+                aria-label="Página siguiente"
                 className="p-2 border rounded-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -1129,8 +1136,12 @@ export default function ExperienciasAdminPage({
               <h2 className="text-xl font-bold text-gray-900">
                 {showModal === 'editar' ? 'Editar Experiencia' : 'Nueva Experiencia'}
               </h2>
-              <button onClick={() => setShowModal(null)} className="p-2 hover:bg-gray-100 rounded-lg">
-                <X className="h-5 w-5" />
+              <button
+                onClick={() => setShowModal(null)}
+                aria-label="Cerrar"
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
 
@@ -1248,8 +1259,9 @@ export default function ExperienciasAdminPage({
                               }
                             }}
                             className={`px-3 py-2 ${theme.primary} text-white rounded-lg`}
+                            aria-label="Agregar temporada"
                           >
-                            ✓
+                            <span aria-hidden="true">✓</span>
                           </button>
                           <button
                             type="button"
@@ -1258,8 +1270,9 @@ export default function ExperienciasAdminPage({
                               setNewTemporadaName('')
                             }}
                             className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                            aria-label="Cancelar nueva temporada"
                           >
-                            ✕
+                            <span aria-hidden="true">✕</span>
                           </button>
                         </div>
                       )}
@@ -1922,8 +1935,8 @@ export default function ExperienciasAdminPage({
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[calc(100vh-180px)] overflow-y-auto">
             <div className="border-b px-6 py-4 flex justify-between items-center">
               <h3 className="font-semibold">Nuevo Evento/Fecha</h3>
-              <button onClick={() => setShowNewEventModal(false)}>
-                <X className="h-5 w-5" />
+              <button onClick={() => setShowNewEventModal(false)} aria-label="Cerrar">
+                <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
             

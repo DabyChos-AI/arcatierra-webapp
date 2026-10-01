@@ -2,14 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ChevronRight } from 'lucide-react';
 import { announcementMessages, AnnouncementMessage } from '@/data/announcementMessages';
 
 export default function AnnouncementBanner() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
+  // MOV1 (R1): el banner es de la tienda. En el panel (/admin), sticky y en z-[999], tapaba a 390 px la
+  // franja de arriba del cajón del menú (z-50) y su botón «Cerrar menu». Mismo criterio que el menú
+  // público (HD1) y el tirador «Carrito» (ADM1): en /admin no se pinta.
+  const enAdmin = usePathname()?.startsWith('/admin') ?? false;
 
   useEffect(() => {
+    if (enAdmin) return;
     const interval = setInterval(() => {
       setIsVisible(false);
       
@@ -21,12 +27,19 @@ export default function AnnouncementBanner() {
     }, 5000); // Cambiar cada 5 segundos
 
     return () => clearInterval(interval);
-  }, []);
+  }, [enAdmin]);
+
+  // Después de todos los hooks
+  if (enAdmin) return null;
 
   const currentMessage: AnnouncementMessage = announcementMessages[currentIndex];
 
   return (
-    <div className="sticky top-0 z-[999] h-[28px]" style={{ background: '#F97316' }}>
+    <div
+      data-testid="announcement-banner"
+      className="sticky top-0 z-[999] h-[28px]"
+      style={{ background: '#F97316' }}
+    >
       <div className="max-w-7xl mx-auto px-4 relative flex items-center h-full">
         {/* Flecha izquierda */}
         <button

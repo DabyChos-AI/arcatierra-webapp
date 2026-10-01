@@ -54,6 +54,10 @@ function textoDisponibles(fecha: FechaPublica): string {
   return fecha.disponibles != null ? `${fecha.disponibles} disponibles` : ''
 }
 
+/** FEED1 (R1): el feed se lee completo, 100 fechas por página, hasta este tope de páginas. */
+const FECHAS_POR_PAGINA = 100
+const MAX_PAGINAS_FEED = 10
+
 // Días de la semana
 const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
@@ -166,14 +170,26 @@ export default function CalendarioPage() {
       try {
         setLoadingEventos(true)
         setErrorEventos(null)
-        const response = await fetch(`${API_URL}/api/calendario/eventos?limit=100`)
-        if (!response.ok) {
-          setErrorEventos('No pudimos cargar las fechas. Recarga la página en un momento.')
-          setFechasCalendario([])
-          return
+        // FEED1 (R1): todas las páginas del feed (antes solo las primeras 100 fechas; las demás no salían).
+        // Si una página después de la primera falla, se muestra lo que llegó y se avisa.
+        const porId = new Map<string, FechaPublica>()
+        let paginas = 1
+        for (let page = 1; page <= Math.min(paginas, MAX_PAGINAS_FEED); page++) {
+          const response = await fetch(`${API_URL}/api/calendario/eventos?limit=${FECHAS_POR_PAGINA}&page=${page}`)
+          if (!response.ok) {
+            setErrorEventos(
+              page === 1
+                ? 'No pudimos cargar las fechas. Recarga la página en un momento.'
+                : 'No pudimos cargar todas las fechas. Recarga la página en un momento.'
+            )
+            break
+          }
+          const result: { items?: FechaPublica[]; pages?: number } = await response.json()
+          // Por `id`: si una fecha se recorre de página entre dos lecturas, no sale dos veces
+          for (const f of Array.isArray(result.items) ? result.items : []) porId.set(f.id, f)
+          paginas = typeof result.pages === 'number' ? result.pages : 1
         }
-        const result: { items?: FechaPublica[] } = await response.json()
-        setFechasCalendario(Array.isArray(result.items) ? result.items : [])
+        setFechasCalendario(Array.from(porId.values()))
       } catch {
         setErrorEventos('No pudimos cargar las fechas. Revisa tu conexión y recarga la página.')
         setFechasCalendario([])
@@ -364,10 +380,13 @@ export default function CalendarioPage() {
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-4">
                   <button
+                    type="button"
                     onClick={() => navegarMes('anterior')}
+                    aria-label="Mes anterior"
+                    data-testid="cal-mes-anterior"
                     className="p-2 rounded-xl bg-[#F5F3F0] hover:bg-[#E8E4DF] text-[#3A4741] transition-colors"
                   >
-                    <ChevronLeft className="w-5 h-5" />
+                    <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                   </button>
                   
                   <h2 className="text-2xl font-bold text-[#3A4741]">
@@ -375,10 +394,13 @@ export default function CalendarioPage() {
                   </h2>
                   
                   <button
+                    type="button"
                     onClick={() => navegarMes('siguiente')}
+                    aria-label="Mes siguiente"
+                    data-testid="cal-mes-siguiente"
                     className="p-2 rounded-xl bg-[#F5F3F0] hover:bg-[#E8E4DF] text-[#3A4741] transition-colors"
                   >
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-5 h-5" aria-hidden="true" />
                   </button>
                 </div>
               </div>

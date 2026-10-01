@@ -62,8 +62,10 @@ export const faqData = {
       },
       {
         id: 11,
-        question: "¿Las experiencias privadas se pueden disfrutar si son menos de 10 personas?",
-        answer: "Sí se puede, pero deben pagar la misma cuota debido a la logística para estas experiencias. El precio contempla hasta 10 personas."
+        // WEB2 (DR4, R1 · sesión 41): el precio de una privada es por grupo y cada una dice cuántas personas incluye
+        // (`personas_incluidas`, lo ajusta el equipo de Experiencias en el panel). Antes decía «hasta 10 personas» fijo.
+        question: "¿Las experiencias privadas se pueden disfrutar si somos menos personas?",
+        answer: "Sí se puede, pero se paga el mismo precio por grupo debido a la logística de estas experiencias. En la página de cada experiencia privada verás cuántas personas incluye su precio y cuánto cuesta cada persona adicional."
       }
     ]
   },

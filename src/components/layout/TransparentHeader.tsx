@@ -958,9 +958,11 @@ const TransparentHeader: React.FC = () => {
           )}
 
           {/* Mobile Menu Button - Máxima visibilidad en móvil */}
-          <button 
-            onClick={toggleMobileMenu} 
+          <button
+            onClick={toggleMobileMenu}
             className="header-mobile-button"
+            aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+            aria-expanded={mobileMenuOpen}
             style={{
               display: windowSize.width && windowSize.width < 1024 ? 'flex' : 'none',
               alignItems: 'center',
@@ -977,8 +979,9 @@ const TransparentHeader: React.FC = () => {
             }}
           >
             {/* Hamburger icon usando SVG para garantizar visibilidad */}
-            <svg 
-              width="24" 
+            <svg
+              aria-hidden="true"
+              width="24"
               height="24" 
               viewBox="0 0 24 24" 
               fill="none" 
