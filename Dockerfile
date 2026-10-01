@@ -6,9 +6,12 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Instalar dependencias basadas en el gestor de paquetes preferido
-COPY package.json package-lock.json* ./
-RUN npm install
+# C4 (R3, 1-oct-2026): `npm ci` instala EXACTAMENTE el package-lock auditado (falla si no está
+# sincronizado con package.json). `.npmrc` entra aquí porque el lock se genera con
+# legacy-peer-deps=true: sin él, `npm ci` lo da por desincronizado y el `npm install` de antes
+# resolvía OTRO árbol de dependencias (peer deps) que el que se audita en el repo.
+COPY package.json package-lock.json .npmrc ./
+RUN npm ci
 
 # Reconstruir el código fuente solo cuando sea necesario
 FROM base AS builder

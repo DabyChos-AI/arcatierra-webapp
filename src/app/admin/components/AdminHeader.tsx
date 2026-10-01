@@ -4,16 +4,13 @@ import Link from 'next/link'
 import { User, LogOut, Crown, Shield, ChevronDown, Check, Globe, Menu } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 import { useEffect, useState, useRef } from 'react'
-
-interface UserRole {
-  isFundador: boolean
-  isDeveloper: boolean
-  nombre: string
-}
+import { esDeveloper, esFundador, type InsigniaPanel, type RolActivo, type RolUsuario } from '@/types/roles'
 
 interface AdminHeaderProps {
-  rolActivo?: { id: string; nombre: string; permisos: string[] } | null
-  roles?: { id: string; nombre: string; descripcion: string; permisos: string[]; es_activo: boolean }[]
+  rolActivo?: RolActivo | null
+  roles?: RolUsuario[]
+  /** HDR1 (R3): la decide el backend (mis-roles). null o ausente = sin insignia. */
+  insignia?: InsigniaPanel
   onSwitchRole?: (rolId: string) => void
   /** Abre el menú lateral en móvil. HD1: antes era un botón fijo que solo cuadraba con el navbar público. */
   onAbrirMenu?: () => void
@@ -38,31 +35,18 @@ function formatRolName(nombre: string) {
   return nombre.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
-export default function AdminHeader({ rolActivo, roles, onSwitchRole, onAbrirMenu }: AdminHeaderProps) {
+export default function AdminHeader({ rolActivo, roles, insignia = null, onSwitchRole, onAbrirMenu }: AdminHeaderProps) {
   const { data: session } = useSession()
-  const [userRole, setUserRole] = useState<UserRole>({ isFundador: false, isDeveloper: false, nombre: 'Admin' })
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    // Detectar rol del usuario basado en email
-    if (session?.user?.email) {
-      const email = session.user.email
-      const nombre = session.user.name || 'Admin'
-
-      const fundadores = ['pablo@arcatierra.com', 'luh@arcatierra.com']
-      const developers = ['ing.davidabraham@gmail.com']
-
-      // Super admin (David) tiene acceso a vistas de fundadores para testing
-      const isSuperAdmin = developers.includes(email)
-
-      setUserRole({
-        isFundador: fundadores.includes(email) || isSuperAdmin, // David ve vistas de fundador
-        isDeveloper: developers.includes(email),
-        nombre: nombre
-      })
-    }
-  }, [session])
+  // HDR1 (R3, 1-oct-2026): antes la corona salía de comparar el correo de la sesión con listas escritas
+  // aquí (y viajaban en el JavaScript público). Ahora la insignia la decide el backend con una lista
+  // privada y llega de mis-roles por AdminLayoutClient. Misma vista que antes: el developer también
+  // lleva la corona (esFundador) y su leyenda es «Super Admin».
+  const nombre = session?.user?.name || 'Admin'
+  const conCorona = esFundador(insignia)
+  const esSuperAdmin = esDeveloper(insignia)
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
@@ -177,27 +161,30 @@ export default function AdminHeader({ rolActivo, roles, onSwitchRole, onAbrirMen
 
           {/* Usuario con badge especial (en móvil no cabe: se oculta) */}
           <div className="hidden sm:flex items-center space-x-2">
-            <div className={`w-8 h-8 ${
-              userRole.isFundador ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
-              userRole.isDeveloper ? 'bg-gradient-to-br from-blue-500 to-purple-600' :
+            <div
+              data-testid="admin-header-avatar"
+              data-corona={conCorona ? 'si' : 'no'}
+              className={`w-8 h-8 ${
+              conCorona ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
+              esSuperAdmin ? 'bg-gradient-to-br from-blue-500 to-purple-600' :
               'bg-green-600'
             } rounded-full flex items-center justify-center ring-2 ring-offset-2 ${
-              userRole.isFundador ? 'ring-yellow-300' :
-              userRole.isDeveloper ? 'ring-blue-300' :
+              conCorona ? 'ring-yellow-300' :
+              esSuperAdmin ? 'ring-blue-300' :
               'ring-green-300'
             }`}>
-              {userRole.isFundador ? (
+              {conCorona ? (
                 <Crown className="h-5 w-5 text-white" />
               ) : (
                 <User className="h-5 w-5 text-white" />
               )}
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-700">{userRole.nombre}</span>
-              {userRole.isDeveloper ? (
-                <span className="text-xs font-semibold text-blue-600">Super Admin</span>
-              ) : userRole.isFundador ? (
-                <span className="text-xs font-semibold text-yellow-600">Fundador</span>
+              <span className="text-sm font-medium text-gray-700">{nombre}</span>
+              {esSuperAdmin ? (
+                <span data-testid="admin-header-insignia" data-insignia="developer" className="text-xs font-semibold text-blue-600">Super Admin</span>
+              ) : conCorona ? (
+                <span data-testid="admin-header-insignia" data-insignia="fundador" className="text-xs font-semibold text-yellow-600">Fundador</span>
               ) : null}
             </div>
           </div>

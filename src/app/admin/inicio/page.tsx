@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts'
@@ -10,6 +9,8 @@ import {
   Package, Activity, Award, RefreshCw, Crown
 } from 'lucide-react'
 import { formatFechaHoraMexico } from '@/lib/dates'
+import { esFundador } from '@/types/roles'
+import { useMisRoles } from '../components/MisRolesContext'
 
 interface DashboardMetrics {
   resumen: {
@@ -35,21 +36,14 @@ interface DashboardMetrics {
 }
 
 export default function AdminInicioTienda() {
-  const { data: session } = useSession()
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isFundador, setIsFundador] = useState(false)
+  // HDR1 (R3, 1-oct-2026): la insignia la decide el backend (mis-roles) y la reparte AdminLayoutClient;
+  // antes se comparaba el correo de la sesión con una lista escrita aquí. Fundador o developer (igual que antes).
+  const { insignia } = useMisRoles()
+  const isFundador = esFundador(insignia)
   const [carritosAbandonados, setCarritosAbandonados] = useState<any>(null)
-
-  useEffect(() => {
-    if (session?.user?.email) {
-      const fundadores = ['pablo@arcatierra.com', 'luh@arcatierra.com']
-      const superAdmin = ['ing.davidabraham@gmail.com']
-      // Super admin también ve vistas de fundadores
-      setIsFundador(fundadores.includes(session.user.email) || superAdmin.includes(session.user.email))
-    }
-  }, [session])
 
   const fetchMetrics = async () => {
     try {
@@ -171,8 +165,10 @@ export default function AdminInicioTienda() {
 
   return (
     <div className="space-y-6">
-      {/* Header con mensaje especial para fundadores */}
-      <div className="flex justify-between items-center">
+      {/* Header con mensaje especial para fundadores.
+          C3 (R3): flex-wrap + gap — a 390 «Dashboard Ejecutivo» + «Fundador» + «Actualizar» no caben en
+          un renglón y ensanchaban la página a 412 px; ahora «Actualizar» baja de renglón. */}
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           {isFundador ? (
             <>
@@ -180,7 +176,7 @@ export default function AdminInicioTienda() {
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-800 bg-clip-text text-transparent">
                   Dashboard Ejecutivo
                 </h1>
-                <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-3 py-1 rounded-full flex items-center space-x-1">
+                <div data-testid="inicio-insignia-fundador" className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-3 py-1 rounded-full flex items-center space-x-1">
                   <Crown className="h-4 w-4" />
                   <span className="text-sm font-semibold">Fundador</span>
                 </div>

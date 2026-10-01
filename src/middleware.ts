@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server'
 import { withAuth } from 'next-auth/middleware'
 import { API_URL } from '@/lib/api'
+import { cabecerasDelCliente } from '@/lib/ip-cliente'
+
+// MW1 (R3, 1-oct-2026): check-employee sale por la red interna (http://arca-api:8000), no por la URL
+// pública que cruza Cloudflare. Se lee en cada petición: el middleware corre en el sandbox Edge de
+// `next start`, que copia el process.env del servidor (no se inlinea al compilar). Sin la variable,
+// la URL pública como antes.
+function urlDeLaApi(): string {
+  return process.env.INTERNAL_API_URL || API_URL
+}
 
 // Este middleware protegerá automáticamente las rutas que se especifiquen abajo
 export default withAuth(
@@ -24,8 +33,15 @@ export default withAuth(
       const accessToken = (token as { accessToken?: string } | null)?.accessToken
 
       try {
-        const response = await fetch(`${API_URL}/api/auth/check-employee`, {
-          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+        // MW1: el endpoint tiene límite por IP (30/min). Lo pide el SERVIDOR de Next, así que sin
+        // estas cabeceras todos los empleados contaban como una sola IP. `req.headers` es un
+        // `Headers` (NextRequest extiende Request): cabecerasDelCliente lee cf-connecting-ip y,
+        // con INTERNAL_API_SECRET, manda X-Cliente-IP firmada; si falta algo regresa {}.
+        const response = await fetch(`${urlDeLaApi()}/api/auth/check-employee`, {
+          headers: {
+            ...cabecerasDelCliente(req.headers),
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
         })
 
         if (response.ok) {

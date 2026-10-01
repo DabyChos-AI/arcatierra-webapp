@@ -48,7 +48,8 @@ export function cargarProductosCSV(): ProductoCSV[] {
     const datosRelevantes = lineas.slice(20).join('\n');
     
     // Especificar delimiter explícitamente (coma) y otros parámetros para hacerlo más robusto
-    const records = parse(datosRelevantes, {
+    // C4 (R3): csv-parse 7 tipa los registros como `unknown` si no se le dice la forma de las columnas.
+    const records = parse<ProductoCSV>(datosRelevantes, {
       columns: ['id', 'nombre', 'categoria', 'precio', 'imagen', 'descripcion', 'seoTitle', 'seoDescription'],
       delimiter: ',',
       skip_empty_lines: true,
@@ -56,7 +57,7 @@ export function cargarProductosCSV(): ProductoCSV[] {
       relax_column_count: true, // Permitir diferente número de columnas
     });
     
-    const filteredRecords = records.filter((record: any) => record.id && record.nombre);
+    const filteredRecords = records.filter((record) => record.id && record.nombre);
     
     // Si no hay registros válidos, devolver array vacío para evitar errores
     if (!filteredRecords.length) {
@@ -83,13 +84,13 @@ export function cargarExperienciasCSV(): ExperienciaCSV[] {
     const lineas = fileContent.split('\n');
     const datosRelevantes = lineas.slice(10).join('\n');
     
-    const records = parse(datosRelevantes, {
+    const records = parse<ExperienciaCSV>(datosRelevantes, {
       columns: ['id', 'nombre', 'categoria', 'precio', 'imagen', 'descripcion', 'seoTitle', 'seoDescription'],
       skip_empty_lines: true,
       trim: true,
     });
     
-    return records.filter((record: any) => record.id && record.nombre);
+    return records.filter((record) => record.id && record.nombre);
   } catch (error) {
     console.error('Error al cargar el archivo CSV de experiencias:', error);
     return [];

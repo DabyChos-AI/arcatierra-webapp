@@ -3,6 +3,8 @@ const path = require('path')
 /** @type {import('next').NextConfig} */
 const nextConfig = {
  output: 'standalone',
+  // M6 (R3, 1-oct-2026): sin la cabecera `X-Powered-By: Next.js` (no anunciar el framework).
+  poweredByHeader: false,
  eslint: {
     ignoreDuringBuilds: true, // Ignorar ESLint durante el build
   },

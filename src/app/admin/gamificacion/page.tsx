@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import { Award, Trophy, Star, Target, TrendingUp, Crown } from 'lucide-react'
+import { esFundador } from '@/types/roles'
+import { useMisRoles } from '../components/MisRolesContext'
 
 interface EmpleadoRanking {
   empleado_id: string;
@@ -17,19 +18,12 @@ interface EmpleadoRanking {
 }
 
 export default function GamificacionPage() {
-  const { data: session } = useSession()
   const [ranking, setRanking] = useState<EmpleadoRanking[]>([])
   const [loading, setLoading] = useState(true)
-  const [isFundador, setIsFundador] = useState(false)
-
-  useEffect(() => {
-    if (session?.user?.email) {
-      const fundadores = ['pablo@arcatierra.com', 'luh@arcatierra.com']
-      const superAdmin = ['ing.davidabraham@gmail.com']
-      // Super admin también ve vistas de fundadores
-      setIsFundador(fundadores.includes(session.user.email) || superAdmin.includes(session.user.email))
-    }
-  }, [session])
+  // HDR1 (R3, 1-oct-2026): la insignia la decide el backend (mis-roles) y la reparte AdminLayoutClient;
+  // antes se comparaba el correo de la sesión con una lista escrita aquí. Fundador o developer (igual que antes).
+  const { insignia } = useMisRoles()
+  const isFundador = esFundador(insignia)
 
   useEffect(() => {
     const fetchRanking = async () => {
@@ -59,7 +53,7 @@ export default function GamificacionPage() {
               Sistema de Gamificación
             </h1>
             {isFundador && (
-              <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-3 py-1 rounded-full flex items-center space-x-1">
+              <div data-testid="gamificacion-insignia-fundador" className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-3 py-1 rounded-full flex items-center space-x-1">
                 <Crown className="h-4 w-4" />
                 <span className="text-sm font-semibold">Vista Fundador</span>
               </div>
