@@ -1254,7 +1254,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
                   Procesando…
                 </span>
               ) : (
-                `Pagar con tarjeta $${total.toFixed(2)}`
+                `Pagar con tarjeta o saldo de MercadoPago $${total.toFixed(2)}`
               )}
             </Button>
           </div>

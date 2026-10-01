@@ -12,7 +12,9 @@ export const MAX_LUGARES_POR_COMPRA = 10
 export const MINUTOS_APARTADO = 10
 export const TEXTO_POLITICA_REEMBOLSO =
   'Reembolso del 100 % si cancelas hasta 48 horas antes de la experiencia. Después ya no hay reembolso.'
-export const TEXTO_SOLO_TARJETA = 'Las experiencias se pagan solo con tarjeta de crédito o débito.'
+// MPA1 (David, 30-sep, sesión 40): MercadoPago también ofrece el saldo de la cuenta (instantáneo, como la tarjeta); el texto lo
+// dice. Lo que no se ofrece es efectivo/OXXO (excluded_payment_types). El nombre de la constante se conserva.
+export const TEXTO_SOLO_TARJETA = 'Las experiencias se pagan con tarjeta de crédito o débito, o con saldo de MercadoPago (no con efectivo ni OXXO).'
 export const TEXTO_SIN_CUPONES_EXPERIENCIAS = 'Los códigos de descuento no aplican a experiencias.'
 /** Texto del reloj de apartado (D13-8). `{reloj}` = mm:ss. */
 export const TEXTO_APARTADO =
