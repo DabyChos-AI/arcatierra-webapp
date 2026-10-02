@@ -12,6 +12,7 @@ import {
   Loader2,
   Mail,
   Plus,
+  RefreshCw,
   StickyNote,
   Trash2,
   UserCheck,
@@ -19,6 +20,7 @@ import {
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { formatFechaHoraMexico, formatFechaMexico, hoyMexico } from '@/lib/dates'
+import { esConflictoVersion, etiquetaHueco } from '@/types/planeacion'
 import type { ItemCatalogo, ListaCatalogo, TipoCatalogo } from '@/types/planeacion'
 import { TIPO_LABELS } from '@/types/plantillas-email'
 import { horaCorta } from '@/app/admin/eventos/components/fechas'
@@ -303,6 +305,14 @@ export default function ModalDetalleReserva({
   // F2: lo que el servidor dijo del código nuevo al guardar (null = no se evaluó ninguno)
   const [cuponGuardado, setCuponGuardado] = useState<EstadoCuponGuardado | null>(null)
 
+  // R4 · versión: la `fecha_actualizacion` de lo último que se leyó o guardó. Los PATCH de datos y
+  // de guías la mandan tal cual en `version`; si alguien cambió la reserva → 409 sin escribir nada.
+  // Va aparte de `reserva` para poder tomar la del PATCH de guías sin reiniciar el formulario.
+  const [version, setVersion] = useState<string | null>(null)
+  // `detail` del 409: se queda hasta «Recargar» (o hasta guardar con la versión nueva)
+  const [conflicto, setConflicto] = useState<string | null>(null)
+  const [recargandoConflicto, setRecargandoConflicto] = useState(false)
+
   // Catalogos
   // LD2-a: la misma lista de vendedoras que Leads, el asistente y la tabla
   const vendedorasEstado = useVendedoras(token)
@@ -489,7 +499,20 @@ export default function ModalDetalleReserva({
     )
     setFlagSap(reserva.flag_sap)
     setNumeroOvSap(reserva.numero_ov_sap ?? '')
+    setVersion(reserva.fecha_actualizacion ?? null)
   }, [reserva])
+
+  // R4: tras un 409, relee la reserva; el formulario vuelve a lo guardado (con la versión nueva)
+  async function recargarTrasConflicto() {
+    setRecargandoConflicto(true)
+    try {
+      await fetchReserva(true)
+      setCuponGuardado(null)
+      setConflicto(null)
+    } finally {
+      setRecargandoConflicto(false)
+    }
+  }
 
   const guiasPendientes = useMemo(
     () =>
@@ -525,6 +548,7 @@ export default function ModalDetalleReserva({
     const codigoNuevo = form.codigoPromocional.trim()
     const cambiaCodigo = codigoNuevo !== (reserva.codigo_promocional ?? '').trim()
     setSavingDatos(true)
+    setConflicto(null)
     try {
       const res = await fetch(`${API_URL}/api/admin/reservas/${reserva.id}`, {
         method: 'PATCH',
@@ -562,10 +586,18 @@ export default function ModalDetalleReserva({
           contacto: form.contacto.trim() || null,
           fuente_id: form.fuenteId || null,
           cocina_id: form.cocinaId || null,
+          // R4: la versión leída, tal cual (409 si alguien cambió la reserva)
+          version: version ?? undefined,
         }),
       })
       if (!res.ok) {
-        const payload = await res.json().catch(() => null)
+        const payload: unknown = await res.json().catch(() => null)
+        if (esConflictoVersion(res.status, payload)) {
+          // Un «Cambios guardados» anterior no puede quedar junto al aviso de que NO se guardó
+          setToast(null)
+          setConflicto(payload.detail)
+          return
+        }
         throw new Error(extraerMensajeError(payload, res.status))
       }
       showToast(
@@ -603,6 +635,7 @@ export default function ModalDetalleReserva({
   async function saveGuias() {
     if (!token || !reserva) return
     setSavingGuias(true)
+    setConflicto(null)
     try {
       const res = await fetch(
         `${API_URL}/api/admin/reservas/${reserva.id}/guias`,
@@ -612,12 +645,26 @@ export default function ModalDetalleReserva({
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ guias_ids: selectedGuias }),
+          // R4: la versión leída, tal cual (409 si alguien cambió la reserva)
+          body: JSON.stringify({ guias_ids: selectedGuias, version: version ?? undefined }),
         },
       )
       if (!res.ok) {
-        const payload = await res.json().catch(() => null)
+        const payload: unknown = await res.json().catch(() => null)
+        if (esConflictoVersion(res.status, payload)) {
+          // Un «Cambios guardados» anterior no puede quedar junto al aviso de que NO se guardó
+          setToast(null)
+          setConflicto(payload.detail)
+          return
+        }
         throw new Error(extraerMensajeError(payload, res.status))
+      }
+      // R4: la respuesta trae la versión nueva; la relectura de abajo la vuelve a poner
+      const respuestaGuias = (await res.json().catch(() => null)) as {
+        fecha_actualizacion?: unknown
+      } | null
+      if (typeof respuestaGuias?.fecha_actualizacion === 'string') {
+        setVersion(respuestaGuias.fecha_actualizacion)
       }
       showToast('Guias actualizados', 'success')
       await fetchReserva(true)
@@ -1052,6 +1099,23 @@ export default function ModalDetalleReserva({
               {(reserva.staff ?? 0) > 0 && ` · ${reserva.staff} staff`}
               {reserva.codigo_promocional && ` · Código ${reserva.codigo_promocional}`}
             </p>
+            {(reserva.huecos ?? []).length > 0 && (
+              <div
+                data-testid="detalle-huecos"
+                className="flex flex-wrap items-center gap-1 mt-1.5"
+              >
+                <span className="text-xs text-verde-suave">Le falta:</span>
+                {(reserva.huecos ?? []).map((codigo) => (
+                  <span
+                    key={codigo}
+                    data-testid={`detalle-hueco-${codigo}`}
+                    className="inline-block rounded-full border border-amarillo/40 bg-amarillo-bg px-2 py-0.5 text-[11px] leading-none text-verde whitespace-nowrap"
+                  >
+                    {etiquetaHueco(codigo)}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           <button
             type="button"
@@ -1096,6 +1160,34 @@ export default function ModalDetalleReserva({
             }`}
           >
             {toast.msg}
+          </div>
+        )}
+
+        {/* R4: otro guardó la reserva antes; no se escribió nada */}
+        {conflicto && (
+          <div
+            role="alert"
+            data-testid="detalle-conflicto"
+            className="shrink-0 mx-6 mt-4 rounded-lg p-3 text-sm bg-amarillo-bg text-verde border border-amarillo/40 flex flex-wrap items-center gap-3"
+          >
+            <p className="flex items-start gap-2 flex-1 min-w-[12rem]">
+              <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-amarillo" aria-hidden="true" />
+              <span>{conflicto}</span>
+            </p>
+            <button
+              type="button"
+              onClick={recargarTrasConflicto}
+              disabled={recargandoConflicto}
+              data-testid="detalle-conflicto-recargar"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutro-borde bg-white text-verde text-sm hover:bg-neutro-light disabled:opacity-50"
+            >
+              {recargandoConflicto ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              )}
+              Recargar: se pierde lo que no guardaste
+            </button>
           </div>
         )}
 

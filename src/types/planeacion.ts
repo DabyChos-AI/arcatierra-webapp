@@ -88,6 +88,8 @@ export interface EventoPlaneacion {
   notas_internas: string | null
   origen: string | null
   guias: GuiaEvento[]
+  // R4: VERSIÓN del evento; se manda tal cual en `version` en el PATCH (409 si alguien lo cambió)
+  fecha_actualizacion?: string | null
 }
 
 export interface ListaEventos {
@@ -112,7 +114,8 @@ export interface EventoInternoPayload {
 
 // PATCH /api/admin/eventos/{id} — en una fecha pública solo se editan
 // chinampa, cocina_id, idioma, notas_internas y guias_ids (lo demás, en Experiencias)
-export type EventoPlaneacionPatch = Partial<EventoInternoPayload>
+// R4: `version` = fecha_actualizacion que se leyó (opcional; si no coincide → 409 ConflictoVersion)
+export type EventoPlaneacionPatch = Partial<EventoInternoPayload> & { version?: string | null }
 
 // ── Tickets de fechas públicas por canal ────────────────────────────────────
 // GET/POST /api/admin/eventos/{id}/tickets · PATCH/DELETE /api/admin/eventos/{id}/tickets/{venta_id}
@@ -174,6 +177,8 @@ export interface FilaJunta {
   guias: string | null // «Dany, Zara, Tony (G.E)»
   cocina: string | null
   observaciones: string | null
+  // R4 (TENT1): reserva privada con estado 'tentativo'
+  tentativa: boolean
 }
 
 export interface DiaPlaneacion {
@@ -189,4 +194,105 @@ export interface SemanaPlaneacion {
   totales: { eventos: number; pax: number; ninos: number; staff: number }
   // true si el usuario puede bajar la planeación completa (permiso 'reportes' o super_admin)
   puede_ver_completa: boolean
+}
+
+// ── R4 · Grilla semanal editable (sesión 44 · 2026-10-01) ────────────────────
+// Contrato: build-with-agent-team/projects/arcatierra/docs/decisiones/R4-CONTRATO.md
+// API: services/planeacion_reglas.py (huecos y versión) · GET /api/admin/planeacion/grilla?fecha=YYYY-MM-DD
+// DR14 (David): edita quien tiene `reservas`; guías y cocina solo ven; los montos se VEN solo con `reportes`
+// y se editan en el detalle de la reserva; las 57 «pagadas en $0» del Sheet = hueco calculado `pagada_sin_monto`.
+
+// Huecos de una reserva privada (HUE1). El orden de HUECOS es el orden en que se muestran.
+export type CodigoHueco =
+  | 'sin_total'
+  | 'pagada_sin_monto'
+  | 'anticipo_sin_monto'
+  | 'sin_chinampa'
+  | 'sin_fuente'
+  | 'sin_guia'
+
+export const HUECOS: ReadonlyArray<{ codigo: CodigoHueco; etiqueta: string }> = [
+  { codigo: 'sin_total', etiqueta: 'Sin total' },
+  { codigo: 'pagada_sin_monto', etiqueta: 'Pagada sin monto' },
+  { codigo: 'anticipo_sin_monto', etiqueta: 'Anticipo sin monto' },
+  { codigo: 'sin_chinampa', etiqueta: 'Sin chinampa' },
+  { codigo: 'sin_fuente', etiqueta: 'Sin fuente' },
+  { codigo: 'sin_guia', etiqueta: 'Sin guía' },
+]
+
+// Para `?hueco=` en GET /api/admin/reservas: uno o varios códigos (OR) o 'cualquiera'.
+export type FiltroHueco = CodigoHueco | 'cualquiera'
+
+export function etiquetaHueco(codigo: string): string {
+  return HUECOS.find((h) => h.codigo === codigo)?.etiqueta ?? codigo
+}
+
+// Montos de una reserva privada: SOLO llegan con `reportes` (si no, `montos` es null).
+export interface MontosGrilla {
+  estado_pago: string // 'sin_pagar' | 'anticipo' | 'pagado' | 'cortesia' | 'reembolsado'
+  total: number
+  pagado: number
+  anticipo: number
+}
+
+export interface ItemGrilla {
+  tipo: TipoFilaPlaneacion // 'privada' | 'publica' | 'interno'
+  id: string // reserva (privada) o evento (pública/interno)
+  // fecha_actualizacion ISO: se devuelve TAL CUAL en `version` al editar. null si el usuario no edita.
+  version: string | null
+  fecha: string // YYYY-MM-DD
+  hora_inicio: string | null // 'HH:MM'
+  hora_fin: string | null // 'HH:MM'
+  titulo: string // experiencia (privada/pública) o nombre del evento interno
+  experiencia_id: string | null
+  folio: string | null // booking_id, solo privadas
+  invitado: string | null // misma regla que FilaJunta.invitado
+  pax: number // privadas: invitados · públicas: tickets vendidos · internos: personas
+  ninos: number
+  staff: number
+  idioma: 'es' | 'en' | null
+  tentativa: boolean // TENT1: reserva con estado 'tentativo' (solo privadas)
+  estado: string // estado crudo de la reserva o del evento
+  chinampa: string | null // NOMBRE (texto libre en la base, se elige del catálogo)
+  cocina_id: string | null
+  cocina_nombre: string | null
+  fuente_id: string | null // solo privadas Y solo si puede_editar; si no, null
+  fuente_nombre: string | null // ídem
+  guias: GuiaEvento[]
+  observaciones: string // texto de la Junta (sin contacto ni bitácora): lo ven todos
+  notas_internas: string | null // CRUDO, solo si puede_editar (lo que se edita); si no, null
+  huecos: CodigoHueco[] // solo privadas y solo si puede_editar; si no, []
+  montos: MontosGrilla | null // solo privadas y solo si puede_ver_montos
+}
+
+export interface DiaGrilla {
+  fecha: string // YYYY-MM-DD
+  dia: string // 'LUNES' … 'DOMINGO'
+  items: ItemGrilla[] // por hora de inicio
+}
+
+export interface SemanaGrilla {
+  lunes: string
+  domingo: string
+  dias: DiaGrilla[] // siempre 7, de lunes a domingo
+  totales: { eventos: number; pax: number; ninos: number; staff: number; con_huecos: number }
+  puede_editar: boolean // permiso `reservas` (o super_admin)
+  puede_ver_montos: boolean // permiso `reportes` (o super_admin)
+  puede_ver_completa: boolean // igual que SemanaPlaneacion: botón del Excel completo
+}
+
+// 409 de cualquier PATCH con `version` vieja (reservas, guías de reserva, eventos). No se escribió nada.
+export interface ConflictoVersion {
+  detail: string
+  codigo: 'version_vieja'
+  version_actual: string | null
+}
+
+export function esConflictoVersion(status: number, cuerpo: unknown): cuerpo is ConflictoVersion {
+  return (
+    status === 409 &&
+    typeof cuerpo === 'object' &&
+    cuerpo !== null &&
+    (cuerpo as { codigo?: unknown }).codigo === 'version_vieja'
+  )
 }

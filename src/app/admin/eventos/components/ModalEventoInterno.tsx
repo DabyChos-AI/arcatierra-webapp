@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { AlertTriangle, CalendarPlus, Loader2, X } from 'lucide-react'
+import { AlertTriangle, CalendarPlus, Loader2, RefreshCw, X } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
+import { esConflictoVersion } from '@/types/planeacion'
 import type {
   EventoInternoPayload,
   EventoPlaneacion,
@@ -18,7 +19,7 @@ import {
   inputClass,
 } from './CamposPlaneacion'
 import type { CatalogosEventos } from './useCatalogosEventos'
-import { horaCorta } from './fechas'
+import { horaCorta, hoyMexico } from './fechas'
 import { mismosIds, textoONull } from './utils'
 
 // Lo que más se captura (el Sheet los trae así); se puede escribir cualquier otro
@@ -38,9 +39,32 @@ interface FormInterno {
   guias: string[]
 }
 
+function formDe(evento: EventoPlaneacion | null, fechaSugerida: string | undefined): FormInterno {
+  return {
+    nombre: evento?.nombre_evento ?? '',
+    descripcion: evento?.descripcion ?? '',
+    fecha: evento?.fecha_evento ?? fechaSugerida ?? hoyMexico(),
+    horaInicio: horaCorta(evento?.hora_inicio),
+    horaFin: horaCorta(evento?.hora_fin),
+    chinampa: evento?.chinampa ?? '',
+    cocinaId: evento?.cocina_id ?? '',
+    idioma: evento?.idioma ?? '',
+    personas: evento?.personas != null ? String(evento.personas) : '',
+    notas: evento?.notas_internas ?? '',
+    guias: evento?.guias.map((g) => g.personal_id) ?? [],
+  }
+}
+
 /**
  * Crear o editar un evento interno (Scouting, Montaje, Descanso…): oculto al público y
  * sin reserva. Crear → POST /internos. Editar → PATCH con todos los campos (null limpia).
+ *
+ * Fecha al crear: `fechaSugerida` (R4: la grilla manda el día donde se pulsó «Agregar
+ * interno»); sin ella, hoy de México.
+ *
+ * R4 · versión: al editar se manda `version` = la `fecha_actualizacion` leída. Si alguien
+ * cambió el evento mientras tanto, el backend responde 409 sin escribir nada: se muestra su
+ * `detail` y «Recargar» relee el evento (y su versión nueva). Nunca se reintenta solo.
  */
 export default function ModalEventoInterno({
   evento,
@@ -51,7 +75,8 @@ export default function ModalEventoInterno({
 }: {
   // null = crear
   evento: EventoPlaneacion | null
-  fechaSugerida: string
+  // Modo crear: fecha con la que abre el formulario (R4: opcional; sin ella, hoy de México)
+  fechaSugerida?: string
   catalogos: CatalogosEventos
   onClose: () => void
   onSaved: (guardado: EventoPlaneacion, creado: boolean) => void
@@ -59,28 +84,45 @@ export default function ModalEventoInterno({
   const { data: session } = useSession()
   const token = session?.accessToken as string | undefined
 
-  const idsIniciales = evento?.guias.map((g) => g.personal_id) ?? []
-  const [form, setForm] = useState<FormInterno>(() => ({
-    nombre: evento?.nombre_evento ?? '',
-    descripcion: evento?.descripcion ?? '',
-    fecha: evento?.fecha_evento ?? fechaSugerida,
-    horaInicio: horaCorta(evento?.hora_inicio),
-    horaFin: horaCorta(evento?.hora_fin),
-    chinampa: evento?.chinampa ?? '',
-    cocinaId: evento?.cocina_id ?? '',
-    idioma: evento?.idioma ?? '',
-    personas: evento?.personas != null ? String(evento.personas) : '',
-    notas: evento?.notas_internas ?? '',
-    guias: idsIniciales,
-  }))
+  // Lo guardado (y su versión): cambia al «Recargar» tras un 409
+  const [base, setBase] = useState<EventoPlaneacion | null>(evento)
+  const idsIniciales = base?.guias.map((g) => g.personal_id) ?? []
+  const [form, setForm] = useState<FormInterno>(() => formDe(evento, fechaSugerida))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // R4: `detail` del 409 (versión vieja)
+  const [conflicto, setConflicto] = useState<string | null>(null)
+  const [recargando, setRecargando] = useState(false)
 
   const set = <K extends keyof FormInterno>(campo: K, valor: FormInterno[K]) =>
     setForm((prev) => ({ ...prev, [campo]: valor }))
 
   const cerrar = () => {
-    if (!saving) onClose()
+    if (!saving && !recargando) onClose()
+  }
+
+  // Relee el evento completo (permiso reservas) y pone en el formulario lo guardado
+  const recargar = async () => {
+    if (!token || !base) return
+    setRecargando(true)
+    setError(null)
+    try {
+      const res = await fetch(`${API_URL}/api/admin/eventos/${base.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, res.status))
+      }
+      const fresco = (await res.json()) as EventoPlaneacion
+      setBase(fresco)
+      setForm(formDe(fresco, fechaSugerida))
+      setConflicto(null)
+    } catch (err) {
+      setError(`No se pudo recargar el evento: ${err instanceof Error ? err.message : 'sin conexión'}`)
+    } finally {
+      setRecargando(false)
+    }
   }
 
   const guardar = async (e: React.FormEvent) => {
@@ -104,9 +146,10 @@ export default function ModalEventoInterno({
     const idioma = form.idioma === 'es' || form.idioma === 'en' ? form.idioma : null
 
     setSaving(true)
+    setConflicto(null)
     try {
       let res: Response
-      if (evento) {
+      if (base) {
         const patch: EventoPlaneacionPatch = {
           nombre_evento: nombre,
           descripcion: textoONull(form.descripcion),
@@ -121,7 +164,9 @@ export default function ModalEventoInterno({
         }
         // guias_ids reemplaza la lista y el backend exige guías activos: solo si cambió
         if (!mismosIds(form.guias, idsIniciales)) patch.guias_ids = form.guias
-        res = await fetch(`${API_URL}/api/admin/eventos/${evento.id}`, {
+        // R4: la versión leída, tal cual (sin ella, el backend guarda como antes)
+        if (base.fecha_actualizacion) patch.version = base.fecha_actualizacion
+        res = await fetch(`${API_URL}/api/admin/eventos/${base.id}`, {
           method: 'PATCH',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify(patch),
@@ -147,10 +192,14 @@ export default function ModalEventoInterno({
         })
       }
       if (!res.ok) {
-        const payload = await res.json().catch(() => null)
+        const payload: unknown = await res.json().catch(() => null)
+        if (esConflictoVersion(res.status, payload)) {
+          setConflicto(payload.detail)
+          return
+        }
         throw new Error(extraerMensajeError(payload, res.status))
       }
-      onSaved((await res.json()) as EventoPlaneacion, !evento)
+      onSaved((await res.json()) as EventoPlaneacion, !base)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al guardar')
     } finally {
@@ -179,12 +228,12 @@ export default function ModalEventoInterno({
             className="font-display text-xl text-verde flex items-center gap-2"
           >
             <CalendarPlus className="h-5 w-5 text-terracota" aria-hidden="true" />
-            {evento ? 'Editar evento interno' : 'Nuevo evento interno'}
+            {base ? 'Editar evento interno' : 'Nuevo evento interno'}
           </h2>
           <button
             type="button"
             onClick={cerrar}
-            disabled={saving}
+            disabled={saving || recargando}
             aria-label="Cerrar modal"
             className="p-2 hover:bg-neutro-light rounded-lg"
           >
@@ -206,6 +255,33 @@ export default function ModalEventoInterno({
             >
               <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
               <span>{error}</span>
+            </div>
+          )}
+
+          {conflicto && (
+            <div
+              role="alert"
+              data-testid="evento-conflicto"
+              className="p-3 bg-amarillo-bg border border-amarillo/40 rounded-lg text-sm text-verde space-y-2"
+            >
+              <p className="flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-amarillo" aria-hidden="true" />
+                <span>{conflicto}</span>
+              </p>
+              <button
+                type="button"
+                onClick={recargar}
+                disabled={recargando}
+                data-testid="evento-conflicto-recargar"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutro-borde bg-white text-verde text-sm hover:bg-neutro-light disabled:opacity-50"
+              >
+                {recargando ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                )}
+                Recargar: se pierde lo que no guardaste
+              </button>
             </div>
           )}
 
@@ -293,7 +369,7 @@ export default function ModalEventoInterno({
             <SelectChinampa
               id="ei-chinampa"
               value={form.chinampa}
-              guardada={evento?.chinampa ?? null}
+              guardada={base?.chinampa ?? null}
               chinampas={catalogos.chinampas}
               onChange={(v) => set('chinampa', v)}
             />
@@ -301,7 +377,7 @@ export default function ModalEventoInterno({
               id="ei-cocina"
               value={form.cocinaId}
               guardada={
-                evento?.cocina_id ? { id: evento.cocina_id, nombre: evento.cocina_nombre } : null
+                base?.cocina_id ? { id: base.cocina_id, nombre: base.cocina_nombre } : null
               }
               cocinas={catalogos.cocinas}
               onChange={(v) => set('cocinaId', v)}
@@ -327,7 +403,7 @@ export default function ModalEventoInterno({
           <SelectorGuias
             id="ei-guias"
             guias={catalogos.guias}
-            asignados={evento?.guias ?? []}
+            asignados={base?.guias ?? []}
             seleccion={form.guias}
             onChange={(ids) => set('guias', ids)}
           />
@@ -358,12 +434,12 @@ export default function ModalEventoInterno({
           </button>
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || recargando}
             data-testid="evento-guardar"
             className="inline-flex items-center gap-2 bg-terracota hover:bg-terracota-dark text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
-            {evento ? 'Guardar cambios' : 'Crear evento'}
+            {base ? 'Guardar cambios' : 'Crear evento'}
           </button>
         </div>
       </form>

@@ -1,6 +1,7 @@
 // Tipos compartidos Fase C — frontend admin reservas
 // Sincronizado con backend Fase B (admin_reservas.py, 17 endpoints + 1 conversion lead)
 // Tabla: reservas_experiencias + reservas_experiencias_guias (pivote) + reservas_experiencias_addons
+import type { CodigoHueco, FiltroHueco } from './planeacion'
 
 export type ReservaEstado =
   | 'tentativo'
@@ -362,7 +363,10 @@ export interface Reserva {
   /** % de comisión del reseller guardado al crear la reserva (null = sin reseller o sin comisión). */
   comision_pct?: number | null
   fecha_creacion: string
+  // R4: es la VERSIÓN de la reserva. Se manda tal cual en `version` en los PATCH (409 si alguien cambió la reserva).
   fecha_actualizacion: string
+  // R4 (HUE1): códigos de hueco; vienen en la LISTA (GET /api/admin/reservas) y en el detalle
+  huecos?: CodigoHueco[]
   guias?: Guia[]
   addons?: AddonReserva[]
   pagos?: PagoReserva[]
@@ -391,6 +395,8 @@ export interface ReservaFiltros {
   guia_id?: string
   reseller_id?: string
   busqueda?: string
+  // R4 (HUE1): `?hueco=` repetido; uno o varios códigos (OR) o 'cualquiera'
+  hueco?: FiltroHueco[]
   page?: number
   per_page?: number
 }

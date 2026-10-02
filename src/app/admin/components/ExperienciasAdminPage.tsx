@@ -543,25 +543,61 @@ export default function ExperienciasAdminPage({
     }
   }
 
-  const handleEliminar = async () => {
+  // EXPDEL1 (R4): con fechas futuras vendidas/apartadas o reservas futuras el backend no deja
+  // borrar (409 `tiene_futuras`, sin segundo paso); con fechas futuras SIN ventas pide confirmar
+  // (409 `confirmar`) porque se cancelan al borrar. El aviso lleva el id de la experiencia.
+  const [avisoEliminar, setAvisoEliminar] = useState<{
+    expId: string
+    codigo: 'tiene_futuras' | 'confirmar'
+    texto: string
+  } | null>(null)
+
+  const handleEliminar = async (confirmar = false) => {
     if (!selectedExperiencia) return
+    const exp = selectedExperiencia
     setLoadingAction('eliminar')
     try {
-      const res = await fetch(`/api/experiencias-admin/${selectedExperiencia.id}`, {
-        method: 'DELETE'
-      })
-      const data = await res.json()
-      
-      if (data.success) {
-        mostrarNotificacion('success', data.message)
+      const res = await fetch(
+        `/api/experiencias-admin/${exp.id}${confirmar ? '?confirmar=true' : ''}`,
+        { method: 'DELETE' },
+      )
+      const data: unknown = await res.json().catch(() => null)
+      const cuerpo = (typeof data === 'object' && data !== null ? data : {}) as Record<string, unknown>
+
+      if (res.ok && cuerpo.success === true) {
+        // C9 (R4): el `message` del back ya dice las fechas canceladas (`fechas_canceladas`): tal cual
+        mostrarNotificacion(
+          'success',
+          typeof cuerpo.message === 'string' ? cuerpo.message : 'Experiencia eliminada',
+        )
+        setAvisoEliminar(null)
         setShowModal(null)
         setSelectedExperiencia(null)
         fetchExperiencias()
-      } else {
-        // FastAPI responde los errores en `detail`, no en `message`
-        mostrarNotificacion('error', data.detail || data.message || 'Error al eliminar')
+        return
       }
-    } catch (error) {
+
+      if (res.status === 409) {
+        // `codigo` en el primer nivel (contrato R4) o dentro de `detail` (HTTPException con dict)
+        const anidado =
+          typeof cuerpo.detail === 'object' && cuerpo.detail !== null && !Array.isArray(cuerpo.detail)
+            ? (cuerpo.detail as Record<string, unknown>)
+            : null
+        const codigo = cuerpo.codigo ?? anidado?.codigo
+        if (codigo === 'tiene_futuras' || codigo === 'confirmar') {
+          const texto =
+            typeof cuerpo.detail === 'string'
+              ? cuerpo.detail
+              : typeof anidado?.detail === 'string'
+                ? anidado.detail
+                : extraerMensajeError(data, res.status)
+          setAvisoEliminar({ expId: exp.id, codigo, texto })
+          return
+        }
+      }
+      // FastAPI responde los errores en `detail`, no en `message`
+      mostrarNotificacion('error', extraerMensajeError(data, res.status))
+    } catch {
       mostrarNotificacion('error', 'Error de conexión')
     } finally {
       setLoadingAction(null)
@@ -1907,22 +1943,60 @@ export default function ExperienciasAdminPage({
                 Se quitará <strong>{selectedExperiencia.nombre}</strong> del panel y de la página.
                 {' '}Si ya tiene reservas, leads o códigos QR, su historial se conserva para los reportes.
               </p>
-              
+
+              {avisoEliminar?.expId === selectedExperiencia.id && avisoEliminar.codigo === 'tiene_futuras' && (
+                <div
+                  role="alert"
+                  data-testid="exp-eliminar-tiene-futuras"
+                  className="mb-4 p-3 rounded-lg bg-rojo-bg border border-rojo/30 text-sm text-rojo"
+                >
+                  {avisoEliminar.texto}
+                </div>
+              )}
+
+              {avisoEliminar?.expId === selectedExperiencia.id && avisoEliminar.codigo === 'confirmar' && (
+                <div
+                  role="alert"
+                  data-testid="exp-eliminar-confirmar-fechas"
+                  className="mb-4 p-3 rounded-lg bg-amarillo-bg border border-amarillo/40 text-sm text-verde space-y-3"
+                >
+                  <p>{avisoEliminar.texto}</p>
+                  <button
+                    type="button"
+                    onClick={() => handleEliminar(true)}
+                    disabled={loadingAction === 'eliminar'}
+                    data-testid="exp-eliminar-confirmar-fechas-si"
+                    className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {loadingAction === 'eliminar' && <Loader2 className="h-4 w-4 animate-spin" />}
+                    Eliminar y cancelar esas fechas
+                  </button>
+                </div>
+              )}
+
               <div className="flex gap-3">
                 <button
-                  onClick={() => setShowModal(null)}
-                  className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50"
+                  onClick={() => {
+                    setAvisoEliminar(null)
+                    setShowModal(null)
+                  }}
+                  disabled={loadingAction === 'eliminar'}
+                  data-testid="exp-eliminar-cancelar"
+                  className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
                 >
                   Cancelar
                 </button>
-                <button
-                  onClick={handleEliminar}
-                  disabled={loadingAction === 'eliminar'}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {loadingAction === 'eliminar' && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Eliminar
-                </button>
+                {avisoEliminar?.expId !== selectedExperiencia.id && (
+                  <button
+                    onClick={() => handleEliminar()}
+                    disabled={loadingAction === 'eliminar'}
+                    data-testid="exp-eliminar-boton"
+                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {loadingAction === 'eliminar' && <Loader2 className="h-4 w-4 animate-spin" />}
+                    Eliminar
+                  </button>
+                )}
               </div>
             </div>
           </div>

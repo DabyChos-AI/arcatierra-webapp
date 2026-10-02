@@ -10,6 +10,13 @@ import { horaCorta, sinTope } from '../../eventos/components/fechas'
 
 const IDIOMAS: Record<string, string> = { es: 'Español', en: 'Inglés' }
 
+// CALX1 (R4): el Calendario ya solo recibe fechas `activo` (backend); si llega otra, se dice.
+const ESTADOS_NO_ACTIVOS: Record<string, string> = { cancelado: 'Cancelada', inactivo: 'Inactiva' }
+
+function etiquetaEstado(estado: string): string {
+  return ESTADOS_NO_ACTIVOS[estado] ?? estado
+}
+
 function Dato({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
   return (
     <div>
@@ -34,6 +41,9 @@ export default function ModalVerEvento({
 }) {
   const esPublica = evento.tipo === 'publica'
   const esInterno = evento.tipo === 'interno'
+  const activo = evento.estado === 'activo'
+  // El backend no deja editar una fecha cancelada (400): no se ofrece
+  const cancelada = evento.estado === 'cancelado'
   const titulo = esPublica ? evento.experiencia_nombre || evento.nombre_evento : evento.nombre_evento
   const horario = evento.hora_fin
     ? `${horaCorta(evento.hora_inicio)} – ${horaCorta(evento.hora_fin)}`
@@ -65,6 +75,15 @@ export default function ModalVerEvento({
             <h2 id="ver-evento-titulo" className="font-display text-xl text-verde mt-0.5">
               {titulo}
             </h2>
+            {!activo && (
+              <span
+                data-testid="ver-evento-estado"
+                data-estado={evento.estado}
+                className="inline-block mt-1 rounded-full text-xs font-medium px-2 py-0.5 bg-rojo-bg text-rojo"
+              >
+                {etiquetaEstado(evento.estado)}
+              </span>
+            )}
             {esInterno && evento.descripcion && (
               <p className="text-sm text-verde-suave mt-1">{evento.descripcion}</p>
             )}
@@ -137,7 +156,7 @@ export default function ModalVerEvento({
               Tickets
             </button>
           )}
-          {puedeEditar && (esPublica || esInterno) && (
+          {puedeEditar && (esPublica || esInterno) && !cancelada && (
             <button
               type="button"
               onClick={onEditar}

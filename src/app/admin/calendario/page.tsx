@@ -242,7 +242,11 @@ export default function CalendarioPage() {
                   if (evento.fecha_evento === hoy) fechaTexto = 'Hoy'
                   else if (evento.fecha_evento === sumarDias(hoy, 1)) fechaTexto = 'Mañana'
                   const estilo = ESTILO[evento.tipo] ?? ESTILO.otro
-                  const editable = puedeEditar && (evento.tipo === 'publica' || evento.tipo === 'interno')
+                  // R4: una fecha cancelada no se edita (el backend responde 400); el Calendario ya no las recibe
+                  const editable =
+                    puedeEditar &&
+                    (evento.tipo === 'publica' || evento.tipo === 'interno') &&
+                    evento.estado !== 'cancelado'
 
                   return (
                     <div

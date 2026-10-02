@@ -1,14 +1,17 @@
 'use client'
 
-// Planeación semanal (PS1 Ola 2): la junta de turismo de lunes a domingo.
-// Sin montos, comerciales, contacto, fuente ni estado de pago: eso solo sale en
-// el Excel completo, que se ofrece si el backend dice `puede_ver_completa`.
+// Planeación semanal. PS1 (sesión 35): la Junta de lunes a domingo. R4 (sesión 44): la grilla editable.
+// Lee GET /api/admin/planeacion/grilla (SemanaGrilla). Quien tiene `reservas` (puede_editar) edita en la
+// tarjeta con los MISMOS PATCH que el detalle (con `version`: 409 si alguien lo cambió), agrega eventos
+// internos y abre la reserva; los montos se VEN solo con `reportes` y se capturan en el detalle (DR14).
+// Guías y cocina ven la misma grilla sin lápices, sin notas crudas, sin huecos y sin montos.
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import {
   CalendarRange,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -19,14 +22,18 @@ import {
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { formatFechaMexico } from '@/lib/dates'
+import { descargar } from '@/lib/descargas'
 import { volverAlLoginDelPanel } from '@/lib/fetchPanel'
-import type { SemanaPlaneacion } from '@/types/planeacion'
+import type { SemanaGrilla } from '@/types/planeacion'
 import AdminTopbar from '../components/AdminTopbar'
+import ModalEventoInterno from '../eventos/components/ModalEventoInterno'
+import { useCatalogosEventos } from '../eventos/components/useCatalogosEventos'
 import { extraerMensajeError } from '../reservas/components/errores'
-import TablaPlaneacion from './components/TablaPlaneacion'
+import GrillaSemana from './components/GrillaSemana'
 import { SOLO_FECHA, hoyMexico, lunesDe, sumarDias } from './components/fechas'
 
 const TIEMPO_MAXIMO = 30_000
+const AVISO_MS = 4_000
 
 /** Error con un mensaje ya listo para mostrarse (el `detail` del backend). */
 class ErrorLegible extends Error {}
@@ -50,33 +57,6 @@ async function lanzarSiFallo(res: Response): Promise<void> {
   throw new ErrorLegible(extraerMensajeError(cuerpo, res.status))
 }
 
-/** Nombre del archivo desde `Content-Disposition` (filename* o filename). */
-function nombreDeArchivo(res: Response, porDefecto: string): string {
-  const cd = res.headers.get('content-disposition') || ''
-  const utf8 = /filename\*=UTF-8''([^;]+)/i.exec(cd)?.[1]
-  if (utf8) {
-    try {
-      return decodeURIComponent(utf8.replace(/"/g, ''))
-    } catch {
-      /* cae al filename simple */
-    }
-  }
-  return /filename="?([^";]+)"?/i.exec(cd)?.[1] || porDefecto
-}
-
-/** Mismo patrón que /admin/reportes: blob → objectURL → <a download> → revoke. */
-async function descargar(res: Response, porDefecto: string): Promise<void> {
-  const blob = await res.blob()
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = nombreDeArchivo(res, porDefecto)
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  URL.revokeObjectURL(url)
-}
-
 export default function PlaneacionPage() {
   const { data: session } = useSession()
   const token = session?.accessToken as string | undefined
@@ -84,7 +64,7 @@ export default function PlaneacionPage() {
   const [hoy] = useState(hoyMexico)
   // Cualquier día: el backend responde la semana (lunes a domingo) que lo contiene
   const [fecha, setFecha] = useState(hoy)
-  const [semana, setSemana] = useState<SemanaPlaneacion | null>(null)
+  const [semana, setSemana] = useState<SemanaGrilla | null>(null)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [intento, setIntento] = useState(0)
@@ -92,64 +72,90 @@ export default function PlaneacionPage() {
   const [descargando, setDescargando] = useState<'junta' | 'completa' | null>(null)
   const [errorDescarga, setErrorDescarga] = useState<string | null>(null)
 
-  // El link a Eventos es para quien tiene el permiso 'reservas' o es super_admin. El
-  // layout no comparte `permisosActivos`, así que se pide el mismo endpoint que usa él.
-  // Si cambia de rol en el encabezado, el link se actualiza al recargar (aceptado).
-  const [puedeVerEventos, setPuedeVerEventos] = useState(false)
+  const [soloHuecos, setSoloHuecos] = useState(false)
+  const [internoFecha, setInternoFecha] = useState<string | null>(null)
+  const [aviso, setAviso] = useState<{ texto: string; n: number } | null>(null)
 
+  // La última petición manda: una semana vieja (o una recarga superada) nunca pisa a la nueva
+  const ultimaPeticion = useRef(0)
+  const fechaActual = useRef(fecha)
   useEffect(() => {
-    let cancelado = false
-    fetch('/api/admin/roles/mis-roles')
-      .then((res) => (res.ok ? res.json() : null))
-      .then(
-        (data: { permisos_activos?: unknown; rol_activo?: { nombre?: unknown } | null } | null) => {
-          if (cancelado || !data) return
-          const permisos = Array.isArray(data.permisos_activos) ? data.permisos_activos : []
-          setPuedeVerEventos(
-            permisos.includes('reservas') || data.rol_activo?.nombre === 'super_admin',
-          )
+    fechaActual.current = fecha
+  }, [fecha])
+
+  const puedeEditar = !!semana?.puede_editar
+  // Catálogos (chinampas, cocinas, fuentes, guías) solo para quien edita
+  const catalogos = useCatalogosEventos(puedeEditar ? token : undefined)
+
+  const pedirSemana = useCallback(
+    async (dia: string): Promise<SemanaGrilla> => {
+      const res = await fetch(
+        `${API_URL}/api/admin/planeacion/grilla?fecha=${encodeURIComponent(dia)}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: AbortSignal.timeout(TIEMPO_MAXIMO),
         },
       )
-      .catch(() => {
-        /* sin permisos a la vista no se ofrece el link; la página sigue igual */
-      })
-    return () => {
-      cancelado = true
-    }
-  }, [])
+      await lanzarSiFallo(res)
+      const data = (await res.json()) as SemanaGrilla | null
+      if (!data || !Array.isArray(data.dias) || !data.totales) {
+        throw new ErrorLegible('El servidor respondió algo inesperado. Reintenta.')
+      }
+      return data
+    },
+    [token],
+  )
 
   useEffect(() => {
     if (!token) return
-    let cancelado = false
-    const cargar = async () => {
-      // Refetch silencioso: la semana anterior se queda en pantalla mientras llega la nueva
-      setCargando(true)
-      setError(null)
-      try {
-        const res = await fetch(
-          `${API_URL}/api/admin/planeacion/semana?fecha=${encodeURIComponent(fecha)}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-            signal: AbortSignal.timeout(TIEMPO_MAXIMO),
-          },
-        )
-        await lanzarSiFallo(res)
-        const data = (await res.json()) as SemanaPlaneacion | null
-        if (!data || !Array.isArray(data.dias) || !data.totales) {
-          throw new ErrorLegible('El servidor respondió algo inesperado. Reintenta.')
-        }
-        if (!cancelado) setSemana(data)
-      } catch (e) {
-        if (!cancelado) setError(mensajeDeFallo(e))
-      } finally {
-        if (!cancelado) setCargando(false)
+    const n = ++ultimaPeticion.current
+    // Refetch silencioso: la semana anterior se queda en pantalla mientras llega la nueva
+    setCargando(true)
+    setError(null)
+    pedirSemana(fecha)
+      .then((data) => {
+        if (n === ultimaPeticion.current) setSemana(data)
+      })
+      .catch((e: unknown) => {
+        if (n === ultimaPeticion.current) setError(mensajeDeFallo(e))
+      })
+      .finally(() => {
+        if (n === ultimaPeticion.current) setCargando(false)
+      })
+  }, [token, fecha, intento, pedirSemana])
+
+  /**
+   * Relee la semana EN SILENCIO tras guardar (o tras un 409): no desmonta la grilla (el guard de
+   * «Cargando la semana…» es `cargando && !semana`) ni la atenúa, así que el scroll y los editores
+   * abiertos se quedan. Devuelve lo nuevo para que el editor de un 409 tome el valor y la versión vigentes.
+   */
+  const recargar = useCallback(async (): Promise<SemanaGrilla | null> => {
+    if (!token) return null
+    const n = ++ultimaPeticion.current
+    try {
+      const data = await pedirSemana(fechaActual.current)
+      if (n === ultimaPeticion.current) {
+        setSemana(data)
+        setError(null)
       }
+      return data
+    } catch (e) {
+      if (n === ultimaPeticion.current) setError(mensajeDeFallo(e))
+      return null
+    } finally {
+      if (n === ultimaPeticion.current) setCargando(false)
     }
-    cargar()
-    return () => {
-      cancelado = true
-    }
-  }, [token, fecha, intento])
+  }, [token, pedirSemana])
+
+  const avisar = useCallback((texto: string) => {
+    setAviso((prev) => ({ texto, n: (prev?.n ?? 0) + 1 }))
+  }, [])
+
+  useEffect(() => {
+    if (!aviso) return
+    const t = setTimeout(() => setAviso(null), AVISO_MS)
+    return () => clearTimeout(t)
+  }, [aviso])
 
   const irA = (nueva: string) => {
     setErrorDescarga(null)
@@ -198,7 +204,8 @@ export default function PlaneacionPage() {
   }, [token, semana])
 
   const lunes = lunesDe(fecha)
-  const semanaVacia = !!semana && semana.dias.every((d) => d.filas.length === 0)
+  const semanaVacia = !!semana && semana.dias.every((d) => d.items.length === 0)
+  const conHuecosTotal = semana?.totales.con_huecos ?? 0
   const botonNav =
     'inline-flex items-center gap-1 rounded-lg border border-neutro-borde bg-white px-3 py-2 text-sm text-verde transition hover:bg-neutro-light'
 
@@ -206,7 +213,7 @@ export default function PlaneacionPage() {
     <div className="flex h-full flex-col">
       <AdminTopbar />
 
-      <div className="flex-1 space-y-6 overflow-auto p-4 sm:p-6">
+      <div className="flex-1 space-y-6 overflow-auto p-4 sm:p-6 lg:px-0">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="rounded-lg bg-terracota/10 p-2">
@@ -219,7 +226,7 @@ export default function PlaneacionPage() {
               </p>
             </div>
           </div>
-          {puedeVerEventos && (
+          {puedeEditar && (
             <Link
               href="/admin/eventos"
               className="inline-flex items-center gap-2 text-sm text-terracota underline hover:text-terracota-dark"
@@ -232,7 +239,7 @@ export default function PlaneacionPage() {
 
         {/* Navegación de semanas */}
         <div className="flex flex-wrap items-end gap-3 rounded-xl border border-neutro-borde bg-neutro-light px-4 py-3">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               data-testid="planeacion-anterior"
@@ -338,7 +345,7 @@ export default function PlaneacionPage() {
                   data-testid="planeacion-semana"
                   data-lunes={semana.lunes}
                   data-domingo={semana.domingo}
-                  className="font-heading text-lg font-bold text-verde"
+                  className="m-0 font-heading text-lg font-bold text-verde"
                 >
                   Semana del {formatFechaMexico(semana.lunes)} al{' '}
                   {formatFechaMexico(semana.domingo)}
@@ -385,6 +392,51 @@ export default function PlaneacionPage() {
               </div>
             </div>
 
+            {/* HUE1 en la grilla: solo quien edita ve los huecos */}
+            {puedeEditar && (
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={soloHuecos}
+                  data-testid="planeacion-solo-huecos"
+                  data-con-huecos={conHuecosTotal}
+                  onClick={() => setSoloHuecos((v) => !v)}
+                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition ${
+                    soloHuecos
+                      ? 'border-terracota bg-terracota text-white'
+                      : 'border-neutro-borde bg-white text-verde hover:bg-neutro-light'
+                  }`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`relative inline-block h-4 w-7 rounded-full transition ${
+                      soloHuecos ? 'bg-white/40' : 'bg-neutro-borde'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-all ${
+                        soloHuecos ? 'left-3.5' : 'left-0.5'
+                      }`}
+                    />
+                  </span>
+                  Solo privadas con huecos
+                  <span
+                    className={`rounded-full px-2 py-px text-xs font-semibold tabular-nums ${
+                      soloHuecos ? 'bg-white text-terracota-dark' : 'bg-amarillo-bg text-verde-tipografia'
+                    }`}
+                  >
+                    {conHuecosTotal}
+                  </span>
+                </button>
+                {soloHuecos && conHuecosTotal === 0 && (
+                  <span data-testid="planeacion-sin-huecos" className="text-sm text-verde-suave">
+                    Ninguna privada de esta semana tiene datos pendientes.
+                  </span>
+                )}
+              </div>
+            )}
+
             {errorDescarga && (
               <p
                 data-testid="planeacion-descarga-error"
@@ -404,11 +456,47 @@ export default function PlaneacionPage() {
             )}
 
             <div className={cargando ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
-              <TablaPlaneacion dias={semana.dias} hoy={hoy} />
+              <GrillaSemana
+                dias={semana.dias}
+                hoy={hoy}
+                puedeEditar={puedeEditar}
+                soloHuecos={puedeEditar && soloHuecos}
+                token={token}
+                catalogos={catalogos}
+                recargar={recargar}
+                onGuardado={avisar}
+                onAgregarInterno={setInternoFecha}
+              />
             </div>
           </section>
         )}
       </div>
+
+      {aviso && (
+        <div
+          key={aviso.n}
+          role="status"
+          data-testid="planeacion-guardado"
+          className="fixed bottom-4 left-4 right-4 z-[650] flex items-center gap-2 rounded-lg bg-verde px-4 py-3 text-sm text-white shadow-lg sm:left-auto sm:max-w-sm"
+        >
+          <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 break-words">{aviso.texto}</span>
+        </div>
+      )}
+
+      {internoFecha && puedeEditar && (
+        <ModalEventoInterno
+          evento={null}
+          fechaSugerida={internoFecha}
+          catalogos={catalogos}
+          onClose={() => setInternoFecha(null)}
+          onSaved={(guardado) => {
+            setInternoFecha(null)
+            avisar(`Evento interno «${guardado.nombre_evento}» agregado.`)
+            void recargar()
+          }}
+        />
+      )}
     </div>
   )
 }

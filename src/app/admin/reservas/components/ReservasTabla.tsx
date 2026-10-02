@@ -25,6 +25,7 @@ import {
   type Reserva,
   type ReservaEstado,
 } from '@/types/reservas'
+import { HUECOS, etiquetaHueco, type FiltroHueco } from '@/types/planeacion'
 import BadgeEstado from '../../components/BadgeEstado'
 import BadgeEstadoPago from '../../components/BadgeEstadoPago'
 import { extraerMensajeError } from './errores'
@@ -48,6 +49,30 @@ type SortOrder = 'asc' | 'desc'
 
 
 const PER_PAGE_OPTIONS = [10, 20, 50, 100]
+
+// HUE1 (R4): «Cualquiera» + los 6 huecos. Nada marcado = sin filtro.
+const HUECO_CUALQUIERA: FiltroHueco = 'cualquiera'
+const OPCIONES_HUECO: { value: FiltroHueco; label: string }[] = [
+  { value: HUECO_CUALQUIERA, label: 'Cualquiera' },
+  ...HUECOS.map((h) => ({ value: h.codigo, label: h.etiqueta })),
+]
+const VALORES_HUECO = new Set<string>(OPCIONES_HUECO.map((o) => o.value))
+
+// «Cualquiera» ya incluye a los demás: marcarla deja solo esa; marcar un hueco la quita.
+function normalizarSeleccionHuecos(previa: FiltroHueco[], nueva: string[]): FiltroHueco[] {
+  const validos = nueva.filter((v): v is FiltroHueco => VALORES_HUECO.has(v))
+  if (!validos.includes(HUECO_CUALQUIERA)) return validos
+  if (!previa.includes(HUECO_CUALQUIERA)) return [HUECO_CUALQUIERA]
+  return validos.filter((v) => v !== HUECO_CUALQUIERA)
+}
+
+function resumenHuecos(seleccion: FiltroHueco[]): string {
+  if (seleccion.length === 0) return 'Sin filtro'
+  if (seleccion.length === 1) {
+    return seleccion[0] === HUECO_CUALQUIERA ? 'Con cualquier hueco' : etiquetaHueco(seleccion[0])
+  }
+  return `${seleccion.length} huecos`
+}
 
 function compareReservas(a: Reserva, b: Reserva, key: SortKey): number {
   switch (key) {
@@ -90,6 +115,8 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
   const [vendedorIds, setVendedorIds] = useState<string[]>([])
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
+  // HUE1: `?hueco=` repetido (vacío = sin filtro)
+  const [huecos, setHuecos] = useState<FiltroHueco[]>([])
 
   // Sort
   const [sortBy, setSortBy] = useState<SortKey>('fecha_experiencia')
@@ -115,7 +142,7 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
   // Reset page cuando cambien filtros
   useEffect(() => {
     setPage(1)
-  }, [estados, vendedorIds, fechaDesde, fechaHasta, busqueda, perPage])
+  }, [estados, vendedorIds, fechaDesde, fechaHasta, busqueda, perPage, huecos])
 
   const token = session?.accessToken as string | undefined
   // LD2-a: la misma lista de vendedoras que Leads, el asistente y el detalle
@@ -135,11 +162,15 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
       if (fechaDesde) params.set('fecha_desde', fechaDesde)
       if (fechaHasta) params.set('fecha_hasta', fechaHasta)
       if (busqueda) params.set('busqueda', busqueda)
+      huecos.forEach((h) => params.append('hueco', h))
 
       const res = await fetch(`${API_URL}/api/admin/reservas?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      if (!res.ok) throw new Error(`Error ${res.status}`)
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(payload, res.status))
+      }
       const data: ListResponse = await res.json()
       setItems(data.items ?? [])
       setTotal(data.total_count ?? data.total ?? 0)
@@ -150,7 +181,7 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
     } finally {
       setLoading(false)
     }
-  }, [token, page, perPage, estados, vendedorIds, fechaDesde, fechaHasta, busqueda])
+  }, [token, page, perPage, estados, vendedorIds, fechaDesde, fechaHasta, busqueda, huecos])
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -168,6 +199,7 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
     setVendedorIds([])
     setFechaDesde('')
     setFechaHasta('')
+    setHuecos([])
     setPage(1)
   }
 
@@ -312,6 +344,15 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
                     })()
                   : `${vendedorIds.length} vendedoras`
             }
+          />
+
+          <FiltroMultiple
+            id="reservas-filtro-huecos"
+            etiqueta="Con huecos"
+            opciones={OPCIONES_HUECO}
+            seleccion={huecos}
+            onChange={(v) => setHuecos((previa) => normalizarSeleccionHuecos(previa, v))}
+            resumen={resumenHuecos(huecos)}
           />
 
           <div>
@@ -492,6 +533,8 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
                     r.estado !== 'cancelada' &&
                     r.estado !== 'realizada' &&
                     r.estado !== 'reagendada'
+                  // HUE1: lo que le falta a la reserva (lo calcula el backend)
+                  const huecosFila = r.huecos ?? []
 
                   return (
                     <tr
@@ -507,6 +550,19 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
                         >
                           {r.booking_id}
                         </button>
+                        {huecosFila.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1 max-w-[180px]">
+                            {huecosFila.map((codigo) => (
+                              <span
+                                key={codigo}
+                                data-testid={`reservas-hueco-${codigo}-${r.id}`}
+                                className="inline-block rounded-full border border-amarillo/40 bg-amarillo-bg px-1.5 py-0.5 text-[11px] leading-none text-verde whitespace-nowrap"
+                              >
+                                {etiquetaHueco(codigo)}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </td>
                       <td className="px-3 py-3 text-verde whitespace-nowrap">
                         {r.fecha_experiencia} · {r.hora_inicio.slice(0, 5)}
@@ -583,7 +639,10 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
         <div className="flex items-center justify-between px-4 py-3 bg-neutro-light/40 border-t border-neutro-borde flex-wrap gap-3">
           <div className="flex items-center gap-3 text-sm text-verde-suave">
             <span>
-              {total} reservas · Pagina {page} de {totalPages}
+              <span data-testid="reservas-total" data-total={total}>
+                {total}
+              </span>{' '}
+              reservas · Pagina {page} de {totalPages}
             </span>
             <label className="flex items-center gap-2">
               <span>Por pagina:</span>
