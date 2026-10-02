@@ -9,6 +9,7 @@ import {
   Edit3, Trash2, Home, Building2, AlertCircle, CreditCard
 } from 'lucide-react'
 import PostalCodeSelector from '@/components/ui/PostalCodeSelector'
+import { confirmar } from '@/components/ui/Avisos'
 
 interface ZonaEntrega {
   id: number
@@ -293,7 +294,13 @@ export default function DashboardPage() {
   }
 
   const handleEliminarDireccion = async (direccionId: string) => {
-    if (!confirm('¿Estás seguro de eliminar esta dirección?')) return
+    const ok = await confirmar({
+      titulo: 'Eliminar dirección',
+      mensaje: '¿Estás seguro de eliminar esta dirección?',
+      textoAceptar: 'Eliminar',
+      peligro: true,
+    })
+    if (!ok) return
 
     try {
       const response = await fetch(`/api/direcciones/${direccionId}`, {

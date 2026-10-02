@@ -10,6 +10,7 @@ import {
 import { ImageUploader, GalleryUploader } from '@/components/admin/ImageUploader'
 import MapPicker from '@/components/admin/MapPicker'
 import { formatFechaMexico } from '@/lib/dates'
+import { aviso, confirmar } from '@/components/ui/Avisos'
 import { CAPACIDAD_SIN_TOPE } from '@/types/catalogos'
 import {
   esRequiereConfirmacion,
@@ -175,7 +176,14 @@ async function accionFechaConConfirmacion(url: string, method: 'PATCH' | 'DELETE
     const detalle =
       typeof data === 'object' && data !== null && 'detail' in data ? (data as { detail: unknown }).detail : null
     if (esRequiereConfirmacion(detalle)) {
-      if (!window.confirm(detalle.mensaje)) return { estado: 'cancelado' }
+      // K1 (R8): diálogo propio (funciona fuera de componentes). Hay compradores web: se les cancela y hay que devolver.
+      const ok = await confirmar({
+        titulo: method === 'DELETE' ? 'Eliminar la fecha' : 'Desactivar la fecha',
+        mensaje: detalle.mensaje,
+        textoAceptar: method === 'DELETE' ? 'Eliminar' : 'Desactivar',
+        peligro: true,
+      })
+      if (!ok) return { estado: 'cancelado' }
       ;({ res, data } = await pedir(true))
     }
   }
@@ -280,6 +288,86 @@ async function patchFecha(eventoId: string, payload: EditarFechaPayload): Promis
 interface Notificacion {
   tipo: 'success' | 'error' | 'info'
   mensaje: string
+}
+
+// ─── INC1 (R8): listas de la ficha («¿Qué incluye?», «Información importante», «Requisitos») ───────────────
+/** Lo que se manda: cada renglón sin espacios de sobra y sin renglones vacíos. */
+function renglonesLimpios(lista: string[] | null | undefined): string[] {
+  return (lista ?? []).map((r) => r.trim()).filter((r) => r !== '')
+}
+
+/** Lo guardado para editar: al menos un renglón (vacío) para empezar a escribir. */
+function renglonesParaEditar(lista: string[] | null | undefined): string[] {
+  return Array.isArray(lista) && lista.length > 0 ? lista : ['']
+}
+
+/** Lista editable con el patrón de «Horarios disponibles»: escribir, quitar y agregar renglones. */
+function ListaEditable({
+  testid,
+  titulo,
+  ayuda,
+  placeholder,
+  etiquetaRenglon,
+  items,
+  onChange,
+  claseRing,
+  claseIcono,
+}: {
+  /** Prefijo de los data-testid: `${testid}-lista`, `-item-<i>`, `-quitar-<i>`, `-agregar`. */
+  testid: string
+  titulo: string
+  ayuda: string
+  placeholder: string
+  /** «Renglón de ¿Qué incluye?» → aria-label «… 1», «… 2». */
+  etiquetaRenglon: string
+  items: string[]
+  onChange: (items: string[]) => void
+  claseRing: string
+  claseIcono: string
+}) {
+  const idTitulo = `${testid}-titulo`
+  return (
+    <div role="group" aria-labelledby={idTitulo} data-testid={`${testid}-lista`}>
+      <p id={idTitulo} className="block text-sm font-medium mb-1">{titulo}</p>
+      <p className="text-xs text-gray-500 mb-2">{ayuda}</p>
+      <div className="space-y-2">
+        {items.length === 0 && (
+          <p className="text-xs text-gray-400 italic">Sin renglones. Agrega uno abajo.</p>
+        )}
+        {items.map((texto, idx) => (
+          <div key={idx} className="flex items-center gap-2">
+            <input
+              type="text"
+              data-testid={`${testid}-item-${idx}`}
+              aria-label={`${etiquetaRenglon} ${idx + 1}`}
+              value={texto}
+              placeholder={placeholder}
+              onChange={(e) => onChange(items.map((t, i) => (i === idx ? e.target.value : t)))}
+              className={`flex-1 min-w-0 px-3 py-2 border rounded-lg focus:ring-2 ${claseRing}`}
+            />
+            <button
+              type="button"
+              data-testid={`${testid}-quitar-${idx}`}
+              onClick={() => onChange(items.filter((_, i) => i !== idx))}
+              aria-label={`Quitar ${etiquetaRenglon.toLowerCase()} ${idx + 1}`}
+              className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+            >
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        data-testid={`${testid}-agregar`}
+        onClick={() => onChange([...items, ''])}
+        className={`mt-2 inline-flex items-center gap-1 text-sm ${claseIcono} hover:underline`}
+      >
+        <Plus className="h-4 w-4" aria-hidden="true" />
+        Agregar renglón
+      </button>
+    </div>
+  )
 }
 
 interface ExperienciasAdminPageProps {
@@ -480,9 +568,10 @@ export default function ExperienciasAdminPage({
         ...formData,
         ...reglaNinoDelForm(formData),
         tipo_experiencia: tipoExperiencia,
-        incluye: formData.incluye.filter(i => i.trim() !== ''),
-        requisitos: formData.requisitos.filter(r => r.trim() !== ''),
-        informacion_importante: formData.informacion_importante.filter(i => i.trim() !== ''),
+        // INC1 (R8): un renglón vacío nunca se manda
+        incluye: renglonesLimpios(formData.incluye),
+        requisitos: renglonesLimpios(formData.requisitos),
+        informacion_importante: renglonesLimpios(formData.informacion_importante),
         coordenadas: formData.coordenadas || null,
         temporada: formData.temporada || null,
         galeria_imagenes: formData.galeria_imagenes
@@ -524,9 +613,10 @@ export default function ExperienciasAdminPage({
       const payload = {
         ...formData,
         ...reglaNinoDelForm(formData),
-        incluye: formData.incluye.filter(i => i.trim() !== ''),
-        requisitos: formData.requisitos.filter(r => r.trim() !== ''),
-        informacion_importante: formData.informacion_importante.filter(i => i.trim() !== ''),
+        // INC1 (R8): un renglón vacío nunca se manda
+        incluye: renglonesLimpios(formData.incluye),
+        requisitos: renglonesLimpios(formData.requisitos),
+        informacion_importante: renglonesLimpios(formData.informacion_importante),
         coordenadas: formData.coordenadas || null,
         temporada: formData.temporada || null,
         galeria_imagenes: formData.galeria_imagenes
@@ -674,7 +764,13 @@ export default function ExperienciasAdminPage({
 
   // C11: eliminar (cancelar) una fecha con compradores web también pide confirmación (409) y trae `avisos`
   const handleEliminarEvento = async (eventoId: string) => {
-    if (!confirm('¿Eliminar este evento?')) return
+    const ok = await confirmar({
+      titulo: 'Eliminar la fecha',
+      mensaje: '¿Eliminar este evento?',
+      textoAceptar: 'Eliminar',
+      peligro: true,
+    })
+    if (!ok) return
     try {
       const r = await accionFechaConConfirmacion(
         `/api/experiencias-admin/eventos/${encodeURIComponent(eventoId)}`,
@@ -704,11 +800,11 @@ export default function ExperienciasAdminPage({
     setEventos((prev) => prev.map((e) => (e.id === ev.id ? ev : e)))
   }
 
-  /** avisos[] del back: uno va en la notificación; dos o más, en un alert para que no se pierdan. */
+  /** avisos[] del back: uno va en la notificación; dos o más, en un aviso que se queda hasta cerrarlo (K1, R8). */
   const avisarResultado = (titulo: string, avisos: string[] | null | undefined) => {
     const lista = Array.isArray(avisos) ? avisos.filter(Boolean) : []
     if (lista.length >= 2) {
-      window.alert(lista.join('\n\n'))
+      aviso.info(lista.join('\n\n'), { persistente: true })
       mostrarNotificacion('success', titulo)
     } else if (lista.length === 1) {
       mostrarNotificacion('info', `${titulo}. ${lista[0]}`)
@@ -749,7 +845,12 @@ export default function ExperienciasAdminPage({
       if (!resp.ok && resp.status === 409) {
         const detalle = resp.detail
         if (esRequiereConfirmacion(detalle)) {
-          if (!window.confirm(`${detalle.mensaje} ¿Moverla?`)) {
+          const mover = await confirmar({
+            titulo: 'Mover la fecha',
+            mensaje: `${detalle.mensaje} ¿Moverla?`,
+            textoAceptar: 'Moverla',
+          })
+          if (!mover) {
             setErrorFecha('No se movió la fecha.')
             return
           }
@@ -777,8 +878,16 @@ export default function ExperienciasAdminPage({
   // D6: publicar avisa ANTES del PATCH que el pago en la web falla; ocultar no pregunta
   const handleVisibleEvento = async (evento: EventoExperiencia) => {
     const publicar = !evento.visible_publico
-    if (publicar && !window.confirm(AVISO_PUBLICAR)) return
+    // El candado (`loadingAction`) va ANTES del await: un doble clic no abre dos diálogos (K1, R8)
+    if (loadingAction === `visible-${evento.id}`) return
     setLoadingAction(`visible-${evento.id}`)
+    if (publicar) {
+      const ok = await confirmar({ titulo: 'Publicar la fecha', mensaje: AVISO_PUBLICAR, textoAceptar: 'Publicar' })
+      if (!ok) {
+        setLoadingAction(null)
+        return
+      }
+    }
     try {
       const resp = await patchFecha(evento.id, { visible_publico: publicar })
       if (!resp.ok) {
@@ -855,9 +964,9 @@ export default function ExperienciasAdminPage({
       ubicacion: exp.ubicacion,
       coordenadas: exp.coordenadas || '',
       temporada: exp.temporada || '',
-      incluye: exp.incluye.length > 0 ? exp.incluye : [''],
-      requisitos: exp.requisitos.length > 0 ? exp.requisitos : [''],
-      informacion_importante: exp.informacion_importante.length > 0 ? exp.informacion_importante : [''],
+      incluye: renglonesParaEditar(exp.incluye),
+      requisitos: renglonesParaEditar(exp.requisitos),
+      informacion_importante: renglonesParaEditar(exp.informacion_importante),
       imagen_principal: exp.imagen_principal || '',
       galeria_imagenes: exp.galeria_imagenes || [],
       disponible: exp.disponible,
@@ -1397,8 +1506,8 @@ export default function ExperienciasAdminPage({
                           aria-describedby="exp-personas-incluidas-ayuda"
                           className={`w-full px-4 py-2 border rounded-lg focus:ring-2 ${theme.ring}`}
                         />
-                        <p id="exp-personas-incluidas-ayuda" className="text-xs text-gray-500 mt-1">
-                          Las que cubre el precio base. También es el mínimo al reservar.
+                        <p id="exp-personas-incluidas-ayuda" data-testid="exp-personas-incluidas-ayuda" className="text-xs text-gray-500 mt-1">
+                          Las que cubre el precio base. Desde la siguiente, cada persona paga “Persona adicional”. Se pueden registrar menos, pero el precio no baja del base.
                         </p>
                       </div>
                     )}
@@ -1723,6 +1832,47 @@ export default function ExperienciasAdminPage({
                       Agregar horario
                     </button>
                   </div>
+                </div>
+
+                {/* INC1 (R8): lo que la ficha pública muestra en sus listas (columnas text[]; el PUT ya las acepta) */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <CheckCircle className={`h-5 w-5 ${theme.icon}`} aria-hidden="true" />
+                    Contenido de la ficha
+                  </h3>
+                  <ListaEditable
+                    testid="exp-incluye"
+                    titulo="¿Qué incluye?"
+                    ayuda="Un renglón por cosa incluida. Los renglones vacíos no se guardan."
+                    placeholder="Ej: Paseo en trajinera"
+                    etiquetaRenglon="Renglón de ¿Qué incluye?"
+                    items={formData.incluye}
+                    onChange={(items) => setFormData((prev) => ({ ...prev, incluye: items }))}
+                    claseRing={theme.ring}
+                    claseIcono={theme.icon}
+                  />
+                  <ListaEditable
+                    testid="exp-info"
+                    titulo="Información importante"
+                    ayuda="Un renglón por aviso. Los renglones vacíos no se guardan."
+                    placeholder="Ej: Llega 15 minutos antes"
+                    etiquetaRenglon="Renglón de Información importante"
+                    items={formData.informacion_importante}
+                    onChange={(items) => setFormData((prev) => ({ ...prev, informacion_importante: items }))}
+                    claseRing={theme.ring}
+                    claseIcono={theme.icon}
+                  />
+                  <ListaEditable
+                    testid="exp-requisitos"
+                    titulo="Requisitos"
+                    ayuda="Un renglón por requisito. Los renglones vacíos no se guardan."
+                    placeholder="Ej: Ropa cómoda y bloqueador"
+                    etiquetaRenglon="Renglón de Requisitos"
+                    items={formData.requisitos}
+                    onChange={(items) => setFormData((prev) => ({ ...prev, requisitos: items }))}
+                    claseRing={theme.ring}
+                    claseIcono={theme.icon}
+                  />
                 </div>
 
                 <div className="space-y-4">

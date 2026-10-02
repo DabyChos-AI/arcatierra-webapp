@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Truck, Clock, Calendar, CheckCircle, Leaf, Package, Star, Send } from 'lucide-react'
+import { aviso } from '@/components/ui/Avisos'
 
 // Definición de colores según manual de identidad
 const colors = {
@@ -143,6 +144,9 @@ const ProcessStep = ({ icon: Icon, title, number }: ProcessStepProps) => (
   </div>
 )
 
+const CORREO_RESTAURANTES = 'pedidos@arcatierra.com'
+const ASUNTO_RESTAURANTES = 'Solicitud para restaurantes'
+
 // Componente principal
 export default function ServicioRestaurantes() {
   const [formData, setFormData] = useState({
@@ -163,10 +167,24 @@ export default function ServicioRestaurantes() {
     }
   }
 
-  const handleSubmit = () => {
-    console.log('Formulario enviado:', formData)
-    // Aquí iría la lógica de envío del formulario
-    alert('¡Gracias por tu interés! Nos pondremos en contacto contigo pronto.')
+  // REST1 (R8, decisión de David C1/C13): el formulario ya no finge que envía. Hasta conectarlo (R11), «Enviar por correo»
+  // abre el correo de quien escribe con el mensaje listo para pedidos@ (asunto y cuerpo con los campos del formulario) y
+  // deja un aviso persistente con la dirección por si su equipo no tiene aplicación de correo. Nada se imprime en consola.
+  const cuerpoCorreo = [
+    `Nombre: ${formData.nombre.trim()}`,
+    `Restaurante: ${formData.restaurante.trim()}`,
+    `Correo: ${formData.email.trim()}`,
+    `Teléfono: ${formData.telefono.trim()}`,
+    '',
+    formData.mensaje.trim(),
+  ].join('\n')
+  const ligaCorreo = `mailto:${CORREO_RESTAURANTES}?subject=${encodeURIComponent(ASUNTO_RESTAURANTES)}&body=${encodeURIComponent(cuerpoCorreo)}`
+
+  const avisarCorreo = () => {
+    aviso.info(
+      `Se abrió tu aplicación de correo con el mensaje listo para ${CORREO_RESTAURANTES}. Envíalo desde ahí. Si no se abrió, escríbenos a ${CORREO_RESTAURANTES}.`,
+      { persistente: true },
+    )
   }
 
   return (
@@ -406,18 +424,23 @@ export default function ServicioRestaurantes() {
                 onFocus={(e) => e.target.style.borderColor = colors.terracota.principal}
                 onBlur={(e) => e.target.style.borderColor = colors.neutros.beigeCalido}
               />
-              <button 
-                onClick={handleSubmit}
-                className="w-full md:w-auto px-12 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              <a
+                href={ligaCorreo}
+                onClick={avisarCorreo}
+                data-testid="rest-enviar-correo"
+                className="inline-block w-full md:w-auto text-center px-12 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg"
                 style={{ 
                   backgroundColor: colors.terracota.principal,
                   color: 'white'
                 }}
-                onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = colors.terracota.oscuro}
-                onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = colors.terracota.principal}
+                onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = colors.terracota.oscuro}
+                onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = colors.terracota.principal}
               >
-                Enviar mensaje
-              </button>
+                Enviar por correo
+              </a>
+              <p data-testid="rest-nota-correo" className="text-sm" style={{ color: colors.verde.tipografia }}>
+                Se abre tu aplicación de correo con el mensaje listo para {CORREO_RESTAURANTES}.
+              </p>
             </div>
           </div>
         </div>

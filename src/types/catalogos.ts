@@ -29,11 +29,38 @@ export interface Personal {
   notas_internas: string | null
   activo: boolean
   created_at: string
-  // Solo presente en GET /{id}
+  // R8 (GUI1): la cuenta del panel ligada a la ficha (solo nombre, nunca el correo). null = sin ligar.
+  cuenta?: CuentaLigada | null
+  // GET /{id} y, desde R8 (B4), también el listado: reservas del mes de México (sin canceladas).
   eventos_mes_actual?: {
     como_vendedor: number
     como_guia: number
   }
+}
+
+// ─── Cuentas del panel (R8 · GUI1) ───────────────────────────────────────────
+// GET /api/admin/personal/cuentas-panel?para=<personal_id> (permiso `personal`): cuentas de empleados del panel (tipo
+// empleado/admin), SIN correos. Se liga con PATCH /api/admin/personal/{id} { usuario_id } (null = desligar).
+// 400 si la cuenta no es de un empleado; 409 si ya está ligada a otra ficha (índice uq_personal_usuario).
+
+export interface CuentaLigada {
+  usuario_id: string
+  nombre: string
+}
+
+export interface CuentaPanel {
+  usuario_id: string
+  nombre: string
+  /** Nombres de sus roles (`guia`, `cocina`, `admin`…). */
+  roles: string[]
+  /** Ficha a la que ya está ligada (null = libre). */
+  ligada_a: { personal_id: string; nombre: string } | null
+  /** Coincide por nombre con la ficha de `para` (sugerencia; la persona confirma). */
+  coincide: boolean
+}
+
+export interface CuentasPanelResponse {
+  items: CuentaPanel[]
 }
 
 export interface PersonalKPIs {

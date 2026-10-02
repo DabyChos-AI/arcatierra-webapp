@@ -17,7 +17,9 @@ import {
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
+import { confirmar } from '@/components/ui/Avisos'
 import type {
+  CuentaLigada,
   Personal,
   PersonalKPIs,
   PersonalListResponse,
@@ -26,6 +28,7 @@ import type {
 import AdminTopbar from '../components/AdminTopbar'
 import TabsPersonal from '../components/TabsPersonal'
 import ChipRol from '../components/ChipRol'
+import SelectorCuentaPanel, { nombreSinCorreo } from './components/SelectorCuentaPanel'
 
 const PER_PAGE = 20
 const IDIOMAS: { value: string; label: string }[] = [
@@ -41,6 +44,23 @@ function esPendiente(p: Personal): boolean {
   return NOMBRES_PDTE.includes(p.nombre) && (!p.apellidos || !p.email || !p.telefono)
 }
 
+/** GUI1 (R8): la cuenta del panel ligada a la ficha (solo el nombre). Sin `cuenta` pero con `usuario_id` (API vieja): ligada sin nombre. */
+function cuentaDe(p: Personal): CuentaLigada | null {
+  if (p.cuenta && p.cuenta.usuario_id) return p.cuenta
+  if (p.usuario_id) return { usuario_id: p.usuario_id, nombre: 'Cuenta ligada' }
+  return null
+}
+
+/** B4-8 (R8): «Reservas mes» según la pestaña (vendedoras / guías) o la suma de los dos papeles. null = sin dato. */
+function reservasDelMes(p: Personal, tab: PersonalTab): { total: number; vendedor: number; guia: number } | null {
+  const e = p.eventos_mes_actual
+  if (!e) return null
+  const vendedor = Number(e.como_vendedor) || 0
+  const guia = Number(e.como_guia) || 0
+  const total = tab === 'vendedoras' ? vendedor : tab === 'guias' ? guia : vendedor + guia
+  return { total, vendedor, guia }
+}
+
 interface FormPersonal {
   nombre: string
   apellidos: string
@@ -54,6 +74,8 @@ interface FormPersonal {
   idiomas: string[]
   notas_internas: string
   activo: boolean
+  // GUI1 (R8): cuenta del panel elegida (null = «Sin cuenta»)
+  usuario_id: string | null
 }
 
 const FORM_INICIAL: FormPersonal = {
@@ -68,6 +90,7 @@ const FORM_INICIAL: FormPersonal = {
   idiomas: [],
   notas_internas: '',
   activo: true,
+  usuario_id: null,
 }
 
 export default function PersonalPage() {
@@ -94,6 +117,8 @@ export default function PersonalPage() {
   const [form, setForm] = useState<FormPersonal>(FORM_INICIAL)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+  // GUI1: la cuenta que traía la ficha al abrir el modal (el PATCH manda `usuario_id` solo si cambió)
+  const [cuentaOriginal, setCuentaOriginal] = useState<CuentaLigada | null>(null)
 
   // Desactivar
   const [desactivando, setDesactivando] = useState<string | null>(null)
@@ -151,6 +176,7 @@ export default function PersonalPage() {
   const openCrear = () => {
     setEditId(null)
     setForm(FORM_INICIAL)
+    setCuentaOriginal(null)
     setFormError(null)
     setModalOpen(true)
   }
@@ -169,7 +195,9 @@ export default function PersonalPage() {
       idiomas: p.idiomas ?? [],
       notas_internas: p.notas_internas ?? '',
       activo: p.activo,
+      usuario_id: cuentaDe(p)?.usuario_id ?? null,
     })
+    setCuentaOriginal(cuentaDe(p))
     setFormError(null)
     setModalOpen(true)
   }
@@ -179,6 +207,7 @@ export default function PersonalPage() {
     setModalOpen(false)
     setEditId(null)
     setForm(FORM_INICIAL)
+    setCuentaOriginal(null)
     setFormError(null)
   }
 
@@ -220,6 +249,11 @@ export default function PersonalPage() {
         notas_internas: form.notas_internas.trim() || null,
         activo: form.activo,
       }
+      // GUI1: `usuario_id` (o null = desligar) solo si cambió; en el alta, solo si eligieron una cuenta.
+      const cuentaCambio = editId
+        ? form.usuario_id !== (cuentaOriginal?.usuario_id ?? null)
+        : form.usuario_id !== null
+      const payload = cuentaCambio ? { ...body, usuario_id: form.usuario_id } : body
       const url = editId
         ? `${API_URL}/api/admin/personal/${editId}`
         : `${API_URL}/api/admin/personal`
@@ -229,15 +263,16 @@ export default function PersonalPage() {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify(payload),
       })
       if (!res.ok) {
-        const payload = await res.json().catch(() => null)
-        throw new Error(extraerMensajeError(payload, res.status))
+        const errorPayload = await res.json().catch(() => null)
+        throw new Error(extraerMensajeError(errorPayload, res.status))
       }
       setModalOpen(false)
       setEditId(null)
       setForm(FORM_INICIAL)
+      setCuentaOriginal(null)
       await fetchPersonal()
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Error al guardar')
@@ -248,12 +283,13 @@ export default function PersonalPage() {
 
   const handleDesactivar = async (p: Personal) => {
     if (!token) return
-    if (
-      !window.confirm(
-        `¿Desactivar a ${p.nombre}${p.apellidos ? ` ${p.apellidos}` : ''}? Podrás reactivarla después.`,
-      )
-    )
-      return
+    const ok = await confirmar({
+      titulo: 'Desactivar persona',
+      mensaje: `¿Desactivar a ${p.nombre}${p.apellidos ? ` ${p.apellidos}` : ''}? Podrás reactivarla después.`,
+      textoAceptar: 'Desactivar',
+      peligro: true,
+    })
+    if (!ok) return
     setDesactivando(p.id)
     try {
       const res = await fetch(`${API_URL}/api/admin/personal/${p.id}?hard=false`, {
@@ -458,6 +494,18 @@ export default function PersonalPage() {
                           )}
                         </div>
                         {p.puesto && <div className="text-xs text-verde-suave mt-0.5">{p.puesto}</div>}
+                        {(() => {
+                          const cuenta = cuentaDe(p)
+                          return (
+                            <div
+                              data-testid={`personal-cuenta-${p.id}`}
+                              data-ligada={cuenta ? 'si' : 'no'}
+                              className={`text-xs mt-0.5 ${cuenta ? 'text-verde' : 'italic text-neutro-gris'}`}
+                            >
+                              {cuenta ? `Cuenta: ${nombreSinCorreo(cuenta.nombre)}` : 'Sin cuenta'}
+                            </div>
+                          )
+                        })()}
                       </td>
                       <td className="px-4 py-3 text-verde-suave">
                         {p.email || <span className="italic text-neutro-gris">—</span>}
@@ -496,15 +544,24 @@ export default function PersonalPage() {
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-center tabular-nums text-verde-suave">
-                        {p.eventos_mes_actual ? (
-                          p.eventos_mes_actual.como_vendedor + p.eventos_mes_actual.como_guia
-                        ) : (
-                          <span className="italic text-neutro-gris" title="Disponible en el detalle de la persona">
-                            —
-                          </span>
-                        )}
-                      </td>
+                      {(() => {
+                        const mes = reservasDelMes(p, tab)
+                        return (
+                          <td
+                            className="px-4 py-3 text-center tabular-nums text-verde-suave"
+                            data-testid={`personal-reservas-mes-${p.id}`}
+                            data-vendedor={mes ? mes.vendedor : undefined}
+                            data-guia={mes ? mes.guia : undefined}
+                            title={
+                              mes
+                                ? `Este mes: ${mes.vendedor} como vendedora · ${mes.guia} como guía (sin canceladas)`
+                                : undefined
+                            }
+                          >
+                            {mes ? mes.total : <span className="italic text-neutro-gris">—</span>}
+                          </td>
+                        )
+                      })()}
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-1">
                           <button
@@ -680,6 +737,16 @@ export default function PersonalPage() {
                   />
                 </div>
               </div>
+
+              {/* GUI1 (R8): cuenta del panel */}
+              <SelectorCuentaPanel
+                token={token}
+                personalId={editId}
+                valor={form.usuario_id}
+                cuentaActual={cuentaOriginal}
+                onChange={(usuarioId) => setForm((prev) => ({ ...prev, usuario_id: usuarioId }))}
+                disabled={saving}
+              />
 
               {/* Roles */}
               <div>

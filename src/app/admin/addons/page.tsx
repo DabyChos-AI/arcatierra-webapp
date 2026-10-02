@@ -16,6 +16,7 @@ import {
   PackagePlus,
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { confirmar } from '@/components/ui/Avisos'
 import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
 import { formatMXN } from '@/types/reservas'
 import { CAPACIDAD_SIN_TOPE, type Addon, type AddonListResponse } from '@/types/catalogos'
@@ -225,14 +226,17 @@ export default function AddonsPage() {
   }
 
   const handleEliminar = async (a: Addon) => {
-    if (!token) return
-    if (
-      !window.confirm(
+    if (!token || eliminando === a.id) return
+    // K1 (R8): diálogo propio, mismo texto
+    const ok = await confirmar({
+      titulo: 'Eliminar add-on',
+      mensaje:
         `¿Eliminar el add-on "${a.nombre}"?\n\nSi ya se usó en reservas, esas reservas lo conservan. ` +
-          'Para solo dejar de ofrecerlo, usa el botón Disponible/Oculto.',
-      )
-    )
-      return
+        'Para solo dejar de ofrecerlo, usa el botón Disponible/Oculto.',
+      textoAceptar: 'Eliminar',
+      peligro: true,
+    })
+    if (!ok) return
     setEliminando(a.id)
     try {
       const res = await fetch(`${API_URL}/api/admin/addons/${a.id}?hard=false`, {
@@ -539,8 +543,9 @@ export default function AddonsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
+                  {/* ADD2 (R8): el add-on se cobra por unidad (precio × cantidad); la columna sigue siendo precio_por_persona */}
                   <label htmlFor="addon-precio" className="block text-sm font-medium text-verde mb-1">
-                    Precio por persona (MXN)
+                    Precio por unidad (MXN)
                   </label>
                   <input
                     id="addon-precio"
@@ -549,8 +554,12 @@ export default function AddonsPage() {
                     step="0.01"
                     value={form.precio_por_persona}
                     onChange={(e) => setForm({ ...form, precio_por_persona: e.target.value })}
+                    aria-describedby="addon-precio-ayuda"
                     className="w-full px-3 py-2 border border-neutro-borde rounded-lg text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
                   />
+                  <p id="addon-precio-ayuda" data-testid="addon-precio-ayuda" className="text-xs text-verde-suave mt-1">
+                    En la reserva se cobra precio × cantidad (la cantidad se elige al agregarlo; empieza en 1).
+                  </p>
                 </div>
                 <div>
                   <label htmlFor="addon-cap" className="block text-sm font-medium text-verde mb-1">

@@ -24,6 +24,7 @@ import {
   type CausaCancelacion,
 } from '@/types/reembolsos'
 import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
+import { confirmar } from '@/components/ui/Avisos'
 import {
   AlertaPedidoChip,
   AvisosPagoDetalle,
@@ -346,9 +347,19 @@ export default function AdminPedidosPage() {
   /** RE1: devuelve un pago con MercadoPago (dinero real). Confirmación, un solo envío, resultado tal cual y recarga. */
   const reembolsar = async (pago: PagoPedido) => {
     if (!detalle || reembolsoEnCursoRef.current) return
-    const monto = formatMoney(Number(pago.monto_total) || 0)
-    if (!window.confirm(TEXTO_CONFIRMAR_REEMBOLSO(monto))) return
+    // K1 (R8): el candado va ANTES del diálogo (que es asíncrono) y se suelta si la persona cancela (T218c: un solo POST)
     reembolsoEnCursoRef.current = true
+    const monto = formatMoney(Number(pago.monto_total) || 0)
+    const ok = await confirmar({
+      titulo: 'Reembolsar pago',
+      mensaje: TEXTO_CONFIRMAR_REEMBOLSO(monto),
+      textoAceptar: 'Reembolsar',
+      peligro: true,
+    })
+    if (!ok) {
+      reembolsoEnCursoRef.current = false
+      return
+    }
     const pedidoId = detalle.id
     const numero = detalle.numero_pedido
     setReembolsando(pago.id)

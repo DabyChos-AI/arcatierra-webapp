@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react'
 import { User, Mail, Phone, MapPin, Calendar, Edit3, Save, X, Camera } from 'lucide-react'
 import CountryCodeSelector from '@/components/ui/CountryCodeSelector'
 import PostalCodeSelector from '@/components/ui/PostalCodeSelector'
+import { aviso } from '@/components/ui/Avisos'
+import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
 
 // Mapeo de código de marcación a código de país ISO para banderas
 const dialCodeToCountry: Record<string, string> = {
@@ -203,7 +205,8 @@ export default function PerfilPage() {
           } catch {
             error = { detail: errorText }
           }
-          throw new Error(error.detail || 'Error actualizando perfil')
+          // K1 (R8): `detail` de FastAPI puede ser una lista (Pydantic): se vuelve texto legible, nunca «[object Object]».
+          throw new Error(error?.detail ? extraerMensajeError(error, response.status) : 'Error actualizando perfil')
         }
         
         const updatedUser = await response.json()
@@ -211,10 +214,10 @@ export default function PerfilPage() {
         
         setProfile(editedProfile)
         setEditing(false)
-        alert('Perfil actualizado exitosamente')
+        aviso.exito('Perfil actualizado exitosamente')
       } catch (error) {
         console.error('❌ Error guardando perfil:', error)
-        alert(`Error guardando los cambios: ${error}`)
+        aviso.error(`Error guardando los cambios: ${extraerMensajeError(error instanceof Error ? error.message : error)}`)
       }
     }
   }

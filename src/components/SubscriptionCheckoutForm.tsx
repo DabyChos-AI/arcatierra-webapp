@@ -10,6 +10,7 @@ import PostalCodeSelector from '@/components/ui/PostalCodeSelector'
 import { MapPin, CreditCard, User, Phone, Mail, Edit2, Calendar, Leaf, Package } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { TEXTO_METODO_PAGO_CORTO } from '@/types/tienda'
+import { aviso } from '@/components/ui/Avisos'
 
 interface SubscriptionPlan {
   id: string
@@ -213,24 +214,24 @@ export default function SubscriptionCheckoutForm({
 
   const handleSubmit = async () => {
     if (selectedPlans.length === 0) {
-      alert('Selecciona al menos una canasta para continuar')
+      aviso.error('Selecciona al menos una canasta para continuar')
       return
     }
 
     if (!customerData.nombre || !customerData.email || !customerData.telefono) {
-      alert('Por favor completa todos los campos de información personal')
+      aviso.error('Por favor completa todos los campos de información personal')
       return
     }
 
     if (!deliveryData.address || !zonaEntrega) {
-      alert('Por favor selecciona una dirección con código postal válido')
+      aviso.error('Por favor selecciona una dirección con código postal válido')
       return
     }
 
     // Validar selecciones de carne para Canasta Básica Familiar
     const basicaFamiliarSelected = selectedPlans.some(p => p.id === 'basica-familiar')
     if (basicaFamiliarSelected && !carneSelections['basica-familiar']) {
-      alert('Debes seleccionar una opción de carne para la Canasta Básica Familiar')
+      aviso.error('Debes seleccionar una opción de carne para la Canasta Básica Familiar')
       return
     }
 

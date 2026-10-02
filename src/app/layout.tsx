@@ -4,6 +4,7 @@ import "./globals.css";
 // import HeaderContainer from "@/components/header/HeaderContainer"; // COMENTADO - No se usa
 import TransparentHeader from "@/components/layout/TransparentHeader";
 import Footer from "@/components/layout/Footer";
+import SoloFueraDelPanel from "@/components/layout/SoloFueraDelPanel";
 import AuthProvider from '@/components/AuthProvider'
 import { NotificationProvider } from '@/components/NotificationSystem'
 import WhatsAppChat from '@/components/WhatsAppChat'
@@ -230,8 +231,10 @@ export default function RootLayout({
               </div>
             </ClientLayout>
             
-            {/* Footer Oficial */}
-            <Footer />
+            {/* Footer Oficial (PIE1, R8: no se pinta en /admin) */}
+            <SoloFueraDelPanel>
+              <Footer />
+            </SoloFueraDelPanel>
             
             {/* WhatsApp Chat Flotante */}
             <WhatsAppChat />

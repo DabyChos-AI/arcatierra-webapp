@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { ShoppingCart, Mail, Clock, DollarSign, User, Package, ArrowLeft, RefreshCw, AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { aviso } from '@/components/ui/Avisos'
 
 interface CarritoAbandonado {
   usuario_id: string
@@ -262,7 +263,7 @@ export default function CarritosAbandonadosPage() {
                       <button
                         onClick={() => {
                           // TODO: Implementar modal de detalle
-                          alert(`Ver detalle de carrito: ${carrito.usuario_id}`)
+                          aviso.info(`Ver detalle de carrito: ${carrito.usuario_id}`)
                         }}
                         className="text-amber-600 hover:text-amber-900 font-medium"
                       >

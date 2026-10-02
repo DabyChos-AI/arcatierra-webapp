@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { Copy, Loader2, X } from 'lucide-react'
 import { API_URL } from '@/lib/api'
@@ -58,6 +58,16 @@ export default function ModalLinkMP({
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<LinkPagoResponse | null>(null)
   const [copied, setCopied] = useState(false)
+  // K1 (R8): si el portapapeles falla (permiso, http, navegador viejo), la URL queda en un campo para copiarla a mano
+  const [copiaManual, setCopiaManual] = useState(false)
+  const urlManualRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!copiaManual) return
+    // Seleccionada: con Ctrl+C (o mantener presionado en el celular) se copia
+    urlManualRef.current?.focus()
+    urlManualRef.current?.select()
+  }, [copiaManual])
 
   // Monto efectivo segun tipo
   const montoEfectivo = useMemo(() => {
@@ -171,10 +181,11 @@ export default function ModalLinkMP({
     if (!result?.init_point) return
     try {
       await navigator.clipboard.writeText(result.init_point)
+      setCopiaManual(false)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      window.alert(result.init_point)
+      setCopiaManual(true)
     }
   }
 
@@ -428,6 +439,27 @@ export default function ModalLinkMP({
                     {copied ? 'Copiado' : 'Copiar'}
                   </button>
                 </div>
+                {copiaManual && (
+                  <div
+                    data-testid="linkmp-copia-manual"
+                    role="status"
+                    className="mt-2 rounded-lg border border-amarillo/30 bg-amarillo-bg p-3 text-sm text-verde space-y-2"
+                  >
+                    <label htmlFor="linkmp-url-manual" className="block">
+                      No se pudo copiar automáticamente. Cópialo a mano:
+                    </label>
+                    <input
+                      id="linkmp-url-manual"
+                      ref={urlManualRef}
+                      data-testid="linkmp-url-manual"
+                      type="text"
+                      readOnly
+                      value={result.init_point ?? ''}
+                      onFocus={(e) => e.currentTarget.select()}
+                      className="w-full min-w-0 border border-neutro-borde rounded-lg px-3 py-2 text-sm bg-white font-mono"
+                    />
+                  </div>
+                )}
               </div>
               <div className="text-sm text-verde space-y-1">
                 <p className="tabular-nums">Monto: {formatMXN(Number(result.monto))}</p>

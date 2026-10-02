@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Package, TrendingUp, AlertCircle, Plus, Search, Edit2, Trash2, Eye, Upload, X, MapPin } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { aNumero } from '@/types/tienda'
+import { aviso, confirmar } from '@/components/ui/Avisos'
 
 /**
  * R2 (panel de productos): la lista sale de `GET /api/products/admin/lista` (solo admin) por el proxy del panel,
@@ -415,7 +416,13 @@ export default function ProductosPage() {
   const productosFiltrados = productos
 
   const handleDeleteProduct = async (producto: Producto) => {
-    if (!confirm(`¿Estás seguro de eliminar "${producto.nombre}"?\n\nEsta acción puede ser permanente.`)) {
+    const ok = await confirmar({
+      titulo: 'Eliminar producto',
+      mensaje: `¿Estás seguro de eliminar "${producto.nombre}"?\n\nEsta acción puede ser permanente.`,
+      textoAceptar: 'Eliminar',
+      peligro: true,
+    })
+    if (!ok) {
       return
     }
 
@@ -443,14 +450,14 @@ export default function ProductosPage() {
       
       // Mostrar mensaje según el tipo de eliminación
       if (result.soft_delete) {
-        alert(`✅ ${result.message}\n\nEl producto fue marcado como no visible porque tiene pedidos asociados.`)
+        aviso.exito(`${result.message}\n\nEl producto fue marcado como no visible porque tiene pedidos asociados.`)
       } else {
-        alert(`✅ ${result.message}\n\nEl producto fue eliminado permanentemente.`)
+        aviso.exito(`${result.message}\n\nEl producto fue eliminado permanentemente.`)
       }
       
     } catch (error: any) {
       console.error('Error eliminando producto:', error)
-      alert(`❌ Error al eliminar producto: ${error.message}`)
+      aviso.error(`Error al eliminar producto: ${error.message}`)
     }
   }
 
@@ -505,21 +512,21 @@ export default function ProductosPage() {
       )
       setProductos(updatedProducts)
       
-      alert(`✅ Producto "${editingProduct.nombre}" actualizado exitosamente en la base de datos`)
+      aviso.exito(`Producto "${editingProduct.nombre}" actualizado exitosamente en la base de datos`)
       setShowEditModal(false)
       setEditingProduct(null)
       setStockAlAbrir(null)
       
     } catch (error: any) {
       console.error('Error actualizando producto:', error)
-      alert(`❌ Error al actualizar producto: ${error.message}`)
+      aviso.error(`Error al actualizar producto: ${error.message}`)
     }
   }
 
   const handleCreateProduct = async () => {
     // Validaciones básicas
     if (!newProduct.itemcode || !newProduct.nombre || !newProduct.precio || !newProduct.stock) {
-      alert('❌ Por favor completa todos los campos obligatorios (Código, Nombre, Precio, Stock)')
+      aviso.error('Por favor completa todos los campos obligatorios (Código, Nombre, Precio, Stock)')
       return
     }
 
@@ -528,12 +535,12 @@ export default function ProductosPage() {
     const stock = parseFloat(newProduct.stock)
     
     if (isNaN(precio) || precio <= 0) {
-      alert('❌ El precio debe ser un número válido mayor a 0')
+      aviso.error('El precio debe ser un número válido mayor a 0')
       return
     }
     
     if (isNaN(stock) || stock < 0) {
-      alert('❌ El stock debe ser un número válido mayor o igual a 0')
+      aviso.error('El stock debe ser un número válido mayor o igual a 0')
       return
     }
 
@@ -624,11 +631,11 @@ export default function ProductosPage() {
       imagenes: [] as string[]
     })
     
-    alert(`✅ Producto creado exitosamente:\n${nuevoProducto.nombre}\nCódigo: ${nuevoProducto.itemcode}\nPrecio: $${nuevoProducto.precio_unitario}`)
+    aviso.exito(`Producto creado exitosamente:\n${nuevoProducto.nombre}\nCódigo: ${nuevoProducto.itemcode}\nPrecio: $${nuevoProducto.precio_unitario}`)
     
     } catch (error: any) {
       console.error('Error creando producto:', error)
-      alert(`❌ Error creando producto: ${error.message}`)
+      aviso.error(`Error creando producto: ${error.message}`)
     }
   }
 

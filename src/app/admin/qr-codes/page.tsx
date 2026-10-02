@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { QrCode, Plus, Download, Eye, Settings, X } from 'lucide-react'
 import QRCodeLib from 'qrcode'
 import { formatFechaHoraMexico } from '@/lib/dates'
+import { aviso } from '@/components/ui/Avisos'
 
 interface QRGenerateRequest {
   experiencia_id?: number;
@@ -58,7 +59,7 @@ export default function QRCodesPage() {
 
   const handleGenerate = async () => {
     if (cantidad < 1 || cantidad > 50) {
-      alert('❌ La cantidad debe estar entre 1 y 50 códigos')
+      aviso.error('La cantidad debe estar entre 1 y 50 códigos')
       return
     }
 
@@ -85,14 +86,14 @@ export default function QRCodesPage() {
       
       if (data.success) {
         setCodigos(prev => [...data.codigos, ...prev])
-        alert(`✅ ${data.cantidad} código${data.cantidad > 1 ? 's' : ''} QR generado${data.cantidad > 1 ? 's' : ''} exitosamente!`)
+        aviso.exito(`${data.cantidad} código${data.cantidad > 1 ? 's' : ''} QR generado${data.cantidad > 1 ? 's' : ''} exitosamente.`)
       } else {
         throw new Error('Error en la respuesta del servidor')
       }
       
     } catch (error: any) {
       console.error('Error:', error)
-      alert('❌ Error generando códigos QR: ' + error.message)
+      aviso.error('Error generando códigos QR: ' + error.message)
     } finally {
       setGenerating(false)
     }
@@ -186,7 +187,7 @@ export default function QRCodesPage() {
   const handleDownloadAll = async () => {
     console.log('🚀 handleDownloadAll ejecutándose con', codigos.length, 'códigos')
     if (codigos.length === 0) {
-      alert('❌ No hay códigos QR para descargar')
+      aviso.error('No hay códigos QR para descargar')
       return
     }
 
@@ -223,11 +224,11 @@ export default function QRCodesPage() {
         }, index * 100) // Delay para evitar bloqueo
       })
 
-      alert(`✅ Descarga iniciada!\n\n📁 Lista de códigos: QR_Codes_${new Date().toISOString().split('T')[0]}.txt\n🖼️ ${codigos.length} imágenes QR individuales\n\n💾 Revisa tu carpeta de descargas`)
+      aviso.exito(`Descarga iniciada.\n\nLista de códigos: QR_Codes_${new Date().toISOString().split('T')[0]}.txt\n${codigos.length} imágenes QR individuales\n\nRevisa tu carpeta de descargas`)
       
     } catch (error) {
       console.error('Error descargando códigos:', error)
-      alert('❌ Error al descargar códigos QR')
+      aviso.error('Error al descargar códigos QR')
     }
   }
 

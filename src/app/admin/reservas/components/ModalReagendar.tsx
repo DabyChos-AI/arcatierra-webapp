@@ -16,6 +16,9 @@ interface ModalReagendarProps {
   horaActual: string
   /** HH:MM:SS o null. RG1: el back mueve la hora de término igual que el inicio. */
   horaFinActual?: string | null
+  /** RGP1 (R8): duración del catálogo (`reserva.experiencia_duracion_horas`); se usa solo si la hora de término guardada
+   *  no es posterior al inicio (la misma regla que el back en POST /reagendar). */
+  duracionHoras?: number | null
   /** Guías asignados con correo y en total (el detalle los cuenta de `reserva.guias[].email`). */
   guiasConCorreo: number
   guiasTotal: number
@@ -53,6 +56,7 @@ export default function ModalReagendar({
   fechaActual,
   horaActual,
   horaFinActual,
+  duracionHoras,
   guiasConCorreo,
   guiasTotal,
   onSaved,
@@ -72,16 +76,30 @@ export default function ModalReagendar({
 
   const puedeAvisarGuias = guiasConCorreo > 0
 
-  // La duración se conserva: fin nuevo = inicio nuevo + (fin − inicio). Solo si hay un fin
-  // posterior al inicio (igual que el back); si cae en otro día, el back responde 400.
+  // La duración se conserva: fin nuevo = inicio nuevo + (fin − inicio). RGP1 (R8), la misma regla que el back
+  // (admin_reservas.py, reagendar): si el fin guardado no es posterior al inicio (dato malo), la duración es la de la
+  // experiencia; sin fin guardado o sin duración, no hay término que mover. Si cae en otro día, el back responde 400.
   const finNuevo = useMemo(() => {
+    // Un numeric de Postgres puede llegar como texto («2.50»): se lee como número; inválido o ≤ 0 = sin duración
+    const horasCatalogo = duracionHoras == null ? 0 : Number(duracionHoras)
     const inicio = aMinutos(horaActual)
     const fin = aMinutos(horaFinActual)
     const nuevoInicio = aMinutos(nuevaHoraInicio)
-    if (inicio === null || fin === null || nuevoInicio === null || fin <= inicio) return null
-    const minutos = nuevoInicio + (fin - inicio)
-    return { minutos, cruzaMedianoche: minutos >= MINUTOS_DIA }
-  }, [horaActual, horaFinActual, nuevaHoraInicio])
+    if (inicio === null || fin === null || nuevoInicio === null) return null
+    let duracion: number
+    let origen: 'reserva' | 'catalogo'
+    if (fin > inicio) {
+      duracion = fin - inicio
+      origen = 'reserva'
+    } else if (Number.isFinite(horasCatalogo) && horasCatalogo > 0) {
+      duracion = Math.round(horasCatalogo * 60)
+      origen = 'catalogo'
+    } else {
+      return null
+    }
+    const minutos = nuevoInicio + duracion
+    return { minutos, cruzaMedianoche: minutos >= MINUTOS_DIA, origen }
+  }, [horaActual, horaFinActual, duracionHoras, nuevaHoraInicio])
 
   const sinCambios =
     nuevaFecha === fechaActual && nuevaHoraInicio === horaCorta(horaActual)
@@ -223,11 +241,15 @@ export default function ModalReagendar({
           {finNuevo && (
             <p
               id="reagendar-fin"
+              data-testid="reag-fin"
+              data-origen={finNuevo.origen}
               className={`text-xs -mt-2 ${finNuevo.cruzaMedianoche ? 'text-rojo' : 'text-verde-suave'}`}
             >
               {finNuevo.cruzaMedianoche
                 ? 'La experiencia terminaría después de la medianoche: elige una hora más temprana.'
-                : `Terminará a las ${deMinutos(finNuevo.minutos)} (la duración no cambia).`}
+                : finNuevo.origen === 'catalogo'
+                  ? `Terminará a las ${deMinutos(finNuevo.minutos)} (duración de la experiencia).`
+                  : `Terminará a las ${deMinutos(finNuevo.minutos)} (la duración no cambia).`}
             </p>
           )}
 
@@ -313,7 +335,9 @@ export default function ModalReagendar({
               <p>
                 Al confirmar se cambian la fecha y la hora de inicio
                 {finNuevo
-                  ? '; la hora de término se mueve igual'
+                  ? finNuevo.origen === 'catalogo'
+                    ? '; la hora de término sale de la duración de la experiencia'
+                    : '; la hora de término se mueve igual'
                   : ' (la reserva no tiene una hora de término que mover)'}
                 . El estado, la chinampa y
                 los guías no cambian, y el cambio queda en las notas internas. El recordatorio del

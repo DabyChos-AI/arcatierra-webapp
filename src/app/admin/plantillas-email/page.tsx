@@ -27,6 +27,8 @@ import {
 } from 'lucide-react'
 import { formatFechaHoraMexico } from '@/lib/dates'
 import { API_URL } from '@/lib/api'
+import { confirmar } from '@/components/ui/Avisos'
+import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
 import {
   Plantilla,
   PlantillaTipo,
@@ -69,13 +71,15 @@ const PER_PAGE = 25
 
 // Fase 2 (30-sep): cuándo sale de verdad cada correo (guardia de services/email_reservas.py).
 // Una plantilla inactiva no se usa: sin una activa del tipo e idioma de la reserva, no sale nada.
+// PLT2 (R8): textos medidos contra el backend (contrato R8 §4).
 const CUANDO_SALE: Record<PlantillaTipo, string> = {
   confirmacion:
-    'sale una sola vez, cuando la reserva pasa a Confirmada (pago manual, pago por link de MercadoPago o cambio de estado).',
+    'sale cuando la reserva pasa a Confirmada o a Pagada (pago manual, link de MercadoPago o cambio de estado). Sale una sola vez.',
   recordatorio:
-    'sale el día anterior a la experiencia, a las reservas Confirmadas o Pagadas.',
-  cotizacion: 'sale solo cuando se pide al crear la reserva («Enviar cotización»), con el PDF.',
-  cancelacion: 'sale al cancelar una reserva si se marcó «Avisar al cliente por correo».',
+    'sale el día anterior, a las reservas Confirmadas o Pagadas y a quienes compraron una fecha pública en la página (en el idioma de la fecha).',
+  cotizacion:
+    'sale al crear la reserva si se marca «Enviar cotización PDF por email al cliente», y cada vez que se usa «Reenviar cotización» en el detalle. Las cortesías no se cotizan.',
+  cancelacion: 'sale al cancelar si se marcó «Avisar al cliente por correo». Sale una sola vez.',
   reagendamiento: 'sale al reagendar una reserva si se marcó «Avisar al cliente por correo».',
   link_pago: 'sale al generar un link de pago con «Enviar email al cliente» marcado.',
 }
@@ -305,11 +309,15 @@ export default function PlantillasEmailPage() {
     setModalTab('preview')
   }
 
-  const cerrarModal = () => {
+  // K1 (R8): async por el diálogo propio. Quien la llama (×, clic fuera, «Cancelar») no espera nada.
+  const cerrarModal = async () => {
     if (formDirty) {
-      const ok = window.confirm(
-        '¿Descartar cambios? Tienes ediciones sin guardar.',
-      )
+      const ok = await confirmar({
+        titulo: 'Descartar cambios',
+        mensaje: '¿Descartar cambios? Tienes ediciones sin guardar.',
+        textoAceptar: 'Descartar',
+        textoCancelar: 'Seguir editando',
+      })
       if (!ok) return
     }
     setModalOpen(false)
@@ -408,11 +416,11 @@ export default function PlantillasEmailPage() {
       }
 
       if (!res.ok) {
-        const detail = await res
-          .json()
-          .then((d) => d.detail)
-          .catch(() => null)
-        throw new Error(detail || `Error ${res.status} guardando plantilla`)
+        // TPL2 (R8): el 409 «Ya hay una plantilla activa de …» (y cualquier 4xx) sale tal cual en el modal (role=alert)
+        const payload: unknown = await res.json().catch(() => null)
+        throw new Error(
+          payload ? extraerMensajeError(payload, res.status) : `Error ${res.status} guardando plantilla`,
+        )
       }
       const saved: Plantilla = await res.json()
 
@@ -529,9 +537,12 @@ export default function PlantillasEmailPage() {
 
   const eliminar = async (p: Plantilla) => {
     if (!token) return
-    const ok = window.confirm(
-      `¿Eliminar la plantilla "${p.asunto}"?\nSi tiene envíos asociados se rechazará y deberás desactivarla en su lugar.`,
-    )
+    const ok = await confirmar({
+      titulo: 'Eliminar plantilla',
+      mensaje: `¿Eliminar la plantilla "${p.asunto}"?\nSi tiene envíos asociados se rechazará y deberás desactivarla en su lugar.`,
+      textoAceptar: 'Eliminar',
+      peligro: true,
+    })
     if (!ok) return
     try {
       const res = await fetch(
@@ -651,14 +662,19 @@ export default function PlantillasEmailPage() {
             ))}
           </ul>
           <p>
-            Salvo la Cotización, ninguno sale a reservas del Sheet de planeación, de reseller o
-            sin correo real del cliente. <strong>Una plantilla inactiva no se manda</strong>: si
+            Ninguno sale a reservas del Sheet de planeación ni sin correo real del cliente. A
+            reservas de reseller solo sale la Cotización. <strong>Una plantilla inactiva no se manda</strong>: si
             no hay una activa de ese tipo en el idioma de la reserva, no sale nada de ese tipo. La
             plantilla de una experiencia gana sobre la genérica. Las variables{' '}
             <code className="bg-white px-1 rounded text-xs">
               {'{{nombre_cliente}}'}
             </code>{' '}
             se reemplazan con los datos reales en el envío.
+          </p>
+          <p data-testid="plantillas-texto-fijo">
+            No usan plantilla (texto fijo): el aviso de reserva nueva al equipo, el aviso de cambios a
+            los guías, los avisos a compradores de una fecha pública que se mueve o se cancela, y la
+            solicitud de catering.
           </p>
         </div>
       </div>
@@ -1050,7 +1066,11 @@ export default function PlantillasEmailPage() {
             {/* Body */}
             <div className="p-6 max-h-[65vh] overflow-y-auto">
               {modalError && (
-                <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+                <div
+                  role="alert"
+                  data-testid="plantilla-modal-error"
+                  className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2"
+                >
                   <AlertTriangle
                     className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0"
                     aria-hidden="true"

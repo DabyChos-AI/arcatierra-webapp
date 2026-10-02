@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { aviso, confirmar } from '@/components/ui/Avisos'
 import { useVendedoras } from '@/hooks/useVendedoras'
 import {
   formatMXN,
@@ -124,6 +125,8 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
 
   // Cancel inflight
   const [cancelandoId, setCancelandoId] = useState<string | null>(null)
+  // K1 (R8): `confirmar()` es asíncrono; candado por reserva ANTES del await (doble clic = un solo POST)
+  const cancelandoRef = useRef<Set<string>>(new Set())
   // CN1: qué pasó al cancelar desde el bote (correo al cliente, links vencidos)
   const [avisoCancelacion, setAvisoCancelacion] = useState<string | null>(null)
 
@@ -225,10 +228,13 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
 
   const cancelarReserva = async (reserva: Reserva) => {
     if (!token) return
+    if (cancelandoRef.current.has(reserva.id)) return
+    cancelandoRef.current.add(reserva.id)
     // La lista no trae los pagos: se dice lo que puede pasar. Para decidir si se avisa al
     // cliente o poner otro motivo, está Acciones en el detalle.
-    const confirm = window.confirm(
-      [
+    const aceptada = await confirmar({
+      titulo: 'Cancelar reserva',
+      mensaje: [
         `Cancelar la reserva ${reserva.booking_id}?`,
         'Esta accion no se puede deshacer.',
         '',
@@ -237,8 +243,15 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
         '',
         'Para cancelar sin avisar al cliente, usa Acciones en el detalle de la reserva.',
       ].join('\n'),
-    )
-    if (!confirm) return
+      // C9 (R8): el mismo par de botones que en el detalle
+      textoAceptar: 'Sí, cancelar reserva',
+      textoCancelar: 'Volver',
+      peligro: true,
+    })
+    if (!aceptada) {
+      cancelandoRef.current.delete(reserva.id)
+      return
+    }
     setCancelandoId(reserva.id)
     setAvisoCancelacion(null)
     try {
@@ -255,10 +268,9 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
         throw new Error(extraerMensajeError(err, res.status))
       }
       const data = (await res.json()) as CancelarResponse
-      // D4 / D15: lo que no se puede perder va en un alert, igual que en el detalle
-      if (Array.isArray(data.avisos) && data.avisos.length > 0) {
-        window.alert(data.avisos.join('\n\n'))
-      }
+      // D4 / D15: lo que no se puede perder va en un aviso que se queda hasta cerrarlo, igual que en el detalle
+      const avisos = Array.isArray(data.avisos) ? data.avisos.filter((a) => typeof a === 'string' && a.trim()) : []
+      if (avisos.length > 0) aviso.info(avisos.join('\n\n'), { persistente: true })
       const partes = [`Reserva ${reserva.booking_id} cancelada.`]
       if (data.links_vencidos > 0) {
         partes.push(
@@ -271,9 +283,10 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
       setAvisoCancelacion(partes.filter(Boolean).join(' '))
       await fetchReservas()
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : 'Error al cancelar')
+      aviso.error(err instanceof Error ? err.message : 'Error al cancelar')
     } finally {
       setCancelandoId(null)
+      cancelandoRef.current.delete(reserva.id)
     }
   }
 

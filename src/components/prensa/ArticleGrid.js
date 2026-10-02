@@ -84,32 +84,8 @@ export default function ArticleGrid({ articles, showFeatured = false }) {
           </div>
         </div>
 
-        {/* Información adicional */}
-        <div className="mt-16 text-center">
-          <div className="bg-white rounded-lg p-8 card-shadow max-w-2xl mx-auto">
-            <h3 className="text-xl font-bold text-principal mb-4">
-              ¿Eres periodista o medio de comunicación?
-            </h3>
-            <p className="text-secundario mb-6">
-              Obtén acceso a nuestro kit de prensa completo con imágenes de alta resolución, 
-              información corporativa y contactos directos.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={() => alert('Esta parte está en desarrollo')}
-                className="bg-terracota text-white px-6 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all"
-              >
-                Descargar Kit de Prensa
-              </button>
-              <button
-                onClick={() => alert('Esta parte está en desarrollo')}
-                className="border border-terracota text-terracota px-6 py-3 rounded-lg font-semibold hover:bg-opacity-10 hover:text-white hover:bg-terracota transition-all"
-              >
-                Contactar al Equipo de Prensa
-              </button>
-            </div>
-          </div>
-        </div>
+        {/* PRE1 (R8, decisión de David C13): se quitó el bloque «¿Eres periodista…?»: prometía un kit de prensa y un
+            contacto que no existen (sus dos botones solo decían «en desarrollo»). */}
       </div>
     </section>
   )

@@ -4,6 +4,7 @@ import { signIn, getSession } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { aviso } from '@/components/ui/Avisos'
 
 export default function SignIn() {
   const [loading, setLoading] = useState(false)
@@ -95,7 +96,7 @@ export default function SignIn() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     if (formData.password !== formData.confirmPassword) {
-      alert('Las contraseñas no coinciden')
+      aviso.error('Las contraseñas no coinciden')
       return
     }
     setLoading(true)
@@ -115,14 +116,14 @@ export default function SignIn() {
       const datos = await res.json().catch(() => ({}))
 
       if (!res.ok) {
-        alert(datos.error || 'No se pudo crear la cuenta. Intenta de nuevo.')
+        aviso.error(datos.error || 'No se pudo crear la cuenta. Intenta de nuevo.')
         return
       }
 
-      alert('🎉 ¡Cuenta creada! Ahora puedes iniciar sesión')
+      aviso.exito('¡Cuenta creada! Ahora puedes iniciar sesión')
       setIsSignUp(false)
     } catch {
-      alert('Sin conexión con el servidor. Revisa tu internet e intenta de nuevo.')
+      aviso.error('Sin conexión con el servidor. Revisa tu internet e intenta de nuevo.')
     } finally {
       setLoading(false)
     }

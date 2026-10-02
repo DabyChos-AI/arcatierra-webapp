@@ -7,6 +7,7 @@ import {
   ChevronLeft, ChevronRight, AlertTriangle, Repeat
 } from 'lucide-react'
 import { formatFechaMexico, formatFechaHoraMexico } from '@/lib/dates'
+import { aviso } from '@/components/ui/Avisos'
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -226,7 +227,7 @@ export default function AdminSuscripcionesPage() {
       })
       if (!res.ok) {
         const err = await res.json()
-        alert(err.detail || 'Error al cambiar estado')
+        aviso.error(err.detail || 'Error al cambiar estado')
         return
       }
       // Refresh everything
@@ -234,7 +235,7 @@ export default function AdminSuscripcionesPage() {
       fetchSuscripciones()
       fetchMetricas()
     } catch {
-      alert('Error de red al cambiar estado')
+      aviso.error('Error de red al cambiar estado')
     } finally {
       setAccionLoading(false)
       setConfirmAction(null)

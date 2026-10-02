@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { Calendar, Package, Leaf, Users, Star, CheckCircle, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import SubscriptionCheckoutForm from '@/components/SubscriptionCheckoutForm'
+import { aviso } from '@/components/ui/Avisos'
 
 const SUBSCRIPTION_PLANS = [
   // CANASTAS REGULARES
@@ -697,11 +698,11 @@ function SuscripcionesContent() {
                     return
                   }
 
-                  alert('Error: No se recibió URL de pago')
+                  aviso.error('Error: No se recibió URL de pago')
                   
                 } catch (error) {
                   console.error('Error creating subscription:', error)
-                  alert(`Error creando la suscripción: ${error instanceof Error ? error.message : 'Error desconocido'}`)
+                  aviso.error(`Error creando la suscripción: ${error instanceof Error ? error.message : 'Error desconocido'}`)
                 } finally {
                   setIsSubscribing(false)
                 }

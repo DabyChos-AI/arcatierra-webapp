@@ -19,6 +19,7 @@ import {
 import { API_URL } from '@/lib/api'
 import { formatFechaMexico } from '@/lib/dates'
 import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
+import { confirmar } from '@/components/ui/Avisos'
 import { formatMXN } from '@/types/reservas'
 import type {
   Reseller,
@@ -377,7 +378,13 @@ export default function ResellersPage() {
 
   const handleDesactivar = async (r: Reseller) => {
     if (!token) return
-    if (!window.confirm(`¿Desactivar el reseller ${r.nombre}?`)) return
+    const ok = await confirmar({
+      titulo: 'Desactivar reseller',
+      mensaje: `¿Desactivar el reseller ${r.nombre}?`,
+      textoAceptar: 'Desactivar',
+      peligro: true,
+    })
+    if (!ok) return
     setDesactivando(r.id)
     try {
       const res = await fetch(`${API_URL}/api/admin/resellers/${r.id}?hard=false`, {

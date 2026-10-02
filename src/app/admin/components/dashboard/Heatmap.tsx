@@ -42,7 +42,7 @@ export default function Heatmap({ data, mes }: HeatmapProps) {
   return (
     <div className="bg-white rounded-xl border border-neutro-borde p-5 shadow-soft">
       <div className="flex items-center justify-between flex-wrap gap-1 mb-3">
-        <h3 className="text-sm font-semibold text-verde-tipografia">
+        <h3 className="mb-0 text-sm font-semibold text-verde-tipografia">
           Densidad del mes — {tituloMes}
         </h3>
         <span className="text-[10.5px] text-verde-suave font-normal">
@@ -56,9 +56,13 @@ export default function Heatmap({ data, mes }: HeatmapProps) {
         </div>
       ) : (
         <>
+          {/* B4 (R8): a 360 px los 31 días no caben legibles; el mapa se desliza adentro de la tarjeta
+              (celdas de 14 px mínimo) y la página no se ensancha. */}
+          <div className="overflow-x-auto pb-1" data-testid="heatmap-scroll">
+          <div className="min-w-max sm:min-w-0">
           <div
             className="grid gap-[3px] mb-[3px]"
-            style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+            style={{ gridTemplateColumns: `repeat(${cols}, minmax(14px, 1fr))` }}
           >
             {data.map((d) => (
               <div
@@ -71,7 +75,7 @@ export default function Heatmap({ data, mes }: HeatmapProps) {
           </div>
           <div
             className="grid gap-[3px]"
-            style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+            style={{ gridTemplateColumns: `repeat(${cols}, minmax(14px, 1fr))` }}
           >
             {data.map((d) => (
               <div
@@ -85,6 +89,8 @@ export default function Heatmap({ data, mes }: HeatmapProps) {
                 }}
               />
             ))}
+          </div>
+          </div>
           </div>
           <div className="flex items-center gap-1 mt-3 text-[10.5px] text-verde-suave">
             <span>Menos</span>

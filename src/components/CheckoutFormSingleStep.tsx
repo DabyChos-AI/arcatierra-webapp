@@ -31,6 +31,7 @@ import DireccionEntrega, {
 import { formatFechaMexico } from '@/lib/dates'
 import { MapPin, CreditCard, User, Calendar, CalendarDays, Tag, PackageX } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { avisarTrasNavegar } from '@/components/ui/Avisos'
 import { calcularCostoEnvio, subtotalProductos as calcSubtotalProductos } from '@/lib/envio'
 import {
   aplicarCambiosDelServidor,
@@ -481,7 +482,8 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
    * lo toca. Nunca se le muestra al cliente el texto del backend.
    */
   const volverAIniciarSesion = () => {
-    alert('Tu sesión expiró. Te llevamos a iniciar sesión — tu carrito se conserva.')
+    // K1 (R8): el aviso sale en /auth/signin (la página siguiente), no en una ventana del navegador.
+    avisarTrasNavegar('Tu sesión expiró. Inicia sesión: tu carrito se conserva.')
     window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent('/checkout')}`
   }
 

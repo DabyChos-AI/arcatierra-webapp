@@ -118,6 +118,16 @@ const nextConfig = {
       { source: '/experiencias-antigua', destination: '/experiencias', permanent: true },
       { source: '/experiencias-privadas', destination: '/experiencias', permanent: true },
       { source: '/experiencias-premium', destination: '/experiencias', permanent: true },
+      // R8 (sesión 48, DR22 y M3, decisión de David 2-oct 20:22 UTC): dos pantallas del panel que eran de adorno (Alertas con
+      // recomendaciones inventadas; Configuración no guardaba nada). Sus archivos se movieron a ~/vps-stack/_archivo/.
+      // Temporal (307): si un día vuelven con datos reales, no queda una redirección guardada en los navegadores.
+      { source: '/admin/alertas', destination: '/admin', permanent: false },
+      { source: '/admin/configuracion', destination: '/admin', permanent: false },
+      // R8, 2.ª ronda (David ≈20:38 UTC): CAT3 /catering2 (copia vieja, sin ligas, su formulario fingía enviar) → /catering;
+      // INI1 /admin/inicio (dashboard viejo fuera del menú; su API ya pide `dashboard`) → /admin. Archivos en ~/vps-stack/_archivo/.
+      { source: '/catering2', destination: '/catering', permanent: true },
+      { source: '/catering2/:ruta*', destination: '/catering', permanent: true },
+      { source: '/admin/inicio', destination: '/admin', permanent: false },
     ]
   },
 

@@ -22,7 +22,7 @@ const TITLES: Record<string, [string, string]> = {
   '/admin/planeacion': ['Planeación semanal', 'Reservas / Planeación'],
   '/admin/leads': ['Bandeja de Leads', 'Reservas / Leads'],
   '/admin/catering': ['Catering', 'Reservas / Catering'],
-  '/admin/mi-dia': ['Mi dia', 'Principal / Mi dia'],
+  '/admin/mi-dia': ['Mi día', 'Principal / Mi día'],
   '/admin/personal': ['Personal', 'Personas / Personal'],
   '/admin/resellers': ['Resellers / B2B', 'Personas / Resellers'],
   '/admin/clientes': ['Clientes', 'Personas / Clientes'],

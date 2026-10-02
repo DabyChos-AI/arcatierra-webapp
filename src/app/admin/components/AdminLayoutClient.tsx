@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import AdminSidebar from './AdminSidebar'
 import AdminHeader from './AdminHeader'
-import { MisRolesContext } from './MisRolesContext'
+import { MisRolesContext, type EstadoRoles } from './MisRolesContext'
 import type { InsigniaPanel, MisRoles, RolActivo, RolUsuario } from '@/types/roles'
 
 // HDR1: solo los dos valores conocidos; cualquier otra cosa (o la llave ausente: API anterior a R3) = sin insignia.
@@ -25,6 +25,8 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
   const [permisosActivos, setPermisosActivos] = useState<string[] | undefined>(undefined)
   // HDR1 (R3): la insignia del panel la decide el backend en mis-roles; aquí solo se guarda y se reparte.
   const [insignia, setInsignia] = useState<InsigniaPanel>(null)
+  // R8 (C3): /admin necesita saber si mis-roles YA respondió (un guía sin `dashboard` va a Mi día sin ver el error).
+  const [estadoRoles, setEstadoRoles] = useState<EstadoRoles>('cargando')
 
   // T55g (30-sep): funciones ESTABLES. AdminSidebar cierra el menú en un useEffect que
   // depende de [pathname, onClose]; con una flecha nueva en cada render, abrir el menú
@@ -38,14 +40,19 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
     async function fetchRoles() {
       try {
         const res = await fetch('/api/admin/roles/mis-roles')
-        if (!res.ok) return
+        if (!res.ok) {
+          setEstadoRoles('error')
+          return
+        }
         const data: MisRoles = await res.json()
         setRoles(data.roles || [])
         setRolActivo(data.rol_activo || null)
         setPermisosActivos(data.permisos_activos || [])
         setInsignia(leerInsignia(data.insignia))
+        setEstadoRoles('listo')
       } catch (err) {
         console.error('Error cargando roles:', err)
+        setEstadoRoles('error')
       }
     }
     fetchRoles()
@@ -77,7 +84,11 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
   }, [])
 
   // TB1 (R7): el rol activo también va al contexto (AdminTopbar lo pinta; cambia con «Cambiar rol»).
-  const contextoMisRoles = useMemo(() => ({ insignia, rolActivo }), [insignia, rolActivo])
+  // R8 (C3): también los permisos activos y si mis-roles ya respondió.
+  const contextoMisRoles = useMemo(
+    () => ({ insignia, rolActivo, permisos: permisosActivos ?? null, estadoRoles }),
+    [insignia, rolActivo, permisosActivos, estadoRoles],
+  )
 
   return (
     <MisRolesContext.Provider value={contextoMisRoles}>

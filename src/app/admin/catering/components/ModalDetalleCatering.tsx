@@ -18,6 +18,7 @@ import {
 import { formatFechaHoraMexico } from '@/lib/dates'
 import { formatMXN } from '@/types/reservas'
 import { API_URL } from '@/lib/api'
+import { confirmar } from '@/components/ui/Avisos'
 import {
   CateringItem,
   EstadoCatering,
@@ -296,12 +297,13 @@ export default function ModalDetalleCatering({
 
   const eliminar = async () => {
     if (!nuncaTocado) return
-    if (
-      !window.confirm(
-        '¿Eliminar esta solicitud de catering? Esta acción no se puede deshacer.',
-      )
-    )
-      return
+    const ok = await confirmar({
+      titulo: 'Eliminar solicitud',
+      mensaje: '¿Eliminar esta solicitud de catering? Esta acción no se puede deshacer.',
+      textoAceptar: 'Eliminar',
+      peligro: true,
+    })
+    if (!ok) return
     setLoading(true)
     setError(null)
     try {

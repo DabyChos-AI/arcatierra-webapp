@@ -7,6 +7,7 @@ import {
   CheckCircle, Package, FileText, Phone, Mail
 } from 'lucide-react'
 import { formatFechaMexico, formatFechaHoraMexico, hoyMexico, mesMexico } from '@/lib/dates'
+import { aviso } from '@/components/ui/Avisos'
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -263,7 +264,7 @@ export default function AdminEntregasPage() {
       })
       if (!res.ok) {
         const err = await res.json()
-        alert(err.detail || 'Error al cambiar estado')
+        aviso.error(err.detail || 'Error al cambiar estado')
         return
       }
       // Refresh
@@ -275,7 +276,7 @@ export default function AdminEntregasPage() {
       fetchEntregas()
       fetchMetricas()
     } catch {
-      alert('Error de red al cambiar estado')
+      aviso.error('Error de red al cambiar estado')
     } finally {
       setAccionLoading(false)
     }
@@ -292,13 +293,13 @@ export default function AdminEntregasPage() {
       })
       if (!res.ok) {
         const err = await res.json()
-        alert(err.detail || 'Error al guardar notas')
+        aviso.error(err.detail || 'Error al guardar notas')
         return
       }
       setDetalle({ ...detalle, notas: notasEdit })
       setEditingNotas(false)
     } catch {
-      alert('Error de red al guardar notas')
+      aviso.error('Error de red al guardar notas')
     } finally {
       setAccionLoading(false)
     }

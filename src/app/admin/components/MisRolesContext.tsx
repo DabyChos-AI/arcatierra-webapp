@@ -10,14 +10,26 @@
 import { createContext, useContext } from 'react'
 import type { InsigniaPanel, RolActivo } from '@/types/roles'
 
+/** R8 (C3): para distinguir «todavía no sé» de «ya sé y no tiene nada». */
+export type EstadoRoles = 'cargando' | 'listo' | 'error'
+
 export interface MisRolesContexto {
   /** null mientras carga, si la API no la manda (anterior a R3) o si no hay insignia. */
   insignia: InsigniaPanel
   /** null mientras carga, si mis-roles falla o si el usuario no tiene rol activo. */
   rolActivo: RolActivo | null
+  /** R8: `permisos_activos` de mis-roles (la MISMA lista con la que AdminSidebar filtra el menú). null hasta que carga. */
+  permisos: string[] | null
+  /** R8: 'cargando' al montar; 'listo' cuando mis-roles respondió (aunque no haya rol); 'error' si falló. */
+  estadoRoles: EstadoRoles
 }
 
-export const MisRolesContext = createContext<MisRolesContexto>({ insignia: null, rolActivo: null })
+export const MisRolesContext = createContext<MisRolesContexto>({
+  insignia: null,
+  rolActivo: null,
+  permisos: null,
+  estadoRoles: 'cargando',
+})
 
 export function useMisRoles(): MisRolesContexto {
   return useContext(MisRolesContext)

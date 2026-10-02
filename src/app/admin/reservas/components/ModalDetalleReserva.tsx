@@ -20,10 +20,12 @@ import {
   X,
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { aviso, confirmar } from '@/components/ui/Avisos'
 import { formatFechaHoraMexico, formatFechaMexico, hoyMexico } from '@/lib/dates'
 import { esConflictoVersion, etiquetaHueco } from '@/types/planeacion'
 import type { ItemCatalogo, ListaCatalogo, TipoCatalogo } from '@/types/planeacion'
 import { TIPO_LABELS } from '@/types/plantillas-email'
+import { horaMexico, type LlegadaReserva } from '@/types/mi-dia'
 import { horaCorta } from '@/app/admin/eventos/components/fechas'
 import {
   useVendedoras,
@@ -146,7 +148,7 @@ interface ToastState {
 
 // ─── Fase 2 (30-sep): lo que el panel dice de correos y cobros ─────────────────────────────
 
-/** D15: el texto que se ve ANTES de cancelar (y se repite en el confirm). */
+/** D15: el texto que se ve ANTES de cancelar (y se repite en el diálogo de confirmar). */
 const AVISO_PAGO_EN_CAMINO =
   'Hay un pago de MercadoPago en camino (OXXO o en revisión). Puedes cancelar: si se acredita después, quedará registrado con una nota para devolverlo.'
 
@@ -257,9 +259,23 @@ function textoNinosDetalle(reserva: Reserva): string {
   return 'Sin precio de niño: pagan como adulto.'
 }
 
-/** Los avisos del back (D4, D15) no se pueden perder en un toast: van en un alert. */
+/** Los avisos del back (D4, D15) no se pueden perder en un toast: van en UN aviso persistente (se queda hasta que
+ *  la persona lo cierra). K1 (R8): antes era un window.alert. Unidos en uno solo para que el tope de avisos a la vista
+ *  (Avisos.tsx) no tire ninguno. */
 function mostrarAvisos(avisos: string[] | null | undefined) {
-  if (Array.isArray(avisos) && avisos.length > 0) window.alert(avisos.join('\n\n'))
+  const lista = Array.isArray(avisos) ? avisos.filter((a) => typeof a === 'string' && a.trim()) : []
+  if (lista.length > 0) aviso.info(lista.join('\n\n'), { persistente: true })
+}
+
+/** K4 (R8): «Llegaron a las 10:42 · <nombre> · 8 personas» (hora de México; nombre y personas solo si vienen). */
+function textoLlegada(llegada: LlegadaReserva): string {
+  const hora = horaMexico(llegada.llegada_en)
+  const partes = [hora ? `Llegaron a las ${hora}` : 'Llegaron']
+  const nombre = llegada.registrada_por_nombre?.trim()
+  if (nombre) partes.push(nombre)
+  const n = llegada.personas_llegaron
+  if (typeof n === 'number' && Number.isFinite(n)) partes.push(n === 1 ? '1 persona' : `${n} personas`)
+  return partes.join(' · ')
 }
 
 // ─── R5 (sesión 45, 2-oct): EST1, RE1 y cancelar con reembolso ─────────────────────────────
@@ -484,6 +500,18 @@ export default function ModalDetalleReserva({
     },
     [],
   )
+
+  // K1 (R8): `confirmar()` es asíncrono. Un doble clic podría abrir dos diálogos o mandar dos veces la misma acción
+  // (reembolso, cancelar, correo): candado por acción ANTES del await; se suelta si la persona cancela o al terminar.
+  const candados = useRef<Set<string>>(new Set())
+  const tomarCandado = (clave: string): boolean => {
+    if (candados.current.has(clave)) return false
+    candados.current.add(clave)
+    return true
+  }
+  const soltarCandado = (clave: string) => {
+    candados.current.delete(clave)
+  }
 
   const fetchReserva = useCallback(async (silent = false) => {
     if (!token) return
@@ -833,8 +861,19 @@ export default function ModalDetalleReserva({
   // Dinero real: confirmación siempre; el resultado se muestra tal cual (`message`).
   async function reintentarReembolso(p: PagoReserva) {
     if (!token || !reserva || reintentando) return
+    // Dinero real: el candado va ANTES del await (doble clic = un solo POST)
+    if (!tomarCandado('reembolso')) return
     const monto = Number(p.reembolso?.monto ?? p.monto_total)
-    if (!window.confirm(TEXTO_CONFIRMAR_REEMBOLSO(formatMXN(monto)))) return
+    const ok = await confirmar({
+      titulo: 'Reintentar reembolso',
+      mensaje: TEXTO_CONFIRMAR_REEMBOLSO(formatMXN(monto)),
+      textoAceptar: 'Reembolsar',
+      peligro: true,
+    })
+    if (!ok) {
+      soltarCandado('reembolso')
+      return
+    }
     setReintentando(p.id)
     setAvisoReembolso(null)
     try {
@@ -862,6 +901,7 @@ export default function ModalDetalleReserva({
       })
     } finally {
       setReintentando(null)
+      soltarCandado('reembolso')
       await fetchReserva(true)
       onUpdated()
     }
@@ -903,7 +943,18 @@ export default function ModalDetalleReserva({
 
   async function deleteAddon(addonPivotId: string) {
     if (!token || !reserva) return
-    if (!window.confirm('Eliminar este add-on?')) return
+    const clave = `addon-${addonPivotId}`
+    if (!tomarCandado(clave)) return
+    const ok = await confirmar({
+      titulo: 'Quitar add-on',
+      mensaje: 'Eliminar este add-on?',
+      textoAceptar: 'Eliminar',
+      peligro: true,
+    })
+    if (!ok) {
+      soltarCandado(clave)
+      return
+    }
     try {
       const res = await fetch(
         `${API_URL}/api/admin/reservas/${reserva.id}/addons/${addonPivotId}`,
@@ -923,6 +974,8 @@ export default function ModalDetalleReserva({
       onUpdated()
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Error al eliminar', 'error')
+    } finally {
+      soltarCandado(clave)
     }
   }
 
@@ -1122,7 +1175,20 @@ export default function ModalDetalleReserva({
         ? 'Se le avisa al cliente por correo si la plantilla Cancelación está activa y tiene correo real.'
         : 'No se le manda correo al cliente.',
     )
-    if (!window.confirm(lineas.join('\n'))) return
+    // K1 (R8): el mismo texto (con sus saltos de línea) en el diálogo propio; candado ANTES del await
+    if (!tomarCandado('cancelar')) return
+    const ok = await confirmar({
+      titulo: 'Cancelar reserva',
+      mensaje: lineas.join('\n'),
+      // C9 (R8): que no repita el nombre exacto del botón de Acciones
+      textoAceptar: 'Sí, cancelar reserva',
+      textoCancelar: 'Volver',
+      peligro: true,
+    })
+    if (!ok) {
+      soltarCandado('cancelar')
+      return
+    }
     setCancelando(true)
     setResultadoCancelar(null)
     try {
@@ -1168,6 +1234,7 @@ export default function ModalDetalleReserva({
       showToast(err instanceof Error ? err.message : 'Error al cancelar', 'error')
     } finally {
       setCancelando(false)
+      soltarCandado('cancelar')
     }
   }
 
@@ -1175,11 +1242,14 @@ export default function ModalDetalleReserva({
   // verdad es del back (C7): un 400 se muestra tal cual.
   async function marcarRealizada() {
     if (!token || !reserva) return
-    if (
-      !window.confirm(
-        `¿Marcar la reserva ${reserva.booking_id} como realizada? Hazlo cuando la experiencia ya ocurrió.`,
-      )
-    ) {
+    if (!tomarCandado('realizada')) return
+    const ok = await confirmar({
+      titulo: 'Marcar como realizada',
+      mensaje: `¿Marcar la reserva ${reserva.booking_id} como realizada? Hazlo cuando la experiencia ya ocurrió.`,
+      textoAceptar: 'Marcar como realizada',
+    })
+    if (!ok) {
+      soltarCandado('realizada')
       return
     }
     setMarcandoRealizada(true)
@@ -1213,6 +1283,7 @@ export default function ModalDetalleReserva({
       showToast(err instanceof Error ? err.message : 'Error al marcar como realizada', 'error')
     } finally {
       setMarcandoRealizada(false)
+      soltarCandado('realizada')
     }
   }
 
@@ -1221,11 +1292,14 @@ export default function ModalDetalleReserva({
   // backend: solo se dice algo de él si la respuesta trae su resultado (nunca prometerlo).
   async function confirmarReserva() {
     if (!token || !reserva || confirmando) return
-    if (
-      !window.confirm(
-        `¿Confirmar la reserva ${reserva.booking_id}? Pasa de Tentativa a Confirmada. Si la plantilla de confirmación está activa y el cliente tiene correo real, se le manda el correo de confirmación.`,
-      )
-    ) {
+    if (!tomarCandado('confirmar')) return
+    const ok = await confirmar({
+      titulo: 'Confirmar reserva',
+      mensaje: `¿Confirmar la reserva ${reserva.booking_id}? Pasa de Tentativa a Confirmada. Si la plantilla de confirmación está activa y el cliente tiene correo real, se le manda el correo de confirmación.`,
+      textoAceptar: 'Confirmar reserva',
+    })
+    if (!ok) {
+      soltarCandado('confirmar')
       return
     }
     setConfirmando(true)
@@ -1266,6 +1340,7 @@ export default function ModalDetalleReserva({
       })
     } finally {
       setConfirmando(false)
+      soltarCandado('confirmar')
     }
   }
 
@@ -1273,11 +1348,14 @@ export default function ModalDetalleReserva({
   // (email_destino null). La guardia del back decide si sale; aquí solo se dice lo que respondió.
   async function reenviarCotizacion() {
     if (!token || !reserva || reserva.cortesia) return
-    if (
-      !window.confirm(
-        `¿Reenviar la cotización de la reserva ${reserva.booking_id}? Se genera el PDF con los montos de hoy y se pide mandarlo al correo del cliente.`,
-      )
-    ) {
+    if (!tomarCandado('cotizacion')) return
+    const ok = await confirmar({
+      titulo: 'Reenviar cotización',
+      mensaje: `¿Reenviar la cotización de la reserva ${reserva.booking_id}? Se genera el PDF con los montos de hoy y se pide mandarlo al correo del cliente.`,
+      textoAceptar: 'Reenviar',
+    })
+    if (!ok) {
+      soltarCandado('cotizacion')
       return
     }
     setReenvioCotizacion({ tipo: 'enviando' })
@@ -1304,6 +1382,8 @@ export default function ModalDetalleReserva({
             ? err.message
             : 'sin conexión con el servidor',
       })
+    } finally {
+      soltarCandado('cotizacion')
     }
   }
 
@@ -1657,6 +1737,7 @@ export default function ModalDetalleReserva({
           fechaActual={reserva.fecha_experiencia}
           horaActual={reserva.hora_inicio}
           horaFinActual={reserva.hora_fin ?? null}
+          duracionHoras={reserva.experiencia_duracion_horas ?? null}
           guiasConCorreo={(reserva.guias ?? []).filter((g) => !!g.email?.trim()).length}
           guiasTotal={(reserva.guias ?? []).length}
           onSaved={alReagendar}
@@ -1897,6 +1978,17 @@ function TabDatos({
           Reagendar
         </button>
       </div>
+
+      {/* K4/DR22 (R8): el check «Llegaron» de Mi día (tabla aparte: no cambia la versión ni la Auditoría) */}
+      {reserva.llegada && (
+        <p
+          data-testid="detalle-llegada"
+          className="flex items-start gap-2 rounded-lg border border-verde/30 bg-verde/10 p-3 text-sm text-verde"
+        >
+          <UserCheck className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
+          <span>{textoLlegada(reserva.llegada)}</span>
+        </p>
+      )}
 
       {sinReprecio && (
         <p

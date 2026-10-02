@@ -389,6 +389,10 @@ export interface Reserva {
   puede_reembolsar?: boolean
   /** R5 (EST1): en la respuesta del PATCH, links pendientes que se anularon porque el saldo bajó (0 si ninguno). */
   links_vencidos?: number
+  /** R8 (RGP1): duración del catálogo (horas) para la vista previa de Reagendar cuando la hora de término guardada no sirve. */
+  experiencia_duracion_horas?: number | null
+  /** R8 (K4/DR22): el check «Llegaron» de Mi día (tabla reservas_llegadas); null = no se ha marcado. */
+  llegada?: import('./mi-dia').LlegadaReserva | null
 }
 
 // Contrato de GET /api/admin/reservas/stats (backend lo alineo el 2026-09-25:

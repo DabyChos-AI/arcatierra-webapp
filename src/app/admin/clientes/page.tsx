@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { formatFechaMexico, formatFechaHoraMexico } from '@/lib/dates'
 import dynamic from 'next/dynamic'
+import { aviso, confirmar } from '@/components/ui/Avisos'
 
 const MapPicker = dynamic(() => import('@/components/admin/MapPicker'), {
   ssr: false,
@@ -389,14 +390,14 @@ export default function AdminClientesPage() {
       })
       if (!res.ok) {
         const err = await res.json()
-        alert(err.detail || 'Error al guardar')
+        aviso.error(err.detail || 'Error al guardar')
         return
       }
       setEditing(false)
       await refreshDetalle(detalle.id)
       fetchClientes()
     } catch {
-      alert('Error de red al guardar')
+      aviso.error('Error de red al guardar')
     } finally {
       setAccionLoading(false)
     }
@@ -404,10 +405,16 @@ export default function AdminClientesPage() {
 
   const cambiarRol = async (nuevoRol: string) => {
     if (!detalle) return
-    const confirmMsg = nuevoRol === 'empleado'
-      ? 'Este usuario tendra acceso al panel admin. Continuar?'
-      : 'Este usuario perdera acceso al panel admin. Continuar?'
-    if (!confirm(confirmMsg)) return
+    const daAcceso = nuevoRol === 'empleado'
+    const ok = await confirmar({
+      titulo: daAcceso ? 'Dar acceso al panel' : 'Quitar acceso al panel',
+      mensaje: daAcceso
+        ? 'Este usuario tendrá acceso al panel admin. ¿Continuar?'
+        : 'Este usuario perderá acceso al panel admin. ¿Continuar?',
+      textoAceptar: daAcceso ? 'Dar acceso' : 'Quitar acceso',
+      peligro: !daAcceso,
+    })
+    if (!ok) return
 
     try {
       setAccionLoading(true)
@@ -418,13 +425,13 @@ export default function AdminClientesPage() {
       })
       if (!res.ok) {
         const err = await res.json()
-        alert(err.detail || 'Error al cambiar rol')
+        aviso.error(err.detail || 'Error al cambiar rol')
         return
       }
       await refreshDetalle(detalle.id)
       fetchClientes()
     } catch {
-      alert('Error de red al cambiar rol')
+      aviso.error('Error de red al cambiar rol')
     } finally {
       setAccionLoading(false)
     }
@@ -432,10 +439,16 @@ export default function AdminClientesPage() {
 
   const cambiarEstado = async (nuevoEstado: string) => {
     if (!detalle) return
-    const confirmMsg = nuevoEstado === 'bloqueado'
-      ? 'El usuario no podra iniciar sesion. Continuar?'
-      : 'El usuario podra iniciar sesion nuevamente. Continuar?'
-    if (!confirm(confirmMsg)) return
+    const bloquea = nuevoEstado === 'bloqueado'
+    const ok = await confirmar({
+      titulo: bloquea ? 'Bloquear usuario' : 'Desbloquear usuario',
+      mensaje: bloquea
+        ? 'El usuario no podrá iniciar sesión. ¿Continuar?'
+        : 'El usuario podrá iniciar sesión nuevamente. ¿Continuar?',
+      textoAceptar: bloquea ? 'Bloquear' : 'Desbloquear',
+      peligro: bloquea,
+    })
+    if (!ok) return
 
     try {
       setAccionLoading(true)
@@ -446,13 +459,13 @@ export default function AdminClientesPage() {
       })
       if (!res.ok) {
         const err = await res.json()
-        alert(err.detail || 'Error al cambiar estado')
+        aviso.error(err.detail || 'Error al cambiar estado')
         return
       }
       await refreshDetalle(detalle.id)
       fetchClientes()
     } catch {
-      alert('Error de red al cambiar estado')
+      aviso.error('Error de red al cambiar estado')
     } finally {
       setAccionLoading(false)
     }
@@ -509,7 +522,7 @@ export default function AdminClientesPage() {
   const guardarDireccion = async () => {
     if (!detalle) return
     if (!dirForm.calle.trim() || !dirForm.numero_exterior.trim() || !dirForm.codigo_postal.trim() || !dirForm.colonia.trim()) {
-      alert('Calle, numero exterior, codigo postal y colonia son obligatorios')
+      aviso.error('Calle, número exterior, código postal y colonia son obligatorios')
       return
     }
 
@@ -554,7 +567,7 @@ export default function AdminClientesPage() {
 
       if (!res.ok) {
         const err = await res.json()
-        alert(err.detail || 'Error al guardar direccion')
+        aviso.error(err.detail || 'Error al guardar dirección')
         return
       }
 
@@ -562,7 +575,7 @@ export default function AdminClientesPage() {
       await fetchDirecciones(detalle.id)
       await refreshDetalle(detalle.id)
     } catch {
-      alert('Error de red al guardar direccion')
+      aviso.error('Error de red al guardar dirección')
     } finally {
       setDirSaving(false)
     }
@@ -570,7 +583,13 @@ export default function AdminClientesPage() {
 
   const eliminarDireccion = async (dirId: string) => {
     if (!detalle) return
-    if (!confirm('Eliminar esta direccion? Esta accion no se puede deshacer.')) return
+    const ok = await confirmar({
+      titulo: 'Eliminar dirección',
+      mensaje: '¿Eliminar esta dirección? Esta acción no se puede deshacer.',
+      textoAceptar: 'Eliminar',
+      peligro: true,
+    })
+    if (!ok) return
 
     try {
       const res = await fetch(`/api/admin/direcciones/cliente/${detalle.id}/${dirId}`, {
@@ -578,13 +597,13 @@ export default function AdminClientesPage() {
       })
       if (!res.ok) {
         const err = await res.json()
-        alert(err.detail || 'Error al eliminar')
+        aviso.error(err.detail || 'Error al eliminar')
         return
       }
       await fetchDirecciones(detalle.id)
       await refreshDetalle(detalle.id)
     } catch {
-      alert('Error de red al eliminar')
+      aviso.error('Error de red al eliminar')
     }
   }
 
@@ -596,13 +615,13 @@ export default function AdminClientesPage() {
       })
       if (!res.ok) {
         const err = await res.json()
-        alert(err.detail || 'Error al marcar como principal')
+        aviso.error(err.detail || 'Error al marcar como principal')
         return
       }
       await fetchDirecciones(detalle.id)
       await refreshDetalle(detalle.id)
     } catch {
-      alert('Error de red')
+      aviso.error('Error de red')
     }
   }
 

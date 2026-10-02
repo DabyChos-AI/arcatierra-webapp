@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Users, Plus, Edit2, UserCheck, Award } from 'lucide-react'
+import { aviso } from '@/components/ui/Avisos'
 
 interface Empleado {
   usuario_id: string;
@@ -82,7 +83,7 @@ export default function EmpleadosPage() {
       )
 
       if (response.ok) {
-        alert(`✅ Empleado actualizado exitosamente:\n\n${selectedEmpleado.nombre}\nDepartamento: ${selectedEmpleado.departamento}\nCargo: ${selectedEmpleado.cargo}`)
+        aviso.exito(`Empleado actualizado exitosamente:\n\n${selectedEmpleado.nombre}\nDepartamento: ${selectedEmpleado.departamento}\nCargo: ${selectedEmpleado.cargo}`)
         handleCloseModal()
         fetchEmpleados()
       } else {
@@ -92,36 +93,27 @@ export default function EmpleadosPage() {
       
     } catch (error) {
       console.error('Error actualizando empleado:', error)
-      alert(`❌ Error al actualizar empleado:\n\n${error instanceof Error ? error.message : 'Error desconocido'}`)
+      aviso.error(`Error al actualizar empleado:\n\n${error instanceof Error ? error.message : 'Error desconocido'}`)
     }
   }
 
   const handleCreateEmpleado = async () => {
     if (!newEmpleadoData.email || !newEmpleadoData.nombre || !newEmpleadoData.numero_empleado) {
-      alert('❌ Por favor completa todos los campos obligatorios:\n\n• Nombre\n• Email\n• Número de empleado')
+      aviso.error('Por favor completa todos los campos obligatorios:\n\n• Nombre\n• Email\n• Número de empleado')
       return
     }
 
     if (!newEmpleadoData.departamento || newEmpleadoData.departamento === '') {
-      alert('❌ Por favor selecciona un departamento')
+      aviso.error('Por favor selecciona un departamento')
       return
     }
 
     if (!newEmpleadoData.cargo || newEmpleadoData.cargo.trim() === '') {
-      alert('❌ Por favor ingresa el cargo del empleado')
+      aviso.error('Por favor ingresa el cargo del empleado')
       return
     }
 
     try {
-      console.log('📤 Enviando datos:', {
-        email: newEmpleadoData.email,
-        nombre: newEmpleadoData.nombre,
-        numero_empleado: newEmpleadoData.numero_empleado,
-        departamento: newEmpleadoData.departamento,
-        cargo: newEmpleadoData.cargo,
-        telefono: newEmpleadoData.telefono
-      })
-
       // Enviar directamente al backend - él se encarga de crear el usuario
       const response = await fetch('/api/admin/empleados', {
         method: 'POST',
@@ -140,7 +132,7 @@ export default function EmpleadosPage() {
 
       if (response.ok) {
         const data = await response.json()
-        alert(`✅ Empleado creado exitosamente!\n\nNombre: ${newEmpleadoData.nombre}\nEmail: ${newEmpleadoData.email}\nNúmero: ${newEmpleadoData.numero_empleado}\nDepartamento: ${newEmpleadoData.departamento}`)
+        aviso.exito(`Empleado creado: ${newEmpleadoData.nombre}`)
         setShowNewModal(false)
         setNewEmpleadoData({
           email: '',
@@ -175,7 +167,7 @@ export default function EmpleadosPage() {
       
     } catch (error) {
       console.error('💥 Error completo:', error)
-      alert(`❌ Error al crear empleado:\n\n${error instanceof Error ? error.message : JSON.stringify(error)}`)
+      aviso.error(`Error al crear empleado:\n\n${error instanceof Error ? error.message : JSON.stringify(error)}`)
     }
   }
 

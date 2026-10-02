@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import {
   Calendar,
   TrendingUp,
@@ -13,6 +14,9 @@ import {
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { formatFechaMexico, formatFechaHoraMexico, mesMexico } from '@/lib/dates'
+import { aviso } from '@/components/ui/Avisos'
+import { primeraRutaPermitida } from './components/AdminSidebar'
+import { useMisRoles } from './components/MisRolesContext'
 
 import LiveClock from './components/dashboard/LiveClock'
 import KpiCard from './components/dashboard/KpiCard'
@@ -83,10 +87,46 @@ function capitalizar(s: string): string {
   return s.length ? s.charAt(0).toUpperCase() + s.slice(1) : s
 }
 
+// B4 (R8): nombre de cada una de las 6 llamadas, para decir cuál falló (en el orden del Promise.allSettled).
+const PARTES_DASHBOARD = [
+  'indicadores',
+  'ingresos por mes',
+  'reservas por experiencia',
+  'top vendedoras',
+  'próximos eventos',
+  'densidad del mes',
+] as const
+
+// B4 (R8): a dónde lleva cada KPI y qué permiso pide esa pantalla (sin el permiso, la tarjeta no es liga).
+const DESTINO_KPI: Record<string, { href: string; permiso: string; pantalla: string }> = {
+  reservas: { href: '/admin/reservas', permiso: 'reservas', pantalla: 'Ver reservas' },
+  ingresos: { href: '/admin/reportes', permiso: 'reportes', pantalla: 'Ver reportes' },
+  anticipos: { href: '/admin/reservas', permiso: 'reservas', pantalla: 'Ver reservas' },
+  manifest: { href: '/admin/reservas', permiso: 'reservas', pantalla: 'Ver reservas y el manifest' },
+  leads: { href: '/admin/leads', permiso: 'leads', pantalla: 'Ver leads' },
+  conversion: { href: '/admin/leads', permiso: 'leads', pantalla: 'Ver leads' },
+}
+
 // ─── Component ────────────────────────────────────────────────────────
 
 export default function AdminDashboardEjecutivo() {
   const { data: session } = useSession()
+  const router = useRouter()
+
+  // M3/B4 (R8, DR22): quien no tiene `dashboard` (guía, cocina) entra directo a su primera pantalla permitida (Mi día),
+  // ANTES de pedir los 6 GET: nunca ve «No se pudo cargar el dashboard». Mientras mis-roles carga no se pide nada.
+  // `permisos` = permisos_activos de mis-roles (la misma lista que filtra el menú). estadoRoles 'error' = no se supo el
+  // rol: se pide el dashboard como antes (el backend decide con su 403).
+  const { estadoRoles, permisos: permisosCtx, rolActivo } = useMisRoles()
+  const permisos = permisosCtx ?? rolActivo?.permisos ?? []
+  const tieneDashboard = permisos.includes('dashboard')
+  const puedeCargar = estadoRoles === 'error' || (estadoRoles === 'listo' && tieneDashboard)
+  const sinDashboard = estadoRoles === 'listo' && !tieneDashboard
+  const rutaAlterna = sinDashboard ? primeraRutaPermitida(permisos) : null
+
+  useEffect(() => {
+    if (rutaAlterna) router.replace(rutaAlterna)
+  }, [rutaAlterna, router])
 
   const [kpis, setKpis] = useState<Kpis | null>(null)
   const [ingresosMes, setIngresosMes] = useState<IngresoMes[]>([])
@@ -109,7 +149,7 @@ export default function AdminDashboardEjecutivo() {
   const load = useCallback(
     async (signal: AbortSignal, first: boolean) => {
       const token = session?.accessToken
-      if (!token) return
+      if (!token || !puedeCargar) return
       const headers = { Authorization: `Bearer ${token}` }
       const base = `${API_URL}/api/admin/dashboard`
       const mes = mesMexico() // TZ1: YYYY-MM de México (UTC ya era el mes siguiente el último día desde las 18:00)
@@ -149,10 +189,20 @@ export default function AdminDashboardEjecutivo() {
         setError(
           ok === 0 ? 'No se pudieron cargar los datos del dashboard.' : null,
         )
+        // B4 (R8): si falló una parte (no todas: eso ya lo dice la tarjeta de error), un aviso UNA vez por carga.
+        // El refresco de cada 60 s (first = false) no avisa.
+        if (ok > 0 && ok < results.length) {
+          const fallaron = results
+            .map((r, i) => (r.status === 'rejected' ? PARTES_DASHBOARD[i] : null))
+            .filter((p): p is (typeof PARTES_DASHBOARD)[number] => p !== null)
+          aviso.error(
+            `No se pudo cargar: ${fallaron.join(', ')}. Lo demás del dashboard está al día.`,
+          )
+        }
         setLoading(false)
       }
     },
-    [session?.accessToken],
+    [session?.accessToken, puedeCargar],
   )
 
   useEffect(() => {
@@ -173,8 +223,10 @@ export default function AdminDashboardEjecutivo() {
 
   // ─── Derived ────────────────────────────────────────────────────────
 
-  const primerNombre = session?.user?.name?.split(' ')[0] ?? 'Sof'
+  // B4 (R8): sin nombre en la sesión, saludo sin nombre (antes decía «Sof» a cualquiera).
+  const primerNombre = session?.user?.name?.trim().split(/\s+/)[0] ?? ''
   const saludo = now ? saludoPorHora(now) : 'Hola'
+  const saludoCompleto = primerNombre ? `${saludo}, ${primerNombre}` : saludo
   const fechaHoy = now
     ? capitalizar(
         formatFechaMexico(now, {
@@ -189,6 +241,51 @@ export default function AdminDashboardEjecutivo() {
   const leadsCount = kpis?.leads_sin_procesar.value ?? 0
   const mesActual = mesMexico()
 
+  /** Props de liga de un KPI: solo si el rol tiene la pantalla de destino. */
+  const ligaKpi = (clave: string, titulo: string, valor: string | number) => {
+    const d = DESTINO_KPI[clave]
+    const conLiga = d && permisos.includes(d.permiso)
+    return {
+      testId: `kpi-${clave}`,
+      href: conLiga ? d.href : undefined,
+      ariaLabel: conLiga ? `${titulo}: ${valor}. ${d.pantalla}` : undefined,
+    }
+  }
+
+  // ─── Entrada sin `dashboard` (M3/B4, R8) ─────────────────────────────
+
+  if (sinDashboard && !rutaAlterna) {
+    return (
+      <div className="p-6">
+        <div
+          data-testid="dashboard-sin-pantallas"
+          className="bg-white border border-neutro-borde rounded-lg p-6 flex items-start gap-3 max-w-xl"
+        >
+          <AlertTriangle
+            className="h-5 w-5 text-amarillo flex-shrink-0 mt-0.5"
+            aria-hidden="true"
+          />
+          <div>
+            <h1 className="mb-0 text-lg font-semibold text-verde">Sin pantallas asignadas</h1>
+            <p className="text-sm text-verde-tipografia mt-1">
+              Tu rol no tiene pantallas asignadas; pide acceso a un administrador.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!puedeCargar) {
+    // Cargando el rol o llevando a la primera pantalla permitida: nada de error ni de datos del dashboard.
+    return (
+      <div className="p-6" data-testid="dashboard-cargando-rol" aria-busy="true">
+        <h1 className="sr-only">Dashboard ejecutivo — Arca Tierra</h1>
+        <div className="h-24 max-w-xl rounded-xl bg-white border border-neutro-borde animate-pulse" />
+      </div>
+    )
+  }
+
   // ─── Error total (primer load, todo falló) ──────────────────────────
 
   if (error && !loading) {
@@ -200,7 +297,7 @@ export default function AdminDashboardEjecutivo() {
             aria-hidden="true"
           />
           <div>
-            <h1 className="text-lg font-semibold text-rojo">
+            <h1 className="mb-0 text-lg font-semibold text-rojo">
               No se pudo cargar el dashboard
             </h1>
             <p className="text-sm text-verde-tipografia mt-1">{error}</p>
@@ -232,7 +329,7 @@ export default function AdminDashboardEjecutivo() {
         <div className="relative flex justify-between items-start flex-wrap gap-3">
           <div>
             <h2 className="text-2xl font-bold text-white">
-              {saludo}, {primerNombre}
+              {saludoCompleto}
             </h2>
             <p className="text-sm opacity-90 mt-1">
               {now ? (
@@ -271,6 +368,7 @@ export default function AdminDashboardEjecutivo() {
                 iconColor="terracota"
                 title="Reservas activas"
                 value={kpis.reservas_activas.value}
+                {...ligaKpi('reservas', 'Reservas activas', kpis.reservas_activas.value)}
                 trend={kpis.reservas_activas.trend_pct}
                 detail="vs mes anterior"
               />,
@@ -280,6 +378,7 @@ export default function AdminDashboardEjecutivo() {
                 iconColor="verde"
                 title="Ingresos del mes"
                 value={fmtK(kpis.ingresos_mes.value)}
+                {...ligaKpi('ingresos', 'Ingresos del mes', fmtK(kpis.ingresos_mes.value))}
                 trend={kpis.ingresos_mes.trend_pct}
                 detail={`proyección ${fmtK(kpis.ingresos_mes.proyeccion)}`}
                 leyenda="Lo vendido: reservas confirmadas, pagadas o realizadas con experiencia este mes."
@@ -290,6 +389,7 @@ export default function AdminDashboardEjecutivo() {
                 iconColor="amarillo"
                 title="Anticipos pendientes"
                 value={fmtK(kpis.anticipos_pendientes.monto)}
+                {...ligaKpi('anticipos', 'Anticipos pendientes', fmtK(kpis.anticipos_pendientes.monto))}
                 detail={`${kpis.anticipos_pendientes.reservas_count} reservas tentativas`}
               />,
               <KpiCard
@@ -298,6 +398,7 @@ export default function AdminDashboardEjecutivo() {
                 iconColor="azul"
                 title="Manifest mañana"
                 value={kpis.manifest_manana.reservas_count}
+                {...ligaKpi('manifest', 'Manifest mañana', kpis.manifest_manana.reservas_count)}
                 detail={`${kpis.manifest_manana.invitados_count} invitados`}
               />,
               <KpiCard
@@ -306,6 +407,7 @@ export default function AdminDashboardEjecutivo() {
                 iconColor="morado"
                 title="Leads sin procesar"
                 value={kpis.leads_sin_procesar.value}
+                {...ligaKpi('leads', 'Leads sin procesar', kpis.leads_sin_procesar.value)}
                 detail={`${kpis.leads_sin_procesar.nuevos_hoy} nuevos hoy`}
               />,
               <KpiCard
@@ -314,6 +416,7 @@ export default function AdminDashboardEjecutivo() {
                 iconColor="rosa"
                 title="Tasa de conversión"
                 value={`${kpis.tasa_conversion.value_pct}%`}
+                {...ligaKpi('conversion', 'Tasa de conversión', `${kpis.tasa_conversion.value_pct}%`)}
                 trend={kpis.tasa_conversion.trend_pct}
               />,
             ]}

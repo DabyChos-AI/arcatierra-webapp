@@ -27,8 +27,6 @@ import {
   CreditCard,
   QrCode,
   Award,
-  AlertTriangle,
-  Settings,
   Globe,
   Tags,
   CalendarRange,
@@ -69,10 +67,8 @@ const NAV_SECTIONS: NavSection[] = [
     label: 'Principal',
     items: [
       { href: '/admin', label: 'Dashboard', icon: Home, permiso: 'dashboard' },
-      // 'Mi dia (vista guia)' sale del menu hasta que la Fase K la construya: hoy
-      // la pantalla solo dice "En construccion" y la gente entra por curiosidad.
-      // Para devolverla, basta descomentar esta linea.
-      // { href: '/admin/mi-dia', label: 'Mi dia (vista guia)', icon: Clock, permiso: 'mi_dia', badgeKey: 'misEventosHoy' },
+      // K4 (R8, DR22): Mi día del guía (sus experiencias de hoy, sin contacto, con el check «Llegaron»).
+      { href: '/admin/mi-dia', label: 'Mi día', icon: Clock, permiso: 'mi_dia', badgeKey: 'misEventosHoy' },
     ],
   },
   {
@@ -133,8 +129,7 @@ const NAV_SECTIONS: NavSection[] = [
       { href: '/admin/pagos', label: 'Pagos', icon: CreditCard, permiso: 'pagos' },
       { href: '/admin/qr-codes', label: 'Codigos QR', icon: QrCode, permiso: 'qr_codes' },
       { href: '/admin/gamificacion', label: 'Gamificacion', icon: Award, permiso: 'gamificacion' },
-      { href: '/admin/alertas', label: 'Alertas', icon: AlertTriangle, permiso: 'alertas' },
-      { href: '/admin/configuracion', label: 'Configuracion', icon: Settings, permiso: 'configuracion' },
+      // R8 (ALR1, M3): /admin/alertas y /admin/configuracion se retiraron (eran de adorno); next.config.js las redirige a /admin.
       { href: '/admin/experiencias-publicas', label: 'Exp. Publicas', icon: Globe, permiso: 'experiencias_publicas' },
     ],
   },
@@ -150,19 +145,23 @@ interface SidebarBadges {
   misEventosHoy?: number
 }
 
-export function useSidebarBadges(): SidebarBadges {
+// R8: cada badge se pide solo si el rol tiene el permiso de su pantalla (antes un guía hacía 3 llamadas 403 por minuto).
+// `undefined` = los permisos aún no cargan: no se pide nada todavía.
+export function useSidebarBadges(permisosActivos?: string[]): SidebarBadges {
   const { data: session } = useSession()
   const [badges, setBadges] = useState<SidebarBadges>({})
+  const clavePermisos = permisosActivos === undefined ? null : [...permisosActivos].sort().join(',')
 
   useEffect(() => {
     const token = session?.accessToken
-    if (!token) return
+    if (!token || clavePermisos === null) return
+    const permisos = new Set(clavePermisos ? clavePermisos.split(',') : [])
     let cancelled = false
 
     async function fetchAll(authToken: string) {
       const headers = { Authorization: `Bearer ${authToken}` }
       // Reservas activas (tentativas + confirmadas_mes)
-      try {
+      if (permisos.has('reservas')) try {
         const r = await fetch(`${API_URL}/api/admin/reservas/stats`, { headers })
         if (r.ok) {
           const data = await r.json()
@@ -175,7 +174,7 @@ export function useSidebarBadges(): SidebarBadges {
         /* silent — endpoint puede 404 si backend aun no reload */
       }
       // Leads nuevos
-      try {
+      if (permisos.has('leads')) try {
         const r = await fetch(`${API_URL}/api/admin/leads/stats`, { headers })
         if (r.ok) {
           const data = await r.json()
@@ -187,9 +186,9 @@ export function useSidebarBadges(): SidebarBadges {
       } catch {
         /* silent */
       }
-      // Mi dia (Fase K — endpoint aun NO existe, fallback a undefined)
-      try {
-        const r = await fetch(`${API_URL}/api/admin/personal/mis-eventos-hoy`, { headers })
+      // Mi día (R8 · K4): reservas de HOY en el modo de quien pregunta (guía: las suyas; sin ficha: 0)
+      if (permisos.has('mi_dia')) try {
+        const r = await fetch(`${API_URL}/api/admin/mi-dia/conteo`, { headers })
         if (r.ok) {
           const data = await r.json()
           const count = data.count || 0
@@ -208,9 +207,26 @@ export function useSidebarBadges(): SidebarBadges {
       cancelled = true
       clearInterval(interval)
     }
-  }, [session?.accessToken])
+  }, [session?.accessToken, clavePermisos])
 
   return badges
+}
+
+/**
+ * R8 (M3): primera pantalla del menú que el rol puede ver. La usa /admin (Dashboard) para mandar a quien no tiene
+ * `dashboard` (un guía, cocina) a su pantalla en vez de mostrarle «No se pudo cargar el dashboard».
+ * Mi día va primero si la tiene. null = ninguna.
+ */
+export function primeraRutaPermitida(permisos: string[] | null | undefined): string | null {
+  if (!permisos || permisos.length === 0) return null
+  if (permisos.includes('dashboard')) return '/admin'
+  if (permisos.includes('mi_dia')) return '/admin/mi-dia'
+  for (const seccion of NAV_SECTIONS) {
+    for (const item of seccion.items) {
+      if (permisos.includes(item.permiso)) return item.href
+    }
+  }
+  return null
 }
 
 // ============================================================================
@@ -225,7 +241,7 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ isOpen, onClose, permisosActivos }: AdminSidebarProps) {
   const pathname = usePathname()
-  const badges = useSidebarBadges()
+  const badges = useSidebarBadges(permisosActivos)
 
   // Cerrar sidebar al cambiar de ruta en mobile
   useEffect(() => {
