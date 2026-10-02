@@ -137,17 +137,28 @@ interface PedidoDetalle extends Pedido {
   puede_reembolsar?: boolean
   /** R5 (DR15/DR16): pago doble, contracargo y reembolso parcial, con sus frases. */
   avisos?: AvisosPagoPedido | null
-  direccion_principal: {
-    nombre_direccion: string
-    calle: string
-    numero_exterior: string
-    numero_interior: string
-    colonia: string
-    codigo_postal: string
-    ciudad: string
-    estado: string
-  } | null
+  direccion_principal: DireccionCliente | null
+  /** PEDD1 (R7): la dirección guardada a la que apunta el pedido (`pedidos.direccion_id`); null si no tiene. Ausente = API vieja. */
+  direccion_pedido?: DireccionCliente | null
+  /** PED5 (R7): una línea por cambio de estado con nota: «[dd/mm/aaaa hh:mm Nombre] estado: nota». null = ninguna. */
+  notas_internas?: string | null
 }
+
+/** Mismas llaves en `direccion_principal` y `direccion_pedido` (admin_pedidos.py). */
+interface DireccionCliente {
+  nombre_direccion: string | null
+  calle: string
+  numero_exterior: string
+  numero_interior: string | null
+  colonia: string
+  codigo_postal: string
+  ciudad: string | null
+  estado: string | null
+  referencias?: string | null
+}
+
+/** PED5 (R7): tope de la nota del cambio de estado (el backend responde 400 si pasa). */
+const MAX_NOTA_ESTADO = 500
 
 interface Stats {
   total_hoy: number
@@ -225,6 +236,8 @@ export default function AdminPedidosPage() {
   const [loadingDetalle, setLoadingDetalle] = useState(false)
   const [nuevoEstado, setNuevoEstado] = useState('')
   const [cambiandoEstado, setCambiandoEstado] = useState(false)
+  // PED5 (R7): «Nota (opcional)» del cambio de estado; se manda como `notas` y queda en `notas_internas`
+  const [notaEstado, setNotaEstado] = useState('')
   // C10: al cancelar/reembolsar un pedido con experiencias, el back dice qué lugares liberó y si hay reembolso.
   // El modal se cierra al guardar, así que el aviso queda en la página hasta que lo cierren.
   // R2 (C8): pasar a «pagado» un pedido sin descontar descuenta stock; si no alcanza, el estado FINAL es
@@ -299,6 +312,7 @@ export default function AdminPedidosPage() {
       if (detalleIdRef.current !== pedidoId) return
       setDetalle(data)
       setNuevoEstado('')
+      setNotaEstado('')
     } catch {
       if (detalleIdRef.current === pedidoId) setDetalle(null)
     } finally {
@@ -312,6 +326,7 @@ export default function AdminPedidosPage() {
     setDetalle(null)
     setErrorEstado(null)
     setCausaArcaTierra(false)
+    setNotaEstado('')
   }
 
   /** Relee el detalle SIN el spinner (no desmonta el modal ni pierde el scroll). Si falla, se queda el que había. */
@@ -324,6 +339,7 @@ export default function AdminPedidosPage() {
       setDetalle(data)
       setNuevoEstado('')
       setCausaArcaTierra(false)
+      setNotaEstado('')
     } catch {}
   }
 
@@ -356,8 +372,11 @@ export default function AdminPedidosPage() {
       setAvisoEstado(null)
       setErrorEstado(null)
       // REEM1: `causa` solo si marcaron la casilla (y la casilla solo existe para cancelar/reembolsar con experiencias)
-      const payload: { estado: string; causa?: CausaCancelacion } = { estado: nuevoEstado }
+      const payload: { estado: string; causa?: CausaCancelacion; notas?: string } = { estado: nuevoEstado }
       if (muestraCausa && causaArcaTierra) payload.causa = 'arca_tierra'
+      // PED5 (R7): la nota solo si escribieron algo (el backend agrega una línea a `notas_internas`)
+      const nota = notaEstado.trim()
+      if (nota) payload.notas = nota
       const res = await fetch(`/api/admin/pedidos/${detalle.id}/estado`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -775,6 +794,33 @@ export default function AdminPedidosPage() {
                   )}
                 </div>
 
+                {/* PED5 (R7): nota del cambio de estado. Va en su propio renglón, NUNCA dentro del grupo
+                    select + «Actualizar» (T88d hace clic en el following-sibling::button[1] del select). */}
+                {TRANSICIONES_VALIDAS[detalle.estado]?.length > 0 && (
+                  <div>
+                    <label htmlFor="pedido-estado-nota" className="block text-sm text-gray-600 mb-1">
+                      Nota (opcional)
+                    </label>
+                    <textarea
+                      id="pedido-estado-nota"
+                      data-testid="pedido-estado-nota"
+                      value={notaEstado}
+                      onChange={e => setNotaEstado(e.target.value)}
+                      maxLength={MAX_NOTA_ESTADO}
+                      rows={2}
+                      aria-describedby="pedido-estado-nota-ayuda"
+                      placeholder="Por qué cambia el estado (queda en las notas internas del pedido)"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
+                    />
+                    <p id="pedido-estado-nota-ayuda" className="flex justify-between gap-2 text-xs text-gray-500">
+                      <span>Se guarda con tu nombre, la fecha y el estado nuevo. Solo la ve el equipo.</span>
+                      <span data-testid="pedido-estado-nota-contador" className="tabular-nums shrink-0">
+                        {notaEstado.length}/{MAX_NOTA_ESTADO}
+                      </span>
+                    </p>
+                  </div>
+                )}
+
                 {/* R5: marcar «reembolsado» NO devuelve dinero (fuera del grupo select + «Actualizar», T88d) */}
                 {nuevoEstado === 'reembolsado' && (
                   <p
@@ -891,11 +937,13 @@ export default function AdminPedidosPage() {
 
                 {/* Dirección (R6): primero la DEL PEDIDO (a donde se entrega); la principal del cliente
                     debajo y solo si es distinta. Antes se pintaba la principal como si fuera la del pedido. */}
-                {(detalle.direccion_entrega?.trim() || detalle.direccion_principal) && (() => {
+                {(detalle.direccion_entrega?.trim() || detalle.direccion_principal || detalle.direccion_pedido) && (() => {
                   const delPedido = detalle.direccion_entrega?.trim() ?? ''
                   const p = detalle.direccion_principal
+                  // PEDD1 (R7): la dirección guardada del pedido (`direccion_id`) va en lugar de la principal
+                  const dp = detalle.direccion_pedido ?? null
                   // El mismo formato que guarda el backend en `direccion_entrega` (texto_direccion)
-                  const principal = p ? textoDireccion(p) : ''
+                  const principal = p && !dp ? textoDireccion(p) : ''
                   const comparable = (t: string) =>
                     t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
                   const mostrarPrincipal = !!principal && comparable(principal) !== comparable(delPedido)
@@ -905,6 +953,14 @@ export default function AdminPedidosPage() {
                       <p data-testid="pedido-direccion-entrega" className={delPedido ? 'text-gray-700' : 'text-gray-500 italic'}>
                         {delPedido || 'El pedido no trae dirección.'}
                       </p>
+                      {dp && (
+                        <div className="mt-3">
+                          <span className="text-xs text-gray-500">
+                            Dirección del pedido{dp.nombre_direccion?.trim() ? ` (${dp.nombre_direccion.trim()})` : ''}
+                          </span>
+                          <p data-testid="pedido-direccion-pedido" className="text-gray-700">{textoDireccion(dp)}</p>
+                        </div>
+                      )}
                       {mostrarPrincipal && (
                         <div className="mt-3">
                           <span className="text-xs text-gray-500">Dirección principal del cliente</span>
@@ -920,6 +976,27 @@ export default function AdminPedidosPage() {
                   <div>
                     <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">Notas de entrega</h3>
                     <p className="text-gray-700 bg-yellow-50 p-3 rounded-lg">{detalle.notas_entrega}</p>
+                  </div>
+                )}
+
+                {/* PED5 (R7): notas de los cambios de estado, una línea por cambio, tal cual (texto, no HTML) */}
+                {(detalle.notas_internas ?? '').trim() && (
+                  <div data-testid="pedido-notas-internas">
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">Notas internas</h3>
+                    <ul className="space-y-1 bg-gray-50 border border-gray-200 p-3 rounded-lg">
+                      {(detalle.notas_internas ?? '')
+                        .split('\n')
+                        .filter(linea => linea.trim())
+                        .map((linea, i) => (
+                          <li
+                            key={i}
+                            data-testid="pedido-nota-linea"
+                            className="text-sm text-gray-700 whitespace-pre-wrap break-words"
+                          >
+                            {linea}
+                          </li>
+                        ))}
+                    </ul>
                   </div>
                 )}
 
@@ -1090,7 +1167,10 @@ export default function AdminPedidosPage() {
                   {detalle.fecha_entrega && (
                     <div>
                       <span className="text-gray-500">Fecha entrega:</span>
-                      <span className="ml-2 font-medium">{formatDate(detalle.fecha_entrega)}</span>
+                      {/* PEDF1 (R7): es una fecha (date), sin hora: formatDate le agregaba una hora («12:00 a.m.») que no existe */}
+                      <span data-testid="pedido-fecha-entrega" className="ml-2 font-medium">
+                        {formatFechaMexico(detalle.fecha_entrega)}
+                      </span>
                     </div>
                   )}
                 </div>

@@ -353,6 +353,8 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
   // (`services/envio.py`), que es quien manda: recalcula el envío con los
   // precios que lee de la base. El envío y el cupón son solo de los productos.
   const subtotalProductos = calcSubtotalProductos(productos)
+  // CHK2 (R7): «Subtotal (N productos)» cuenta UNIDADES (la suma de cantidades), no renglones.
+  const unidadesProductos = productos.reduce((n, item) => n + (Number(item.quantity) || 0), 0)
   const subtotalExperiencias = experiencias.reduce((sum, exp) => sum + subtotalExperiencia(exp), 0)
   const subtotal = subtotalProductos + subtotalExperiencias
   // Con la canasta el envío es gratis (SU2): el camión ya va.
@@ -1221,14 +1223,21 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
                 </>
               ) : (
                 <div className="flex justify-between">
-                  <span>Subtotal ({cartItems.length} productos)</span>
+                  <span data-testid="subtotal-unidades">
+                    Subtotal ({unidadesProductos} {unidadesProductos === 1 ? 'producto' : 'productos'})
+                  </span>
                   <span>${subtotal.toFixed(2)}</span>
                 </div>
               )}
               {hayProductos && (
                 <div className="flex justify-between gap-2">
                   <span>Envío</span>
-                  <span className="text-green-600 font-medium text-right" data-testid="envio-orden">
+                  {/* CHK2 (R7): en verde solo si no se cobra envío */}
+                  <span
+                    className={`font-medium text-right ${canasta || shipping === 0 ? 'text-green-600' : 'text-gray-900'}`}
+                    data-testid="envio-orden"
+                    data-gratis={canasta || shipping === 0 ? 'si' : 'no'}
+                  >
                     {canasta ? 'Gratis: va con tu canasta' : shipping === 0 ? '¡Felicidades! Tu envío es GRATIS' : `$${shipping.toFixed(2)}`}
                   </span>
                 </div>

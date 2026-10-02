@@ -8,8 +8,13 @@ const nextConfig = {
  eslint: {
     ignoreDuringBuilds: true, // Ignorar ESLint durante el build
   },
+  // M5 (R7, 2-oct-2026): el optimizador de imágenes queda prendido (antes `unoptimized: true` «para
+  // Netlify»). Sirve AVIF o WebP según lo que acepte el navegador; sharp viene con Node 22 (B2).
+  // Las rutas locales (/images/**, /uploads/**) no necesitan patrón. `OptimizedImage` manda
+  // `unoptimized` a lo que no esté en esta lista.
   images: {
-    unoptimized: true, // Deshabilitar optimización para Netlify
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 86400,
     remotePatterns: [
       {
         protocol: 'https',
@@ -21,6 +26,9 @@ const nextConfig = {
         hostname: 'res.cloudinary.com',
         pathname: '**',
       },
+      { protocol: 'https', hostname: 'flagcdn.com', pathname: '**' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com', pathname: '**' },
+      { protocol: 'https', hostname: 'api.dabychos.com', pathname: '/uploads/**' },
     ],
   },
   // Configuración experimental para mejorar la resolución de módulos

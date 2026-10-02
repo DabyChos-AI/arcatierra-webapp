@@ -4,13 +4,25 @@ import { useState } from 'react'
 import { X, Star, ShoppingCart, Heart, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import ProductTraceability from '@/components/ProductTraceability'
+import OptimizedImage from '@/components/ui/OptimizedImage'
+import type { Product } from '@/data/productos'
+import { precioLegible, esGratuito } from '@/lib/precio'
+import { TEXTO_AGOTADO } from '@/types/tienda'
+
+/** Producto de la tienda con su estado de venta (= `ProductoTienda` de `app/tienda/page.tsx`). */
+export type ProductoConVenta = Product & { enVenta: boolean }
 
 interface ProductQuickViewProps {
   isOpen: boolean
   onClose: () => void
-  product: any
-  onAddToCart: (product: any) => void
+  /** El producto de la tarjeta (nombre, foto, descripción, favorito y «Más detalles»). */
+  product: ProductoConVenta
+  /**
+   * FIC1 (R7): lo que se agrega al carrito y el precio que se muestra. En una canasta es la de COMPRA
+   * ÚNICA (itemcode con U, su precio, su stock y su en_venta), igual que la tarjeta; null = no se vende hoy.
+   */
+  productoCompra: ProductoConVenta | null
+  onAddToCart: (producto: ProductoConVenta, cantidad: number) => void
   isFavorite: boolean
   onToggleFavorite: (productId: string, event: React.MouseEvent) => void
 }
@@ -19,6 +31,7 @@ export default function ProductQuickView({
   isOpen,
   onClose,
   product,
+  productoCompra,
   onAddToCart,
   isFavorite,
   onToggleFavorite
@@ -26,12 +39,6 @@ export default function ProductQuickView({
   const [quantity, setQuantity] = useState(1)
 
   if (!isOpen || !product) return null
-
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    onAddToCart(product)
-  }
 
   return (
     <>
@@ -43,14 +50,23 @@ export default function ProductQuickView({
       
       {/* Modal */}
       <div className="fixed inset-0 flex items-start justify-center z-[950] pt-36 px-4 pb-8 overflow-y-auto">
-        <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="bg-white rounded-xl shadow-2xl max-w-4xl w-full"
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="quickview-titulo"
+          data-testid="quickview"
+        >
           <div className="flex flex-col md:flex-row">
             {/* Imagen del producto */}
             <div className="w-full md:w-2/5 relative h-48 md:h-auto">
-              <img 
-                src={product.imagen || '/placeholder-product.jpg'} 
+              <OptimizedImage
+                src={product.imagen || '/placeholder-product.jpg'}
                 alt={product.nombre}
-                className="w-full h-full object-cover"
+                fill
+                sizes="(min-width: 768px) 40vw, 100vw"
+                className="object-cover"
               />
               <div className="absolute top-3 left-3 flex flex-col gap-2">
                 {product.badges.map((badge: string, index: number) => (
@@ -64,7 +80,9 @@ export default function ProductQuickView({
               </div>
               <span className="absolute top-3 right-3 bg-white rounded-full p-1 shadow-md">
                 <button
+                  type="button"
                   onClick={(e) => onToggleFavorite(product.id, e)}
+                  aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
                   className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                     isFavorite
                       ? 'bg-red-500 text-white'
@@ -82,10 +100,12 @@ export default function ProductQuickView({
             <div className="w-full md:w-3/5 p-6 flex flex-col relative">
               {/* Botón de cerrar */}
               <button
+                type="button"
                 onClick={onClose}
+                aria-label="Cerrar"
                 className="absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5" aria-hidden="true" />
               </button>
               
               {/* 
@@ -105,7 +125,7 @@ export default function ProductQuickView({
               */}
               
               {/* Nombre del producto */}
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{product.nombre}</h2>
+              <h2 id="quickview-titulo" className="text-2xl font-bold text-gray-900 mb-2">{product.nombre}</h2>
               
               {/* Rating */}
               <div className="flex items-center gap-1 mb-4">
@@ -193,26 +213,43 @@ export default function ProductQuickView({
               
               {/* Precio y botones */}
               <div className="mt-auto">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-2xl font-bold text-[#B15543]">
-                    ${product.precio.toFixed(2)} <span className="text-sm font-normal">/ {product.unidad}</span>
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-full hover:bg-gray-100"
-                    >
-                      -
-                    </button>
-                    <span className="w-8 text-center font-medium">{quantity}</span>
-                    <button
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-full hover:bg-gray-100"
-                    >
-                      +
-                    </button>
+                {productoCompra && productoCompra.enVenta ? (
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-2xl font-bold text-[#B15543]" data-testid="quickview-precio">
+                      {precioLegible(productoCompra.precio)}
+                      {!esGratuito(productoCompra.precio) && productoCompra.unidad && (
+                        <span className="text-sm font-normal"> / {productoCompra.unidad}</span>
+                      )}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        aria-label="Quitar uno"
+                        data-testid="quickview-menos"
+                        className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-full hover:bg-gray-100"
+                      >
+                        -
+                      </button>
+                      <span className="w-8 text-center font-medium" data-testid="quickview-cantidad" aria-live="polite">
+                        {quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setQuantity(quantity + 1)}
+                        aria-label="Agregar uno"
+                        data-testid="quickview-mas"
+                        className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-full hover:bg-gray-100"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <p data-testid="quickview-agotado" className="mb-4 text-sm font-semibold text-red-700">
+                    {TEXTO_AGOTADO}
+                  </p>
+                )}
                 
                 <div className="flex gap-3">
                   {product.ctaType === 'subscription' ? (
@@ -226,10 +263,11 @@ export default function ProductQuickView({
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       Suscribirse
                     </Button>
-                  ) : (
+                  ) : productoCompra && productoCompra.enVenta ? (
                     <Button
+                      data-testid="quickview-agregar"
                       onClick={() => {
-                        onAddToCart(product)
+                        onAddToCart(productoCompra, quantity)
                         onClose()
                       }}
                       className="flex-1 bg-[#B15543] hover:bg-[#9d4a39] text-white"
@@ -237,7 +275,7 @@ export default function ProductQuickView({
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       Agregar al carrito
                     </Button>
-                  )}
+                  ) : null}
                   <Link href={`/producto/${product.id}`}>
                     <Button
                       variant="outline"

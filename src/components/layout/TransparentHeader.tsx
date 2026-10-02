@@ -356,7 +356,8 @@ const styles = {
   }
 };
 
-const TransparentHeader: React.FC = () => {
+/** El menú público completo. Solo se monta fuera de /admin (ver `TransparentHeader` al final, TH1). */
+const HeaderPublico: React.FC = () => {
   // NextAuth sesión real
   const { data: session, status } = useSession();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -500,33 +501,27 @@ const TransparentHeader: React.FC = () => {
   ];
 
   // Verificar si es empleado cuando hay sesión
+  // TH1 (R7): sin console.log con el correo de la sesión.
   useEffect(() => {
-    console.log('🔍 TransparentHeader useEffect - Status:', status, 'Email:', session?.user?.email);
     if (status === 'authenticated' && session?.user?.email && !checkingEmployee && !isEmployee) {
-      console.log('✅ Llamando checkIfEmployee...');
       checkIfEmployee();
     }
   }, [session, status]);
 
   const checkIfEmployee = async () => {
-    console.log('🚀 checkIfEmployee iniciado para:', session?.user?.email);
     setCheckingEmployee(true);
     try {
       // El endpoint responde solo sobre quien llama: la identidad va en el
       // Authorization, no en un parametro de correo (ver middleware.ts).
       const url = `${API_URL}/api/auth/check-employee`;
-      console.log('📡 Fetching:', url);
       const response = await fetch(url, {
         headers: session?.accessToken
           ? { Authorization: `Bearer ${session.accessToken}` }
           : {},
       });
-      console.log('📥 Response status:', response.status);
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Employee data:', data);
         setIsEmployee(data.is_employee);
-        console.log('🎯 isEmployee set to:', data.is_employee);
       } else {
         console.error('❌ Response not OK:', response.status);
       }
@@ -535,7 +530,6 @@ const TransparentHeader: React.FC = () => {
       setIsEmployee(false);
     } finally {
       setCheckingEmployee(false);
-      console.log('🏁 checkIfEmployee finalizado');
     }
   };
 
@@ -615,13 +609,6 @@ const TransparentHeader: React.FC = () => {
       document.removeEventListener('click', handleClickOutside);
     };
   }, []);
-
-  // HD1 (30-sep, decisión de David): el panel /admin trae su propia barra (AdminHeader con
-  // «Ver sitio» y «Salir»). Este navbar es fixed con z 1000 y la tapaba. Este return va
-  // DESPUÉS de todos los hooks para no cambiar su orden entre rutas.
-  if (pathname === '/admin' || pathname.startsWith('/admin/')) {
-    return null;
-  }
 
   return (
     <header style={styles.header(isTransparent, isScrolled)}>
@@ -1176,6 +1163,19 @@ const TransparentHeader: React.FC = () => {
       {/* Carrito lateral manejado por CartSidebar.tsx - No duplicar aquí */}
     </header>
   );
+};
+
+/**
+ * HD1 (30-sep) + TH1 (R7): el panel /admin trae su propia barra (AdminHeader con «Ver sitio» y «Salir»).
+ * En /admin este envoltorio regresa null ANTES de montar el menú público: ninguno de sus hooks corre (antes
+ * el `return null` iba después de todos ellos y el navegador seguía llamando a check-employee en el panel).
+ */
+const TransparentHeader: React.FC = () => {
+  const pathname = usePathname();
+  if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+    return null;
+  }
+  return <HeaderPublico />;
 };
 
 export default TransparentHeader;

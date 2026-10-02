@@ -911,8 +911,25 @@ function TiendaPageContent() {
     setProductoQuickView({ ...product, imagen: getCanastaImage(product.nombre, product.imagen) })
   }
 
-  // Agregar al carrito y mostrar toast
-  const addToCart = (product: ProductoTienda, e?: any) => {
+  /**
+   * Lo que se compra al «Agregar al carrito» (FIC1, R7): en una canasta, la de COMPRA ÚNICA (itemcode con U)
+   * con SU precio, SU stock y SU en_venta (R2); null si hoy no se vende. Lo usan la tarjeta y la vista rápida.
+   */
+  const productoParaComprar = (product: ProductoTienda): ProductoTienda | null => {
+    if (!esCanasta(product.id)) return product.enVenta ? product : null
+    const cu = compraUnica[obtenerItemcodeSuscripcion(product.id)]
+    if (!cu || !cu.enVenta) return null
+    return {
+      ...product,
+      id: obtenerItemcodeCompraUnica(product.id),
+      precio: cu.precio,
+      stock: cu.stock,
+      enVenta: cu.enVenta,
+    }
+  }
+
+  // Agregar al carrito y mostrar toast. `cantidad`: la que eligió en la vista rápida (la tarjeta agrega 1).
+  const addToCart = (product: ProductoTienda, e?: any, cantidad: number = 1) => {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation()
     // R2: un agotado no se agrega (el listado público ya no los trae; esto cubre la convivencia con el back viejo)
     if (!product.enVenta) return
@@ -923,7 +940,7 @@ function TiendaPageContent() {
       itemcode: product.id,  // Mismo valor para compatibilidad
       name: product.nombre,
       price: product.precio,
-      quantity: 1,
+      quantity: cantidad,
       image: product.imagen,
       unit: product.unidad,
       tipo: 'producto'       // Si no es experiencia, es producto
@@ -931,7 +948,7 @@ function TiendaPageContent() {
     const existingCart = JSON.parse(localStorage.getItem('arcaTierraCart') || '[]')
     const existingItemIndex = existingCart.findIndex((item: any) => item.id === cartItem.id)
     if (existingItemIndex >= 0) {
-      existingCart[existingItemIndex].quantity += 1
+      existingCart[existingItemIndex].quantity += cantidad
     } else {
       existingCart.push(cartItem)
     }
@@ -1485,15 +1502,9 @@ function TiendaPageContent() {
                               data-testid="tienda-cu-agregar"
                               onClick={(e) => {
                                 e.stopPropagation()
-                                // Crear producto con itemcode de compra única (con U), con SU precio y stock
-                                const productCompraUnica: ProductoTienda = {
-                                  ...product,
-                                  id: obtenerItemcodeCompraUnica(product.id),
-                                  precio: cu.precio,
-                                  stock: cu.stock,
-                                  enVenta: cu.enVenta,
-                                }
-                                addToCart(productCompraUnica, e)
+                                // Canasta de compra única (itemcode con U), con SU precio y stock (FIC1: una sola fuente)
+                                const productCompraUnica = productoParaComprar(product)
+                                if (productCompraUnica) addToCart(productCompraUnica, e)
                               }}
                               className="w-full bg-[#B15543] hover:bg-[#9d4a39] text-white"
                               size="sm"
@@ -1593,44 +1604,8 @@ function TiendaPageContent() {
           isOpen={!!productoQuickView}
           onClose={() => setProductoQuickView(null)}
           product={productoQuickView}
-          onAddToCart={(product: ProductoTienda) => {
-            // R2: un agotado no se agrega
-            if (!product.enVenta) return
-            const cartItem = {
-              id: product.id,
-              itemcode: product.id, // Agregar itemcode
-              name: product.nombre,
-              price: product.precio,
-              quantity: 1,
-              image: product.imagen,
-              unit: product.unidad,
-              tipo: 'producto' // Agregar tipo
-            }
-            
-            const existingCart = JSON.parse(localStorage.getItem('arcaTierraCart') || '[]')
-            const existingItemIndex = existingCart.findIndex((item: any) => item.id === cartItem.id)
-            
-            if (existingItemIndex >= 0) {
-              existingCart[existingItemIndex].quantity += 1
-            } else {
-              existingCart.push(cartItem)
-            }
-            
-            localStorage.setItem('arcaTierraCart', JSON.stringify(existingCart))
-            setCartItems(existingCart)
-            
-            // Disparar evento para notificar al header que actualice el contador
-            window.dispatchEvent(new Event('cartUpdated'))
-            
-            // Toast deshabilitado - era molesto al agregar múltiples productos
-            // toast.cart(`${product.nombre} agregado al carrito`, {
-            //   title: '¡Excelente elección!',
-            //   action: {
-            //     label: 'Ver carrito',
-            //     onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
-            //   }
-            // })
-          }}
+          productoCompra={productoParaComprar(productoQuickView)}
+          onAddToCart={(producto: ProductoTienda, cantidad: number) => addToCart(producto, undefined, cantidad)}
           isFavorite={favorites.includes(productoQuickView.id)}
           onToggleFavorite={(productId: string, event: React.MouseEvent) => toggleFavorite(productId, event)}
         />

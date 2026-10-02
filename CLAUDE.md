@@ -61,7 +61,7 @@ arcatierra-webapp/
 │   ├── skills-reference-arcatierra.md  # Referencia completa de 20 skills
 │   └── project-audit.md     # Auditoría detallada del proyecto
 ├── docker-compose.yml        # El único docker-compose activo
-├── Dockerfile                # Multi-stage: deps → builder → runner (node:18-alpine)
+├── Dockerfile                # Multi-stage: deps → builder → runner (node:22.23.3-alpine3.24, R7)
 ├── .env.local                # Variables de entorno desarrollo
 ├── .env.production           # Variables de entorno producción
 ├── tailwind.config.ts        # Colores y tipografías oficiales
@@ -70,9 +70,9 @@ arcatierra-webapp/
 
 **Backend FastAPI**: Repo separado en `~/vps-stack/arca_tierra_api/`. No está en este repo. Si necesitas trabajar con el backend, cambia de directorio.
 
-**Docker-compose alternativos** (`production`, `integration`, `n8n-gateway`, `enterprise`): Son legacy, no se usan. Ignorarlos.
+**Docker-compose alternativos**: se movieron a `~/vps-stack/_archivo/arcatierra-webapp-2026-10-02/` (R7, B3). El único compose es `docker-compose.yml`.
 
-**Archivos .backup**: Hay ~20+ archivos `.backup`, `.backup-responsive`, `.bak` dispersos en `src/` y Dockerfiles backup en raíz. Son basura legacy.
+**Archivos .bak/.backup**: 0 en el repo desde R7 (2-oct-2026: 391 movidos a `~/vps-stack/_archivo/`). **No crear `.bak` en el árbol: el respaldo es git.** `.gitignore` y `.dockerignore` los excluyen.
 
 ---
 
@@ -80,7 +80,7 @@ arcatierra-webapp/
 
 | Tecnología | Versión | Uso |
 |---|---|---|
-| Next.js | 15.3.4 | App Router, `output: 'standalone'` |
+| Next.js | 15.5 (instalado 15.5.26; `^15.3.8` en package.json) | App Router, `output: 'standalone'` |
 | React | 18.3.1 | UI |
 | TypeScript | 5.7.2 | strict: true |
 | Tailwind CSS | 3.4.14 | Estilos + tailwindcss-animate |
@@ -99,7 +99,7 @@ arcatierra-webapp/
 
 **Backend** (repo separado `~/vps-stack/arca_tierra_api/`): FastAPI 0.104.1, SQLAlchemy 2.0 async + asyncpg, Alembic, pgvector.
 
-**⚠️ Discrepancia Node.js**: `.nvmrc` = 20.18.0, Dockerfile = node:18-alpine. Tener en cuenta al generar código.
+**Node.js**: 22.23.3 en la imagen y en `.nvmrc` (R7, B2). Con Node 18, npm no instalaba sharp y el optimizador de imágenes no funcionaba.
 
 ---
 
@@ -116,7 +116,7 @@ Siempre usar estos colores y tipografías al crear o modificar componentes UI.
 - `font-display`, `font-heading` → **Mendoza** (títulos)
 - `font-sans`, `font-body` → **Akkurat** (cuerpo)
 
-**Imágenes**: AVIF + WebP (configurado en next.config).
+**Imágenes**: optimizador de Next prendido desde R7 (M5): AVIF o WebP según el navegador (`next.config.js` → `images.formats`, `remotePatterns`). `OptimizedImage` usa `next/image` cuando conoce el tamaño (`fill` o `width`+`height`) y manda `unoptimized` a los hosts que no están en la lista. Quedan ~39 `<img>` crudos fuera de `OptimizedImage`.
 
 ---
 
@@ -249,7 +249,4 @@ No hay `.env.example`. Archivos: `.env.local` (dev), `.env.production` (prod). N
 ## Estado actual
 
 - Webhooks MercadoPago requieren reparación (suscripciones atascadas en pending)
-- npm audit: 10 vulnerabilidades pendientes (2 critical, 2 high, 3 moderate, 3 low)
-- Discrepancia Node.js: `.nvmrc` = 20.18.0, Dockerfile = node:18-alpine
-- ~20 archivos .backup dispersos en src/ pendientes de limpieza
-- 4 docker-compose alternativos legacy pendientes de archivar o eliminar
+- npm audit: 0 vulnerabilidades (medido el 2-oct-2026, R7)

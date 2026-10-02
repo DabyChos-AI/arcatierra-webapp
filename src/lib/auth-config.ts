@@ -9,10 +9,20 @@ import GoogleProvider from 'next-auth/providers/google'
 import { API_URL } from '@/lib/api'
 import { cabecerasDelCliente, cabecerasDelClienteActual } from '@/lib/ip-cliente'
 
+/**
+ * INT1 (R7): este archivo solo corre en el servidor de Next (lo importan route handlers). Refresh, login,
+ * check-email, register y oauth-token van por la red interna (`INTERNAL_API_URL`, `http://arca-api:8000`)
+ * como el middleware: el secreto interno y las cabeceras firmadas ya no cruzan Cloudflare. Sin la variable
+ * (desarrollo local), la URL pública de siempre.
+ */
+function urlBackend(): string {
+  return process.env.INTERNAL_API_URL || API_URL
+}
+
 // Función para renovar tokens usando el refresh_token
 async function refreshAccessToken(token: any) {
   try {
-    const backendUrl = API_URL
+    const backendUrl = urlBackend()
     
     // El token va en el cuerpo, nunca en la URL: el access log del backend la
     // escribe en claro y el refresh vale 7 dias (R1, 2026-09-29).
@@ -72,7 +82,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          const backendUrl = API_URL
+          const backendUrl = urlBackend()
           
           // Llamar al backend /api/auth/login
           const formData = new URLSearchParams()
@@ -140,7 +150,7 @@ export const authOptions: NextAuthOptions = {
       // Cuando un usuario se registra con Google, guardarlo en BD
       if (account?.provider === 'google' && user.email) {
         try {
-          const backendUrl = API_URL
+          const backendUrl = urlBackend()
           const delCliente = await cabecerasDelClienteActual()
           
           // Verificar si el usuario ya existe

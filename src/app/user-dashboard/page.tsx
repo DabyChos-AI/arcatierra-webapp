@@ -17,6 +17,21 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { motion, AnimatePresence } from 'framer-motion'
 
+/** Contacto del equipo de Experiencias (el mismo de `app/experiencias/[slug]/page.tsx`). */
+const CORREO_EXPERIENCIAS = 'info@arcatierra.com'
+
+interface ExperienciaResumen {
+  id: string
+  name: string
+  location: string
+  price: number
+  image: string
+}
+
+interface Recomendacion extends ExperienciaResumen {
+  match: string
+}
+
 export default function UserDashboardPage() {
   // NextAuth sesión real
   const { data: session, status } = useSession()
@@ -32,80 +47,11 @@ export default function UserDashboardPage() {
   //   }
   // }, [status, router])
 
-  // Detectar si es usuario demo
-  const isDemoUser = session?.user?.email === 'prueba@prueba.com' || session?.user?.name === 'Usuario Prueba'
+  // HDR2 (R7, decisión de David): sin cuenta demo ni datos inventados. Las reservas de experiencias le llegan al
+  // cliente por correo (pronto las verá aquí); favoritos y sugerencias quedan vacíos hasta tener su fuente real.
+  const recentFavorites: ExperienciaResumen[] = []
+  const recommendations: Recomendacion[] = []
 
-  // Mock data para usuario demo
-  const mockReservations = [
-    { 
-      id: 'res-001', 
-      experience: 'Tour por las Chinampas', 
-      date: '2025-08-12', 
-      time: '10:00', 
-      participants: 2, 
-      status: 'confirmed',
-      image: '/images/experiences/chinampas-xochimilco.jpg'
-    },
-    { 
-      id: 'res-002', 
-      experience: 'Taller de Cocina Sustentable', 
-      date: '2025-08-18', 
-      time: '16:00', 
-      participants: 1, 
-      status: 'pending',
-      image: '/images/experiences/taller-cocina.jpg'
-    }
-  ]
-
-  const mockFavorites = [
-    { 
-      id: 'exp-003', 
-      name: 'Tour por las Chinampas', 
-      location: 'Xochimilco, CDMX', 
-      price: 650,
-      image: '/images/experiences/chinampas-xochimilco.jpg'
-    },
-    { 
-      id: 'exp-007', 
-      name: 'Taller de Huerto Urbano', 
-      location: 'Coyoacán, CDMX', 
-      price: 450,
-      image: '/images/experiences/huerto-urbano.jpg'
-    }
-  ]
-
-  const mockRecommendations = [
-    { 
-      id: 'exp-008', 
-      name: 'Taller de Cosmética Natural', 
-      location: 'Roma Norte, CDMX', 
-      price: 750,
-      image: '/images/experiences/cosmetica-natural.jpg',
-      match: '98%'
-    },
-    { 
-      id: 'exp-015', 
-      name: 'Tour Gastronómico Sustentable', 
-      location: 'Centro Histórico, CDMX', 
-      price: 850,
-      image: '/images/experiences/gastronomia-sustentable.jpg',
-      match: '95%'
-    }
-  ]
-
-  // Datos según tipo de usuario
-  const upcomingReservations = isDemoUser ? mockReservations : []
-  const recentFavorites = isDemoUser ? mockFavorites : []
-  const recommendations = isDemoUser ? mockRecommendations : []
-
-  const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    }
-    return new Date(dateString).toLocaleDateString('es-MX', options)
-  }
 
   // Pantalla de carga - desactivada con la sesión simulada
   // if (status === 'loading') {
@@ -276,15 +222,8 @@ export default function UserDashboardPage() {
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="text-sm text-gray-500 mb-1">Próxima Reserva</p>
-                          <h3 className="font-semibold text-lg text-verde-tipografia">
-                            {upcomingReservations.length > 0 ? upcomingReservations[0].experience : 'Sin reservas'}
-                          </h3>
-                          <p className="text-sm mt-1">
-                            {upcomingReservations.length > 0 
-                              ? `${formatDate(upcomingReservations[0].date)} • ${upcomingReservations[0].time}` 
-                              : 'Explora experiencias y reserva'
-                            }
-                          </p>
+                          <h3 className="font-semibold text-lg text-verde-tipografia">Te llegan por correo</h3>
+                          <p className="text-sm mt-1">Pronto también las verás aquí</p>
                         </div>
                         <div className="bg-verde-principal/10 p-2 rounded-lg">
                           <Calendar size={24} className="text-verde-principal" />
@@ -367,68 +306,22 @@ export default function UserDashboardPage() {
                       </Link>
                     </div>
                     
-                    {upcomingReservations.length === 0 ? (
-                      <div className="bg-white rounded-xl p-6 text-center border border-gray-100">
-                        <Clock className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                        <h4 className="text-lg font-medium text-verde-tipografia">No tienes reservas próximas</h4>
-                        <p className="text-gray-500 mb-4">Explora nuestras experiencias y reserva ahora</p>
-                        <Link href="/experiencias">
-                          <Button className="bg-verde-principal text-white hover:bg-verde-dark">
-                            Explorar Experiencias
-                          </Button>
-                        </Link>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {upcomingReservations.map(reservation => (
-                          <div key={reservation.id} className="bg-white rounded-xl p-4 border border-gray-100 flex gap-4">
-                            <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden flex-shrink-0">
-                              <img 
-                                src={reservation.image} 
-                                alt={reservation.experience}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-semibold text-verde-tipografia">{reservation.experience}</h4>
-                              <p className="text-sm text-gray-600 mt-1">
-                                {formatDate(reservation.date)} • {reservation.time}
-                              </p>
-                              <div className="mt-2 flex flex-wrap items-center gap-2">
-                                <span className="text-xs bg-verde-principal/10 text-verde-principal px-2 py-1 rounded-full">
-                                  {reservation.participants} {reservation.participants === 1 ? 'Persona' : 'Personas'}
-                                </span>
-                                {reservation.status === 'confirmed' ? (
-                                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                                    Confirmado
-                                  </span>
-                                ) : (
-                                  <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                                    Pendiente
-                                  </span>
-                                )}
-                              </div>
-                              <div className="mt-4 flex gap-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="border-verde-principal text-verde-principal hover:bg-verde-principal hover:text-white"
-                                >
-                                  Ver Detalles
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  className="text-red-600 hover:bg-red-50"
-                                >
-                                  Cancelar
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    <div data-testid="dashboard-reservas-correo" className="bg-white rounded-xl p-6 border border-gray-100">
+                      <h4 className="text-lg font-medium text-verde-tipografia mb-2">Tus reservas de experiencias te llegan por correo</h4>
+                      <p className="text-gray-600 mb-3">
+                        Cuando reservas una experiencia te mandamos la confirmación y todos los detalles a tu correo. Muy pronto también
+                        podrás verlas aquí.
+                      </p>
+                      <p className="text-gray-600 mb-4">
+                        ¿Dudas o cambios? Escríbele al equipo de Experiencias:{' '}
+                        <a href={`mailto:${CORREO_EXPERIENCIAS}`} data-testid="dashboard-reservas-correo-contacto" className="text-verde-principal underline">
+                          {CORREO_EXPERIENCIAS}
+                        </a>
+                      </p>
+                      <Link href="/experiencias">
+                        <Button className="bg-verde-principal text-white hover:bg-verde-dark">Explorar Experiencias</Button>
+                      </Link>
+                    </div>
                   </div>
                   
                   {/* Favoritos Recientes */}

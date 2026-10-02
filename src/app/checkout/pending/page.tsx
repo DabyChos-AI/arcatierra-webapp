@@ -67,7 +67,7 @@ function PagoPendienteContent() {
           <div className="mb-6">
             <Clock className="w-20 h-20 text-yellow-500 mx-auto mb-4" />
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Pago Pendiente ⏳
+              Pago Pendiente
             </h1>
             <p className="text-lg text-gray-600">
               Tu pago está siendo procesado
@@ -180,10 +180,10 @@ function PagoPendienteContent() {
           </p>
           <div className="space-y-1">
             <p>
-              📧 Email: <a href="mailto:pagos@arcatierra.com" className="text-[#B15543] hover:underline">pagos@arcatierra.com</a>
+              Email: <a href="mailto:pagos@arcatierra.com" className="text-[#B15543] hover:underline">pagos@arcatierra.com</a>
             </p>
             <p>
-              📱 WhatsApp:{' '}
+              WhatsApp:{' '}
               <a
                 href={linkWhatsApp('Hola, tengo una pregunta sobre mi pago pendiente en la página de Arca Tierra')}
                 target="_blank"

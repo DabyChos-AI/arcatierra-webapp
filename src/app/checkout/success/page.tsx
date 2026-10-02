@@ -8,6 +8,11 @@ import Link from 'next/link'
 import { experienciasDelCarrito, leerCarrito, vaciarCarrito } from '@/lib/carrito'
 import { formatFechaMexico } from '@/lib/dates'
 
+/** MAILP1 (R7): a quién escribe el cliente. Experiencias (el mismo correo de `app/experiencias/[slug]/page.tsx`)
+ *  si la compra traía experiencias o su referencia es `AT-EXP-…`; si no, el de pedidos de siempre. */
+const CORREO_EXPERIENCIAS = 'info@arcatierra.com'
+const CORREO_PEDIDOS = 'pedidos@arcatierra.com'
+
 interface DatosPagoExitoso {
   paymentId: string | null
   status: string | null
@@ -48,6 +53,11 @@ function PagoExitosoContent() {
     setLoading(false)
   }, [searchParams])
 
+  // MAILP1: `conExperiencias` sale del carrito ANTES de vaciarlo; la referencia de MercadoPago cubre la recarga
+  // de la página (el carrito ya está vacío).
+  const referenciaExperiencias = (searchParams.get('external_reference') ?? '').startsWith('AT-EXP-')
+  const correoContacto = conExperiencias || referenciaExperiencias ? CORREO_EXPERIENCIAS : CORREO_PEDIDOS
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -67,7 +77,7 @@ function PagoExitosoContent() {
           <div className="mb-6">
             <CheckCircle className="w-20 h-20 text-green-500 mx-auto mb-4" />
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              ¡Pago Exitoso! 🎉
+              ¡Pago Exitoso!
             </h1>
             <p className="text-lg text-gray-600">
               Tu orden ha sido confirmada y está siendo procesada
@@ -139,7 +149,7 @@ function PagoExitosoContent() {
           {/* Mensaje ambiental */}
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-8">
             <h4 className="font-medium text-green-800 mb-2">
-              🌱 ¡Gracias por elegir productos locales!
+              ¡Gracias por elegir productos locales!
             </h4>
             <p className="text-sm text-green-700">
               Con tu compra contribuyes al desarrollo de productores locales 
@@ -175,8 +185,8 @@ function PagoExitosoContent() {
         <div className="mt-8 text-center text-sm text-gray-600">
           <p>
             Si tienes alguna pregunta sobre tu pedido, puedes contactarnos en{' '}
-            <a href="mailto:pedidos@arcatierra.com" className="text-[#B15543] hover:underline">
-              pedidos@arcatierra.com
+            <a href={`mailto:${correoContacto}`} className="text-[#B15543] hover:underline" data-testid="success-contacto">
+              {correoContacto}
             </a>
           </p>
         </div>

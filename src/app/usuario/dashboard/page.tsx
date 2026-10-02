@@ -84,6 +84,23 @@ interface DireccionData {
   activa: boolean
 }
 
+/** C12 (R7): si guardar una dirección falla, el modal lo dice (DIR2: el backend responde 400 con el motivo). */
+const TEXTO_ERROR_DIRECCION = 'No pudimos guardar la dirección. Intenta de nuevo.'
+
+/** El `detail` del proxy si es texto (p. ej. «No entregamos en el código postal …»); si no, el genérico. */
+async function textoErrorDireccion(response: Response): Promise<string> {
+  try {
+    const cuerpo: unknown = await response.json()
+    if (cuerpo && typeof cuerpo === 'object' && 'detail' in cuerpo) {
+      const detail = (cuerpo as { detail: unknown }).detail
+      if (typeof detail === 'string' && detail.trim()) return detail
+    }
+  } catch {
+    // cuerpo vacío o no JSON
+  }
+  return TEXTO_ERROR_DIRECCION
+}
+
 export default function DashboardPage() {
   // Patrón hooks verificado (usuario/perfil/page.tsx línea 24-30)
   const { data: session, status } = useSession()
@@ -95,6 +112,8 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null)
   const [showModalDireccion, setShowModalDireccion] = useState(false)
   const [editingDireccion, setEditingDireccion] = useState<DireccionData | null>(null)
+  // C12: motivo por el que no se guardó (se limpia al abrir el modal y al intentar guardar)
+  const [errorDireccion, setErrorDireccion] = useState<string | null>(null)
   const [formDireccion, setFormDireccion] = useState({
     nombre_direccion: '',
     calle: '',
@@ -172,7 +191,13 @@ export default function DashboardPage() {
     }
   }
 
+  const abrirModalDireccion = () => {
+    setErrorDireccion(null)
+    setShowModalDireccion(true)
+  }
+
   const handleAgregarDireccion = async () => {
+    setErrorDireccion(null)
     try {
       const response = await fetch('/api/direcciones', {
         method: 'POST',
@@ -199,9 +224,12 @@ export default function DashboardPage() {
           alergias_restricciones: '',
           es_principal: false
         })
+      } else {
+        setErrorDireccion(await textoErrorDireccion(response))
       }
     } catch (error) {
       console.error('Error agregando dirección:', error)
+      setErrorDireccion(TEXTO_ERROR_DIRECCION)
     }
   }
 
@@ -220,12 +248,14 @@ export default function DashboardPage() {
       alergias_restricciones: direccion.alergias_restricciones || '',
       es_principal: direccion.es_principal
     })
+    setErrorDireccion(null)
     setShowModalDireccion(true)
   }
 
   const handleGuardarEdicion = async () => {
     if (!editingDireccion) return
 
+    setErrorDireccion(null)
     try {
       const response = await fetch(`/api/direcciones/${editingDireccion.id}`, {
         method: 'PUT',
@@ -253,9 +283,12 @@ export default function DashboardPage() {
           alergias_restricciones: '',
           es_principal: false
         })
+      } else {
+        setErrorDireccion(await textoErrorDireccion(response))
       }
     } catch (error) {
       console.error('Error editando dirección:', error)
+      setErrorDireccion(TEXTO_ERROR_DIRECCION)
     }
   }
 
@@ -519,7 +552,7 @@ export default function DashboardPage() {
                   Mis Direcciones
                 </h3>
                 <button 
-                  onClick={() => setShowModalDireccion(true)}
+                  onClick={abrirModalDireccion}
                   className="text-blue-600 hover:text-blue-700 transition-colors"
                 >
                   <Plus className="h-5 w-5" />
@@ -570,7 +603,7 @@ export default function DashboardPage() {
                     <MapPin className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                     <p className="text-gray-600 text-sm mb-2">No tienes direcciones guardadas</p>
                     <button 
-                      onClick={() => setShowModalDireccion(true)}
+                      onClick={abrirModalDireccion}
                       className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                     >
                       Agregar primera dirección
@@ -841,6 +874,16 @@ export default function DashboardPage() {
                     Establecer como dirección principal
                   </label>
                 </div>
+
+                {errorDireccion && (
+                  <p
+                    role="alert"
+                    data-testid="direccion-error"
+                    className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2"
+                  >
+                    {errorDireccion}
+                  </p>
+                )}
 
                 <div className="flex gap-3 pt-4">
                   <button

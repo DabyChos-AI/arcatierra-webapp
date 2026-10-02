@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { Bell, Search, LogOut, ChevronDown } from 'lucide-react'
+import { etiquetaRol, useMisRoles } from './MisRolesContext'
 
 const TITLES: Record<string, [string, string]> = {
   '/admin': ['Dashboard', 'Inicio'],
@@ -55,21 +56,10 @@ function getInitials(name?: string | null): string {
     .join('')
 }
 
-function formatRole(role?: string): string {
-  if (!role) return 'Admin'
-  const map: Record<string, string> = {
-    super_admin: 'Super Admin',
-    admin: 'Admin',
-    empleado: 'Vendedora',
-    operador: 'Operador',
-    visor: 'Visor',
-  }
-  return map[role] ?? role.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-}
-
 export default function AdminTopbar() {
   const pathname = usePathname()
   const { data: session } = useSession()
+  const { rolActivo } = useMisRoles()
   const [title, breadcrumb] = getTitle(pathname)
 
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -110,8 +100,8 @@ export default function AdminTopbar() {
 
   const userName = session?.user?.name ?? 'Admin'
   const initials = getInitials(userName)
-  // session.user no expone tipo_usuario en types; mostramos role-pill generico
-  const roleLabel = formatRole(undefined)
+  // TB1 (R7): el rol ACTIVO real (mis-roles → rol_activo, por MisRolesContext). Sin dato → sin pastilla.
+  const roleLabel = etiquetaRol(rolActivo?.nombre)
 
   return (
     <>
@@ -120,7 +110,8 @@ export default function AdminTopbar() {
       <header className="bg-white border-b border-neutro-borde px-4 sm:px-6 py-3 flex items-center gap-3 sm:gap-6">
         {/* IZQ: Titulo + breadcrumb */}
         <div className="min-w-0">
-          <h1 className="font-display text-xl text-verde leading-tight truncate">{title}</h1>
+          {/* H1 (R7): <p> y no <h1>, como AdminHeader: el <h1> es de cada pantalla (uno por ruta). */}
+          <p className="font-display text-xl text-verde leading-tight truncate">{title}</p>
           <p className="text-xs text-verde-suave truncate">{breadcrumb}</p>
         </div>
 
@@ -190,9 +181,15 @@ export default function AdminTopbar() {
                 <span className="text-sm font-medium text-verde truncate max-w-[120px]">
                   {userName}
                 </span>
-                <span className="bg-terracota/10 text-terracota text-xs px-2 py-0.5 rounded-full">
-                  {roleLabel}
-                </span>
+                {roleLabel && (
+                  <span
+                    data-testid="admin-topbar-rol"
+                    data-rol={rolActivo?.nombre ?? ''}
+                    className="bg-terracota/10 text-terracota text-xs px-2 py-0.5 rounded-full"
+                  >
+                    {roleLabel}
+                  </span>
+                )}
               </div>
               <ChevronDown
                 className={`h-4 w-4 text-verde-suave transition-transform ${

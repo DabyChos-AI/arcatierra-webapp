@@ -27,6 +27,7 @@ import {
   type ReglaNino,
   type TipoPrecioNino,
 } from '@/types/compra-experiencias'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import DisplayCapacidad from './DisplayCapacidad'
 import DisplayDuracion from './DisplayDuracion'
 
@@ -84,6 +85,13 @@ const ERROR_REGLA_INCOMPLETA =
   'Para cobrar distinto a los niños llena la edad máxima y el precio (porcentaje o monto)'
 const EDAD_NINO_MIN = 1
 const EDAD_NINO_MAX = 17
+
+/** PLU1 (R7): el botón del 409 `confirmar` concuerda con `fechas_futuras` (texto de backend-reservas). */
+function textoBotonEliminarFechas(n: number | null): string {
+  if (n === 1) return 'Eliminar y cancelar esa fecha'
+  if (n !== null && n > 1) return `Eliminar y cancelar esas ${n} fechas`
+  return 'Eliminar y cancelar esas fechas'
+}
 
 /** Lo que se manda: apagado = los 4 campos null; con tipo, solo el valor de ese tipo (el otro, null). */
 function reglaNinoDelForm(f: ReglaNino): ReglaNino {
@@ -372,14 +380,17 @@ export default function ExperienciasAdminPage({
       light: 'bg-green-100 text-green-800',
       icon: 'text-green-600',
       ring: 'focus:ring-green-500',
-      badge: 'bg-green-100 text-green-700'
+      badge: 'bg-green-100 text-green-700',
+      // TWD1 (R7): clases COMPLETAS (Tailwind no ve `border-${colorTema}-500` y no las generaba)
+      tab: 'border-green-500 text-green-600'
     },
     purple: {
       primary: 'bg-purple-600 hover:bg-purple-700',
       light: 'bg-purple-100 text-purple-800',
       icon: 'text-purple-600',
       ring: 'focus:ring-purple-500',
-      badge: 'bg-purple-100 text-purple-700'
+      badge: 'bg-purple-100 text-purple-700',
+      tab: 'border-purple-500 text-purple-600'
     }
   }
   const theme = colors[colorTema]
@@ -550,6 +561,8 @@ export default function ExperienciasAdminPage({
     expId: string
     codigo: 'tiene_futuras' | 'confirmar'
     texto: string
+    /** PLU1 (R7): `fechas_futuras` del 409 `confirmar` (primer nivel); null si no vino. */
+    fechasFuturas: number | null
   } | null>(null)
 
   const handleEliminar = async (confirmar = false) => {
@@ -591,7 +604,9 @@ export default function ExperienciasAdminPage({
               : typeof anidado?.detail === 'string'
                 ? anidado.detail
                 : extraerMensajeError(data, res.status)
-          setAvisoEliminar({ expId: exp.id, codigo, texto })
+          const n = cuerpo.fechas_futuras ?? anidado?.fechas_futuras
+          const fechasFuturas = typeof n === 'number' && Number.isInteger(n) && n > 0 ? n : null
+          setAvisoEliminar({ expId: exp.id, codigo, texto, fechasFuturas })
           return
         }
       }
@@ -1063,9 +1078,12 @@ export default function ExperienciasAdminPage({
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                           {exp.imagen_principal ? (
-                            <img 
-                              src={exp.imagen_principal} 
+                            // TWD1 (R7): con tamaño conocido (40×40); OptimizedImage decide si el host se optimiza
+                            <OptimizedImage
+                              src={exp.imagen_principal}
                               alt={exp.nombre}
+                              width={40}
+                              height={40}
                               className="h-full w-full object-cover"
                             />
                           ) : (
@@ -1189,7 +1207,7 @@ export default function ExperienciasAdminPage({
                     onClick={() => setActiveTab('info')}
                     className={`py-4 border-b-2 font-medium text-sm ${
                       activeTab === 'info' 
-                        ? `border-${colorTema}-500 text-${colorTema}-600` 
+                        ? theme.tab
                         : 'border-transparent text-gray-500 hover:text-gray-700'
                     }`}
                   >
@@ -1202,7 +1220,7 @@ export default function ExperienciasAdminPage({
                     }}
                     className={`py-4 border-b-2 font-medium text-sm ${
                       activeTab === 'eventos' 
-                        ? `border-${colorTema}-500 text-${colorTema}-600` 
+                        ? theme.tab
                         : 'border-transparent text-gray-500 hover:text-gray-700'
                     }`}
                   >
@@ -1969,7 +1987,7 @@ export default function ExperienciasAdminPage({
                     className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {loadingAction === 'eliminar' && <Loader2 className="h-4 w-4 animate-spin" />}
-                    Eliminar y cancelar esas fechas
+                    {textoBotonEliminarFechas(avisoEliminar.fechasFuturas)}
                   </button>
                 </div>
               )}

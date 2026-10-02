@@ -8,7 +8,7 @@ import {
   Calendar,
   Clock,
   Users,
-  Star,
+  Timer,
   ShoppingCart,
   X,
   Sparkles,
@@ -52,6 +52,27 @@ function precioFecha(fecha: FechaPublica): string {
 function textoDisponibles(fecha: FechaPublica): string {
   if (!esVendible(fecha)) return 'Reserva por WhatsApp'
   return fecha.disponibles != null ? `${fecha.disponibles} disponibles` : ''
+}
+
+/** Minutos desde medianoche de «HH:MM[:SS]»; null si no se puede leer. */
+function minutosDe(hora: string | null | undefined): number | null {
+  const m = /^(\d{1,2}):(\d{2})/.exec(hora ?? '')
+  return m ? Number(m[1]) * 60 + Number(m[2]) : null
+}
+
+/**
+ * CALF1 (R7): «3 h», «2 h 30 min» o «45 min» = hora_fin − hora_inicio del feed. Sin las dos horas
+ * (o con un fin que no es posterior al inicio) → null y no se pinta.
+ */
+function textoDuracion(inicio: string | null | undefined, fin: string | null | undefined): string | null {
+  const i = minutosDe(inicio)
+  const f = minutosDe(fin)
+  if (i == null || f == null || f <= i) return null
+  const total = f - i
+  const h = Math.floor(total / 60)
+  const min = total % 60
+  if (h === 0) return `${min} min`
+  return min === 0 ? `${h} h` : `${h} h ${min} min`
 }
 
 /** FEED1 (R1): el feed se lee completo, 100 fechas por página, hasta este tope de páginas. */
@@ -338,34 +359,45 @@ export default function CalendarioPage() {
                     }
                   }
 
+                  // KBD1 (R7): botón de verdad (Tab + Enter/Espacio), con su nombre accesible.
+                  // Dentro de un <button> solo va contenido en línea: <span> en vez de <h3>/<p>/<div>.
+                  const textoFechas = `${fechasDisponibles} ${fechasDisponibles === 1 ? 'fecha disponible' : 'fechas disponibles'}`
                   return (
-                    <motion.div
+                    <motion.button
+                      type="button"
                       key={categoria.id}
+                      data-testid="cal-categoria"
+                      data-categoria={categoria.id}
+                      aria-label={
+                        proximaExperienciaGlobal
+                          ? `${categoria.nombre}: ${textoFechas} este mes. Ir al mes de la próxima fecha, ${proximaFechaTexto}`
+                          : `${categoria.nombre}: sin fechas próximas`
+                      }
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="relative p-3 rounded-lg border transition-all duration-300 cursor-pointer border-[#CCBB9A]/30 bg-gradient-to-r from-[#F5F3F0] to-white hover:border-[#B15543]/50"
+                      className="relative w-full text-left p-3 rounded-lg border transition-all duration-300 cursor-pointer border-[#CCBB9A]/30 bg-gradient-to-r from-[#F5F3F0] to-white hover:border-[#B15543]/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B15543] focus-visible:ring-offset-2"
                       onClick={handleClickExperiencia}
                     >
                       {/* Badge */}
-                      <div className={`absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full text-xs font-bold text-white bg-gradient-to-r ${categoria.badgeColor}`}>
+                      <span aria-hidden="true" className={`absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full text-xs font-bold text-white bg-gradient-to-r ${categoria.badgeColor}`}>
                         {categoria.badge}
-                      </div>
-                      
-                      <div className="flex items-start gap-2">
-                        <div className="text-lg flex-shrink-0">{categoria.emoji}</div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-[#3A4741] text-sm leading-tight">{categoria.nombre}</h3>
-                          <p className="text-xs text-[#475A52] mb-1">{fechasDisponibles} fechas disponibles</p>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3 text-[#B15543]" />
+                      </span>
+
+                      <span className="flex items-start gap-2">
+                        <span className="text-lg flex-shrink-0" aria-hidden="true">{categoria.emoji}</span>
+                        <span className="block flex-1 min-w-0">
+                          <span className="block font-semibold text-[#3A4741] text-sm leading-tight">{categoria.nombre}</span>
+                          <span className="block text-xs text-[#475A52] mb-1">{textoFechas}</span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3 text-[#B15543]" aria-hidden="true" />
                             <span className="text-xs font-medium text-[#B15543]">
                               Próxima: {proximaFechaTexto}
                             </span>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
+                          </span>
+                        </span>
+                      </span>
+                    </motion.button>
                   )
                 })}
               </div>
@@ -523,14 +555,12 @@ export default function CalendarioPage() {
                           <Clock className="w-4 h-4" aria-hidden="true" />
                           <span>{horario(f.hora_inicio, f.hora_fin)}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Users className="w-4 h-4" aria-hidden="true" />
-                          <span>Duración: 3 horas</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 text-yellow-500" aria-hidden="true" />
-                          <span>Calificación: 4.9/5</span>
-                        </div>
+                        {textoDuracion(f.hora_inicio, f.hora_fin) && (
+                          <div className="flex items-center gap-1" data-testid="cal-exp-duracion">
+                            <Timer className="w-4 h-4" aria-hidden="true" />
+                            <span>Duración: {textoDuracion(f.hora_inicio, f.hora_fin)}</span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex flex-col sm:flex-row gap-3">
@@ -690,50 +720,6 @@ export default function CalendarioPage() {
         )}
       </AnimatePresence>
 
-      {/* Footer */}
-      <footer className="bg-[#3A4741] text-white py-12 mt-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="font-bold text-lg mb-4 text-[#E8E4DF]">Arca Tierra</h3>
-              <p className="text-[#CCBB9A]">Experiencias auténticas en las chinampas de Xochimilco</p>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4 text-[#E8E4DF]">Experiencias</h4>
-              <ul className="space-y-2 text-[#CCBB9A]">
-                <li>Amanecer Chinampero</li>
-                <li>Brunch en las Chinampas</li>
-                <li>Comidas Tradicionales</li>
-                <li>Talleres Educativos</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4 text-[#E8E4DF]">Información</h4>
-              <ul className="space-y-2 text-[#CCBB9A]">
-                <li>Sobre Nosotros</li>
-                <li>Políticas de Reserva</li>
-                <li>Preguntas Frecuentes</li>
-                <li>Testimonios</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-4 text-[#E8E4DF]">Contacto</h4>
-              <div className="space-y-2 text-[#CCBB9A]">
-                <p>Xochimilco, CDMX</p>
-                <p>info@arcatierra.com</p>
-                <p>+52 55 1234 5678</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="border-t border-[#475A52] mt-8 pt-8 text-center text-[#CCBB9A]">
-            <p>&copy; 2024 Arca Tierra. Todos los derechos reservados.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }

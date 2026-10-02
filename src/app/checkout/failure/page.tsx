@@ -153,7 +153,7 @@ function PagoFallidoContent() {
           {/* Estado del carrito */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
             <h4 className="font-medium text-yellow-800 mb-2">
-              📦 Tu carrito se mantiene guardado
+              Tu carrito se mantiene guardado
             </h4>
             <p className="text-sm text-yellow-700">
               No te preocupes, tus productos siguen en el carrito. 
@@ -202,10 +202,10 @@ function PagoFallidoContent() {
           </p>
           <div className="space-y-1">
             <p>
-              📧 Email: <a href="mailto:soporte@arcatierra.com" className="text-[#B15543] hover:underline">soporte@arcatierra.com</a>
+              Email: <a href="mailto:soporte@arcatierra.com" className="text-[#B15543] hover:underline">soporte@arcatierra.com</a>
             </p>
             <p>
-              📱 WhatsApp:{' '}
+              WhatsApp:{' '}
               <a
                 href={linkWhatsApp('Hola, tuve un problema al pagar en la página de Arca Tierra')}
                 target="_blank"

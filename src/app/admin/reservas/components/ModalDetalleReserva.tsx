@@ -69,6 +69,7 @@ import {
   type Personal,
   type ReagendarResponse,
   type Reserva,
+  type ResultadoCorreo,
   type ResultadoGuias,
 } from '@/types/reservas'
 import BadgeEstado from '../../components/BadgeEstado'
@@ -309,6 +310,20 @@ function textoPagosManualesPorFuera(n: number): string {
     : `${n} pagos en efectivo o transferencia no se devuelven con MercadoPago: devuélvelos por fuera.`
 }
 
+/** CERO1 (R7): el resultado del correo de confirmación, solo si la respuesta lo trae con su forma ({encolado, motivo}). */
+function leerResultadoCorreo(valor: unknown): ResultadoCorreo | null {
+  if (typeof valor !== 'object' || valor === null) return null
+  const r = valor as { encolado?: unknown; motivo?: unknown }
+  if (typeof r.encolado !== 'boolean') return null
+  return { encolado: r.encolado, motivo: typeof r.motivo === 'string' ? (r.motivo as MotivoNoEnvio) : null }
+}
+
+/** CERO1 (R7): lo que respondió «Confirmar reserva» (se queda a la vista en Acciones). */
+interface ResultadoConfirmar {
+  ok: boolean
+  texto: string
+}
+
 /** Lo que quedó al cancelar con «Devolver con MercadoPago lo pagado» (se queda a la vista en Acciones). */
 interface ResultadoCancelarReembolso {
   reembolsos: ResultadoReembolso[]
@@ -425,6 +440,10 @@ export default function ModalDetalleReserva({
   // B6 / D9: «Marcar como realizada»
   const [marcandoRealizada, setMarcandoRealizada] = useState(false)
 
+  // CERO1 (R7): «Confirmar reserva» (tentativa → confirmada)
+  const [confirmando, setConfirmando] = useState(false)
+  const [resultadoConfirmar, setResultadoConfirmar] = useState<ResultadoConfirmar | null>(null)
+
   // COT1 (R1): «Reenviar cotización» en Pagos
   const [reenvioCotizacion, setReenvioCotizacion] = useState<EstadoReenvioCotizacion>({ tipo: 'quieto' })
 
@@ -488,7 +507,8 @@ export default function ModalDetalleReserva({
     if (!token) return
     try {
       const [resG, resA] = await Promise.all([
-        fetch(`${API_URL}/api/admin/personal?es_guia=true`, {
+        // GPP1 (R7): la API pagina (50 por omisión); con más guías el selector se quedaba corto
+        fetch(`${API_URL}/api/admin/personal?es_guia=true&per_page=200`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
         fetch(
@@ -997,9 +1017,11 @@ export default function ModalDetalleReserva({
   }
 
   // C38: PATCH numero_invitados_min = N; el backend recalcula montos server-side.
+  // VER2 (R7): con la versión leída (solo si existe); si alguien cambió la reserva → 409 como el resto.
   async function actualizarCotizacionInvitados(nuevoInvitados: number) {
     if (!token || !reserva) return
     setSavingCotizacion(true)
+    setConflicto(null)
     try {
       const res = await fetch(`${API_URL}/api/admin/reservas/${reserva.id}`, {
         method: 'PATCH',
@@ -1007,10 +1029,18 @@ export default function ModalDetalleReserva({
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ numero_invitados_min: nuevoInvitados }),
+        body: JSON.stringify({
+          numero_invitados_min: nuevoInvitados,
+          ...(version ? { version } : {}),
+        }),
       })
       if (!res.ok) {
-        const payload = await res.json().catch(() => null)
+        const payload: unknown = await res.json().catch(() => null)
+        if (esConflictoVersion(res.status, payload)) {
+          setToast(null)
+          setConflicto(payload.detail)
+          return
+        }
         throw new Error(extraerMensajeError(payload, res.status))
       }
       // EST1 (R5): más invitados no anula links; menos sí puede (saldo más bajo)
@@ -1153,6 +1183,7 @@ export default function ModalDetalleReserva({
       return
     }
     setMarcandoRealizada(true)
+    setConflicto(null)
     try {
       const res = await fetch(`${API_URL}/api/admin/reservas/${reserva.id}`, {
         method: 'PATCH',
@@ -1160,10 +1191,16 @@ export default function ModalDetalleReserva({
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ estado: 'realizada' }),
+        // VER2 (R7): con la versión leída (solo si existe); 409 como el resto
+        body: JSON.stringify({ estado: 'realizada', ...(version ? { version } : {}) }),
       })
       if (!res.ok) {
-        const payload = await res.json().catch(() => null)
+        const payload: unknown = await res.json().catch(() => null)
+        if (esConflictoVersion(res.status, payload)) {
+          setToast(null)
+          setConflicto(payload.detail)
+          return
+        }
         throw new Error(extraerMensajeError(payload, res.status))
       }
       showToast('Reserva marcada como realizada', 'success')
@@ -1176,6 +1213,59 @@ export default function ModalDetalleReserva({
       showToast(err instanceof Error ? err.message : 'Error al marcar como realizada', 'error')
     } finally {
       setMarcandoRealizada(false)
+    }
+  }
+
+  // CERO1 (R7): una tentativa se confirma desde Acciones (también las de $0: cortesía o cupón al 100 %). Mismo PATCH
+  // del detalle con la versión leída (solo si existe); 409 como el resto. El correo de confirmación lo encola el
+  // backend: solo se dice algo de él si la respuesta trae su resultado (nunca prometerlo).
+  async function confirmarReserva() {
+    if (!token || !reserva || confirmando) return
+    if (
+      !window.confirm(
+        `¿Confirmar la reserva ${reserva.booking_id}? Pasa de Tentativa a Confirmada. Si la plantilla de confirmación está activa y el cliente tiene correo real, se le manda el correo de confirmación.`,
+      )
+    ) {
+      return
+    }
+    setConfirmando(true)
+    setConflicto(null)
+    setResultadoConfirmar(null)
+    try {
+      const res = await fetch(`${API_URL}/api/admin/reservas/${reserva.id}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ estado: 'confirmada', ...(version ? { version } : {}) }),
+      })
+      if (!res.ok) {
+        const payload: unknown = await res.json().catch(() => null)
+        if (esConflictoVersion(res.status, payload)) {
+          setToast(null)
+          setConflicto(payload.detail)
+          return
+        }
+        setResultadoConfirmar({ ok: false, texto: extraerMensajeError(payload, res.status) })
+        return
+      }
+      const data = (await res.json().catch(() => null)) as (Reserva & { correo_confirmacion?: unknown }) | null
+      const correo = leerResultadoCorreo(data?.correo_confirmacion)
+      const partes = ['La reserva quedó Confirmada.']
+      if (correo) partes.push(textoCorreo(correo, 'de confirmación'))
+      setResultadoConfirmar({ ok: true, texto: partes.join(' ') })
+      // El PATCH responde el detalle completo: refresco silencioso sin vaciar el estado
+      if (data && data.id === reserva.id && data.booking_id) setReserva(data)
+      else await fetchReserva(true)
+      onUpdated()
+    } catch {
+      setResultadoConfirmar({
+        ok: false,
+        texto: 'Sin respuesta del servidor: no se sabe si se confirmó. Revisa el estado de la reserva antes de volver a intentar.',
+      })
+    } finally {
+      setConfirmando(false)
     }
   }
 
@@ -1436,6 +1526,8 @@ export default function ModalDetalleReserva({
               savingGuias={savingGuias}
               cuponGuardado={cuponGuardado}
               onCambiaCodigo={() => setCuponGuardado(null)}
+              onAbrirReagendar={() => setShowReagendar(true)}
+              cancelada={reserva.estado === 'cancelada'}
             />
           )}
           {tab === 'addons' && (
@@ -1484,6 +1576,10 @@ export default function ModalDetalleReserva({
           )}
           {tab === 'acciones' && (
             <TabAcciones
+              tentativa={reserva.estado === 'tentativo' || reserva.estado === 'tentativa'}
+              confirmando={confirmando}
+              resultadoConfirmar={resultadoConfirmar}
+              onConfirmarReserva={confirmarReserva}
               realizada={
                 reserva.estado === 'realizada'
                   ? { puede: false, motivo: 'Ya está marcada como realizada.' }
@@ -1591,6 +1687,8 @@ function TabDatos({
   savingGuias,
   cuponGuardado,
   onCambiaCodigo,
+  onAbrirReagendar,
+  cancelada,
 }: {
   reserva: Reserva
   form: FormDatos
@@ -1608,6 +1706,9 @@ function TabDatos({
   savingGuias: boolean
   cuponGuardado: EstadoCuponGuardado | null
   onCambiaCodigo: () => void
+  /** REAG1 (R7): fecha y hora se cambian SOLO con Reagendar (deja la nota y puede avisar al cliente). */
+  onAbrirReagendar: () => void
+  cancelada: boolean
 }) {
   const cot = reserva.cotizacion
   // F2: las del Sheet nunca se re-precian (C5)
@@ -1676,9 +1777,9 @@ function TabDatos({
       >
         <Info className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
         <p>
-          Guardar estos cambios no le manda correo al cliente. Si cambias fecha, hora o
-          invitados, avísale tú. Los correos enviados se ven en la pestaña Comunicaciones. Para
-          cambiar la fecha con aviso por correo al cliente y a los guías, usa Acciones › Reagendar.
+          Guardar estos cambios no le manda correo al cliente. Si cambias invitados, avísale tú. Los
+          correos enviados se ven en la pestaña Comunicaciones. La fecha y la hora se cambian con
+          «Reagendar»: deja la nota y puedes avisar por correo al cliente y a los guías.
         </p>
       </div>
 
@@ -1764,34 +1865,37 @@ function TabDatos({
         </Field>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        <Field label="Fecha" htmlFor="d-fecha">
-          <input
-            id="d-fecha"
-            type="date"
-            value={form.fecha}
-            onChange={(e) => updateForm('fecha', e.target.value)}
-            className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
-          />
-        </Field>
-        <Field label="Hora inicio" htmlFor="d-hora-inicio">
-          <input
-            id="d-hora-inicio"
-            type="time"
-            value={form.horaInicio}
-            onChange={(e) => updateForm('horaInicio', e.target.value)}
-            className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
-          />
-        </Field>
-        <Field label="Hora fin" htmlFor="d-hora-fin">
-          <input
-            id="d-hora-fin"
-            type="time"
-            value={form.horaFin}
-            onChange={(e) => updateForm('horaFin', e.target.value)}
-            className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
-          />
-        </Field>
+      {/* REAG1 (R7, decisión de David): fecha y hora se VEN aquí pero se cambian solo con «Reagendar»
+          (deja la nota, mueve la hora de término y puede avisar). El guardado de Datos las sigue mandando
+          SIN cambio y el backend las ignora si son iguales (400 si llegaran distintas). */}
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="min-w-[10rem]">
+          <p className="text-xs text-verde-suave">Fecha</p>
+          <p data-testid="detalle-fecha" className="text-sm text-verde font-medium">
+            {formatFechaMexico(reserva.fecha_experiencia)}
+          </p>
+        </div>
+        <div className="min-w-[8rem]">
+          <p className="text-xs text-verde-suave">Horario</p>
+          <p data-testid="detalle-horario" className="text-sm text-verde font-medium tabular-nums">
+            {reserva.hora_inicio
+              ? reserva.hora_fin
+                ? `${horaCorta(reserva.hora_inicio)}–${horaCorta(reserva.hora_fin)}`
+                : horaCorta(reserva.hora_inicio)
+              : '—'}
+          </p>
+        </div>
+        <button
+          type="button"
+          data-testid="detalle-reagendar"
+          onClick={onAbrirReagendar}
+          disabled={cancelada}
+          title={cancelada ? 'Una reserva cancelada no se puede reagendar.' : undefined}
+          className="inline-flex items-center gap-2 bg-azul hover:opacity-90 text-white px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <CalendarClock className="h-4 w-4" aria-hidden="true" />
+          Reagendar
+        </button>
       </div>
 
       {sinReprecio && (
@@ -3667,8 +3771,9 @@ function TabAuditoria({
   return (
     <div className="space-y-3">
       <p className="text-xs text-verde-suave">
+        {/* FMT1 (R7): sin punto final; la hora ya termina en «a.m.»/«p.m.» y salía «a.m..» */}
         Del más reciente al más antiguo. Último cambio guardado:{' '}
-        {formatFechaHoraMexico(reserva.fecha_actualizacion)}.
+        {formatFechaHoraMexico(reserva.fecha_actualizacion)}
       </p>
 
       {items === null && !error && (
@@ -3779,6 +3884,10 @@ function TabAuditoria({
 // TAB 7 — Acciones
 // ============================================================================
 function TabAcciones({
+  tentativa,
+  confirmando,
+  resultadoConfirmar,
+  onConfirmarReserva,
   realizada,
   marcandoRealizada,
   onMarcarRealizada,
@@ -3803,6 +3912,12 @@ function TabAcciones({
   resultadoCancelar,
   onCancelarReserva,
 }: {
+  /** CERO1 (R7): la reserva está en Tentativa (se puede confirmar desde aquí). */
+  tentativa: boolean
+  confirmando: boolean
+  /** CERO1: lo que respondió el último «Confirmar reserva» (se queda aunque la reserva ya no sea tentativa). */
+  resultadoConfirmar: ResultadoConfirmar | null
+  onConfirmarReserva: () => void
   /** B6: si se puede marcar como realizada y, si no, por qué (se muestra). */
   realizada: { puede: boolean; motivo: string | null }
   marcandoRealizada: boolean
@@ -3835,6 +3950,58 @@ function TabAcciones({
 }) {
   return (
     <div className="space-y-4">
+      {/* CERO1 (R7): una tentativa (también en $0: cortesía o cupón al 100 %) se confirma aquí */}
+      {(tentativa || resultadoConfirmar) && (
+        <div className="border border-terracota/30 rounded-lg p-4 bg-white">
+          <h3 className="text-sm font-semibold text-verde mb-2 flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+            Confirmar reserva
+          </h3>
+          {tentativa && (
+            <>
+              <p className="text-sm text-verde-suave mb-2">
+                Pasa la reserva de Tentativa a Confirmada (sale en el Manifest del día). Si la plantilla de
+                confirmación está activa y el cliente tiene correo real, se le manda el correo de confirmación.
+              </p>
+              <button
+                type="button"
+                data-testid="accion-confirmar-reserva"
+                onClick={onConfirmarReserva}
+                disabled={confirmando}
+                className="inline-flex items-center gap-2 bg-terracota hover:bg-terracota-medio text-white px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {confirmando ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                )}
+                Confirmar reserva
+              </button>
+            </>
+          )}
+          {resultadoConfirmar &&
+            (resultadoConfirmar.ok ? (
+              <p
+                data-testid="accion-confirmar-resultado"
+                role="status"
+                className="mt-2 flex items-start gap-2 rounded-lg border border-verde/30 bg-verde/10 p-3 text-sm text-verde"
+              >
+                <CheckCircle2 className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                <span>{resultadoConfirmar.texto}</span>
+              </p>
+            ) : (
+              <p
+                data-testid="accion-confirmar-error"
+                role="alert"
+                className="mt-2 flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg p-3 text-sm text-rojo"
+              >
+                <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                <span>{resultadoConfirmar.texto}</span>
+              </p>
+            ))}
+        </div>
+      )}
+
       <div className="border border-verde/30 rounded-lg p-4 bg-white">
         <h3 className="text-sm font-semibold text-verde mb-2 flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4" aria-hidden="true" />

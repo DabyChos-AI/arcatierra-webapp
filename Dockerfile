@@ -1,5 +1,7 @@
 # Dockerfile para Arca Tierra Web App
-FROM node:18-alpine AS base
+# B2 (R7, 2-oct-2026): Node 22 exacto (producción corría 18.20.8 y .nvmrc decía 20). Con Node 18, npm
+# saltaba sharp (pide >=20.9) y por eso el optimizador de imágenes no podía funcionar (M5).
+FROM node:22.23.3-alpine3.24 AS base
 
 # Instalar dependencias solo cuando sea necesario
 FROM base AS deps
@@ -28,7 +30,7 @@ ARG NEXT_PUBLIC_SITE_URL=https://arcatierra.dabychos.com
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 
 # Deshabilitar telemetría durante la construcción
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
 
@@ -36,8 +38,8 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Instalar wget para health checks + tzdata para timezone
 RUN apk add --no-cache wget tzdata
@@ -59,8 +61,8 @@ USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 # Comando para ejecutar la aplicación
 CMD ["node", "server.js"]

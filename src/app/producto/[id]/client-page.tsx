@@ -12,13 +12,32 @@ import ProductTraceability from '@/components/ProductTraceability'
 import { API_URL } from '@/lib/api'
 import { leerCarrito, guardarCarrito } from '@/lib/carrito'
 import { aNumero, TEXTO_AGOTADO } from '@/types/tienda'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 
 /**
  * R2 (STK3-ficha): la ficha de un agotado responde 200 con `en_venta=false` → «Agotado por ahora», sin selector ni
  * botón (DR7, C2 de David). `stock` = unidades enteras disponibles (`disponible`; si el back viejo no lo manda,
  * `stock_actual`, que podía llegar como texto «90.0000»).
  */
-type ProductoFicha = Product & { enVenta: boolean }
+type ProductoFicha = Product & {
+  enVenta: boolean
+  /** Itemcode que entra al carrito: en una canasta, el de COMPRA ÚNICA (con U), como la tarjeta de la tienda (FIC1). */
+  itemcodeCarrito: string
+  /** false = no hay precio de compra única que mostrar (la canasta U no existe): solo «Agotado por ahora». */
+  conPrecio: boolean
+}
+
+/** Canastas 1885–1891, con o sin U (igual que `esCanasta` de `app/tienda/page.tsx`). */
+function esCanasta(itemcode: string): boolean {
+  return /^188[5-9]U?$/.test(itemcode) || /^189[0-1]U?$/.test(itemcode)
+}
+
+/** Datos de venta de una fila de `/api/products/{itemcode}`: precio, unidades enteras y en_venta. */
+function ventaDe(api: { precio_unitario?: unknown; en_venta?: unknown; disponible?: unknown; stock_actual?: unknown }) {
+  const disponible = disponibleDe(api)
+  const enVenta = typeof api.en_venta === 'boolean' ? api.en_venta : disponible >= 1
+  return { precio: parseFloat(String(api.precio_unitario)), stock: enVenta ? disponible : 0, enVenta }
+}
 
 function disponibleDe(api: { disponible?: unknown; stock_actual?: unknown }): number {
   const crudo = api.disponible !== undefined && api.disponible !== null ? api.disponible : api.stock_actual
@@ -59,18 +78,33 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
         if (response.ok) {
           const apiProduct = await response.json()
           
-          // Mapear producto de la API al formato local
-          const disponible = disponibleDe(apiProduct)
-          const enVenta = typeof apiProduct.en_venta === 'boolean' ? apiProduct.en_venta : disponible >= 1
+          // Mapear producto de la API al formato local.
+          // FIC1 (R7): una canasta base (sin U) se vende como COMPRA ÚNICA, igual que la tarjeta de la tienda:
+          // precio, stock y en_venta de la canasta U; si no existe, «Agotado por ahora» (nunca el precio de la suscripción).
+          let venta = ventaDe(apiProduct)
+          let itemcodeCarrito: string = apiProduct.itemcode
+          let conPrecio = true
+          if (esCanasta(apiProduct.itemcode) && !apiProduct.itemcode.endsWith('U')) {
+            itemcodeCarrito = `${apiProduct.itemcode}U`
+            const resCu = await fetch(`${apiUrl}/api/products/${encodeURIComponent(itemcodeCarrito)}`)
+            if (resCu.ok) {
+              venta = ventaDe(await resCu.json())
+            } else {
+              venta = { precio: 0, stock: 0, enVenta: false }
+              conPrecio = false
+            }
+          }
           const mappedProduct: ProductoFicha = {
             id: apiProduct.itemcode,
+            itemcodeCarrito,
+            conPrecio,
             nombre: apiProduct.nombre,
             categoria: apiProduct.categoria || 'sin-categoria',
-            precio: parseFloat(apiProduct.precio_unitario),
+            precio: venta.precio,
             imagen: apiProduct.imagen_url || '',
             descripcion: apiProduct.descripcion || '',
-            stock: enVenta ? disponible : 0,
-            enVenta,
+            stock: venta.stock,
+            enVenta: venta.enVenta,
             unidad: apiProduct.unidad_medida || '',
             productor: apiProduct.productor || 'Agricultor Local',
             ubicacion: apiProduct.ubicacion || 'México',
@@ -145,8 +179,8 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
     if (!producto || !producto.enVenta) return
 
     const cartItem = {
-      id: producto.id,
-      itemcode: producto.id, // El ID es el itemcode
+      id: producto.itemcodeCarrito,
+      itemcode: producto.itemcodeCarrito, // en una canasta, la de compra única (FIC1)
       name: producto.nombre,
       price: producto.precio,
       quantity: cantidad,
@@ -205,10 +239,13 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
         {/* Galería de imágenes */}
         <div className="space-y-4">
           <div className="relative bg-gray-100 rounded-xl overflow-hidden aspect-square">
-            <img
+            <OptimizedImage
               src={getCanastaImage(producto.nombre, producto.imagen)}
               alt={producto.nombre}
-              className="w-full h-full object-cover"
+              fill
+              sizes="(min-width: 768px) 50vw, 100vw"
+              priority
+              className="object-cover"
             />
           </div>
 
@@ -216,9 +253,11 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
           <div className="flex space-x-2 overflow-x-auto pb-2">
             {[0, 1, 2].map((index: number) => (
               <div key={index} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-green-500" onClick={() => setImagenSeleccionada(index)}>
-                <img
+                <OptimizedImage
                   src={getCanastaImage(producto.nombre, producto.imagen)}
                   alt={`${producto.nombre} ${index + 1}`}
+                  width={160}
+                  height={160}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -246,10 +285,12 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
 
           {/* Precio y stock */}
           <div>
-            <div className="flex items-baseline">
-              <span className="text-3xl font-bold">${producto.precio.toFixed(2)}</span>
-              <span className="ml-2 text-sm text-gray-500">/ {producto.unidad}</span>
-            </div>
+            {producto.conPrecio && (
+              <div className="flex items-baseline">
+                <span className="text-3xl font-bold" data-testid="ficha-precio">${producto.precio.toFixed(2)}</span>
+                <span className="ml-2 text-sm text-gray-500">/ {producto.unidad}</span>
+              </div>
+            )}
             <span
               data-testid="ficha-estado"
               data-en-venta={producto.enVenta ? 'true' : 'false'}

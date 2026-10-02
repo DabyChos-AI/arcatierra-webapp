@@ -17,6 +17,13 @@ export const useVoiceSearch = (
   language: string = 'es-MX'
 ): VoiceSearchResult => {
   const [confidence, setConfidence] = useState<number>(0)
+  // HID1 (R7): el servidor no tiene SpeechRecognition y el navegador sí; si `isSupported` se calcula en el
+  // primer render, el HTML del servidor (sin micrófono) y el del cliente (con micrófono) no coinciden y React
+  // reporta un error de hidratación en /tienda. Falso hasta montar; después, lo que diga el navegador.
+  const [montado, setMontado] = useState(false)
+  useEffect(() => {
+    setMontado(true)
+  }, [])
   
   const {
     transcript,
@@ -67,7 +74,7 @@ export const useVoiceSearch = (
   return {
     isListening: listening,
     transcript,
-    isSupported: browserSupportsSpeechRecognition && isMicrophoneAvailable,
+    isSupported: montado && browserSupportsSpeechRecognition && isMicrophoneAvailable,
     startListening,
     stopListening,
     resetTranscript,

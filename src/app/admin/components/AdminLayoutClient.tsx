@@ -76,7 +76,8 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
     }
   }, [])
 
-  const contextoMisRoles = useMemo(() => ({ insignia }), [insignia])
+  // TB1 (R7): el rol activo también va al contexto (AdminTopbar lo pinta; cambia con «Cambiar rol»).
+  const contextoMisRoles = useMemo(() => ({ insignia, rolActivo }), [insignia, rolActivo])
 
   return (
     <MisRolesContext.Provider value={contextoMisRoles}>
