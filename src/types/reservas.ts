@@ -2,6 +2,7 @@
 // Sincronizado con backend Fase B (admin_reservas.py, 17 endpoints + 1 conversion lead)
 // Tabla: reservas_experiencias + reservas_experiencias_guias (pivote) + reservas_experiencias_addons
 import type { CodigoHueco, FiltroHueco } from './planeacion'
+import type { ReembolsoPago, ResultadoReembolso } from './reembolsos'
 
 export type ReservaEstado =
   | 'tentativo'
@@ -155,6 +156,12 @@ export interface PagoReserva {
   fecha_pago?: string | null
   fecha_registro: string
   init_point?: string | null
+  /** R5 (LNK1): vencimiento de un link de pago (webhook_raw.vence_en); null = sin dato (links viejos) o no es link. */
+  vence_en?: string | null
+  /** R5 (LNK1): link pendiente cuyo vencimiento ya pasó (el detalle ya no trae su init_point). */
+  vencido?: boolean
+  /** R5 (RE1): el reembolso de este pago, si lo hay. */
+  reembolso?: ReembolsoPago | null
 }
 
 // ─── Fase 2 de PLAN-EXP-SIN-FALLAS (30-sep): correos y cobros ────────────────────────────
@@ -228,6 +235,10 @@ export interface CancelarResponse {
   correo_cliente: ResultadoCorreo
   /** Frases listas para mostrar (D4, D15). Vacío = nada que avisar. */
   avisos: string[]
+  /** R5 (RE1): con procesar_reembolso, un resultado por cada pago de MercadoPago aprobado (vacío si no había). */
+  reembolsos?: ResultadoReembolso[]
+  /** R5: pagos manuales aprobados (efectivo, transferencia) que NO se devuelven con MercadoPago: devolver por fuera. */
+  pagos_manuales_sin_reembolso?: number
 }
 
 /** POST /api/admin/reservas/{id}/reagendar (C6). */
@@ -372,6 +383,12 @@ export interface Reserva {
   pagos?: PagoReserva[]
   // Desde la 4b, la forma real del backend (C5). `Cotizacion` queda solo por compatibilidad de nombre.
   cotizacion?: CotizacionReserva
+  /** R5 (TOT1): reserva del Sheet, no cortesía ni cancelada, y el usuario tiene `reportes`: puede capturar total y pagado. */
+  puede_capturar_total?: boolean
+  /** R5 (RE1): el usuario tiene el permiso `reembolsos` (cancelar con reembolso, reintentar un reembolso). */
+  puede_reembolsar?: boolean
+  /** R5 (EST1): en la respuesta del PATCH, links pendientes que se anularon porque el saldo bajó (0 si ninguno). */
+  links_vencidos?: number
 }
 
 // Contrato de GET /api/admin/reservas/stats (backend lo alineo el 2026-09-25:

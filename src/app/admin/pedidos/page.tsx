@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Package, TrendingUp, DollarSign, Clock, RefreshCw,
   Search, ChevronLeft, ChevronRight, X, Truck, Store,
@@ -15,6 +15,23 @@ import {
   TEXTO_PAGADO_SIN_STOCK,
   type StockFaltante,
 } from '@/types/tienda'
+import {
+  TEXTO_CONFIRMAR_REEMBOLSO,
+  TEXTO_MARCAR_REEMBOLSADO,
+  type AlertaPedido,
+  type AvisosPagoPedido,
+  type CausaCancelacion,
+} from '@/types/reembolsos'
+import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
+import {
+  AlertaPedidoChip,
+  AvisosPagoDetalle,
+  PagosPedido,
+  pedirReembolso,
+  ResultadoReembolsoAviso,
+  type PagoPedido,
+  type ResultadoReembolsoVista,
+} from './components/ReembolsosPedido'
 
 /** Pedido de solo experiencias (Fase 4a, C3): sin envío ni fecha de entrega. */
 const TIPO_ENTREGA_EXPERIENCIA = 'experiencia'
@@ -35,6 +52,8 @@ interface Pedido {
   cliente_telefono: string
   /** R2 (STK4): lo que no se pudo descontar al llegar el pago; null si no faltó nada. */
   stock_faltante?: StockFaltante[] | null
+  /** R5 (DR16 / contracargo): alerta de dinero en la lista; null o ausente = ninguna. */
+  alerta?: AlertaPedido
 }
 
 /** Renglones válidos de `stock_faltante` (lista o null; si un JSONB llegara como texto, se lee igual). */
@@ -54,6 +73,13 @@ function faltanteDe(p: { stock_faltante?: unknown } | null | undefined): StockFa
 function cantidadLegible(valor: unknown): string {
   const n = aNumero(valor)
   return Number.isInteger(n) ? String(n) : n.toFixed(2)
+}
+
+/** R5 (C4): `stock_devuelto` del PATCH de estado → «Volvieron N unidades al stock.» (null si no volvió nada). */
+function textoDeStockDevuelto(valor: unknown): string | null {
+  const n = aNumero(valor)
+  if (!(n > 0)) return null
+  return n === 1 ? 'Volvió 1 unidad al stock.' : `Volvieron ${cantidadLegible(n)} unidades al stock.`
 }
 
 /**
@@ -104,14 +130,12 @@ interface PedidoDetalle extends Pedido {
   }[]
   /** PED1: la API siempre la manda (lista vacía si el pedido no tiene experiencias). */
   experiencias?: ExperienciaPedido[]
-  pagos: {
-    id: string
-    mp_payment_id: string
-    mp_status: string
-    mp_payment_method: string
-    monto_total: number
-    fecha_pago: string
-  }[]
+  /** R5: cada pago con `mp_status_detail` y `reembolso` (opcionales: una API vieja no los manda). */
+  pagos: PagoPedido[]
+  /** R5 (RE1): tiene el permiso `reembolsos`. false = sin botón «Reembolsar»; ausente = el backend decide (403). */
+  puede_reembolsar?: boolean
+  /** R5 (DR15/DR16): pago doble, contracargo y reembolso parcial, con sus frases. */
+  avisos?: AvisosPagoPedido | null
   direccion_principal: {
     nombre_direccion: string
     calle: string
@@ -204,7 +228,24 @@ export default function AdminPedidosPage() {
   // El modal se cierra al guardar, así que el aviso queda en la página hasta que lo cierren.
   // R2 (C8): pasar a «pagado» un pedido sin descontar descuenta stock; si no alcanza, el estado FINAL es
   // pagado_sin_stock y llega `aviso_stock` (se muestra aparte, en `pedido-aviso-stock`).
-  const [avisoEstado, setAvisoEstado] = useState<{ numero: string; texto: string | null; textoStock: string | null } | null>(null)
+  // R5 (C4): cancelar/reembolsar un pedido con stock descontado lo devuelve; `stock_devuelto` > 0 se dice en el aviso.
+  const [avisoEstado, setAvisoEstado] = useState<{
+    numero: string
+    texto: string | null
+    textoStock: string | null
+    textoStockDevuelto: string | null
+  } | null>(null)
+  // R5: error del cambio de estado (403 de «reembolsado» sin permiso, transición inválida…) dentro del modal
+  const [errorEstado, setErrorEstado] = useState<string | null>(null)
+  // R5 (REEM1): «La cancela Arca Tierra» → causa 'arca_tierra' (reembolso del 100 % aunque falten menos de 48 h)
+  const [causaArcaTierra, setCausaArcaTierra] = useState(false)
+  // R5 (RE1): pago que se está reembolsando (deshabilita los botones) y el resultado que se muestra
+  const [reembolsando, setReembolsando] = useState<string | null>(null)
+  const [resultadoReembolso, setResultadoReembolso] = useState<ResultadoReembolsoVista | null>(null)
+  // Candado síncrono contra el doble clic (el `disabled` llega hasta el siguiente render)
+  const reembolsoEnCursoRef = useRef(false)
+  // Pedido abierto en el modal: una respuesta que llega tarde no pisa el detalle de otro pedido
+  const detalleIdRef = useRef<string | null>(null)
 
   const fetchStats = useCallback(async () => {
     try {
@@ -245,18 +286,65 @@ export default function AdminPedidosPage() {
   }, [fetchStats, fetchPedidos])
 
   const openDetalle = async (pedidoId: string) => {
+    detalleIdRef.current = pedidoId
+    setErrorEstado(null)
+    setCausaArcaTierra(false)
     try {
       setLoadingDetalle(true)
       setModalOpen(true)
       const res = await fetch(`/api/admin/pedidos/${pedidoId}`)
       if (!res.ok) throw new Error('Error cargando detalle')
       const data = await res.json()
+      if (detalleIdRef.current !== pedidoId) return
       setDetalle(data)
       setNuevoEstado('')
     } catch {
-      setDetalle(null)
+      if (detalleIdRef.current === pedidoId) setDetalle(null)
     } finally {
       setLoadingDetalle(false)
+    }
+  }
+
+  const cerrarModal = () => {
+    detalleIdRef.current = null
+    setModalOpen(false)
+    setDetalle(null)
+    setErrorEstado(null)
+    setCausaArcaTierra(false)
+  }
+
+  /** Relee el detalle SIN el spinner (no desmonta el modal ni pierde el scroll). Si falla, se queda el que había. */
+  const recargarDetalle = async (pedidoId: string) => {
+    try {
+      const res = await fetch(`/api/admin/pedidos/${pedidoId}`)
+      if (!res.ok) return
+      const data = await res.json()
+      if (detalleIdRef.current !== pedidoId) return
+      setDetalle(data)
+      setNuevoEstado('')
+      setCausaArcaTierra(false)
+    } catch {}
+  }
+
+  /** RE1: devuelve un pago con MercadoPago (dinero real). Confirmación, un solo envío, resultado tal cual y recarga. */
+  const reembolsar = async (pago: PagoPedido) => {
+    if (!detalle || reembolsoEnCursoRef.current) return
+    const monto = formatMoney(Number(pago.monto_total) || 0)
+    if (!window.confirm(TEXTO_CONFIRMAR_REEMBOLSO(monto))) return
+    reembolsoEnCursoRef.current = true
+    const pedidoId = detalle.id
+    const numero = detalle.numero_pedido
+    setReembolsando(pago.id)
+    setResultadoReembolso(null)
+    try {
+      const resultado = await pedirReembolso(pago.id)
+      setResultadoReembolso({ ...resultado, pedidoId, numero })
+      await recargarDetalle(pedidoId)
+      fetchPedidos()
+      fetchStats()
+    } finally {
+      reembolsoEnCursoRef.current = false
+      setReembolsando(null)
     }
   }
 
@@ -265,17 +353,21 @@ export default function AdminPedidosPage() {
     try {
       setCambiandoEstado(true)
       setAvisoEstado(null)
+      setErrorEstado(null)
+      // REEM1: `causa` solo si marcaron la casilla (y la casilla solo existe para cancelar/reembolsar con experiencias)
+      const payload: { estado: string; causa?: CausaCancelacion } = { estado: nuevoEstado }
+      if (muestraCausa && causaArcaTierra) payload.causa = 'arca_tierra'
       const res = await fetch(`/api/admin/pedidos/${detalle.id}/estado`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estado: nuevoEstado }),
+        body: JSON.stringify(payload),
       })
       if (!res.ok) {
-        const err = await res.json()
-        alert(err.detail || 'Error al cambiar estado')
+        const err: unknown = await res.json().catch(() => null)
+        setErrorEstado(extraerMensajeError(err, res.status))
         return
       }
-      const data: { aviso?: unknown; aviso_stock?: unknown; estado_nuevo?: unknown } | null =
+      const data: { aviso?: unknown; aviso_stock?: unknown; estado_nuevo?: unknown; stock_devuelto?: unknown } | null =
         await res.json().catch(() => null)
       const texto = data && typeof data.aviso === 'string' && data.aviso.trim() ? data.aviso : null
       let textoStock = data && typeof data.aviso_stock === 'string' && data.aviso_stock.trim() ? data.aviso_stock : null
@@ -283,16 +375,16 @@ export default function AdminPedidosPage() {
         // Pediste «pagado» y quedó sin stock: aunque el back no mande el texto, se dice
         textoStock = `quedó como «${ETIQUETA_PAGADO_SIN_STOCK}». ${TEXTO_PAGADO_SIN_STOCK}`
       }
-      if (texto || textoStock) {
-        setAvisoEstado({ numero: detalle.numero_pedido, texto, textoStock })
+      const textoStockDevuelto = textoDeStockDevuelto(data?.stock_devuelto)
+      if (texto || textoStock || textoStockDevuelto) {
+        setAvisoEstado({ numero: detalle.numero_pedido, texto, textoStock, textoStockDevuelto })
       }
       // Refresh
-      setModalOpen(false)
-      setDetalle(null)
+      cerrarModal()
       fetchPedidos()
       fetchStats()
     } catch {
-      alert('Error de red al cambiar estado')
+      setErrorEstado('Error de red al cambiar el estado: no hubo respuesta del servidor. Revisa el pedido y vuelve a intentarlo.')
     } finally {
       setCambiandoEstado(false)
     }
@@ -327,6 +419,12 @@ export default function AdminPedidosPage() {
   const experienciasDetalle: ExperienciaPedido[] = Array.isArray(detalle?.experiencias)
     ? detalle.experiencias.filter((e): e is ExperienciaPedido => !!e && typeof e === 'object')
     : []
+  // R5 (REEM1): la casilla de la causa, solo al cancelar/reembolsar un pedido con experiencias
+  const muestraCausa =
+    experienciasDetalle.length > 0 && (nuevoEstado === 'cancelado' || nuevoEstado === 'reembolsado')
+  // R5 (RE1): el resultado va dentro del modal si está abierto ese pedido; si no, en la página (nunca los dos)
+  const resultadoEnModal =
+    !!resultadoReembolso && modalOpen && !!detalle && detalle.id === resultadoReembolso.pedidoId
 
   return (
     <div className="space-y-6">
@@ -393,28 +491,31 @@ export default function AdminPedidosPage() {
               </button>
             ))}
           </div>
-          {/* Búsqueda */}
-          <form onSubmit={handleBusqueda} className="flex gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          {/* Búsqueda. R5 (C6): a 390 el input se encoge (min-w-0) y la fila puede bajar de renglón: con el «×» de
+              una búsqueda activa medía 422 px y ensanchaba la página (y el modal fixed del detalle). */}
+          <form onSubmit={handleBusqueda} className="flex flex-wrap gap-2 w-full lg:w-auto">
+            <div className="relative flex-1 min-w-0 sm:flex-none">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" aria-hidden="true" />
               <input
                 type="text"
                 placeholder="Buscar pedido o cliente..."
+                aria-label="Buscar pedido o cliente"
                 value={busquedaInput}
                 onChange={e => setBusquedaInput(e.target.value)}
-                className="pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm w-64 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm w-full sm:w-64 focus:ring-2 focus:ring-green-500 focus:border-green-500"
               />
             </div>
-            <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
+            <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 shrink-0">
               Buscar
             </button>
             {busqueda && (
               <button
                 type="button"
                 onClick={() => { setBusquedaInput(''); setBusqueda(''); setPage(1) }}
-                className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200"
+                aria-label="Limpiar búsqueda"
+                className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200 shrink-0"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4" aria-hidden="true" />
               </button>
             )}
           </form>
@@ -445,6 +546,12 @@ export default function AdminPedidosPage() {
                 </span>
               </p>
             )}
+            {avisoEstado.textoStockDevuelto && (
+              <p data-testid="pedido-aviso-stock-devuelto">
+                <span className="font-semibold">Pedido {avisoEstado.numero}: </span>
+                {avisoEstado.textoStockDevuelto}
+              </p>
+            )}
           </div>
           <button
             type="button"
@@ -455,6 +562,11 @@ export default function AdminPedidosPage() {
             <X className="h-4 w-4 text-amber-700" aria-hidden="true" />
           </button>
         </div>
+      )}
+
+      {/* R5 (RE1): resultado de un reembolso cuyo modal ya se cerró */}
+      {resultadoReembolso && !resultadoEnModal && (
+        <ResultadoReembolsoAviso resultado={resultadoReembolso} onCerrar={() => setResultadoReembolso(null)} />
       )}
 
       {/* Error */}
@@ -516,16 +628,20 @@ export default function AdminPedidosPage() {
                         {formatMoney(pedido.total)}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span
-                          data-testid="pedido-estado"
-                          data-estado={pedido.estado}
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${badge.bg} ${badge.text}`}
-                        >
-                          {pedido.estado === ESTADO_PAGADO_SIN_STOCK && (
-                            <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                          )}
-                          {ESTADO_LABELS[pedido.estado] || pedido.estado}
-                        </span>
+                        <div className="inline-flex flex-col items-center gap-1">
+                          <span
+                            data-testid="pedido-estado"
+                            data-estado={pedido.estado}
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${badge.bg} ${badge.text}`}
+                          >
+                            {pedido.estado === ESTADO_PAGADO_SIN_STOCK && (
+                              <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                            )}
+                            {ESTADO_LABELS[pedido.estado] || pedido.estado}
+                          </span>
+                          {/* R5 (DR16 / contracargo) */}
+                          <AlertaPedidoChip pedidoId={pedido.id} alerta={pedido.alerta} />
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-center">
                         {pedido.tipo_entrega === TIPO_ENTREGA_EXPERIENCIA ? (
@@ -590,7 +706,7 @@ export default function AdminPedidosPage() {
       {modalOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center pt-4 overflow-y-auto"
-          onClick={(e) => { if (e.target === e.currentTarget) { setModalOpen(false); setDetalle(null) } }}
+          onClick={(e) => { if (e.target === e.currentTarget) cerrarModal() }}
         >
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl mx-4 my-4 relative" onClick={(e) => e.stopPropagation()}>
             {/* Header modal - sticky para que la X siempre sea visible */}
@@ -599,7 +715,7 @@ export default function AdminPedidosPage() {
                 {detalle ? `Pedido ${detalle.numero_pedido}` : 'Cargando...'}
               </h2>
               <button
-                onClick={() => { setModalOpen(false); setDetalle(null) }}
+                onClick={cerrarModal}
                 aria-label="Cerrar detalle del pedido"
                 className="p-2 hover:bg-gray-100 rounded-full bg-white shadow-sm"
               >
@@ -614,7 +730,8 @@ export default function AdminPedidosPage() {
             ) : detalle ? (
               <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
                 {/* Estado + Cambiar estado */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gray-50 rounded-lg p-4">
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
                     <span className="text-sm text-gray-500">Estado actual:</span>
                     <span
@@ -636,7 +753,7 @@ export default function AdminPedidosPage() {
                         data-testid="pedido-cambiar-estado"
                         aria-label="Nuevo estado del pedido"
                         value={nuevoEstado}
-                        onChange={e => setNuevoEstado(e.target.value)}
+                        onChange={e => { setNuevoEstado(e.target.value); setErrorEstado(null) }}
                         className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500"
                       >
                         <option value="">Cambiar a...</option>
@@ -656,6 +773,46 @@ export default function AdminPedidosPage() {
                     </div>
                   )}
                 </div>
+
+                {/* R5: marcar «reembolsado» NO devuelve dinero (fuera del grupo select + «Actualizar», T88d) */}
+                {nuevoEstado === 'reembolsado' && (
+                  <p
+                    data-testid="pedido-texto-marcar-reembolsado"
+                    className="flex items-start gap-1.5 text-sm text-purple-900 bg-purple-50 border border-purple-200 rounded-lg p-3"
+                  >
+                    <AlertTriangle className="h-4 w-4 text-purple-600 shrink-0 mt-0.5" aria-hidden="true" />
+                    <span>{TEXTO_MARCAR_REEMBOLSADO}</span>
+                  </p>
+                )}
+
+                {/* R5 (REEM1): la causa de la cancelación de un pedido con experiencias */}
+                {muestraCausa && (
+                  <label className="flex items-start gap-2 text-sm text-gray-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      data-testid="pedido-causa-arca-tierra"
+                      checked={causaArcaTierra}
+                      onChange={e => setCausaArcaTierra(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                    />
+                    <span>La cancela Arca Tierra (reembolso del 100 %)</span>
+                  </label>
+                )}
+
+                {errorEstado && (
+                  <p
+                    data-testid="pedido-estado-error"
+                    role="alert"
+                    className="flex items-start gap-1.5 text-sm text-red-800 bg-red-50 border border-red-200 rounded-lg p-3"
+                  >
+                    <AlertTriangle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" aria-hidden="true" />
+                    <span>{errorEstado}</span>
+                  </p>
+                )}
+                </div>
+
+                {/* R5 (DR15/DR16): pago doble, contracargo o reembolso parcial */}
+                <AvisosPagoDetalle avisos={detalle.avisos} />
 
                 {/* R2 (STK4): el pago llegó sin stock. Se resuelve con «Cambiar a…» (pagado, cancelado o reembolsado);
                     nada se devuelve ni se ajusta solo. Si ya se resolvió, la tabla queda como historial. */}
@@ -888,28 +1045,20 @@ export default function AdminPedidosPage() {
                 {detalle.pagos && detalle.pagos.length > 0 && (
                   <div>
                     <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">Pagos</h3>
-                    <div className="space-y-2">
-                      {detalle.pagos.map(pago => (
-                        <div key={pago.id} className="border border-gray-200 rounded-lg p-3 flex items-center justify-between">
-                          <div>
-                            <span className="text-xs text-gray-500">ID MP:</span>
-                            <span className="ml-1 font-mono text-xs">{pago.mp_payment_id || '-'}</span>
-                            <span className="ml-3 text-xs text-gray-500">{pago.mp_payment_method || ''}</span>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                              pago.mp_status === 'approved' ? 'bg-green-100 text-green-700' :
-                              pago.mp_status === 'rejected' ? 'bg-red-100 text-red-700' :
-                              'bg-yellow-100 text-yellow-700'
-                            }`}>
-                              {pago.mp_status}
-                            </span>
-                            <span className="font-semibold">{formatMoney(pago.monto_total)}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    {/* R5 (RE1): «Reembolsar» por pago aprobado de MercadoPago (solo con el permiso `reembolsos`) */}
+                    <PagosPedido
+                      pagos={detalle.pagos}
+                      puedeReembolsar={detalle.puede_reembolsar}
+                      reembolsando={reembolsando}
+                      onReembolsar={reembolsar}
+                      formatMoney={formatMoney}
+                    />
                   </div>
+                )}
+
+                {/* R5 (RE1): resultado del reembolso de este pedido, junto al botón (la recarga no cierra el modal) */}
+                {resultadoReembolso && resultadoEnModal && (
+                  <ResultadoReembolsoAviso resultado={resultadoReembolso} onCerrar={() => setResultadoReembolso(null)} />
                 )}
 
                 {/* Info adicional */}

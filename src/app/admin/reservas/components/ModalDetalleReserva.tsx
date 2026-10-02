@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   CreditCard,
   Gift,
+  History,
   Info,
   Loader2,
   Mail,
@@ -30,6 +31,21 @@ import {
   type EstadoVendedoras,
 } from '@/hooks/useVendedoras'
 import { extraerMensajeError } from './errores'
+import {
+  lotesDeCambios,
+  quienDeNota,
+  useCambiosReserva,
+  type EstadoCambios,
+  type LineaCambio,
+  type LoteCambios,
+} from './cambiosReserva'
+import CapturaTotalSheet, { type ResultadoCapturaTotal } from './CapturaTotalSheet'
+import {
+  ETIQUETA_ESTADO_REEMBOLSO,
+  puedeReembolsarPago,
+  TEXTO_CONFIRMAR_REEMBOLSO,
+  type ResultadoReembolso,
+} from '@/types/reembolsos'
 import LineaCotizacion, { textoAdultosAdicionales, textoNinosAdicionales } from './LineaCotizacion'
 import {
   formatMXN,
@@ -245,6 +261,60 @@ function mostrarAvisos(avisos: string[] | null | undefined) {
   if (Array.isArray(avisos) && avisos.length > 0) window.alert(avisos.join('\n\n'))
 }
 
+// ─── R5 (sesión 45, 2-oct): EST1, RE1 y cancelar con reembolso ─────────────────────────────
+
+/** EST1: `links_vencidos` de una respuesta (PATCH del detalle, add-ons); 0 si no viene (backend viejo). */
+function leerLinksVencidos(data: unknown): number {
+  if (typeof data !== 'object' || data === null) return 0
+  const n = Number((data as { links_vencidos?: unknown }).links_vencidos)
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0
+}
+
+function textoLinksAnuladosPorSaldo(n: number): string {
+  return n === 1
+    ? 'Se anuló 1 link de pago que pedía más que el saldo nuevo: genera uno nuevo si hace falta.'
+    : `Se anularon ${n} links de pago que pedían más que el saldo nuevo: genera uno nuevo si hace falta.`
+}
+
+/** RE1: el resultado de un reembolso tal cual lo dijo el servidor (`codigo` 'error' = otro status o sin respuesta). */
+interface AvisoReembolso {
+  ok: boolean
+  codigo: string
+  message: string
+}
+
+/** 200, 409 y 502 traen la MISMA forma (ResultadoReembolso); lo demás es un error con `detail`. */
+function esResultadoReembolso(cuerpo: unknown): cuerpo is ResultadoReembolso {
+  return (
+    typeof cuerpo === 'object' &&
+    cuerpo !== null &&
+    typeof (cuerpo as { codigo?: unknown }).codigo === 'string' &&
+    typeof (cuerpo as { message?: unknown }).message === 'string'
+  )
+}
+
+/** Cancelar con reembolso: lo que se devolvería por MercadoPago y lo que va por fuera (pagos manuales). */
+function resumenReembolsoCancelar(pagos: PagoReserva[]): { montoMP: number; nMP: number; nManuales: number } {
+  const mp = pagos.filter((p) => puedeReembolsarPago(p))
+  return {
+    montoMP: redondearCentavos(mp.reduce((s, p) => s + Number(p.monto_total), 0)),
+    nMP: mp.length,
+    nManuales: pagos.filter((p) => p.mp_status === 'approved' && !p.mp_payment_id).length,
+  }
+}
+
+function textoPagosManualesPorFuera(n: number): string {
+  return n === 1
+    ? '1 pago en efectivo o transferencia no se devuelve con MercadoPago: devuélvelo por fuera.'
+    : `${n} pagos en efectivo o transferencia no se devuelven con MercadoPago: devuélvelos por fuera.`
+}
+
+/** Lo que quedó al cancelar con «Devolver con MercadoPago lo pagado» (se queda a la vista en Acciones). */
+interface ResultadoCancelarReembolso {
+  reembolsos: ResultadoReembolso[]
+  manuales: number
+}
+
 // Correos de la reserva (GET /comunicaciones): una sola carga para Comunicaciones y Auditoría.
 interface EstadoComunicaciones {
   items: Comunicacion[] | null
@@ -357,6 +427,21 @@ export default function ModalDetalleReserva({
 
   // COT1 (R1): «Reenviar cotización» en Pagos
   const [reenvioCotizacion, setReenvioCotizacion] = useState<EstadoReenvioCotizacion>({ tipo: 'quieto' })
+
+  // R5 · EST1: links que el backend anuló porque el saldo nuevo quedó por debajo (se queda hasta cerrarlo)
+  const [linksAnulados, setLinksAnulados] = useState<number | null>(null)
+  // R5 · RE1: «Reintentar reembolso» (id del pago en curso) y lo que respondió el servidor
+  const [reintentando, setReintentando] = useState<string | null>(null)
+  const [avisoReembolso, setAvisoReembolso] = useState<AvisoReembolso | null>(null)
+  // R5: resultado de cancelar con «Devolver con MercadoPago lo pagado»
+  const [resultadoCancelar, setResultadoCancelar] = useState<ResultadoCancelarReembolso | null>(null)
+
+  // R5 · AU1: cambios de campos (GET /cambios); cada visita a Auditoría relee en silencio
+  const cambios = useCambiosReserva(reservaId, token)
+  const { recargar: recargarCambios } = cambios
+  useEffect(() => {
+    if (tab === 'auditoria') recargarCambios()
+  }, [tab, recargarCambios])
 
   // Correos de la reserva: los comparten las pestañas Comunicaciones y Auditoría (DT1-b)
   const comunicaciones = useComunicaciones(reservaId, token)
@@ -522,13 +607,10 @@ export default function ModalDetalleReserva({
     [guiasDisponibles],
   )
 
-  const totalPagado = useMemo(() => {
-    if (!reserva?.pagos) return reserva?.monto_pagado_acumulado ?? 0
-    return reserva.pagos.reduce(
-      (sum, p) => (p.mp_status === 'approved' ? sum + Number(p.monto_total) : sum),
-      0,
-    )
-  }, [reserva])
+  // R5 (TOT1): lo pagado es el del servidor (`monto_pagado_acumulado`), no la suma de las filas de `pagos`. En las del
+  // panel son iguales (medido el 2-oct: 265 de 265); en 393 del Sheet lo pagado no tiene filas (se capturó fuera del
+  // sistema) y la suma decía $0. El backend lo mantiene en pagos manuales, MercadoPago, reembolsos (resta) y TOT1.
+  const totalPagado = useMemo(() => Number(reserva?.monto_pagado_acumulado ?? 0) || 0, [reserva])
 
   const saldoPendiente = useMemo(() => {
     if (!reserva) return 0
@@ -549,6 +631,7 @@ export default function ModalDetalleReserva({
     const cambiaCodigo = codigoNuevo !== (reserva.codigo_promocional ?? '').trim()
     setSavingDatos(true)
     setConflicto(null)
+    setLinksAnulados(null)
     try {
       const res = await fetch(`${API_URL}/api/admin/reservas/${reserva.id}`, {
         method: 'PATCH',
@@ -611,6 +694,9 @@ export default function ModalDetalleReserva({
       // El PATCH responde el detalle completo (con montos recalculados si cambió
       // la cortesía): refresco silencioso sin vaciar el estado.
       const data = (await res.json().catch(() => null)) as RespuestaEdicion | null
+      // EST1 (R5): si el total bajó, el backend anuló los links que pedían más que el saldo nuevo
+      const anulados = leerLinksVencidos(data)
+      if (anulados > 0) setLinksAnulados(anulados)
       // `cupon` solo llega si el servidor evaluó un código NUEVO; si no, no se dice nada
       const motivoCupon = data?.cupon_motivo?.trim() || null
       setCuponGuardado(
@@ -676,6 +762,91 @@ export default function ModalDetalleReserva({
     }
   }
 
+  // R5 · TOT1: reserva del Sheet → total pactado (con propina) y lo ya pagado fuera del sistema. Al MISMO PATCH del
+  // detalle, solo esos campos + la versión (nunca los demás: no se re-precia ni se re-evalúa nada).
+  async function guardarTotal(total: number, pagadoExterno: number | null): Promise<ResultadoCapturaTotal> {
+    if (!token || !reserva) return { ok: false, mensaje: 'Sin sesión: vuelve a entrar al panel.' }
+    setConflicto(null)
+    setLinksAnulados(null)
+    try {
+      const res = await fetch(`${API_URL}/api/admin/reservas/${reserva.id}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          monto_total_pactado: total,
+          ...(pagadoExterno !== null ? { monto_pagado_externo: pagadoExterno } : {}),
+          // R4/s44: la versión leída, tal cual, y solo si existe
+          ...(version ? { version } : {}),
+        }),
+      })
+      if (!res.ok) {
+        const payload: unknown = await res.json().catch(() => null)
+        if (esConflictoVersion(res.status, payload)) {
+          setToast(null)
+          setConflicto(payload.detail)
+          return { ok: false, mensaje: null }
+        }
+        return { ok: false, mensaje: extraerMensajeError(payload, res.status) }
+      }
+      const data = (await res.json().catch(() => null)) as RespuestaEdicion | null
+      const anulados = leerLinksVencidos(data)
+      if (anulados > 0) setLinksAnulados(anulados)
+      if (data && data.id === reserva.id && data.booking_id) setReserva(data)
+      else await fetchReserva(true)
+      onUpdated()
+      const texto = data
+        ? `Total guardado: ${formatMXN(Number(data.monto_total))} · pagado ${formatMXN(
+            Number(data.monto_pagado_acumulado),
+          )} · saldo ${formatMXN(Number(data.monto_balance))}.`
+        : 'Total guardado.'
+      showToast(texto, 'success')
+      return { ok: true, texto }
+    } catch {
+      return { ok: false, mensaje: 'Sin conexión con el servidor: no se guardó.' }
+    }
+  }
+
+  // R5 · RE1: un reembolso que quedó en error o rechazado se reintenta con la MISMA llave (el backend la fija por pago).
+  // Dinero real: confirmación siempre; el resultado se muestra tal cual (`message`).
+  async function reintentarReembolso(p: PagoReserva) {
+    if (!token || !reserva || reintentando) return
+    const monto = Number(p.reembolso?.monto ?? p.monto_total)
+    if (!window.confirm(TEXTO_CONFIRMAR_REEMBOLSO(formatMXN(monto)))) return
+    setReintentando(p.id)
+    setAvisoReembolso(null)
+    try {
+      const res = await fetch(`${API_URL}/api/admin/reembolsos`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ pago_id: p.id, motivo: 'Reintento desde la reserva', confirmar: true }),
+      })
+      const payload: unknown = await res.json().catch(() => null)
+      if ([200, 409, 502].includes(res.status) && esResultadoReembolso(payload)) {
+        setAvisoReembolso({ ok: payload.ok === true, codigo: payload.codigo, message: payload.message })
+      } else {
+        setAvisoReembolso({ ok: false, codigo: 'error', message: extraerMensajeError(payload, res.status) })
+      }
+    } catch {
+      // Sin respuesta no se sabe si MercadoPago lo hizo: se relee antes de volver a intentar
+      setAvisoReembolso({
+        ok: false,
+        codigo: 'error',
+        message:
+          'Sin respuesta del servidor: no se sabe si el reembolso salió. Revisa el estado del pago antes de volver a intentar.',
+      })
+    } finally {
+      setReintentando(null)
+      await fetchReserva(true)
+      onUpdated()
+    }
+  }
+
   async function addAddon() {
     if (!token || !reserva || !nuevoAddonId) return
     try {
@@ -697,6 +868,9 @@ export default function ModalDetalleReserva({
         const payload = await res.json().catch(() => null)
         throw new Error(extraerMensajeError(payload, res.status))
       }
+      // EST1 (R5): recotizar con add-ons también puede anular links (si el backend lo dice)
+      const anuladosAddon = leerLinksVencidos(await res.json().catch(() => null))
+      if (anuladosAddon > 0) setLinksAnulados(anuladosAddon)
       setNuevoAddonId('')
       setNuevoAddonCant(1)
       showToast('Add-on agregado', 'success')
@@ -722,6 +896,8 @@ export default function ModalDetalleReserva({
         const payload = await res.json().catch(() => null)
         throw new Error(extraerMensajeError(payload, res.status))
       }
+      const anuladosAddon = leerLinksVencidos(await res.json().catch(() => null))
+      if (anuladosAddon > 0) setLinksAnulados(anuladosAddon)
       showToast('Add-on eliminado', 'success')
       await fetchReserva(true)
       onUpdated()
@@ -837,6 +1013,9 @@ export default function ModalDetalleReserva({
         const payload = await res.json().catch(() => null)
         throw new Error(extraerMensajeError(payload, res.status))
       }
+      // EST1 (R5): más invitados no anula links; menos sí puede (saldo más bajo)
+      const anulados = leerLinksVencidos(await res.json().catch(() => null))
+      if (anulados > 0) setLinksAnulados(anulados)
       showToast(
         reserva.cortesia ? 'Invitados actualizados (cortesía: total $0)' : 'Cotización actualizada',
         'success',
@@ -889,9 +1068,24 @@ export default function ModalDetalleReserva({
     const pagos = reserva.pagos ?? []
     const hayPagoEnCamino = pagosEnCamino(pagos).length > 0
     const linksPorVencer = linksSinCobrar(pagos).length
+    // R5: la casilla solo existe con el permiso `reembolsos`; sin ella nunca se pide reembolso
+    const procesar = reserva.puede_reembolsar === true && procesarReembolso
     const lineas = [`Cancelar la reserva ${reserva.booking_id}?`, 'Esta accion no se puede deshacer.']
     if (hayPagoEnCamino) lineas.push('', AVISO_PAGO_EN_CAMINO)
     if (linksPorVencer > 0) lineas.push('', textoLinksPorVencer(linksPorVencer))
+    if (procesar) {
+      // Dinero real: el monto y que no se deshace, dichos antes de confirmar
+      const r = resumenReembolsoCancelar(pagos)
+      lineas.push(
+        '',
+        r.nMP > 0
+          ? `Se devolverá ${formatMXN(r.montoMP)} por MercadoPago (${r.nMP} ${
+              r.nMP === 1 ? 'pago' : 'pagos'
+            }). Es dinero real y no se puede deshacer.`
+          : 'No hay pagos de MercadoPago acreditados que devolver.',
+      )
+      if (r.nManuales > 0) lineas.push(textoPagosManualesPorFuera(r.nManuales))
+    }
     lineas.push(
       '',
       notificarClienteCancel
@@ -900,6 +1094,7 @@ export default function ModalDetalleReserva({
     )
     if (!window.confirm(lineas.join('\n'))) return
     setCancelando(true)
+    setResultadoCancelar(null)
     try {
       const res = await fetch(
         `${API_URL}/api/admin/reservas/${reserva.id}/cancelar`,
@@ -911,7 +1106,7 @@ export default function ModalDetalleReserva({
           },
           body: JSON.stringify({
             motivo: motivoCancelacion.trim(),
-            procesar_reembolso: procesarReembolso,
+            procesar_reembolso: procesar,
             notificar_cliente: notificarClienteCancel,
           }),
         },
@@ -926,8 +1121,16 @@ export default function ModalDetalleReserva({
       const partes = ['Reserva cancelada.']
       if (data.links_vencidos > 0) partes.push(textoLinksVencidos(data.links_vencidos))
       partes.push(textoCorreo(data.correo_cliente))
+      // R5: el resultado de cada reembolso se queda a la vista en Acciones (un reembolso fallido NO deshace la cancelación)
+      const reembolsos = Array.isArray(data.reembolsos) ? data.reembolsos : []
+      const manuales = Number(data.pagos_manuales_sin_reembolso ?? 0) || 0
+      if (procesar || reembolsos.length > 0 || manuales > 0) {
+        setResultadoCancelar({ reembolsos, manuales })
+        partes.push('Abajo, el resultado de los reembolsos.')
+      }
       showToast(partes.filter(Boolean).join(' '), 'success')
       setMotivoCancelacion('')
+      setProcesarReembolso(false)
       // Silent refetch: el detalle se queda abierto y muestra la reserva cancelada
       await fetchReserva(true)
       onUpdated()
@@ -1191,6 +1394,28 @@ export default function ModalDetalleReserva({
           </div>
         )}
 
+        {/* R5 · EST1: el saldo bajó y el backend anuló los links que pedían más */}
+        {linksAnulados !== null && linksAnulados > 0 && (
+          <div
+            role="status"
+            data-testid="detalle-links-vencidos"
+            className="shrink-0 mx-6 mt-4 rounded-lg p-3 text-sm bg-amarillo-bg text-verde border border-amarillo/40 flex flex-wrap items-start gap-3"
+          >
+            <p className="flex items-start gap-2 flex-1 min-w-[12rem]">
+              <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-amarillo" aria-hidden="true" />
+              <span>{textoLinksAnuladosPorSaldo(linksAnulados)}</span>
+            </p>
+            <button
+              type="button"
+              onClick={() => setLinksAnulados(null)}
+              data-testid="detalle-links-vencidos-cerrar"
+              className="px-3 py-1.5 rounded-lg border border-neutro-borde bg-white text-verde text-sm hover:bg-neutro-light"
+            >
+              Entendido
+            </button>
+          </div>
+        )}
+
         {/* Tab content */}
         <div className="flex-1 overflow-auto px-6 py-4">
           {tab === 'datos' && (
@@ -1242,14 +1467,21 @@ export default function ModalDetalleReserva({
               totalPagado={totalPagado}
               saldoPendiente={saldoPendiente}
               cortesia={reserva.cortesia === true}
+              cancelada={reserva.estado === 'cancelada'}
               onAbrirPagoManual={() => setShowPagoManual(true)}
               onAbrirLinkMP={() => setShowLinkMP(true)}
               reenvioCotizacion={reenvioCotizacion}
               onReenviarCotizacion={reenviarCotizacion}
+              onGuardarTotal={guardarTotal}
+              reintentando={reintentando}
+              avisoReembolso={avisoReembolso}
+              onReintentarReembolso={reintentarReembolso}
             />
           )}
           {tab === 'comunicaciones' && <TabComunicaciones estado={comunicaciones} />}
-          {tab === 'auditoria' && <TabAuditoria reserva={reserva} comunicaciones={comunicaciones} />}
+          {tab === 'auditoria' && (
+            <TabAuditoria reserva={reserva} comunicaciones={comunicaciones} cambios={cambios} />
+          )}
           {tab === 'acciones' && (
             <TabAcciones
               realizada={
@@ -1275,6 +1507,9 @@ export default function ModalDetalleReserva({
               setMotivoCancelacion={setMotivoCancelacion}
               procesarReembolso={procesarReembolso}
               setProcesarReembolso={setProcesarReembolso}
+              puedeReembolsar={reserva.puede_reembolsar === true}
+              resumenReembolso={resumenReembolsoCancelar(reserva.pagos ?? [])}
+              resultadoCancelar={resultadoCancelar}
               onCancelarReserva={cancelarReserva}
             />
           )}
@@ -1291,7 +1526,8 @@ export default function ModalDetalleReserva({
         </footer>
       </div>
 
-      {showLinkMP && !reserva.cortesia && (
+      {/* CAN1 (R5): una reserva cancelada ya no recibe pagos ni links: los sub-modales no se montan */}
+      {showLinkMP && !reserva.cortesia && reserva.estado !== 'cancelada' && (
         <ModalLinkMP
           reservaId={reserva.id}
           bookingId={reserva.booking_id}
@@ -1307,7 +1543,7 @@ export default function ModalDetalleReserva({
           onClose={() => setShowLinkMP(false)}
         />
       )}
-      {showPagoManual && !reserva.cortesia && (
+      {showPagoManual && !reserva.cortesia && reserva.estado !== 'cancelada' && (
         <ModalPagoManual
           reservaId={reserva.id}
           bookingId={reserva.booking_id}
@@ -2490,25 +2726,39 @@ function TabPagos({
   totalPagado,
   saldoPendiente,
   cortesia,
+  cancelada,
   onAbrirPagoManual,
   onAbrirLinkMP,
   reenvioCotizacion,
   onReenviarCotizacion,
+  onGuardarTotal,
+  reintentando,
+  avisoReembolso,
+  onReintentarReembolso,
 }: {
   reserva: Reserva
   totalPagado: number
   saldoPendiente: number
   cortesia: boolean
+  /** CAN1 (R5): sin «Pago manual» ni «Generar link MP». */
+  cancelada: boolean
   onAbrirPagoManual: () => void
   onAbrirLinkMP: () => void
   reenvioCotizacion: EstadoReenvioCotizacion
   onReenviarCotizacion: () => void
+  /** TOT1 (R5): solo se usa si el detalle trae `puede_capturar_total`. */
+  onGuardarTotal: (total: number, pagadoExterno: number | null) => Promise<ResultadoCapturaTotal>
+  /** RE1 (R5): id del pago cuyo reintento está en curso. */
+  reintentando: string | null
+  avisoReembolso: AvisoReembolso | null
+  onReintentarReembolso: (p: PagoReserva) => void
 }) {
   const pagos = reserva.pagos ?? []
   const total = Number(reserva.monto_total)
   const porcentaje = total > 0 ? Math.min(100, (totalPagado / total) * 100) : 0
   // Cortesía: lo que valdría (experiencia + add-ons), solo de referencia.
   const valorCortesia = Number(reserva.precio_base) + Number(reserva.monto_addons)
+  const puedeReembolsar = reserva.puede_reembolsar === true
 
   return (
     <div className="space-y-4">
@@ -2585,6 +2835,11 @@ function TabPagos({
         </div>
       )}
 
+      {/* TOT1 (R5): total y pagado de una reserva del Sheet (lo decide el backend con el permiso `reportes`) */}
+      {reserva.puede_capturar_total === true && (
+        <CapturaTotalSheet reserva={reserva} onGuardar={onGuardarTotal} />
+      )}
+
       {/* R1: a 390 px las 6 columnas no caben; la tabla se desplaza aquí dentro (antes se cortaban
           Estado y Ref MP con overflow-hidden) */}
       <div className="bg-white border border-neutro-borde rounded-lg overflow-x-auto">
@@ -2607,6 +2862,9 @@ function TabPagos({
                 Estado
               </th>
               <th scope="col" className="text-left px-3 py-2 font-medium text-verde">
+                Vence
+              </th>
+              <th scope="col" className="text-left px-3 py-2 font-medium text-verde">
                 Ref MP
               </th>
             </tr>
@@ -2614,7 +2872,7 @@ function TabPagos({
           <tbody>
             {pagos.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-3 py-6 text-center text-verde-suave">
+                <td colSpan={7} className="px-3 py-6 text-center text-verde-suave">
                   No hay pagos registrados.
                 </td>
               </tr>
@@ -2632,23 +2890,76 @@ function TabPagos({
                     {formatMXN(Number(p.monto_total))}
                   </td>
                   <td className="px-3 py-2">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                        p.mp_status === 'approved'
-                          ? 'bg-verde/10 text-verde border border-verde/30'
-                          : p.mp_status === 'cancelled'
-                            ? 'bg-neutro-light text-verde-suave border border-neutro-borde'
-                            : 'bg-amarillo-bg text-verde border border-amarillo/30'
-                      }`}
-                    >
-                      {p.mp_status}
-                    </span>
+                    {p.vencido === true ? (
+                      // LNK1 (R5): el link pasó su fecha sin cobrarse
+                      <span
+                        data-testid={`pago-vencido-${p.id}`}
+                        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-neutro-light text-verde-suave border border-neutro-borde"
+                      >
+                        Vencido
+                      </span>
+                    ) : (
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          p.mp_status === 'approved'
+                            ? 'bg-verde/10 text-verde border border-verde/30'
+                            : p.mp_status === 'cancelled'
+                              ? 'bg-neutro-light text-verde-suave border border-neutro-borde'
+                              : 'bg-amarillo-bg text-verde border border-amarillo/30'
+                        }`}
+                      >
+                        {p.mp_status}
+                      </span>
+                    )}
                     {estadoPagoTexto(p) && (
                       <p className="text-xs text-verde-suave mt-0.5">{estadoPagoTexto(p)}</p>
                     )}
+                    {/* RE1 (R5): el reembolso de este pago, y reintentar si quedó en error o rechazado */}
+                    {p.reembolso && (
+                      <p
+                        data-testid={`pago-reembolso-${p.id}`}
+                        data-estado={p.reembolso.estado}
+                        className={`text-xs mt-0.5 font-medium ${
+                          p.reembolso.estado === 'aprobado'
+                            ? 'text-verde'
+                            : p.reembolso.estado === 'solicitado'
+                              ? 'text-azul'
+                              : 'text-rojo'
+                        }`}
+                      >
+                        {ETIQUETA_ESTADO_REEMBOLSO[p.reembolso.estado] ?? p.reembolso.estado}
+                      </p>
+                    )}
+                    {p.reembolso?.error && (
+                      <p data-testid={`pago-reembolso-error-${p.id}`} className="text-xs text-verde-suave">
+                        {p.reembolso.error}
+                      </p>
+                    )}
+                    {p.reembolso && puedeReembolsar && puedeReembolsarPago(p) && (
+                      <button
+                        type="button"
+                        data-testid={`pago-reintentar-reembolso-${p.id}`}
+                        onClick={() => onReintentarReembolso(p)}
+                        disabled={reintentando !== null}
+                        className="mt-1 inline-flex items-center gap-1 whitespace-nowrap border border-terracota text-terracota hover:bg-terracota/5 px-2 py-1 rounded-lg text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {reintentando === p.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                        ) : (
+                          <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+                        )}
+                        Reintentar reembolso
+                      </button>
+                    )}
+                  </td>
+                  <td
+                    data-testid={`pago-vence-${p.id}`}
+                    className="px-3 py-2 text-verde whitespace-nowrap"
+                  >
+                    {p.vence_en ? formatFechaMexico(p.vence_en, { year: undefined }) : '—'}
                   </td>
                   <td className="px-3 py-2 text-xs font-mono">
-                    {p.init_point ? (
+                    {p.init_point && p.vencido !== true ? (
                       <a
                         href={p.init_point}
                         target="_blank"
@@ -2671,24 +2982,60 @@ function TabPagos({
         </table>
       </div>
 
+      {/* RE1 (R5): lo que respondió el servidor al reintentar (message tal cual) */}
+      {avisoReembolso && (
+        <p
+          role={avisoReembolso.ok ? 'status' : 'alert'}
+          data-testid="pago-reembolso-resultado"
+          data-codigo={avisoReembolso.codigo}
+          className={`rounded-lg p-3 text-sm border ${
+            avisoReembolso.ok
+              ? 'bg-verde/10 border-verde/30 text-verde'
+              : avisoReembolso.codigo === 'en_proceso' || avisoReembolso.codigo === 'ya_reembolsado'
+                ? 'bg-amarillo-bg border-amarillo/40 text-verde'
+                : 'bg-rojo-bg border-rojo/30 text-rojo'
+          }`}
+        >
+          {avisoReembolso.message}
+        </p>
+      )}
+
+      {/* CAN1 (R5): una reserva cancelada ya no recibe pagos ni links */}
+      {cancelada && !cortesia && (
+        <p
+          data-testid="pagos-cancelada"
+          role="note"
+          className="bg-neutro-light/60 border border-neutro-borde rounded-lg p-3 text-sm text-verde flex gap-2"
+        >
+          <Info className="h-4 w-4 flex-shrink-0 mt-0.5 text-verde-suave" aria-hidden="true" />
+          <span>Reserva cancelada: ya no recibe pagos ni links.</span>
+        </p>
+      )}
+
       {!cortesia && (
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={onAbrirPagoManual}
-            className="inline-flex items-center gap-2 bg-verde hover:bg-verde-claro text-white px-4 py-2 rounded-lg text-sm font-medium"
-          >
-            <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-            Pago manual
-          </button>
-          <button
-            type="button"
-            onClick={onAbrirLinkMP}
-            className="inline-flex items-center gap-2 bg-terracota hover:bg-terracota-dark text-white px-4 py-2 rounded-lg text-sm font-medium"
-          >
-            <CreditCard className="h-4 w-4" aria-hidden="true" />
-            Generar link MP
-          </button>
+          {!cancelada && (
+            <>
+              <button
+                type="button"
+                data-testid="detalle-pago-manual"
+                onClick={onAbrirPagoManual}
+                className="inline-flex items-center gap-2 bg-verde hover:bg-verde-claro text-white px-4 py-2 rounded-lg text-sm font-medium"
+              >
+                <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                Pago manual
+              </button>
+              <button
+                type="button"
+                data-testid="detalle-generar-link"
+                onClick={onAbrirLinkMP}
+                className="inline-flex items-center gap-2 bg-terracota hover:bg-terracota-dark text-white px-4 py-2 rounded-lg text-sm font-medium"
+              >
+                <CreditCard className="h-4 w-4" aria-hidden="true" />
+                Generar link MP
+              </button>
+            </>
+          )}
           {/* COT1 (R1): si el correo de la cotización falló, se reenvía desde aquí (antes, a mano) */}
           <button
             type="button"
@@ -2864,6 +3211,8 @@ const ESTADO_LINK: Record<string, string> = {
   anulado_por_cortesia: 'Link anulado al marcar la reserva como cortesía',
   anulado_por_cancelacion: 'Link anulado al cancelar la reserva',
   anulado_por_pago_manual: 'Link anulado por un pago manual (pedía más que el saldo)',
+  // R5 (EST1): el total bajó y el link pedía más que el saldo nuevo (propuesta de backend-reservas)
+  anulado_por_cambio_de_total: 'Link anulado porque el total cambió (pedía más que el saldo)',
 }
 
 function esPagoManual(p: PagoReserva): boolean {
@@ -2876,6 +3225,8 @@ function esLinkDePago(p: PagoReserva): boolean {
 
 /** Una línea bajo el estado en la tabla de Pagos (null = no hace falta explicar). */
 function estadoPagoTexto(p: PagoReserva): string | null {
+  // LNK1 (R5): el link pasó su fecha sin cobrarse (ya no se puede abrir)
+  if (p.vencido === true) return 'Venció sin cobrarse'
   if (esLinkDePago(p)) {
     if (p.mp_status_detail && ESTADO_LINK[p.mp_status_detail]) return ESTADO_LINK[p.mp_status_detail]
     return p.mp_status === 'pending' ? ESTADO_LINK.link_generado : null
@@ -3094,8 +3445,9 @@ function TabComunicaciones({ estado }: { estado: EstadoComunicaciones }) {
 // ============================================================================
 // TAB 6 — Auditoria (DT1-b, 30-sep): línea de tiempo armada SOLO con lo que ya queda
 // registrado con fecha: alta, notas fechadas, pagos/links, correos y guías asignados.
+// R5 (AU1, 2-oct): + un evento «cambio» por cada guardado (GET /cambios, disparador en la base).
 // ============================================================================
-type TipoEventoAuditoria = 'alta' | 'nota' | 'pago' | 'correo' | 'guia'
+type TipoEventoAuditoria = 'alta' | 'nota' | 'pago' | 'correo' | 'guia' | 'cambio'
 
 interface EventoAuditoria {
   tipo: TipoEventoAuditoria
@@ -3108,6 +3460,10 @@ interface EventoAuditoria {
   titulo: string
   detalle?: string
   quien?: string
+  /** AU1: «Etiqueta: antes → después», una por campo (solo eventos 'cambio'). */
+  lineas?: LineaCambio[]
+  /** AU1: número de lote (mismo guardado). */
+  lote?: number
 }
 
 const FORMATO_CLAVE_MEXICO = new Intl.DateTimeFormat('en-CA', {
@@ -3147,7 +3503,11 @@ function eventoDeNota(texto: string, quien: string | undefined): { titulo: strin
   return { titulo: quien ? 'Nota interna' : 'Aviso del sistema', detalle: texto }
 }
 
-function armarEventos(reserva: Reserva, correos: Comunicacion[]): EventoAuditoria[] {
+function armarEventos(
+  reserva: Reserva,
+  correos: Comunicacion[],
+  lotes: LoteCambios[] = [],
+): EventoAuditoria[] {
   const eventos: EventoAuditoria[] = []
   const agregar = (ev: Omit<EventoAuditoria, 'orden'>) => eventos.push({ ...ev, orden: eventos.length })
 
@@ -3247,7 +3607,30 @@ function armarEventos(reserva: Reserva, correos: Comunicacion[]): EventoAuditori
     if (!m) continue
     const [, fecha, hora, quien, texto] = m
     const { titulo, detalle } = eventoDeNota(texto, quien)
-    agregar({ tipo: 'nota', clave: `${fecha} ${hora}:00`, conHora: true, titulo, detalle, quien })
+    // C5 (R5): el renglón trae el correo del empleado; en pantalla nunca (regla R3)
+    agregar({
+      tipo: 'nota',
+      clave: `${fecha} ${hora}:00`,
+      conHora: true,
+      titulo,
+      detalle,
+      quien: quien ? quienDeNota(quien) : undefined,
+    })
+  }
+
+  // AU1 (R5): un evento por lote, del más viejo al más nuevo para que el desempate deje arriba el más nuevo
+  for (const l of [...lotes].reverse()) {
+    const clave = claveMexico(l.creadoEn)
+    if (!clave) continue
+    agregar({
+      tipo: 'cambio',
+      clave,
+      conHora: true,
+      titulo: l.titulo,
+      quien: l.quien,
+      lineas: l.lineas,
+      lote: l.lote,
+    })
   }
 
   // Más nuevo arriba
@@ -3262,17 +3645,24 @@ const ICONO_EVENTO: Record<TipoEventoAuditoria, typeof CalendarClock> = {
   pago: CreditCard,
   correo: Mail,
   guia: UserCheck,
+  cambio: History,
 }
 
 function TabAuditoria({
   reserva,
   comunicaciones,
+  cambios,
 }: {
   reserva: Reserva
   comunicaciones: EstadoComunicaciones
+  cambios: EstadoCambios
 }) {
   const { items, error, recargar } = comunicaciones
-  const eventos = useMemo(() => armarEventos(reserva, items ?? []), [reserva, items])
+  const itemsCambios = cambios.items
+  const eventos = useMemo(
+    () => armarEventos(reserva, items ?? [], lotesDeCambios(itemsCambios ?? [])),
+    [reserva, items, itemsCambios],
+  )
 
   return (
     <div className="space-y-3">
@@ -3299,6 +3689,41 @@ function TabAuditoria({
           </button>
         </div>
       )}
+      {/* AU1 (R5): si los cambios no cargan, la línea de tiempo de siempre sigue; aviso discreto */}
+      {itemsCambios === null && !cambios.error && (
+        <p
+          data-testid="auditoria-cambios-cargando"
+          className="text-xs text-verde-suave flex items-center gap-2"
+        >
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+          Cargando los cambios…
+        </p>
+      )}
+      {cambios.error && (
+        <div
+          role="status"
+          data-testid="auditoria-cambios-error"
+          className="bg-amarillo-bg border border-amarillo/40 rounded-lg p-2 text-xs text-verde flex items-start gap-2"
+        >
+          <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5 text-amarillo" aria-hidden="true" />
+          <p className="flex-1">
+            No se pudieron cargar los cambios de campos (faltan en la lista): {cambios.error}
+          </p>
+          <button
+            type="button"
+            onClick={() => cambios.recargar()}
+            className="underline hover:no-underline"
+          >
+            Reintentar
+          </button>
+        </div>
+      )}
+
+      {itemsCambios !== null && cambios.total > itemsCambios.length && (
+        <p data-testid="auditoria-cambios-recortados" className="text-xs text-verde-suave">
+          Se muestran los {itemsCambios.length} cambios de campos más recientes de {cambios.total}.
+        </p>
+      )}
 
       <ol className="space-y-2">
         {eventos.map((ev) => {
@@ -3308,6 +3733,7 @@ function TabAuditoria({
               key={`${ev.tipo}-${ev.orden}`}
               data-testid="auditoria-evento"
               data-tipo={ev.tipo}
+              data-lote={ev.lote}
               className="border border-neutro-borde rounded-lg p-3 bg-white flex gap-3"
             >
               <Icono className="h-5 w-5 text-verde-suave flex-shrink-0 mt-0.5" aria-hidden="true" />
@@ -3318,17 +3744,32 @@ function TabAuditoria({
                   {ev.quien ? ` · ${ev.quien}` : ''}
                 </p>
                 {ev.detalle && <p className="text-xs text-verde break-words mt-0.5">{ev.detalle}</p>}
+                {ev.lineas && ev.lineas.length > 0 && (
+                  <ul className="mt-0.5 space-y-0.5">
+                    {ev.lineas.map((l, i) => (
+                      <li
+                        key={`${l.campo}-${i}`}
+                        data-testid="auditoria-cambio-campo"
+                        data-campo={l.campo}
+                        className="text-xs text-verde break-words"
+                      >
+                        {l.texto}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </li>
           )
         })}
       </ol>
 
-      <p className="text-xs text-verde-suave italic">
-        Aquí sale lo que queda registrado con fecha: el alta, las notas fechadas (cancelar,
-        reagendar, avisos del sistema), los pagos y links, los correos y los guías asignados. No se
-        registran los cambios sueltos de campos (invitados, precio, chinampa, notas sin fecha…) ni
-        quién los hizo.
+      <p data-testid="auditoria-pie" className="text-xs text-verde-suave italic">
+        Aquí sale lo que queda registrado con fecha: el alta, cada cambio de campos guardado (qué
+        cambió, de qué a qué, quién y desde dónde), las notas fechadas (cancelar, reagendar, avisos
+        del sistema), los pagos y links, los correos y los guías asignados. Los cambios de campos se
+        registran desde el 2 de octubre de 2026; lo anterior no tiene ese detalle. Los montos solo se
+        ven con el permiso de reportes.
       </p>
     </div>
   )
@@ -3357,6 +3798,9 @@ function TabAcciones({
   setMotivoCancelacion,
   procesarReembolso,
   setProcesarReembolso,
+  puedeReembolsar,
+  resumenReembolso,
+  resultadoCancelar,
   onCancelarReserva,
 }: {
   /** B6: si se puede marcar como realizada y, si no, por qué (se muestra). */
@@ -3381,6 +3825,12 @@ function TabAcciones({
   setMotivoCancelacion: (v: string) => void
   procesarReembolso: boolean
   setProcesarReembolso: (v: boolean) => void
+  /** R5: permiso `reembolsos` (sin él no hay casilla y nunca se pide reembolso). */
+  puedeReembolsar: boolean
+  /** R5: lo que se devolvería por MercadoPago y los pagos manuales que van por fuera. */
+  resumenReembolso: { montoMP: number; nMP: number; nManuales: number }
+  /** R5: resultado de la última cancelación con reembolso (se queda a la vista). */
+  resultadoCancelar: ResultadoCancelarReembolso | null
   onCancelarReserva: () => void
 }) {
   return (
@@ -3498,15 +3948,35 @@ function TabAcciones({
               className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rojo/30 focus:border-rojo"
               placeholder="Razon de la cancelacion..."
             />
-            <label className="flex items-center gap-2 text-sm text-verde cursor-pointer mt-2">
-              <input
-                type="checkbox"
-                checked={procesarReembolso}
-                onChange={(e) => setProcesarReembolso(e.target.checked)}
-                className="w-4 h-4 text-rojo border-neutro-borde rounded focus:ring-rojo"
-              />
-              Procesar reembolso de pagos aprobados
-            </label>
+            {/* R5 (RE1): con el permiso `reembolsos`, cancelar devuelve por MercadoPago lo pagado (dinero real) */}
+            {puedeReembolsar && (
+              <label className="flex items-start gap-2 text-sm text-verde cursor-pointer mt-2">
+                <input
+                  type="checkbox"
+                  data-testid="cancel-procesar-reembolso"
+                  checked={procesarReembolso}
+                  onChange={(e) => setProcesarReembolso(e.target.checked)}
+                  aria-describedby="cancel-reembolso-resumen"
+                  className="w-4 h-4 mt-0.5 text-rojo border-neutro-borde rounded focus:ring-rojo"
+                />
+                <span>
+                  Devolver con MercadoPago lo pagado
+                  <span
+                    id="cancel-reembolso-resumen"
+                    data-testid="cancel-reembolso-resumen"
+                    className="block text-xs text-verde-suave"
+                  >
+                    {resumenReembolso.nMP > 0
+                      ? `Se devuelven ${formatMXN(resumenReembolso.montoMP)} de ${resumenReembolso.nMP} ${
+                          resumenReembolso.nMP === 1 ? 'pago acreditado' : 'pagos acreditados'
+                        } por MercadoPago. Es dinero real y no se puede deshacer.`
+                      : 'No hay pagos de MercadoPago acreditados que devolver.'}
+                    {resumenReembolso.nManuales > 0 &&
+                      ` ${textoPagosManualesPorFuera(resumenReembolso.nManuales)}`}
+                  </span>
+                </span>
+              </label>
+            )}
             <label className="flex items-start gap-2 text-sm text-verde cursor-pointer mt-2">
               <input
                 type="checkbox"
@@ -3568,6 +4038,47 @@ function TabAcciones({
               Cancelar reserva
             </button>
           </>
+        )}
+
+        {/* R5: qué pasó con cada reembolso al cancelar (uno que falla NO deshace la cancelación) */}
+        {resultadoCancelar && (
+          <div
+            data-testid="cancel-resultado-reembolsos"
+            role="status"
+            className="mt-3 bg-white border border-neutro-borde rounded-lg p-3 space-y-1 text-sm"
+          >
+            <p className="font-medium text-verde">Reembolsos de la cancelación</p>
+            {resultadoCancelar.reembolsos.length === 0 && resultadoCancelar.manuales === 0 && (
+              <p className="text-verde-suave">No había pagos de MercadoPago acreditados que devolver.</p>
+            )}
+            {resultadoCancelar.reembolsos.map((r) => (
+              <p
+                key={r.pago_id}
+                data-testid={`cancel-reembolso-${r.pago_id}`}
+                data-codigo={r.codigo}
+                className={`flex items-start gap-2 ${r.ok ? 'text-verde' : 'text-rojo'}`}
+              >
+                {r.ok ? (
+                  <CheckCircle2 className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                ) : (
+                  <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                )}
+                <span>
+                  {formatMXN(Number(r.monto))}: {r.message}
+                </span>
+              </p>
+            ))}
+            {resultadoCancelar.manuales > 0 && (
+              <p data-testid="cancel-pagos-manuales" className="flex items-start gap-2 text-verde">
+                <Info className="h-4 w-4 flex-shrink-0 mt-0.5 text-azul" aria-hidden="true" />
+                <span>
+                  {resultadoCancelar.manuales === 1
+                    ? '1 pago en efectivo o transferencia: devuélvelo por fuera.'
+                    : `${resultadoCancelar.manuales} pagos en efectivo o transferencia: devuélvelos por fuera.`}
+                </span>
+              </p>
+            )}
+          </div>
         )}
       </div>
     </div>
