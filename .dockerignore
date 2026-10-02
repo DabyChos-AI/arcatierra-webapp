@@ -52,3 +52,7 @@ README.md
 # src/lib/api.ts es el mismo. Lo vigila arca_tierra_api/docs/fases/test-imagenes-sin-env.sh.
 .env
 .env.*
+
+# R7 (B1): respaldos sueltos nunca entran al contexto del build
+*.bak*
+*.backup*
