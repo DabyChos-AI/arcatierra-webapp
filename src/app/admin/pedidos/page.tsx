@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { formatFechaHoraMexico, formatFechaMexico } from '@/lib/dates'
 import { textoPersonas } from '@/types/compra-experiencias'
+import { textoDireccion } from '@/types/datos-cliente'
 import {
   aNumero,
   ESTADO_PAGADO_SIN_STOCK,
@@ -888,22 +889,31 @@ export default function AdminPedidosPage() {
                   </div>
                 </div>
 
-                {/* Dirección */}
-                {(detalle.direccion_entrega || detalle.direccion_principal) && (
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">Dirección de entrega</h3>
-                    {detalle.direccion_principal ? (
-                      <p className="text-gray-700">
-                        {detalle.direccion_principal.calle} {detalle.direccion_principal.numero_exterior}
-                        {detalle.direccion_principal.numero_interior ? ` Int. ${detalle.direccion_principal.numero_interior}` : ''}
-                        , {detalle.direccion_principal.colonia}, CP {detalle.direccion_principal.codigo_postal}
-                        , {detalle.direccion_principal.ciudad}
+                {/* Dirección (R6): primero la DEL PEDIDO (a donde se entrega); la principal del cliente
+                    debajo y solo si es distinta. Antes se pintaba la principal como si fuera la del pedido. */}
+                {(detalle.direccion_entrega?.trim() || detalle.direccion_principal) && (() => {
+                  const delPedido = detalle.direccion_entrega?.trim() ?? ''
+                  const p = detalle.direccion_principal
+                  // El mismo formato que guarda el backend en `direccion_entrega` (texto_direccion)
+                  const principal = p ? textoDireccion(p) : ''
+                  const comparable = (t: string) =>
+                    t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+                  const mostrarPrincipal = !!principal && comparable(principal) !== comparable(delPedido)
+                  return (
+                    <div data-testid="pedido-direccion">
+                      <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">Dirección de entrega</h3>
+                      <p data-testid="pedido-direccion-entrega" className={delPedido ? 'text-gray-700' : 'text-gray-500 italic'}>
+                        {delPedido || 'El pedido no trae dirección.'}
                       </p>
-                    ) : (
-                      <p className="text-gray-700">{detalle.direccion_entrega}</p>
-                    )}
-                  </div>
-                )}
+                      {mostrarPrincipal && (
+                        <div className="mt-3">
+                          <span className="text-xs text-gray-500">Dirección principal del cliente</span>
+                          <p data-testid="pedido-direccion-principal" className="text-gray-700">{principal}</p>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })()}
 
                 {/* Notas de entrega */}
                 {detalle.notas_entrega && (

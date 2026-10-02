@@ -8,6 +8,7 @@ import { formatFechaMexico } from '@/lib/dates'
 import { useVendedoras, type Vendedora } from '@/hooks/useVendedoras'
 import { hoyMexico } from '@/app/admin/eventos/components/fechas'
 import type { ItemCatalogo, ListaCatalogo, TipoCatalogo } from '@/types/planeacion'
+import { motivoCorreoRechazado, normalizarCorreo } from '@/types/datos-cliente'
 import {
   calcularCotizacion,
   formatMXN,
@@ -375,6 +376,14 @@ export default function ModalNuevaReserva({
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // EML1 (R6, DR17): en venta directa el correo es obligatorio (reseller no: el cliente es del
+  // reseller). Mismo criterio que el 400 del backend (`motivoCorreoRechazado`). El motivo se
+  // muestra al salir del campo o al intentar avanzar, no mientras se escribe la primera vez.
+  const motivoCorreo =
+    wiz.tipoCliente === 'directo' ? motivoCorreoRechazado(wiz.clienteEmail, wiz.clienteNombre) : null
+  const [mostrarMotivoCorreo, setMostrarMotivoCorreo] = useState(false)
+  const correoRef = useRef<HTMLInputElement>(null)
+
   const cot = useMemo(() => calcularCotizacion(wiz), [wiz])
 
   // Fase 4b: precios del servidor (C2) y revisión del código promocional (C3)
@@ -633,7 +642,7 @@ export default function ModalNuevaReserva({
     switch (wiz.step) {
       case 1:
         return wiz.tipoCliente === 'directo'
-          ? wiz.clienteNombre.trim().length > 0
+          ? wiz.clienteNombre.trim().length > 0 && motivoCorreo === null
           : !!wiz.resellerId && wiz.clienteNombre.trim().length > 0
       case 2:
         return (
@@ -659,8 +668,24 @@ export default function ModalNuevaReserva({
       default:
         return false
     }
-  }, [wiz, cot])
+  }, [wiz, cot, motivoCorreo])
 
+  // EML1: con el nombre escrito y solo el correo mal, «Siguiente» se deja pulsar para decir POR QUÉ
+  // no avanza (un botón deshabilitado no explica nada); el paso sigue sin avanzar.
+  const soloFaltaCorreo =
+    wiz.step === 1 &&
+    wiz.tipoCliente === 'directo' &&
+    wiz.clienteNombre.trim().length > 0 &&
+    motivoCorreo !== null
+
+  function avanzar() {
+    if (soloFaltaCorreo) {
+      setMostrarMotivoCorreo(true)
+      correoRef.current?.focus()
+      return
+    }
+    dispatch({ type: 'NEXT' })
+  }
   const guiasPendientes = useMemo(
     () =>
       guias
@@ -675,6 +700,12 @@ export default function ModalNuevaReserva({
       setError('Sesion no valida')
       return
     }
+    // EML1: el paso 1 ya lo exige; si aun así llega aquí sin correo válido, se regresa al campo
+    if (motivoCorreo !== null) {
+      setMostrarMotivoCorreo(true)
+      dispatch({ type: 'SET_STEP', step: 1 })
+      return
+    }
     setSubmitting(true)
     setError(null)
     try {
@@ -686,7 +717,8 @@ export default function ModalNuevaReserva({
           wiz.tipoCliente === 'directo'
             ? {
                 nombre: wiz.clienteNombre,
-                email: wiz.clienteEmail || undefined,
+                // EML1: obligatorio en directo (el backend responde 400 sin él), sin espacios y en minúsculas
+                email: normalizarCorreo(wiz.clienteEmail),
                 telefono: wiz.clienteTelefono || undefined,
                 idioma: wiz.clienteIdioma,
               }
@@ -1047,7 +1079,11 @@ export default function ModalNuevaReserva({
             </p>
           )}
           {error && (
-            <div className="mb-4 bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo">
+            <div
+              data-testid="wiz-error"
+              role="alert"
+              className="mb-4 bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo"
+            >
               {error}
             </div>
           )}
@@ -1061,6 +1097,9 @@ export default function ModalNuevaReserva({
               onReintentarResellers={fetchResellers}
               fuentes={catalogos.fuentes}
               onAbrirLeadPicker={abrirLeadPicker}
+              motivoCorreo={mostrarMotivoCorreo ? motivoCorreo : null}
+              onSalirDelCorreo={() => setMostrarMotivoCorreo(true)}
+              correoRef={correoRef}
             />
           )}
           {wiz.step === 2 && (
@@ -1134,8 +1173,9 @@ export default function ModalNuevaReserva({
             {wiz.step < 6 && (
               <button
                 type="button"
-                onClick={() => dispatch({ type: 'NEXT' })}
-                disabled={!pasoValido}
+                data-testid="wiz-siguiente"
+                onClick={avanzar}
+                disabled={!pasoValido && !soloFaltaCorreo}
                 className="px-4 py-2 text-sm bg-terracota hover:bg-terracota-dark text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Siguiente
@@ -1183,6 +1223,9 @@ function Paso1Cliente({
   onReintentarResellers,
   fuentes,
   onAbrirLeadPicker,
+  motivoCorreo,
+  onSalirDelCorreo,
+  correoRef,
 }: {
   wiz: WizardData
   dispatch: React.Dispatch<WizardAction>
@@ -1191,6 +1234,10 @@ function Paso1Cliente({
   onReintentarResellers: () => void
   fuentes: EstadoCatalogo
   onAbrirLeadPicker: () => void
+  /** EML1: por qué el correo no sirve, ya decidido mostrarlo (al salir del campo o al intentar avanzar); null = nada. */
+  motivoCorreo: string | null
+  onSalirDelCorreo: () => void
+  correoRef: React.RefObject<HTMLInputElement>
 }) {
   const resellersListos = estadoResellers.tipo === 'ok' && resellers.length > 0
   return (
@@ -1348,8 +1395,9 @@ function Paso1Cliente({
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2">
+          {/* A 390 una columna: el motivo del correo no cabe en media columna */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="sm:col-span-2">
               <label
                 htmlFor="cliente-nombre"
                 className="block text-sm font-medium text-verde mb-1"
@@ -1375,11 +1423,20 @@ function Paso1Cliente({
                 htmlFor="cliente-email"
                 className="block text-sm font-medium text-verde mb-1"
               >
-                Email
+                Correo *
               </label>
+              {/* EML1 (DR17): obligatorio en venta directa; el motivo sale abajo (wiz-email-error) */}
               <input
                 id="cliente-email"
+                ref={correoRef}
+                data-testid="wiz-email"
                 type="email"
+                inputMode="email"
+                autoComplete="off"
+                maxLength={255}
+                aria-required="true"
+                aria-invalid={motivoCorreo ? true : undefined}
+                aria-describedby={motivoCorreo ? 'cliente-email-error' : undefined}
                 value={wiz.clienteEmail}
                 onChange={(e) =>
                   dispatch({
@@ -1388,8 +1445,22 @@ function Paso1Cliente({
                     value: e.target.value,
                   })
                 }
-                className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
+                onBlur={onSalirDelCorreo}
+                placeholder="nombre@dominio.com"
+                className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota ${
+                  motivoCorreo ? 'border-rojo' : 'border-neutro-borde'
+                }`}
               />
+              {motivoCorreo && (
+                <p
+                  id="cliente-email-error"
+                  data-testid="wiz-email-error"
+                  role="alert"
+                  className="mt-1 text-xs text-rojo"
+                >
+                  {motivoCorreo}
+                </p>
+              )}
             </div>
             <div>
               <label
@@ -1412,23 +1483,7 @@ function Paso1Cliente({
                 className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
               />
             </div>
-            <div className="col-span-2">
-              <label className="flex items-center gap-2 text-sm text-verde cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={wiz.clienteInternacional}
-                  onChange={(e) =>
-                    dispatch({
-                      type: 'SET_FIELD',
-                      field: 'clienteInternacional',
-                      value: e.target.checked,
-                    })
-                  }
-                  className="w-4 h-4 text-terracota border-neutro-borde rounded focus:ring-terracota"
-                />
-                Cliente internacional
-              </label>
-            </div>
+            {/* CINT1 (R6): la casilla «Cliente internacional» se quitó (no tenía columna ni lector) */}
           </div>
         </>
       )}

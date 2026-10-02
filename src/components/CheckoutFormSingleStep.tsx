@@ -15,9 +15,21 @@ import RelojApartado, {
   type AlergiasPorFecha,
   type ApartadoConAlergias,
 } from '@/components/checkout/RelojApartado'
-import { formatFechaMexico, hoyMexico, sumarDias } from '@/lib/dates'
-import PostalCodeSelector from '@/components/ui/PostalCodeSelector'
-import { MapPin, CreditCard, User, Edit2, Calendar, CalendarDays, Tag, PackageX } from 'lucide-react'
+import DireccionEntrega, {
+  CAMPOS_DIRECCION_VACIOS,
+  cargarDireccionesGuardadas,
+  cpDeDireccion,
+  direccionNuevaPedido,
+  direccionPorOmision,
+  esCpSinCobertura,
+  esDireccionAjena,
+  esErrorDeDireccion,
+  type CamposDireccionNueva,
+  type CoberturaCp,
+  type ModoDireccion,
+} from '@/components/checkout/DireccionEntrega'
+import { formatFechaMexico } from '@/lib/dates'
+import { MapPin, CreditCard, User, Calendar, CalendarDays, Tag, PackageX } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { calcularCostoEnvio, subtotalProductos as calcSubtotalProductos } from '@/lib/envio'
 import {
@@ -53,6 +65,7 @@ import {
   textoCambiosCarrito,
   type SyncCarritoRespuesta,
 } from '@/types/tienda'
+import { faltaEnDireccion, textoCpSinCobertura, textoDireccion, type DireccionGuardada } from '@/types/datos-cliente'
 
 interface CheckoutFormProps {
   cartItems: ItemCarrito[]
@@ -102,17 +115,13 @@ function textoDelServidor(detail: unknown): string | null {
   return null
 }
 
-const DIAS_SEMANA = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'] as const
-
-/** Día de la semana (0 = domingo) de una fecha `AAAA-MM-DD`, sin que la zona del navegador lo corra. */
-function diaDeLaSemana(iso: string): number {
-  return new Date(`${iso}T12:00:00Z`).getUTCDay()
-}
-
-/** `AAAA-MM-DD` → medianoche LOCAL de ese día: la misma forma que usan las celdas de DeliveryDatePicker. */
-function fechaLocal(iso: string): Date {
-  const [anio, mes, dia] = iso.split('-').map(Number)
-  return new Date(anio, mes - 1, dia)
+/** El día de entrega elegido, atado al C.P. de la zona con la que se eligió (otro C.P. = otro calendario). */
+interface DiaElegido {
+  cp: string
+  /** Medianoche LOCAL del día (la forma de las celdas de DeliveryDatePicker). */
+  date: Date
+  /** `AAAA-MM-DD`, lo que va al backend (TZ1b). */
+  iso: string
 }
 
 /** «sábado, 10 de octubre de 2026 · 07:00–10:00» */
@@ -125,10 +134,23 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
   const { data: session } = useSession()
   const [loading, setLoading] = useState(false)
   const [loadingUserData, setLoadingUserData] = useState(true)
-  const [editingAddress, setEditingAddress] = useState(false)
-  // El resumen verde de la dirección solo es para la que VINO del perfil. Antes dependía del texto vivo: un invitado
-  // escribía una letra y el editor (C.P. y calendario) se colapsaba al resumen (R2, sesión 42).
-  const [direccionDelPerfil, setDireccionDelPerfil] = useState(false)
+  const emailSesion = session?.user?.email ?? null
+  const conSesion = !!emailSesion
+
+  // ─── A12 (R6): dirección ESTRUCTURADA. Con sesión, las guardadas (`/api/direcciones`) con su cobertura; «Usar otra
+  // dirección» y el invitado, el formulario. El modo es EXPLÍCITO (memoria s42: nunca «el campo tiene texto»). ──────────
+  const [direcciones, setDirecciones] = useState<DireccionGuardada[]>([])
+  const [cobertura, setCobertura] = useState<Record<string, CoberturaCp>>({})
+  const [cargandoDirecciones, setCargandoDirecciones] = useState(conSesion)
+  const [recargaDirecciones, setRecargaDirecciones] = useState(0)
+  const [modoDireccion, setModoDireccion] = useState<ModoDireccion>(conSesion ? 'guardada' : 'nueva')
+  const [direccionIdElegida, setDireccionIdElegida] = useState<string | null>(null)
+  const [camposNueva, setCamposNueva] = useState<CamposDireccionNueva>(CAMPOS_DIRECCION_VACIOS)
+  const [zonaNueva, setZonaNueva] = useState<ZonaEntrega | null>(null)
+  // Un 400 del backend sobre la dirección: se pinta en el bloque de la dirección (además de junto al botón).
+  const [errorDireccion, setErrorDireccion] = useState<string | null>(null)
+  const [diaElegido, setDiaElegido] = useState<DiaElegido | null>(null)
+  const [notasEntrega, setNotasEntrega] = useState('')
 
   const [customerData, setCustomerData] = useState({
     nombre: '',
@@ -139,30 +161,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
     rfc: '',
   })
 
-  // Fecha por defecto: pasado mañana (para dar tiempo de preparación)
-  // Entregamos de lunes a viernes y necesitamos un día hábil de preparación.
-  // El backend valida lo mismo (services/dias_habiles.py); esto solo propone un
-  // default sensato para que el cliente no elija un sábado y reciba un error.
-  // «Hoy» = hoyMexico() (TZ1): con toISOString() después de las 18:00 de México ya era «mañana».
-  const getDefaultDate = () => {
-    let fecha = sumarDias(hoyMexico(), 1)
-    while (diaDeLaSemana(fecha) === 0 || diaDeLaSemana(fecha) === 6) {
-      fecha = sumarDias(fecha, 1)
-    }
-    return fecha
-  }
-
-  const [deliveryData, setDeliveryData] = useState({
-    address: '',
-    postal_code: '',
-    city: 'CDMX',
-    preferred_date: getDefaultDate(),
-    notes: '',
-  })
-
   const [paymentMethod, setPaymentMethod] = useState('mercado_pago')
-  const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<Date | null>(null)
-  const [zonaEntrega, setZonaEntrega] = useState<ZonaEntrega | null>(null)
   // Código de descuento (N1, 2026-09-27). El backend lo valida con los precios
   // de la BD al aplicarlo y otra vez al pagar; aquí solo se muestra.
   const [codigoCupon, setCodigoCupon] = useState('')
@@ -202,42 +201,93 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
     vencido: textoApartadoVencido({ hayExperiencias, hayProductos }),
   }
 
-  // Función para auto-validar código postal contra API de zonas
-  const autoValidatePostalCode = async (cp: string): Promise<ZonaEntrega | null> => {
-    if (!cp || cp.length !== 5) return null
+  // ─── A12: lo que se deriva de la elección (una sola fuente; nada de copiar la dirección a otro estado) ────────────
+  const direccionElegida =
+    modoDireccion === 'guardada' ? direcciones.find((d) => d.id === direccionIdElegida) ?? null : null
+  const coberturaElegida = direccionElegida ? cobertura[cpDeDireccion(direccionElegida)] : undefined
+  const zonaEntrega: ZonaEntrega | null =
+    modoDireccion === 'guardada' ? (coberturaElegida?.estado === 'si' ? coberturaElegida.zona : null) : zonaNueva
+  // El C.P. que ve el calendario: el de la zona (5 dígitos). Si cambia, el día elegido ya no vale (otro calendario).
+  const cpEntrega = zonaEntrega?.codigo_postal ?? ''
+  const direccionNueva = direccionNuevaPedido(camposNueva, zonaNueva, conSesion)
+  const diaEntrega = diaElegido && diaElegido.cp === cpEntrega ? diaElegido : null
+  const selectedDeliveryDate = diaEntrega?.date ?? null
 
-    try {
-      // Usar el endpoint que devuelve la zona completa, no solo validar
-      const response = await fetch(`${API_URL}/api/zonas-entrega/${cp}`)
-      if (response.ok) {
-        const zona = await response.json()
-        // El endpoint devuelve directamente el objeto zona
-        if (zona && zona.codigo_postal) {
-          return zona
-        }
-      }
-    } catch (error) {
-      console.error('Error validando CP automáticamente:', error)
+  /** null = la dirección está lista para pagar; si no, el texto para el cliente. */
+  const faltaEnLaDireccion = (): string | null => {
+    if (modoDireccion === 'guardada') {
+      if (cargandoDirecciones) return 'Espera un momento: estamos cargando tus direcciones.'
+      if (!direccionElegida) return 'Elige una dirección de entrega.'
+      if (!zonaEntrega) return textoCpSinCobertura(cpDeDireccion(direccionElegida))
+      return null
     }
-    return null
+    return faltaEnDireccion(direccionNueva)
+  }
+  const direccionLista = faltaEnLaDireccion() === null
+
+  // Con sesión: las direcciones guardadas y la cobertura de cada C.P. (por el correo de la sesión, no por la identidad
+  // del objeto `session`, que cambia al volver a la pestaña). Elige por omisión la principal con cobertura.
+  useEffect(() => {
+    if (!emailSesion) {
+      setDirecciones([])
+      setCobertura({})
+      setCargandoDirecciones(false)
+      setModoDireccion('nueva')
+      setDireccionIdElegida(null)
+      return
+    }
+    let vigente = true
+    setCargandoDirecciones(true)
+    cargarDireccionesGuardadas().then(({ lista, cobertura: porCp }) => {
+      if (!vigente) return
+      const elegida = direccionPorOmision(lista, porCp)
+      setDirecciones(lista)
+      setCobertura(porCp)
+      setDireccionIdElegida(elegida?.id ?? null)
+      setModoDireccion(elegida ? 'guardada' : 'nueva')
+      setCargandoDirecciones(false)
+    })
+    return () => {
+      vigente = false
+    }
+  }, [emailSesion, recargaDirecciones])
+
+  const elegirDireccionGuardada = (id: string) => {
+    setModoDireccion('guardada')
+    setDireccionIdElegida(id)
+    setErrorDireccion(null)
   }
 
-  // Función para calcular la próxima fecha de entrega disponible (`AAAA-MM-DD`), contando desde el «hoy» de México
-  const getNextDeliveryDate = (zona: ZonaEntrega | null): string | null => {
-    if (!zona) return null
+  const usarOtraDireccion = () => {
+    setModoDireccion('nueva')
+    setErrorDireccion(null)
+  }
 
-    const hoy = hoyMexico()
-    const tiempoMinimo = zona.tiempo_minimo_dias || 2
+  const cambiarCampoDireccion = (campo: keyof CamposDireccionNueva, valor: string) => {
+    setCamposNueva((prev) => ({ ...prev, [campo]: valor }))
+    setErrorDireccion(null)
+  }
 
-    // Empezar desde el tiempo mínimo
-    for (let i = tiempoMinimo; i < tiempoMinimo + 14; i++) {
-      const fecha = sumarDias(hoy, i)
-      // Verificar si ese día tiene entrega
-      if (zona[DIAS_SEMANA[diaDeLaSemana(fecha)]]) {
-        return fecha
-      }
+  const cambiarZonaNueva = (zona: ZonaEntrega | null) => {
+    setZonaNueva(zona)
+    setErrorDireccion(null)
+  }
+
+  /**
+   * Un 400 de crear-preferencia que es de la dirección: se pinta en su bloque. Si el C.P. de una guardada ya no tiene
+   * cobertura, esa tarjeta se deshabilita y se elige otra; si la guardada ya no existe (o no es suya), se relee la lista.
+   */
+  const avisarErrorDireccion = (texto: string) => {
+    setErrorDireccion(texto)
+    if (direccionElegida && esCpSinCobertura(texto)) {
+      const porCp: Record<string, CoberturaCp> = { ...cobertura, [cpDeDireccion(direccionElegida)]: { estado: 'no' } }
+      const otra = direccionPorOmision(direcciones, porCp)
+      setCobertura(porCp)
+      setDireccionIdElegida(otra?.id ?? null)
+      setModoDireccion(otra ? 'guardada' : 'nueva')
+    } else if (direccionElegida && esDireccionAjena(texto)) {
+      setRecargaDirecciones((n) => n + 1)
     }
-    return null
   }
 
   // Cargar datos del usuario desde el backend
@@ -266,45 +316,8 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
               rfc: '',
             })
 
-            // Cargar dirección principal si existe
-            if (userData.direccion_principal) {
-              // Intentar extraer código postal de la dirección (5 dígitos)
-              const cpMatch = userData.direccion_principal.match(/\b(\d{5})\b/)
-              const extractedCP = cpMatch ? cpMatch[1] : ''
-
-              setDireccionDelPerfil(true)
-              setDeliveryData(prev => ({
-                ...prev,
-                address: userData.direccion_principal,
-                postal_code: extractedCP,
-                notes: userData.preferencias_entrega?.notas || '',
-              }))
-
-              // AUTO-VALIDAR: Si hay CP, validar automáticamente contra API de zonas
-              if (extractedCP) {
-                const zona = await autoValidatePostalCode(extractedCP)
-
-                if (zona) {
-                  setZonaEntrega(zona)
-
-                  // Pre-seleccionar la próxima fecha de entrega disponible
-                  const nextDate = getNextDeliveryDate(zona)
-                  if (nextDate) {
-                    setSelectedDeliveryDate(fechaLocal(nextDate))
-                    setDeliveryData(prev => ({
-                      ...prev,
-                      preferred_date: nextDate
-                    }))
-                  }
-                } else {
-                  // CP no tiene cobertura - forzar edición
-                  setEditingAddress(true)
-                }
-              } else {
-                // No hay CP en la dirección - forzar edición
-                setEditingAddress(true)
-              }
-            }
+            // A12 (R6): la dirección ya no sale del texto `direccion_principal` (lo tenía 1 usuario): son las
+            // direcciones guardadas (`/api/direcciones`, efecto de arriba).
           } else {
             // Si falla, usar datos de sesión básicos
             setCustomerData({
@@ -459,11 +472,6 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
     }
   }
 
-  const validatePostalCode = (cp: string) => {
-    const cpNum = parseInt(cp)
-    return cpNum >= 1000 && cpNum <= 16999
-  }
-
   /**
    * La sesión venció (401 de nuestras propias rutas). Se avisa en español y se
    * lleva al login, que volverá aquí por el `callbackUrl`. El carrito NO hay
@@ -475,22 +483,42 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
     window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent('/checkout')}`
   }
 
-  /** Los campos de entrega de los productos (los mismos de siempre; con experiencias solo si hay productos). */
-  const camposEntrega = () => ({
-    delivery_address: tipoEntrega === 'recoger_almacen' ? DIRECCION_ALMACEN : deliveryData.address,
-    delivery_postal_code: tipoEntrega === 'recoger_almacen' ? '11850' : deliveryData.postal_code,
-    delivery_notes: deliveryData.notes,
-    tipo_entrega: canasta ? canasta.tipo_entrega : tipoEntrega,
-    costo_envio: canasta ? 0 : costoEnvio,
-    // SU2: el backend pone la fecha, el envío y la dirección de la canasta.
-    con_suscripcion: canasta?.suscripcion_id,
-    // Sin esta fecha el pedido no aparece en el corte del día ni en las
-    // etiquetas: el selector ya existía en el formulario pero nunca se
-    // enviaba al backend.
-    fecha_entrega: canasta ? canasta.fecha_entrega : deliveryData.preferred_date,
-    // El backend vuelve a validar el código y calcula el descuento él mismo.
-    codigo_cupon: canasta ? undefined : cupon?.codigo,
-  })
+  /**
+   * Los campos de entrega de los productos (con experiencias solo si hay productos). A12 (R6): a domicilio va
+   * `direccion_id` (guardada) o `direccion` (nueva, estructurada); `delivery_address`/`delivery_postal_code` siguen por
+   * compatibilidad con el mismo texto que guarda el backend. Recoger y la canasta, como siempre.
+   */
+  const camposEntrega = () => {
+    const base = {
+      delivery_notes: notasEntrega,
+      tipo_entrega: canasta ? canasta.tipo_entrega : tipoEntrega,
+      costo_envio: canasta ? 0 : costoEnvio,
+      // SU2: el backend pone la fecha, el envío y la dirección de la canasta.
+      con_suscripcion: canasta?.suscripcion_id,
+      // Sin esta fecha el pedido no aparece en el corte del día ni en las
+      // etiquetas: el selector ya existía en el formulario pero nunca se
+      // enviaba al backend.
+      fecha_entrega: canasta ? canasta.fecha_entrega : diaEntrega?.iso,
+      // El backend vuelve a validar el código y calcula el descuento él mismo.
+      codigo_cupon: canasta ? undefined : cupon?.codigo,
+    }
+    if (canasta) return { ...base, delivery_address: '', delivery_postal_code: '' }
+    if (tipoEntrega === 'recoger_almacen') return { ...base, delivery_address: DIRECCION_ALMACEN, delivery_postal_code: '11850' }
+    if (direccionElegida) {
+      return {
+        ...base,
+        direccion_id: direccionElegida.id,
+        delivery_address: textoDireccion(direccionElegida),
+        delivery_postal_code: cpDeDireccion(direccionElegida),
+      }
+    }
+    return {
+      ...base,
+      direccion: direccionNueva,
+      delivery_address: textoDireccion(direccionNueva),
+      delivery_postal_code: direccionNueva.codigo_postal,
+    }
+  }
 
   const correoDelCliente = () => (session?.user?.email || customerData.email).trim()
 
@@ -504,7 +532,8 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
     }
     // Con la canasta (SU2) la dirección, la zona y la fecha las pone el backend.
     if (hayProductos && !canasta) {
-      if (!deliveryData.address) return hayExperiencias ? 'Completa la dirección de entrega de tus productos.' : 'Completa la dirección de entrega.'
+      const falta = faltaEnLaDireccion()
+      if (falta) return falta
       if (!zonaEntrega) return 'El código postal no tiene cobertura de entrega. Verifica tu código postal.'
       if (!selectedDeliveryDate) return hayExperiencias ? 'Elige el día de entrega de tus productos.' : 'Elige el día de entrega.'
     }
@@ -660,6 +689,11 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
       // Un 400 trae un mensaje para el cliente (código vencido o ya usado, fecha de entrega…). Si había código,
       // se quita para que vea el total real.
       if (res.status === 400 && cupon) setCupon(null)
+      // A12: los 400 de la dirección (C.P. sin cobertura, incompleta, ajena) también se ven en el bloque de la dirección.
+      const textoError = textoDelServidor(result.detail)
+      if (res.status === 400 && textoError && hayProductos && !canasta && esErrorDeDireccion(textoError)) {
+        avisarErrorDireccion(textoError)
+      }
       if (!hayExperiencias && res.status === 400 && textoDelServidor(result.detail)) {
         mostrarError(`No se pudo completar el pago: ${textoDelServidor(result.detail)}`)
       } else {
@@ -936,20 +970,9 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
         {/* Dirección de Entrega (solo si hay productos: las experiencias no se envían) */}
         {hayProductos && (
         <div className="border-b pb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-[#B15543]" />
-              <h3 className="text-lg font-semibold">{hayExperiencias ? 'Entrega de tus productos' : 'Dirección de Entrega'}</h3>
-            </div>
-            {direccionDelPerfil && deliveryData.address && !editingAddress && !canasta && (
-              <button
-                onClick={() => setEditingAddress(true)}
-                className="flex items-center gap-1 text-sm text-[#B15543] hover:text-[#9a4a3a]"
-              >
-                <Edit2 className="w-4 h-4" />
-                Cambiar
-              </button>
-            )}
+          <div className="flex items-center gap-2 mb-4">
+            <MapPin className="w-5 h-5 text-[#B15543]" />
+            <h3 className="text-lg font-semibold">{hayExperiencias ? 'Entrega de tus productos' : 'Dirección de Entrega'}</h3>
           </div>
 
           {canasta ? (
@@ -964,65 +987,48 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
               <label htmlFor="checkout-notas-canasta" className="mt-3 block text-sm font-medium text-gray-700">Notas de entrega (opcional)</label>
               <textarea
                 id="checkout-notas-canasta"
-                value={deliveryData.notes}
-                onChange={(e) => setDeliveryData({...deliveryData, notes: e.target.value})}
+                value={notasEntrega}
+                onChange={(e) => setNotasEntrega(e.target.value)}
                 placeholder="Instrucciones especiales para la entrega"
                 className="mt-1 w-full p-2 border border-gray-300 rounded-lg resize-none bg-white text-gray-800"
                 rows={2}
               />
             </div>
-          ) : (!direccionDelPerfil || !deliveryData.address || editingAddress) ? (
+          ) : (
             <>
-              <div className="mb-4">
-                <label htmlFor="checkout-direccion" className="block text-sm font-medium text-gray-700 mb-1">
-                  Dirección completa *
-                </label>
-                <Input
-                  id="checkout-direccion"
-                  value={deliveryData.address}
-                  onChange={(e) => setDeliveryData({...deliveryData, address: e.target.value})}
-                  placeholder="Calle, número, colonia"
-                  autoComplete="street-address"
-                  required
-                />
-              </div>
+              <DireccionEntrega
+                conSesion={conSesion}
+                cargando={cargandoDirecciones}
+                direcciones={direcciones}
+                cobertura={cobertura}
+                modo={modoDireccion}
+                direccionIdElegida={direccionIdElegida}
+                onElegirGuardada={elegirDireccionGuardada}
+                onUsarOtra={usarOtraDireccion}
+                campos={camposNueva}
+                onCampo={cambiarCampoDireccion}
+                zonaNueva={zonaNueva}
+                onZonaNueva={cambiarZonaNueva}
+                error={errorDireccion}
+              />
 
-              {/* Selector de Código Postal ÉPICO */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Zona de entrega *
-                </label>
-                <PostalCodeSelector
-                  value={deliveryData.postal_code}
-                  onChange={(cp, zona) => {
-                    setDeliveryData({...deliveryData, postal_code: cp})
-                    setZonaEntrega(zona)
-                    // Limpiar fecha si cambia la zona
-                    if (!zona) {
-                      setSelectedDeliveryDate(null)
-                    }
-                  }}
-                />
-              </div>
-
-              {/* Selector de fecha de entrega - Solo si hay zona seleccionada */}
-              {zonaEntrega && !canasta && (
+              {/* Día de entrega: el calendario de la zona de la dirección elegida (guardada o nueva). Un C.P. distinto
+                  remonta el calendario (`key`) y el día elegido con otro C.P. ya no cuenta (`diaEntrega`). */}
+              {zonaEntrega && (
                 <div className="mt-6 animate-in fade-in slide-in-from-top-2 duration-300">
                   <div className="flex items-center gap-2 mb-3">
-                    <Calendar className="w-5 h-5 text-green-700" />
-                    <label className="text-sm font-medium text-gray-700">
+                    <Calendar className="w-5 h-5 text-green-700" aria-hidden="true" />
+                    <p className="text-sm font-medium text-gray-700">
                       Selecciona tu día de entrega
-                    </label>
+                    </p>
                   </div>
                   <DeliveryDatePicker
-                    codigoPostal={deliveryData.postal_code}
+                    key={cpEntrega}
+                    codigoPostal={cpEntrega}
                     selectedDate={selectedDeliveryDate}
                     onDateSelect={(date, _zona, iso) => {
-                      setSelectedDeliveryDate(date)
                       // TZ1b: el día elegido tal cual (`AAAA-MM-DD`); `toISOString()` lo corría fuera de UTC-6.
-                      if (date && iso) {
-                        setDeliveryData((prev) => ({ ...prev, preferred_date: iso }))
-                      }
+                      setDiaElegido(date && iso ? { cp: cpEntrega, date, iso } : null)
                     }}
                   />
                 </div>
@@ -1034,40 +1040,14 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
                 </label>
                 <textarea
                   id="checkout-notas"
-                  value={deliveryData.notes}
-                  onChange={(e) => setDeliveryData({...deliveryData, notes: e.target.value})}
+                  value={notasEntrega}
+                  onChange={(e) => setNotasEntrega(e.target.value)}
                   placeholder="Instrucciones especiales para la entrega"
                   className="w-full p-2 border border-gray-300 rounded-lg resize-none"
                   rows={3}
                 />
               </div>
-
-              {editingAddress && (
-                <button
-                  onClick={() => setEditingAddress(false)}
-                  className="mt-2 text-sm text-gray-600 hover:text-gray-800"
-                >
-                  Guardar cambios
-                </button>
-              )}
             </>
-          ) : (
-            <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
-              <p className="text-sm font-medium text-gray-900 mb-2">{deliveryData.address}</p>
-              <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                {deliveryData.postal_code && (
-                  <p><span className="font-medium">CP:</span> {deliveryData.postal_code}</p>
-                )}
-                {deliveryData.preferred_date && (
-                  <p><span className="font-medium">Entrega:</span> {formatFechaMexico(deliveryData.preferred_date, { day: 'numeric', month: 'long', year: undefined })}</p>
-                )}
-              </div>
-              {deliveryData.notes && (
-                <p className="text-sm text-gray-600 mt-2">
-                  <span className="font-medium">Notas:</span> {deliveryData.notes}
-                </p>
-              )}
-            </div>
           )}
         </div>
         )}
@@ -1338,7 +1318,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
           onClick={pagarSoloProductos}
           data-testid="checkout-pagar-productos"
           disabled={loading || !customerData.nombre || !customerData.apellido || !customerData.telefono ||
-                   (!canasta && (!deliveryData.address || !zonaEntrega || !selectedDeliveryDate))}
+                   (!canasta && (!direccionLista || !zonaEntrega || !selectedDeliveryDate))}
           className="w-full h-auto whitespace-normal bg-[#B15543] hover:bg-[#9a4a3a] text-white text-lg py-6"
         >
           {loading ? (

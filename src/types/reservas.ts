@@ -444,7 +444,6 @@ export interface WizardData {
   clienteEmail: string
   clienteTelefono: string
   clienteIdioma: IdiomaCliente
-  clienteInternacional: boolean
   experienciaId: string
   experienciaNombre?: string
   // Precio del GRUPO (cubre hasta personasIncluidas). Desde la 4b lo da el servidor (`PreciosReserva`): el del
@@ -522,7 +521,6 @@ export const initialWizardData: WizardData = {
   clienteEmail: '',
   clienteTelefono: '',
   clienteIdioma: 'es',
-  clienteInternacional: false,
   experienciaId: '',
   experienciaNombre: undefined,
   precioBase: 0,

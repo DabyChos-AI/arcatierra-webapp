@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { ChevronLeft, ChevronRight, MapPin, Calendar, Truck, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, MapPin, Truck, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { hoyMexico, sumarDias } from '@/lib/dates'
+import type { DiaNoHabil, RespuestaDiasNoHabiles } from '@/types/datos-cliente'
 
 /** Una zona de `GET /api/zonas-entrega/{cp}` (la misma forma que usa PostalCodeSelector). */
 export interface ZonaEntrega {
@@ -56,6 +57,47 @@ function diaDeLaSemana(iso: string): number {
   return new Date(`${iso}T12:00:00Z`).getUTCDay()
 }
 
+// ─── M10 (R6, sesión 46): días sin entrega (feriados LFT + los del panel) y tope de agenda, del backend ─────────────
+// Una sola fuente: `GET /api/entregas/dias-no-habiles` (público, sin parámetros) — la misma lista con la que el backend
+// rechaza la fecha al pagar. UNA petición por carga de página: el checkout remonta el calendario al cambiar de C.P.
+// Si falla, el calendario sigue como antes (sin feriados ni tope) y el backend valida igual; se reintenta al remontar.
+
+const ISO_FECHA = /^\d{4}-\d{2}-\d{2}$/
+
+function esDiaNoHabil(d: unknown): d is DiaNoHabil {
+  const x = d as Partial<DiaNoHabil> | null
+  return !!x && typeof x.fecha === 'string' && ISO_FECHA.test(x.fecha) && typeof x.motivo === 'string'
+}
+
+function esRespuestaDiasNoHabiles(d: unknown): d is RespuestaDiasNoHabiles {
+  const x = d as Partial<RespuestaDiasNoHabiles> | null
+  return !!x && Array.isArray(x.dias) && typeof x.maximo_dias === 'number' && Number.isFinite(x.maximo_dias) && x.maximo_dias > 0
+}
+
+let pedidoDiasNoHabiles: Promise<RespuestaDiasNoHabiles | null> | null = null
+
+function pedirDiasNoHabiles(): Promise<RespuestaDiasNoHabiles | null> {
+  if (!pedidoDiasNoHabiles) {
+    pedidoDiasNoHabiles = fetch(`${API_URL}/api/entregas/dias-no-habiles`)
+      .then(async (r) => {
+        if (!r.ok) return null
+        const datos: unknown = await r.json()
+        return esRespuestaDiasNoHabiles(datos) ? { ...datos, dias: datos.dias.filter(esDiaNoHabil) } : null
+      })
+      .catch(() => null)
+      .then((datos) => {
+        if (!datos) pedidoDiasNoHabiles = null // falló: el siguiente calendario que se monte lo vuelve a intentar
+        return datos
+      })
+  }
+  return pedidoDiasNoHabiles
+}
+
+/** El texto de un día sin entrega: `title` y final del `aria-label` (contrato R6 §4 front-checkout 4). */
+function textoSinEntrega(motivo: string): string {
+  return `Sin entrega: ${motivo}`
+}
+
 /** El primer día del mes de hoy en México (para abrir el calendario en el mes correcto). */
 function mesDeHoyMexico(): Date {
   const [anio, mes] = hoyMexico().split('-').map(Number)
@@ -64,23 +106,34 @@ function mesDeHoyMexico(): Date {
 
 export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selectedDate }: DeliveryDatePickerProps) {
   const [zona, setZona] = useState<ZonaEntrega | null>(null)
-  const [loading, setLoading] = useState(false)
+  // Con un C.P. completo arranca «Verificando cobertura…»: el checkout remonta el calendario al cambiar de C.P. (R6) y,
+  // sin esto, durante el debounce se veía «Ingresa tu código postal completo» con un C.P. ya completo.
+  const [loading, setLoading] = useState(() => codigoPostal.length >= 5)
   const [error, setError] = useState<string | null>(null)
   const [currentMonth, setCurrentMonth] = useState(mesDeHoyMexico)
   const [selected, setSelected] = useState<Date | null>(selectedDate || null)
+  // M10: `AAAA-MM-DD` → motivo, y hasta cuántos días adelante se agenda (null = no llegó la lista: sin tope, como antes).
+  const [sinEntrega, setSinEntrega] = useState<Map<string, string>>(() => new Map())
+  const [maximoDias, setMaximoDias] = useState<number | null>(null)
+
+  useEffect(() => {
+    let vigente = true
+    pedirDiasNoHabiles().then((respuesta) => {
+      if (!vigente || !respuesta) return
+      setSinEntrega(new Map(respuesta.dias.map((d) => [d.fecha, d.motivo])))
+      setMaximoDias(respuesta.maximo_dias)
+    })
+    return () => {
+      vigente = false
+    }
+  }, [])
+
+  // El último día que se puede agendar (inclusive), como el backend: `fecha > hoy + DIAS_MAXIMO_AGENDA` se rechaza.
+  const tope = maximoDias !== null ? sumarDias(hoyMexico(), maximoDias) : null
 
   // Buscar zona cuando cambia el CP
   useEffect(() => {
     const fetchZona = async () => {
-      if (!codigoPostal || codigoPostal.length < 5) {
-        setZona(null)
-        setError(null)
-        return
-      }
-
-      setLoading(true)
-      setError(null)
-
       try {
         const response = await fetch(`${API_URL}/api/zonas-entrega/${codigoPostal}`)
         
@@ -94,13 +147,21 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
         } else {
           setError('Error al verificar cobertura')
         }
-      } catch (err) {
+      } catch {
         setError('Error de conexión')
       } finally {
         setLoading(false)
       }
     }
 
+    if (!codigoPostal || codigoPostal.length < 5) {
+      setZona(null)
+      setError(null)
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    setError(null)
     const debounce = setTimeout(fetchZona, 300)
     return () => clearTimeout(debounce)
   }, [codigoPostal])
@@ -134,6 +195,10 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
 
     // No disponible si es antes del mínimo (las fechas `AAAA-MM-DD` se comparan como texto)
     if (iso < minimo) return false
+
+    // M10: ni después del tope de agenda ni en un día sin entrega (feriado o día que agregó el equipo)
+    if (tope !== null && iso > tope) return false
+    if (sinEntrega.has(iso)) return false
 
     // Verificar día de la semana
     const dayOfWeek = diaDeLaSemana(iso)
@@ -170,6 +235,9 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
   const nextMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))
   }
+
+  // Más allá del tope no hay nada que elegir: el mes siguiente se ofrece solo si empieza antes del tope.
+  const haySiguienteMes = tope === null || isoDeCelda(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)) <= tope
 
   // Formatear fecha seleccionada
   const formatSelectedDate = (date: Date): string => {
@@ -246,9 +314,10 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
               <button
                 type="button"
                 onClick={nextMonth}
+                disabled={!haySiguienteMes}
                 aria-label="Mes siguiente"
                 data-testid="entrega-mes-siguiente"
-                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                className="p-2 hover:bg-white/10 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
               >
                 <ChevronRight className="w-5 h-5 text-white" />
               </button>
@@ -271,21 +340,31 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
                 return <div key={`empty-${index}`} className="aspect-square" />
               }
 
+              const iso = isoDeCelda(date)
               const isAvailable = isDayAvailable(date)
               const isPast = isPastDay(date)
               const isSelected = selected && date.toDateString() === selected.toDateString()
-              const isToday = isoDeCelda(date) === hoyMexico()
+              const isToday = iso === hoyMexico()
+              // M10: feriado o día sin entrega del panel → deshabilitado, con su motivo (title + aria-label) y marca visible
+              const motivoSinEntrega = sinEntrega.get(iso) ?? null
+              const etiquetaSinEntrega = motivoSinEntrega !== null ? textoSinEntrega(motivoSinEntrega) : null
 
               return (
                 <button
-                  key={isoDeCelda(date)}
+                  key={iso}
                   type="button"
                   onClick={() => handleSelectDate(date)}
                   disabled={!isAvailable}
-                  data-testid="entrega-dia"
-                  data-fecha={isoDeCelda(date)}
+                  data-testid={`entrega-dia-${iso}`}
+                  data-fecha={iso}
                   data-disponible={isAvailable ? 'true' : 'false'}
-                  aria-label={`${formatSelectedDate(date)}${isAvailable ? '' : ' (sin entrega)'}`}
+                  data-sin-entrega={etiquetaSinEntrega ? '1' : undefined}
+                  title={etiquetaSinEntrega ?? undefined}
+                  aria-label={
+                    etiquetaSinEntrega
+                      ? `${formatSelectedDate(date)}. ${etiquetaSinEntrega}`
+                      : `${formatSelectedDate(date)}${isAvailable ? '' : ' (sin entrega)'}`
+                  }
                   aria-pressed={!!isSelected}
                   className={`
                     aspect-square rounded-xl text-sm font-medium
@@ -295,9 +374,11 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
                       ? 'bg-green-600 text-white shadow-lg shadow-green-200 scale-110 z-10'
                       : isAvailable
                         ? 'bg-green-50 text-green-700 hover:bg-green-100 hover:scale-105 cursor-pointer'
-                        : isPast
-                          ? 'text-gray-300 cursor-not-allowed'
-                          : 'text-gray-400 cursor-not-allowed'
+                        : etiquetaSinEntrega
+                          ? 'bg-terracota/10 text-terracota line-through cursor-not-allowed'
+                          : isPast
+                            ? 'text-gray-300 cursor-not-allowed'
+                            : 'text-gray-400 cursor-not-allowed'
                     }
                     ${isToday && !isSelected ? 'ring-2 ring-green-300 ring-offset-1' : ''}
                   `}
@@ -306,6 +387,9 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
                   {isAvailable && !isSelected && (
                     <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-green-500 rounded-full" />
                   )}
+                  {etiquetaSinEntrega && (
+                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-terracota rounded-full" aria-hidden="true" />
+                  )}
                 </button>
               )
             })}
@@ -313,7 +397,7 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
 
           {/* Leyenda */}
           <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
-            <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-gray-500">
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 bg-green-50 border border-green-200 rounded" />
                 <span>Disponible</span>
@@ -326,6 +410,12 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
                 <span className="w-3 h-3 bg-gray-100 rounded" />
                 <span>No disponible</span>
               </div>
+              {sinEntrega.size > 0 && (
+                <div className="flex items-center gap-1.5" data-testid="entrega-leyenda-sin-entrega">
+                  <span className="w-3 h-3 bg-terracota/10 border border-terracota/40 rounded" />
+                  <span>Sin entrega</span>
+                </div>
+              )}
             </div>
           </div>
         </div>

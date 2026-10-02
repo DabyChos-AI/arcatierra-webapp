@@ -162,6 +162,16 @@ export default function DashboardPage() {
     }
   }
 
+  const recargarDirecciones = async () => {
+    try {
+      const res = await fetch('/api/direcciones', { cache: 'no-store' })
+      const datos: unknown = res.ok ? await res.json() : []
+      setDirecciones(Array.isArray(datos) ? (datos as DireccionData[]) : [])
+    } catch (error) {
+      console.error('Error releyendo direcciones:', error)
+    }
+  }
+
   const handleAgregarDireccion = async () => {
     try {
       const response = await fetch('/api/direcciones', {
@@ -171,8 +181,9 @@ export default function DashboardPage() {
       })
 
       if (response.ok) {
-        const newDireccion = await response.json()
-        setDirecciones([...direcciones, newDireccion])
+        // R6: el POST responde un resumen (no la dirección completa) y puede quitarle «principal» a otra:
+        // se relee la lista en vez de agregar la respuesta.
+        await recargarDirecciones()
         setShowModalDireccion(false)
         setEditingDireccion(null)
         setFormDireccion({

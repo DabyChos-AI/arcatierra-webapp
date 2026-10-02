@@ -22,6 +22,7 @@ import {
   Leaf,
   Repeat,
   Truck,
+  CalendarOff,
   Warehouse,
   CreditCard,
   QrCode,
@@ -125,6 +126,8 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: '/admin/calendario', label: 'Calendario', icon: Calendar, permiso: 'calendario' },
       { href: '/admin/entregas', label: 'Entregas', icon: Truck, permiso: 'entregas' },
+      // R6 (M10): días sin entrega (feriados LFT + los de las encargadas). Ven quienes tienen `entregas`; edita `dias_sin_entrega`.
+      { href: '/admin/entregas/dias-sin-entrega', label: 'Días sin entrega', icon: CalendarOff, permiso: 'entregas' },
       { href: '/admin/inventario', label: 'Inventario', icon: Warehouse, permiso: 'inventario' },
       { href: '/admin/empleados', label: 'Empleados', icon: UserCheck, permiso: 'empleados' },
       { href: '/admin/pagos', label: 'Pagos', icon: CreditCard, permiso: 'pagos' },
