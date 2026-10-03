@@ -535,19 +535,20 @@ const HeaderPublico: React.FC = () => {
 
   // Opciones del menú de usuario (dinámicas según rol)
   const userMenuItems = [
-    { name: 'Mi Perfil', href: '/usuario/perfil' },
-    { name: 'Mis Reservas', href: '/usuario/reservas' },
+    { name: 'Mi perfil', href: '/usuario/perfil' },
+    { name: 'Mis reservas', href: '/usuario/reservas' },
     { name: 'Favoritos', href: '/usuario/favoritos' },
-    { name: 'Mi Dashboard', href: '/usuario/dashboard' },
+    { name: 'Mi cuenta', href: '/usuario/dashboard' },
     ...(isEmployee ? [{ name: 'Panel de Administración', href: '/admin', isAdmin: true }] : []),
   ];
 
-  // Para el menú móvil
+  // Para el menú móvil (R9-d): las páginas reales de /usuario/*. /user-dashboard (de mentira) se retiró y redirige;
+  // «Recomendaciones» no tiene equivalente real y sale; Favoritos = /usuario/favoritos (→ /favoritos, el de la tienda).
   const userDropdownLinks = [
-    { name: 'Mi Perfil', href: '/user-dashboard' },
-    { name: 'Mis Reservas', href: '/user-dashboard/reservations' },
-    { name: 'Favoritos', href: '/user-dashboard/favorites' },
-    { name: 'Recomendaciones', href: '/user-dashboard/recommendations' },
+    { name: 'Mi perfil', href: '/usuario/perfil' },
+    { name: 'Mis reservas', href: '/usuario/reservas' },
+    { name: 'Favoritos', href: '/usuario/favoritos' },
+    { name: 'Mi cuenta', href: '/usuario/dashboard' },
   ];
 
   const toggleDropdown = (e: React.MouseEvent) => {

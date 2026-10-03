@@ -41,6 +41,7 @@ import {
   TIPO_LABELS,
   IDIOMA_LABELS,
   renderMock,
+  insertarBotonPortalMock,
 } from '@/types/plantillas-email'
 
 // ─── Constants ───────────────────────────────────────
@@ -589,9 +590,16 @@ export default function PlantillasEmailPage() {
 
   // ─── Render preview HTML (mock) ──────────────────────
 
+  // R9-a: el botón «Ver mi reserva» que el backend agrega al final de Confirmación, Recordatorio, Link de pago y
+  // Reagendamiento (si la plantilla no usa {{portal_url}}) también sale aquí: la vista previa = lo que recibe el cliente.
   const cuerpoConMock = useMemo(
-    () => renderMock(formData.cuerpo_html || '', MOCK_PLANTILLA),
-    [formData.cuerpo_html],
+    () =>
+      insertarBotonPortalMock(
+        renderMock(formData.cuerpo_html || '', MOCK_PLANTILLA),
+        formData.tipo,
+        formData.idioma,
+      ),
+    [formData.cuerpo_html, formData.tipo, formData.idioma],
   )
   const asuntoConMock = useMemo(
     () => renderMock(formData.asunto || '', MOCK_PLANTILLA),
@@ -670,6 +678,11 @@ export default function PlantillasEmailPage() {
               {'{{nombre_cliente}}'}
             </code>{' '}
             se reemplazan con los datos reales en el envío.
+          </p>
+          <p data-testid="plantillas-boton-portal">
+            Confirmación, Recordatorio, Link de pago y Reagendamiento llevan al final el botón «Ver mi
+            reserva» con el link a la página de la reserva del cliente (o donde pongas{' '}
+            <code className="bg-white px-1 rounded text-xs">{'{{portal_url}}'}</code>).
           </p>
           <p data-testid="plantillas-texto-fijo">
             No usan plantilla (texto fijo): el aviso de reserva nueva al equipo, el aviso de cambios a

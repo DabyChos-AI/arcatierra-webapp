@@ -17,6 +17,8 @@ export default function robots(): MetadataRoute.Robots {
           '/perfil/',
           '/_next/',
           '/private/',
+          // R9 (G1): el link del portal del cliente es una credencial; nunca se indexa (la página también lleva noindex).
+          '/reserva/',
         ],
       },
       {
@@ -31,6 +33,7 @@ export default function robots(): MetadataRoute.Robots {
           '/mis-pedidos/',
           '/mis-reservas/',
           '/perfil/',
+          '/reserva/',
         ],
       },
     ],

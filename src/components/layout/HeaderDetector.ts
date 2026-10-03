@@ -14,7 +14,7 @@ const NON_TRANSPARENT_ROUTES = [
   '/perfil',
   '/cuenta',
   '/ordenes',
-  '/user-dashboard',
+  '/usuario', // R9-d: /user-dashboard se retiró (308 → /usuario/*)
   '/admin',
   '/tienda',
   '/experiencias', // Añadida para que el header no sea transparente en esta sección

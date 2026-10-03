@@ -25,7 +25,6 @@ import {
   CalendarOff,
   Warehouse,
   CreditCard,
-  QrCode,
   Award,
   Globe,
   Tags,
@@ -127,7 +126,7 @@ const NAV_SECTIONS: NavSection[] = [
       { href: '/admin/inventario', label: 'Inventario', icon: Warehouse, permiso: 'inventario' },
       { href: '/admin/empleados', label: 'Empleados', icon: UserCheck, permiso: 'empleados' },
       { href: '/admin/pagos', label: 'Pagos', icon: CreditCard, permiso: 'pagos' },
-      { href: '/admin/qr-codes', label: 'Codigos QR', icon: QrCode, permiso: 'qr_codes' },
+      // R9-b (sesión 49): /admin/qr-codes se retiró (QR viejo que nunca validó); next.config.js la redirige a /admin.
       { href: '/admin/gamificacion', label: 'Gamificacion', icon: Award, permiso: 'gamificacion' },
       // R8 (ALR1, M3): /admin/alertas y /admin/configuracion se retiraron (eran de adorno); next.config.js las redirige a /admin.
       { href: '/admin/experiencias-publicas', label: 'Exp. Publicas', icon: Globe, permiso: 'experiencias_publicas' },

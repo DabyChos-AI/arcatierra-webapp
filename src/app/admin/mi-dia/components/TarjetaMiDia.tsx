@@ -5,7 +5,7 @@
 // manda y aquí no se pintan otros campos que los de `ReservaMiDia`).
 
 import { useState } from 'react'
-import { AlertTriangle, ChevronDown, Clock, MapPin, Languages, Users, Baby, CheckCircle2, Undo2 } from 'lucide-react'
+import { AlertTriangle, ChevronDown, Clock, MapPin, Languages, Users, Baby, CheckCircle2, Undo2, ScanLine } from 'lucide-react'
 import { horaMexico, type ReservaMiDia } from '@/types/mi-dia'
 import {
   ETIQUETA_ESTADO,
@@ -23,6 +23,8 @@ interface Props {
   enCurso: boolean
   onMarcar: (reservaId: string, personas: number | null) => void
   onDeshacer: (reservaId: string) => void
+  /** R9 (DR23): la reserva que abrió el QR del portal (`?reserva=<id>`): franja «Reserva escaneada» y borde. */
+  escaneada?: boolean
 }
 
 const CLASE_ESTADO: Record<ReservaMiDia['estado'], string> = {
@@ -31,7 +33,7 @@ const CLASE_ESTADO: Record<ReservaMiDia['estado'], string> = {
   realizada: 'bg-neutro-light text-verde-suave',
 }
 
-export default function TarjetaMiDia({ r, enCurso, onMarcar, onDeshacer }: Props) {
+export default function TarjetaMiDia({ r, enCurso, onMarcar, onDeshacer, escaneada = false }: Props) {
   const [invitadosAbiertos, setInvitadosAbiertos] = useState(false)
   const [personasTexto, setPersonasTexto] = useState(String(r.personas))
 
@@ -56,8 +58,22 @@ export default function TarjetaMiDia({ r, enCurso, onMarcar, onDeshacer }: Props
       data-testid={`midia-reserva-${r.reserva_id}`}
       data-estado={r.estado}
       data-llegada={r.llegada ? '1' : '0'}
-      className="rounded-xl border border-neutro-borde bg-white p-4 shadow-soft"
+      data-escaneada={escaneada ? '1' : undefined}
+      className={
+        escaneada
+          ? 'scroll-mt-4 rounded-xl border-2 border-terracota bg-white p-4 shadow-soft ring-2 ring-terracota/30'
+          : 'rounded-xl border border-neutro-borde bg-white p-4 shadow-soft'
+      }
     >
+      {escaneada && (
+        <p
+          data-testid="midia-escaneada"
+          className="-mx-4 -mt-4 mb-3 flex items-center gap-1.5 rounded-t-[10px] bg-terracota px-4 py-2 text-sm font-semibold text-white"
+        >
+          <ScanLine className="h-4 w-4 shrink-0" aria-hidden="true" />
+          Reserva escaneada
+        </p>
+      )}
       {/* Hora + estado */}
       <div className="flex flex-wrap items-start justify-between gap-2">
         <p className="flex items-baseline gap-2 text-verde" data-testid={`midia-hora-${r.reserva_id}`}>

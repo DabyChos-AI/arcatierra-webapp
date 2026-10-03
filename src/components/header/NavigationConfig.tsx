@@ -107,10 +107,10 @@ export const actionIcons: ActionIcon[] = [];
 
 // MENÚ DE USUARIO BASE (dropdown)
 export const userMenuItemsBase: NavigationItem[] = [
-  { name: 'Mi Perfil', href: '/usuario/perfil' },
-  { name: 'Mis Reservas', href: '/usuario/reservas' },
+  { name: 'Mi perfil', href: '/usuario/perfil' },
+  { name: 'Mis reservas', href: '/usuario/reservas' },
   { name: 'Favoritos', href: '/usuario/favoritos' },
-  { name: 'Mi Dashboard', href: '/usuario/dashboard' }
+  { name: 'Mi cuenta', href: '/usuario/dashboard' }
 ];
 
 // MENÚ DE USUARIO ADMIN (solo empleados)
@@ -118,12 +118,12 @@ export const userMenuItemsAdmin: NavigationItem[] = [
   { name: 'Panel de Administración', href: '/admin' }
 ];
 
-// MENÚ DE USUARIO MÓVIL (más opciones)
+// MENÚ DE USUARIO MÓVIL (R9-d: las páginas reales de /usuario/*; /user-dashboard se retiró y «Recomendaciones» sale)
 export const mobileUserMenuItems: NavigationItem[] = [
-  { name: 'Mi Perfil', href: '/user-dashboard' },
-  { name: 'Mis Reservas', href: '/user-dashboard/reservations' },
-  { name: 'Favoritos', href: '/user-dashboard/favorites' },
-  { name: 'Recomendaciones', href: '/user-dashboard/recommendations' }
+  { name: 'Mi perfil', href: '/usuario/perfil' },
+  { name: 'Mis reservas', href: '/usuario/reservas' },
+  { name: 'Favoritos', href: '/usuario/favoritos' },
+  { name: 'Mi cuenta', href: '/usuario/dashboard' }
 ];
 
 // CONFIGURACIÓN COMPLETA PARA MENÚ HAMBURGUESA

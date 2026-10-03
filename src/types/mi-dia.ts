@@ -86,6 +86,32 @@ export interface LlegadaResponse {
   llegada: LlegadaReserva | null
 }
 
+/**
+ * R9 (sesión 49, DR23): GET /api/admin/mi-dia/reserva/{reserva_id} → lo que abre el QR del portal del cliente
+ * (`/admin/mi-dia?reserva=<uuid>`). Mismo permiso que Mi día (`mi_dia`). Sin contacto del cliente.
+ * - `dia`: 'hoy' | 'manana' si cae en una de las pestañas; 'otro' si no.
+ * - `es_tuya`: la reserva entra en TU Mi día (modo `todas`, o eres guía asignado). Solo entonces viene `item`.
+ * - `item`: la MISMA forma y reglas de la lista (`ReservaMiDia`), solo si `es_tuya` y `dia` es hoy o mañana.
+ * - `motivo`: el texto para la pantalla cuando no está en tu día («Esta reserva es del sábado 10 de octubre.»,
+ *   «No estás asignado a esta reserva. Pide a una encargada que te asigne.», «Esta reserva está cancelada.», «Tu
+ *   cuenta aún no está ligada a tu ficha de guía…»); null cuando sí está.
+ * Errores: 400 id inválido · 404 «No encontramos esa reserva.»
+ */
+export interface MiDiaBusqueda {
+  reserva_id: string
+  booking_id: string
+  experiencia_nombre: string
+  /** YYYY-MM-DD (México) */
+  fecha: string
+  /** HH:MM:SS o null */
+  hora_inicio: string | null
+  estado: string
+  dia: DiaMiDia | 'otro'
+  es_tuya: boolean
+  item: ReservaMiDia | null
+  motivo: string | null
+}
+
 /** Hora de México «10:42» de un ISO con zona. */
 export function horaMexico(iso: string | null | undefined): string {
   if (!iso) return ''

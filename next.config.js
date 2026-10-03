@@ -128,6 +128,14 @@ const nextConfig = {
       { source: '/catering2', destination: '/catering', permanent: true },
       { source: '/catering2/:ruta*', destination: '/catering', permanent: true },
       { source: '/admin/inicio', destination: '/admin', permanent: false },
+      // R9 (sesión 49, decisiones de David 3-oct ≈01:09–01:11 UTC). R9-d: /user-dashboard/* eran pantallas de mentira
+      // (reservas, favoritos y recomendaciones inventados) sin pedir sesión, ligadas desde el menú; lo real vive en
+      // /usuario/*. R9-b: /admin/qr-codes generaba QR del sistema viejo, que nunca validó (el check-in es «Llegaron» en
+      // Mi día y el QR del portal del cliente). Archivos en ~/vps-stack/_archivo/arcatierra-webapp-2026-10-03-r9/.
+      { source: '/user-dashboard/reservations', destination: '/usuario/reservas', permanent: true },
+      { source: '/user-dashboard', destination: '/usuario/dashboard', permanent: true },
+      { source: '/user-dashboard/:ruta*', destination: '/usuario/dashboard', permanent: true },
+      { source: '/admin/qr-codes', destination: '/admin', permanent: false },
     ]
   },
 
