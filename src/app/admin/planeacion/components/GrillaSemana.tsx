@@ -12,6 +12,8 @@ import type { DiaGrilla, ItemGrilla, SemanaGrilla } from '@/types/planeacion'
 import type { CatalogosEventos } from '../../eventos/components/useCatalogosEventos'
 import TarjetaGrilla from './TarjetaGrilla'
 
+// «Solo privadas con huecos»: el filtro y su contador (`totales.con_huecos`) siguen siendo de privadas (R11 §9 C1). Las fechas
+// públicas e internos pintan sus huecos en la tarjeta (HUE2), pero no entran a este filtro.
 export function conHuecos(item: ItemGrilla): boolean {
   return item.tipo === 'privada' && item.huecos.length > 0
 }

@@ -7,6 +7,7 @@ import { User, Mail, Phone, MapPin, Calendar, Edit3, Save, X, Camera } from 'luc
 import CountryCodeSelector from '@/components/ui/CountryCodeSelector'
 import PostalCodeSelector from '@/components/ui/PostalCodeSelector'
 import { aviso } from '@/components/ui/Avisos'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
 
 // Mapeo de código de marcación a código de país ISO para banderas
@@ -138,7 +139,7 @@ export default function PerfilPage() {
             setProfile(userProfile)
             setEditedProfile(userProfile)
           } else {
-            console.error('Error al cargar perfil:', await response.text())
+            console.error('Error al cargar perfil:', response.status)
           }
         } catch (error) {
           console.error('Error fetching profile:', error)
@@ -182,7 +183,8 @@ export default function PerfilPage() {
           }
         }
         
-        console.log('🔄 Guardando perfil...', updateData)
+        // CONS1 (R11): la consola no lleva datos del cliente (ni el perfil, ni la respuesta, ni el error del backend)
+        console.log('🔄 Guardando perfil...')
         console.log('📍 URL: /api/auth/me (proxy interno)')
         
         // Llamar al proxy interno de Next.js (sin CORS)
@@ -198,7 +200,7 @@ export default function PerfilPage() {
         
         if (!response.ok) {
           const errorText = await response.text()
-          console.error('❌ Error response:', errorText)
+          console.error('❌ Error al guardar el perfil:', response.status)
           let error
           try {
             error = JSON.parse(errorText)
@@ -209,14 +211,14 @@ export default function PerfilPage() {
           throw new Error(error?.detail ? extraerMensajeError(error, response.status) : 'Error actualizando perfil')
         }
         
-        const updatedUser = await response.json()
-        console.log('✅ Perfil actualizado:', updatedUser)
+        await response.json()
+        console.log('✅ Perfil actualizado')
         
         setProfile(editedProfile)
         setEditing(false)
         aviso.exito('Perfil actualizado exitosamente')
       } catch (error) {
-        console.error('❌ Error guardando perfil:', error)
+        console.error('❌ Error guardando perfil')
         aviso.error(`Error guardando los cambios: ${extraerMensajeError(error instanceof Error ? error.message : error)}`)
       }
     }
@@ -399,9 +401,11 @@ export default function PerfilPage() {
                         <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 h-[42px]">
                           {profile.codigoPais ? (
                             <>
-                              <img 
+                              <OptimizedImage
                                 src={`https://flagcdn.com/w40/${getCountryCode(profile.codigoPais).toLowerCase()}.png`}
                                 alt="País"
+                                width={24}
+                                height={16}
                                 className="w-6 h-4 object-cover rounded-sm"
                               />
                               <span className="text-gray-900 font-medium">{profile.codigoPais}</span>

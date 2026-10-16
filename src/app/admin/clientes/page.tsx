@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Users, UserPlus, ShoppingCart, CreditCard, RefreshCw,
   Search, ChevronLeft, ChevronRight, X, Eye, AlertTriangle,
@@ -10,6 +11,7 @@ import {
 import { formatFechaMexico, formatFechaHoraMexico } from '@/lib/dates'
 import dynamic from 'next/dynamic'
 import { aviso, confirmar } from '@/components/ui/Avisos'
+import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
 
 const MapPicker = dynamic(() => import('@/components/admin/MapPicker'), {
   ssr: false,
@@ -202,6 +204,23 @@ type TabKey = 'datos' | 'historial' | 'acciones'
 
 // ─── Component ───────────────────────────────────────────
 
+/**
+ * R11 (K3): `?cliente_id=<uuid>` abre el detalle de ese cliente (lo usa la búsqueda global ⌘K). Es el ÚNICO que llama
+ * `useSearchParams()` y va dentro de `<Suspense>` (Next 15 lo exige; el resto de la página se sigue prerenderizando).
+ * Leído el parámetro, limpia la URL (recargar no reabre el modal; patrón de reservas/page.tsx:62-74).
+ */
+function LectorClienteId({ onCliente }: { onCliente: (id: string) => void }) {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const id = searchParams.get('cliente_id')
+  useEffect(() => {
+    if (!id) return
+    onCliente(id)
+    router.replace('/admin/clientes', { scroll: false })
+  }, [id, onCliente, router])
+  return null
+}
+
 export default function AdminClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
@@ -237,6 +256,10 @@ export default function AdminClientesPage() {
   const [dirSaving, setDirSaving] = useState(false)
   const [cpValidation, setCpValidation] = useState<ZonaEntregaResponse | null>(null)
   const [cpValidating, setCpValidating] = useState(false)
+
+  // R11: el cliente que pidió la URL (`?cliente_id=`) y el que está abierto (una respuesta tardía no cierra otro)
+  const [clienteDeUrl, setClienteDeUrl] = useState<string | null>(null)
+  const detalleIdRef = useRef<string | null>(null)
 
   // ─── Fetchers ────────────────────────────────────────
 
@@ -322,7 +345,9 @@ export default function AdminClientesPage() {
 
   // ─── Detail modal ────────────────────────────────────
 
-  const openDetalle = async (clienteId: string) => {
+  /** `desdeUrl` (R11): si el cliente no existe o no se puede abrir, el modal se cierra con un aviso y queda la lista. */
+  const openDetalle = async (clienteId: string, desdeUrl = false) => {
+    detalleIdRef.current = clienteId
     try {
       setLoadingDetalle(true)
       setModalOpen(true)
@@ -331,9 +356,21 @@ export default function AdminClientesPage() {
       setDirFormOpen(false)
       setDirEditingId(null)
       setCpValidation(null)
-      const res = await fetch(`/api/admin/clientes/${clienteId}`)
+      const res = await fetch(`/api/admin/clientes/${encodeURIComponent(clienteId)}`)
+      if (!res.ok && desdeUrl) {
+        if (detalleIdRef.current !== clienteId) return
+        const cuerpo: unknown = await res.json().catch(() => null)
+        closeModal()
+        aviso.error(
+          res.status === 400 || res.status === 404 || res.status === 422
+            ? 'No encontramos ese cliente.'
+            : `No se pudo abrir el cliente: ${extraerMensajeError(cuerpo, res.status)}`,
+        )
+        return
+      }
       if (!res.ok) throw new Error('Error cargando detalle')
       const data = await res.json()
+      if (desdeUrl && detalleIdRef.current !== clienteId) return
       setDetalle(data)
       setEditNombre(data.nombre || '')
       setEditApellidos(data.apellidos || '')
@@ -342,13 +379,28 @@ export default function AdminClientesPage() {
       // Fetch complete direcciones with cobertura data
       fetchDirecciones(clienteId)
     } catch {
-      setDetalle(null)
+      if (desdeUrl && detalleIdRef.current === clienteId) {
+        closeModal()
+        aviso.error('No se pudo abrir el cliente: revisa tu conexión.')
+      } else {
+        setDetalle(null)
+      }
     } finally {
       setLoadingDetalle(false)
     }
   }
 
+  // R11: abre el cliente de `?cliente_id=` (una sola vez por enlace)
+  useEffect(() => {
+    if (!clienteDeUrl) return
+    setClienteDeUrl(null)
+    void openDetalle(clienteDeUrl, true)
+    // openDetalle solo usa setters, refs y fetchDirecciones (estable): no hace falta en las dependencias
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clienteDeUrl])
+
   const closeModal = () => {
+    detalleIdRef.current = null
     setModalOpen(false)
     setDetalle(null)
     setEditing(false)
@@ -672,6 +724,9 @@ export default function AdminClientesPage() {
 
   return (
     <div className="space-y-6">
+      <Suspense fallback={null}>
+        <LectorClienteId onCliente={setClienteDeUrl} />
+      </Suspense>
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>

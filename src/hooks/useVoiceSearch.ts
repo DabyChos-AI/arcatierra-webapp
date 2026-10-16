@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-// @ts-ignore
+// TYP1 (R11): los tipos del paquete viven en src/types/react-speech-recognition.d.ts (antes, `@ts-ignore`)
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
 
 interface VoiceSearchResult {
@@ -40,10 +40,10 @@ export const useVoiceSearch = (
     }
 
     console.log('🎤 Iniciando escucha...')
+    // La 4.0.1 solo lee `continuous` y `language` (el `interimResults: true` de antes no hacía nada)
     SpeechRecognition.startListening({ 
       continuous: false,
-      language: language,
-      interimResults: true
+      language: language
     })
   }, [browserSupportsSpeechRecognition, isMicrophoneAvailable, language])
 

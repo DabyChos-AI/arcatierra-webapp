@@ -10,6 +10,7 @@ import {
   Gift,
   History,
   Info,
+  Link2,
   Loader2,
   Mail,
   Plus,
@@ -462,6 +463,8 @@ export default function ModalDetalleReserva({
 
   // COT1 (R1): «Reenviar cotización» en Pagos
   const [reenvioCotizacion, setReenvioCotizacion] = useState<EstadoReenvioCotizacion>({ tipo: 'quieto' })
+  // POR4 (R11): «Copiar link del cliente» (el link del portal se pide al hacer clic y nunca se pinta)
+  const [copiandoPortal, setCopiandoPortal] = useState(false)
 
   // R5 · EST1: links que el backend anuló porque el saldo nuevo quedó por debajo (se queda hasta cerrarlo)
   const [linksAnulados, setLinksAnulados] = useState<number | null>(null)
@@ -1347,7 +1350,8 @@ export default function ModalDetalleReserva({
   // COT1 (R1 §3.5): genera el PDF con los montos de hoy y pide mandarlo al correo de la reserva
   // (email_destino null). La guardia del back decide si sale; aquí solo se dice lo que respondió.
   async function reenviarCotizacion() {
-    if (!token || !reserva || reserva.cortesia) return
+    // CAN2 (R11): una reserva cancelada no se cotiza (el back responde 409; el botón ya no se pinta)
+    if (!token || !reserva || reserva.cortesia || reserva.estado === 'cancelada') return
     if (!tomarCandado('cotizacion')) return
     const ok = await confirmar({
       titulo: 'Reenviar cotización',
@@ -1384,6 +1388,65 @@ export default function ModalDetalleReserva({
       })
     } finally {
       soltarCandado('cotizacion')
+    }
+  }
+
+  // POR4 (R11): GET /api/admin/reservas/{id}/portal-link SOLO al hacer clic → portapapeles → «Link copiado».
+  // El link lleva el token del portal (una credencial): no se guarda en el estado, no se pinta, no va a la consola.
+  // Con ClipboardItem la escritura sale dentro del mismo clic (Safari/iPhone no dejan escribir después de un await);
+  // si el navegador no lo tiene o lo rechaza, writeText con el link ya recibido. Una sola petición.
+  async function copiarLinkPortal() {
+    if (!token || !reserva) return
+    if (!tomarCandado('portal')) return
+    setCopiandoPortal(true)
+    const reservaId = reserva.id
+    const pedirLink = async (): Promise<string> => {
+      const res = await fetch(`${API_URL}/api/admin/reservas/${encodeURIComponent(reservaId)}/portal-link`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
+      })
+      const cuerpo: unknown = await res.json().catch(() => null)
+      if (!res.ok) throw new Error(extraerMensajeError(cuerpo, res.status))
+      const link = (cuerpo as { url?: unknown } | null)?.url
+      if (typeof link !== 'string' || !link) throw new Error('el servidor no mandó el link.')
+      return link
+    }
+    try {
+      const promesaLink = pedirLink()
+      let copiado = false
+      try {
+        if (typeof ClipboardItem === 'function' && navigator.clipboard?.write) {
+          const item = new ClipboardItem({
+            'text/plain': promesaLink.then((l) => new Blob([l], { type: 'text/plain' })),
+          })
+          await navigator.clipboard.write([item])
+          copiado = true
+        }
+      } catch {
+        /* sin ClipboardItem con promesa o el navegador lo rechazó: se intenta con writeText */
+      }
+      let link: string
+      try {
+        link = await promesaLink
+      } catch (err) {
+        const motivo = err instanceof Error && !(err instanceof TypeError) ? err.message : 'sin conexión con el servidor.'
+        aviso.error(`No se pudo copiar el link del cliente: ${motivo}`)
+        return
+      }
+      if (!copiado) {
+        try {
+          await navigator.clipboard.writeText(link)
+          copiado = true
+        } catch {
+          copiado = false
+        }
+      }
+      link = ''
+      if (copiado) aviso.exito('Link copiado')
+      else aviso.error('No se pudo copiar el link del cliente: el navegador no dejó usar el portapapeles. Inténtalo de nuevo.')
+    } finally {
+      setCopiandoPortal(false)
+      soltarCandado('portal')
     }
   }
 
@@ -1691,7 +1754,23 @@ export default function ModalDetalleReserva({
           )}
         </div>
 
-        <footer className="shrink-0 border-t border-neutro-borde px-6 py-4 flex items-center justify-end gap-2">
+        <footer className="shrink-0 border-t border-neutro-borde px-6 py-4 flex flex-wrap items-center justify-between gap-2">
+          {/* POR4 (R11): visible desde cualquier pestaña. Pide el link al hacer clic; nunca lo pinta. */}
+          <button
+            type="button"
+            data-testid="detalle-copiar-portal"
+            onClick={copiarLinkPortal}
+            disabled={copiandoPortal}
+            title="Copia el link de la página de la reserva del cliente para mandárselo"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm text-verde border border-neutro-borde rounded-lg hover:bg-neutro-light disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {copiandoPortal ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <Link2 className="h-4 w-4" aria-hidden="true" />
+            )}
+            Copiar link del cliente
+          </button>
           <button
             type="button"
             onClick={onClose}
@@ -3208,7 +3287,8 @@ function TabPagos({
         </p>
       )}
 
-      {!cortesia && (
+      {/* CAN2 (R11): cancelada = sin «Pago manual», «Generar link MP» ni «Reenviar cotización» (el back responde 409) */}
+      {!cortesia && !cancelada && (
         <div className="flex flex-wrap gap-2">
           {!cancelada && (
             <>
@@ -3480,6 +3560,8 @@ const TIPO_CORREO_SIN_PLANTILLA: Record<string, string> = {
   aviso_cancelada: 'Aviso web: fecha cancelada',
   aviso_reactivada: 'Aviso web: fecha reactivada',
   recordatorio_web: 'Recordatorio (compra web)',
+  // POR5 (R11): el aviso al equipo cuando el cliente pide un cambio o la cancelación desde su portal
+  portal_solicitud: 'Solicitud del cliente (portal)',
 }
 
 /** Tipo de plantilla en español; los avisos sin plantilla se nombran por su asunto. Los asuntos

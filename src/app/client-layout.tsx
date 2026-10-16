@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import CartSidebar from '@/components/CartSidebar';
-import { ToastProvider } from '@/components/ui/Toast';
 // K1 (R8): avisos y diálogo de confirmación propios para todo el sitio (panel y web), en vez de alert()/confirm().
 import AvisosHost from '@/components/ui/Avisos';
 import { SessionProvider } from 'next-auth/react';
@@ -27,12 +26,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     };
   }, []);
   
+  // TOAST1 (R11): sin el ToastProvider viejo; todos los avisos salen de <AvisosHost />.
   return (
-    <ToastProvider>
+    <>
       {children}
       {/* Carrito lateral - Global, salvo en el panel */}
       {!enAdmin && <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />}
       <AvisosHost />
-    </ToastProvider>
+    </>
   );
 }

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { Search, Heart, ShoppingCart, Grid3X3, LayoutGrid, Star, Filter, Eye, MapPin, ChevronDown, ChevronRight, ChevronLeft, X, Mic, MicOff } from 'lucide-react'
 import { useVoiceSearch } from '@/hooks/useVoiceSearch'
-import { useToast } from '@/components/ui/Toast'
+import { aviso } from '@/components/ui/Avisos'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -20,7 +20,7 @@ import { destacadosSemana } from '@/data/destacados'
 import { useFavoritos } from '@/hooks/useFavoritos'
 import { API_URL } from '@/lib/api'
 import { precioLegible, esGratuito } from '@/lib/precio'
-import { aNumero, TEXTO_AGOTADO } from '@/types/tienda'
+import { aNumero, TEXTO_AGOTADO, esCanasta, itemcodeSuscripcion, itemcodeCompraUnica } from '@/types/tienda'
 
 // TIPOS DEFINIDOS
 /** R2: `stock_actual` llega como NÚMERO y vienen `disponible`/`en_venta` (DisponibilidadProducto); el listado viejo
@@ -50,6 +50,8 @@ type ProductoTienda = Product & { enVenta: boolean }
 
 /** Datos de la canasta de COMPRA ÚNICA (itemcode con U), por itemcode de la canasta base (suscripción). */
 interface CanastaCompraUnica {
+  /** CAR1 (R11): el nombre de la U («… Compra Única …»); el carrito no debe decir «Suscripción». */
+  nombre: string
   precio: number
   stock: number
   enVenta: boolean
@@ -112,21 +114,7 @@ const CANASTA_MAP: Record<string, string> = {
   '1891': 'basica-familiar'
 }
 
-// Helper: detectar si un producto es canasta
-function esCanasta(itemcode: string): boolean {
-  // Detecta: 1885, 1886, 1887, 1888, 1889, 1890, 1891 (con o sin U)
-  return /^188[5-9]U?$/.test(itemcode) || /^189[0-1]U?$/.test(itemcode)
-}
-
-// Helper: obtener itemcode de suscripción (sin U)
-function obtenerItemcodeSuscripcion(itemcode: string): string {
-  return itemcode.replace('U', '')
-}
-
-// Helper: obtener itemcode de compra única (con U)
-function obtenerItemcodeCompraUnica(itemcode: string): string {
-  return itemcode.endsWith('U') ? itemcode : itemcode + 'U'
-}
+// TYP1 (R11): esCanasta, itemcodeSuscripcion e itemcodeCompraUnica viven en @/types/tienda (una sola definición).
 
 // Helper: convertir nombres de mayúsculas a sentence case
 function toSentenceCase(text: string): string {
@@ -488,7 +476,6 @@ function TiendaPageContent() {
   const [cartItems, setCartItems] = useState<any[]>([])
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
   const [productoQuickView, setProductoQuickView] = useState<ProductoTienda | null>(null)
-  const toast = useToast()
   const [sortBy, setSortBy] = useState('mas-recientes')
   const [showFavorites, setShowFavorites] = useState(false)
   const [showMobileFilters, setShowMobileFilters] = useState(false)
@@ -509,9 +496,7 @@ function TiendaPageContent() {
     console.log('🔍 Búsqueda por voz completada:', voiceText)
     setSearchTerm(voiceText)
     setShowSearchSuggestions(true)
-    toast.success(`Buscando "${voiceText}"`, {
-      title: '🎤 Búsqueda por voz'
-    })
+    aviso.exito(`Buscando "${voiceText}"`, { titulo: 'Búsqueda por voz' })
   })
   
   // NUEVO: Estado para productos de la API
@@ -570,8 +555,8 @@ function TiendaPageContent() {
             if (esCanasta(product.id)) {
               if (product.id.endsWith('U')) {
                 // Es versión de compra única
-                const itemcodeSusc = product.id.replace('U', '')
-                compraUnicaMap[itemcodeSusc] = {
+                compraUnicaMap[itemcodeSuscripcion(product.id)] = {
+                  nombre: product.nombre,
                   precio: product.precio,
                   stock: product.stock,
                   enVenta: product.enVenta,
@@ -882,26 +867,15 @@ function TiendaPageContent() {
     const { agregado, exito } = await toggleFavoritoHook(productId)
     
     if (exito) {
+      // TOAST1 (R11): avisos propios (role="status"), sin la acción «Ver favoritos» (L5)
       if (agregado) {
-        // Agregado a favoritos
-        toast.success(`${nombreProducto} agregado a favoritos`, {
-          title: '¡Agregado!',
-          action: {
-            label: 'Ver favoritos',
-            onClick: () => router.push('/favoritos')
-          }
-        })
+        aviso.exito(`${nombreProducto} agregado a favoritos`, { titulo: '¡Agregado!' })
       } else {
-        // Eliminado de favoritos
-        toast.error(`${nombreProducto} eliminado de favoritos`, {
-          title: 'Favorito eliminado'
-        })
+        // Quitarlo salió bien: aviso neutro, no de error
+        aviso.info(`${nombreProducto} eliminado de favoritos`, { titulo: 'Favorito eliminado' })
       }
     } else {
-      // Error
-      toast.error('No se pudo actualizar favoritos. Inténtalo de nuevo.', {
-        title: 'Error'
-      })
+      aviso.error('No se pudo actualizar favoritos. Inténtalo de nuevo.', { titulo: 'Error' })
     }
   }
 
@@ -913,22 +887,24 @@ function TiendaPageContent() {
 
   /**
    * Lo que se compra al «Agregar al carrito» (FIC1, R7): en una canasta, la de COMPRA ÚNICA (itemcode con U)
-   * con SU precio, SU stock y SU en_venta (R2); null si hoy no se vende. Lo usan la tarjeta y la vista rápida.
+   * con SU nombre (CAR1, R11), SU precio, SU stock y SU en_venta (R2); null si hoy no se vende. Lo usan la tarjeta
+   * y la vista rápida.
    */
   const productoParaComprar = (product: ProductoTienda): ProductoTienda | null => {
     if (!esCanasta(product.id)) return product.enVenta ? product : null
-    const cu = compraUnica[obtenerItemcodeSuscripcion(product.id)]
+    const cu = compraUnica[itemcodeSuscripcion(product.id)]
     if (!cu || !cu.enVenta) return null
     return {
       ...product,
-      id: obtenerItemcodeCompraUnica(product.id),
+      id: itemcodeCompraUnica(product.id),
+      nombre: cu.nombre,
       precio: cu.precio,
       stock: cu.stock,
       enVenta: cu.enVenta,
     }
   }
 
-  // Agregar al carrito y mostrar toast. `cantidad`: la que eligió en la vista rápida (la tarjeta agrega 1).
+  // Agregar al carrito (sin aviso). `cantidad`: la que eligió en la vista rápida (la tarjeta agrega 1).
   const addToCart = (product: ProductoTienda, e?: any, cantidad: number = 1) => {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation()
     // R2: un agotado no se agrega (el listado público ya no los trae; esto cubre la convivencia con el back viejo)
@@ -955,26 +931,19 @@ function TiendaPageContent() {
     localStorage.setItem('arcaTierraCart', JSON.stringify(existingCart))
     setCartItems(existingCart)
     window.dispatchEvent(new Event('cartUpdated'))
-    // Toast deshabilitado - era molesto al agregar múltiples productos
-    // toast.cart(`${product.nombre} agregado al carrito`, {
-    //   title: '¡Excelente elección!',
-    //   action: {
-    //     label: 'Ver carrito',
-    //     onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
-    //   }
-    // })
+    // Sin aviso al agregar (era molesto al agregar varios productos)
   }
 
   // Manejar redirección a suscripciones con pre-carga
   const handleSuscripcion = (product: ProductoTienda) => {
-    const itemcodeSuscripcion = obtenerItemcodeSuscripcion(product.id)
-    const canastaId = CANASTA_MAP[itemcodeSuscripcion]
+    const codigoSuscripcion = itemcodeSuscripcion(product.id)
+    const canastaId = CANASTA_MAP[codigoSuscripcion]
     
     if (canastaId) {
       // Construir URL con parámetros
       const params = new URLSearchParams({
         canasta: canastaId,
-        itemcode: itemcodeSuscripcion,
+        itemcode: codigoSuscripcion,
         precarga: 'true'
       })
       
@@ -1104,17 +1073,8 @@ function TiendaPageContent() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Botón flotante móvil para abrir filtros */}
-        {!showMobileFilters && (
-          <button
-            onClick={() => setShowMobileFilters(true)}
-            className="fixed left-0 top-1/2 -translate-y-1/2 bg-[#33503E] text-white px-2 py-5 rounded-r-lg shadow-lg z-[9990] flex lg:hidden flex-col items-center gap-2"
-            aria-label="Abrir filtros"
-          >
-            <ChevronRight className="w-5 h-5" />
-            <span className="font-medium [writing-mode:vertical-lr] rotate-180 my-2">Filtros</span>
-          </button>
-        )}
+        {/* CAR2 (R11): debajo de lg, «Filtros» ya no es una pestaña fija a la izquierda (tapaba el borde de las tarjetas a
+            390 px); es un botón en la fila de filtros de abajo (`tienda-filtros-abrir`), con el mismo cajón. */}
 
         {/* Botón flotante desktop cuando colapsado - para ABRIR filtros */}
         {isDesktopFiltersCollapsed && (
@@ -1223,6 +1183,17 @@ function TiendaPageContent() {
               
               {/* FILTROS HORIZONTALES - Nuevo diseño tipo pills */}
               <div className="flex flex-wrap gap-2 sm:gap-3 order-3 w-full lg:w-auto">
+                {/* Cajón de filtros en móvil y tableta (CAR2, R11) */}
+                <button
+                  type="button"
+                  onClick={() => setShowMobileFilters(true)}
+                  data-testid="tienda-filtros-abrir"
+                  aria-label="Abrir filtros"
+                  className="lg:hidden inline-flex items-center gap-1 rounded-full bg-[#33503E] px-4 py-2 text-xs sm:text-sm font-medium text-white hover:bg-[#2a4032] focus:outline-none focus:ring-2 focus:ring-[#B15543]"
+                >
+                  <Filter className="w-4 h-4" aria-hidden="true" />
+                  Filtros
+                </button>
                 {/* Filtro: Categorías */}
                 <div className="relative">
                   <select
@@ -1372,8 +1343,12 @@ function TiendaPageContent() {
                       ))}
                     </div>
 
-                    {/* Botón de favorito */}
+                    {/* Botón de favorito (sin sesión solo usa localStorage: no llama a la API) */}
                     <button
+                      type="button"
+                      data-testid="tienda-favorito"
+                      aria-label={favorites.includes(product.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                      aria-pressed={favorites.includes(product.id)}
                       onClick={(e) => {
                         e.stopPropagation()
                         toggleFavorite(product.id, e)

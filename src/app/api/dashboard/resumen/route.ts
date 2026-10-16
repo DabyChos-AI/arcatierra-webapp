@@ -33,8 +33,8 @@ export async function GET(req: NextRequest) {
     })
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Error del backend:', response.status, errorText)
+      // CONS1 (R11): solo el status, sin el cuerpo del error del backend
+      console.error('Error del backend:', response.status)
       throw new Error('Error del backend')
     }
 

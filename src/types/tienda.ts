@@ -130,3 +130,20 @@ export function textoApartadoHasta(c: Contenido, hora: string): string {
   const sigue = c.hayExperiencias && c.hayProductos ? 'sigue apartado' : 'siguen apartados'
   return `${sujeto} ${sigue} hasta las ${hora}`
 }
+
+// ─── Canastas (TYP1, R11): una sola definición; antes vivía copiada en tienda/page.tsx, producto/[id]/client-page.tsx y
+// components/ProductCard.tsx. Itemcodes 1885–1891: sin U = suscripción, con U = compra única.
+/** true si el itemcode es una canasta (1885–1891, con o sin U). */
+export function esCanasta(itemcode: string): boolean {
+  return /^188[5-9]U?$/.test(itemcode) || /^189[0-1]U?$/.test(itemcode)
+}
+
+/** El itemcode de la suscripción (sin U). */
+export function itemcodeSuscripcion(itemcode: string): string {
+  return itemcode.replace('U', '')
+}
+
+/** El itemcode de la compra única (con U). */
+export function itemcodeCompraUnica(itemcode: string): string {
+  return itemcode.endsWith('U') ? itemcode : itemcode + 'U'
+}

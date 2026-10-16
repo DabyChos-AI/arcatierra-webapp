@@ -15,7 +15,8 @@ export async function POST(request: NextRequest) {
     // Sobreescribir email con el de la sesión para evitar falsificación
     body.email = session.user.email;
 
-    console.log('🛒 Recibiendo petición de carrito:', body);
+    // CONS1 (R11): el log no lleva el cuerpo (trae el correo) ni la respuesta
+    console.log('🛒 Recibiendo petición de carrito');
 
     // Llamar al backend interno
     const headers: Record<string, string> = {
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json();
 
-    console.log('✅ Respuesta del backend:', response.status, data);
+    console.log('✅ Respuesta del backend:', response.status);
 
     if (!response.ok) {
       return NextResponse.json(data, { status: response.status });

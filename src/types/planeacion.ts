@@ -261,7 +261,7 @@ export interface ItemGrilla {
   guias: GuiaEvento[]
   observaciones: string // texto de la Junta (sin contacto ni bitácora): lo ven todos
   notas_internas: string | null // CRUDO, solo si puede_editar (lo que se edita); si no, null
-  huecos: CodigoHueco[] // solo privadas y solo si puede_editar; si no, []
+  huecos: CodigoHueco[] // privadas y (HUE2, R11) fechas públicas e internos activos ('sin_chinampa', 'sin_guia'); solo si puede_editar; si no, []
   montos: MontosGrilla | null // solo privadas y solo si puede_ver_montos
 }
 

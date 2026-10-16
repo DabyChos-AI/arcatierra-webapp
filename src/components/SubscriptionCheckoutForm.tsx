@@ -159,16 +159,17 @@ export default function SubscriptionCheckoutForm({
 
               // AUTO-VALIDAR: Si hay CP, validar automáticamente
               if (extractedCP) {
-                console.log('🔍 Auto-validando CP:', extractedCP)
+                // CONS1 (R11): la consola no lleva el CP, la zona ni la fecha de entrega
+                console.log('🔍 Auto-validando CP')
                 const zona = await autoValidatePostalCode(extractedCP)
                 
                 if (zona) {
-                  console.log('✅ Zona encontrada automáticamente:', zona)
+                  console.log('✅ Zona encontrada automáticamente')
                   setZonaEntrega(zona)
                   
                   const nextDate = getNextDeliveryDate(zona)
                   if (nextDate) {
-                    console.log('📅 Fecha de entrega pre-seleccionada:', nextDate)
+                    console.log('📅 Fecha de entrega pre-seleccionada')
                     setSelectedDeliveryDate(nextDate)
                   }
                 } else {

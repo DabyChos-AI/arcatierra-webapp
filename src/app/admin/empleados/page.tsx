@@ -92,7 +92,7 @@ export default function EmpleadosPage() {
       }
       
     } catch (error) {
-      console.error('Error actualizando empleado:', error)
+      console.error('Error actualizando empleado')
       aviso.error(`Error al actualizar empleado:\n\n${error instanceof Error ? error.message : 'Error desconocido'}`)
     }
   }
@@ -147,7 +147,7 @@ export default function EmpleadosPage() {
         fetchEmpleados()
       } else {
         const errorData = await response.json()
-        console.error('❌ Error del servidor:', errorData)
+        console.error(`Error del servidor al crear empleado (HTTP ${response.status})`)
         
         // Manejar error de validación FastAPI
         if (errorData.detail) {
@@ -166,7 +166,7 @@ export default function EmpleadosPage() {
       }
       
     } catch (error) {
-      console.error('💥 Error completo:', error)
+      console.error('Error al crear empleado')
       aviso.error(`Error al crear empleado:\n\n${error instanceof Error ? error.message : JSON.stringify(error)}`)
     }
   }

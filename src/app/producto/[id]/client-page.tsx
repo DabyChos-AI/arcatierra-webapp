@@ -2,16 +2,14 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { Heart, ShoppingCart, Check, Leaf, Droplets, PackageOpen, Star, MapPin, ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Product } from '@/data/productos'
-import { useToast } from '@/components/ui/Toast'
-import ProductTraceability from '@/components/ProductTraceability'
+import { aviso } from '@/components/ui/Avisos'
 import { API_URL } from '@/lib/api'
 import { leerCarrito, guardarCarrito } from '@/lib/carrito'
-import { aNumero, TEXTO_AGOTADO } from '@/types/tienda'
+import { aNumero, TEXTO_AGOTADO, esCanasta, itemcodeCompraUnica } from '@/types/tienda'
 import OptimizedImage from '@/components/ui/OptimizedImage'
 
 /**
@@ -25,11 +23,6 @@ type ProductoFicha = Product & {
   itemcodeCarrito: string
   /** false = no hay precio de compra única que mostrar (la canasta U no existe): solo «Agotado por ahora». */
   conPrecio: boolean
-}
-
-/** Canastas 1885–1891, con o sin U (igual que `esCanasta` de `app/tienda/page.tsx`). */
-function esCanasta(itemcode: string): boolean {
-  return /^188[5-9]U?$/.test(itemcode) || /^189[0-1]U?$/.test(itemcode)
 }
 
 /** Datos de venta de una fila de `/api/products/{itemcode}`: precio, unidades enteras y en_venta. */
@@ -63,7 +56,6 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
   const [producto, setProducto] = useState<ProductoFicha | null>(null)
   const [cantidad, setCantidad] = useState(1)
   const [favoritos, setFavoritos] = useState<string[]>([])
-  const toast = useToast() // Usar el sistema global de toast
   const [imagenSeleccionada, setImagenSeleccionada] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -81,14 +73,20 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
           // Mapear producto de la API al formato local.
           // FIC1 (R7): una canasta base (sin U) se vende como COMPRA ÚNICA, igual que la tarjeta de la tienda:
           // precio, stock y en_venta de la canasta U; si no existe, «Agotado por ahora» (nunca el precio de la suscripción).
+          // CAR1 (R11): también el NOMBRE es el de la U («… Compra Única …»): el carrito no debe decir «Suscripción».
           let venta = ventaDe(apiProduct)
           let itemcodeCarrito: string = apiProduct.itemcode
+          let nombre: string = apiProduct.nombre
           let conPrecio = true
           if (esCanasta(apiProduct.itemcode) && !apiProduct.itemcode.endsWith('U')) {
-            itemcodeCarrito = `${apiProduct.itemcode}U`
+            itemcodeCarrito = itemcodeCompraUnica(apiProduct.itemcode)
             const resCu = await fetch(`${apiUrl}/api/products/${encodeURIComponent(itemcodeCarrito)}`)
             if (resCu.ok) {
-              venta = ventaDe(await resCu.json())
+              const apiCompraUnica = await resCu.json()
+              venta = ventaDe(apiCompraUnica)
+              if (typeof apiCompraUnica.nombre === 'string' && apiCompraUnica.nombre.trim() !== '') {
+                nombre = apiCompraUnica.nombre
+              }
             } else {
               venta = { precio: 0, stock: 0, enVenta: false }
               conPrecio = false
@@ -98,7 +96,7 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
             id: apiProduct.itemcode,
             itemcodeCarrito,
             conPrecio,
-            nombre: apiProduct.nombre,
+            nombre,
             categoria: apiProduct.categoria || 'sin-categoria',
             precio: venta.precio,
             imagen: apiProduct.imagen_url || '',
@@ -165,11 +163,12 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
       console.error('Error al guardar favoritos:', error)
     }
 
-    toast.show({
-      title: favoritos.includes(producto.id) ? 'Eliminado de favoritos' : 'Añadido a favoritos',
-      message: producto.nombre,
-      type: favoritos.includes(producto.id) ? 'error' : 'favorite',
-    })
+    // TOAST1 (R11): avisos propios; quitarlo salió bien → aviso neutro (role="status"), no de error
+    if (favoritos.includes(producto.id)) {
+      aviso.info(producto.nombre, { titulo: 'Eliminado de favoritos' })
+    } else {
+      aviso.exito(producto.nombre, { titulo: 'Añadido a favoritos' })
+    }
   }
 
   // Función para añadir al carrito.
@@ -198,18 +197,10 @@ export default function ClientProductoPage({ id }: ClientProductoPageProps) {
         items.push(cartItem)
       }
       guardarCarrito(items) // escribe arcaTierraCart y dispara 'cartUpdated'
-
-      // Toast deshabilitado - era molesto al agregar múltiples productos
-      // toast.cart(`${cantidad} x ${producto.nombre} agregado al carrito`, {
-      //   title: '¡Excelente elección!',
-      //   action: {
-      //     label: 'Ver carrito',
-      //     onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
-      //   }
-      // })
+      // Sin aviso al agregar (era molesto al agregar varios productos)
     } catch (error) {
       console.error('Error al guardar carrito:', error)
-      toast.error('No pudimos agregarlo al carrito. Intenta de nuevo.', { title: 'Carrito' })
+      aviso.error('No pudimos agregarlo al carrito. Intenta de nuevo.', { titulo: 'Carrito' })
     }
   }
 

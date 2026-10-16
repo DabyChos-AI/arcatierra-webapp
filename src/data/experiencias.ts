@@ -13,7 +13,10 @@ export interface Experiencia {
   tipo: 'publica' | 'privada';
   precio: {
     base: number;
+    /** Precio de un niño con la regla de la experiencia; null = sin regla (paga como adulto). 0 = gratis. */
     nino?: number | null;
+    /** PN2 (R11): edad máxima de esa regla («Niños de hasta N años»); null = sin regla. */
+    edadMaximaNino?: number | null;
     adicional?: number;
     capacidad: string;
   };

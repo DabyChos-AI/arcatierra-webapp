@@ -89,7 +89,9 @@ interface ExperienciaApi {
   nombre: string;
   tipo: 'publica' | 'privada';
   precio: number;
-  precio_nino?: number | null; // el esquema público no lo trae (R1 §8): queda null
+  // R7 · PN1 (ExperienciaResponse): con la regla de niño de la experiencia; null = sin regla (paga como adulto)
+  precio_nino?: number | null;
+  edad_maxima_nino?: number | null;
   precio_persona_adicional: number;
   personas_incluidas: number | null;
   descripcion: string;
@@ -303,7 +305,9 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
               tipo: expEncontrada.tipo,
               precio: {
                 base: expEncontrada.precio,
-                nino: expEncontrada.precio_nino || null,
+                // PN2 (R11): `??`, no `||`: un precio de niño 0 (gratis) es un dato, no «sin regla»
+                nino: expEncontrada.precio_nino ?? null,
+                edadMaximaNino: expEncontrada.edad_maxima_nino ?? null,
                 adicional: expEncontrada.precio_persona_adicional || 0,
                 // WEB2 (DR4): una privada se cobra por grupo con las personas que dice la API (antes «hasta 10» fijo)
                 capacidad: expEncontrada.tipo === 'publica' ? 'por persona' : textoGrupoPrivada(expEncontrada.personas_incluidas)
@@ -616,11 +620,16 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                   <div className="text-gray-600" data-testid="slug-precio-capacidad">
                     {experiencia.precio.capacidad}
                   </div>
-                  {isPrivate && experiencia.precio.nino && (
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <div className="text-sm text-gray-600">Precio niño:</div>
-                      <div className="text-xl font-semibold text-verde-principal">
-                        ${formatPrice(experiencia.precio.nino)}
+                  {/* PN2 (R11): la regla de niño de la privada, con su edad; 0 = «Gratis» (antes un 0 no se pintaba) */}
+                  {isPrivate && experiencia.precio.nino != null && (
+                    <div data-testid="slug-precio-nino" data-rama="privada" className="mt-3 pt-3 border-t border-gray-200">
+                      <div className="text-sm text-gray-600">
+                        {experiencia.precio.edadMaximaNino != null
+                          ? `Niños de hasta ${experiencia.precio.edadMaximaNino} años:`
+                          : 'Niños:'}
+                      </div>
+                      <div data-testid="slug-precio-nino-valor" className="text-xl font-semibold text-verde-principal">
+                        {experiencia.precio.nino === 0 ? 'Gratis' : formatMXN(experiencia.precio.nino)}
                       </div>
                     </div>
                   )}

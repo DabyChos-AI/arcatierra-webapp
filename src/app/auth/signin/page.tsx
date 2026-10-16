@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { aviso } from '@/components/ui/Avisos'
+import { Sprout } from 'lucide-react'
 
 export default function SignIn() {
   const [loading, setLoading] = useState(false)
@@ -141,7 +142,8 @@ export default function SignIn() {
               </div>
             </div>
             <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#B15543] rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold">🌱</span>
+              {/* EMO1 (R11): el brote es un ícono, no un emoji */}
+              <Sprout className="h-3.5 w-3.5 text-white" aria-hidden="true" />
             </div>
           </div>
           <h1 className="text-3xl font-bold text-[#33503E] mb-2">Arca Tierra</h1>
@@ -298,7 +300,8 @@ export default function SignIn() {
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   <>
-                    🌱 Crear Cuenta
+                    <Sprout className="h-5 w-5" aria-hidden="true" />
+                    Crear Cuenta
                   </>
                 )}
               </Button>

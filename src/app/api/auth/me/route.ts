@@ -122,7 +122,8 @@ export async function PATCH(request: Request) {
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('Error actualizando perfil:', response.status, errorText)
+      // CONS1 (R11): solo el status; un 422 de Pydantic trae lo capturado (`input`)
+      console.error('Error actualizando perfil:', response.status)
       return NextResponse.json(
         { error: errorText || 'Error actualizando perfil' },
         { status: response.status }

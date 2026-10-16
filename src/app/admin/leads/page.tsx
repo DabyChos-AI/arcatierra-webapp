@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef, Suspense } from 'react'
 import {
   Inbox,
   RefreshCw,
@@ -21,9 +21,11 @@ import {
   Info,
 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { formatFechaHoraMexico } from '@/lib/dates'
 import { API_URL } from '@/lib/api'
+import { aviso } from '@/components/ui/Avisos'
+import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
 import { useVendedoras, vendedoraFueraDeLista, type Vendedora } from '@/hooks/useVendedoras'
 
 // ─── Types ───────────────────────────────────────────
@@ -106,7 +108,7 @@ const ESTADO_BADGE: Record<EstadoLead, { label: string; classes: string }> = {
     classes: 'bg-[#B15543]/10 text-[#B15543] border border-[#B15543]/30',
   },
   en_cotizacion: {
-    label: 'En cotizacion',
+    label: 'En cotización',
     classes: 'bg-amber-50 text-amber-700 border border-amber-200',
   },
   convertido_a_reserva: {
@@ -124,7 +126,7 @@ type FiltroEstado = '' | EstadoLead
 const TABS: { key: FiltroEstado; label: string }[] = [
   { key: '', label: 'Todos' },
   { key: 'nuevo', label: 'Nuevos' },
-  { key: 'en_cotizacion', label: 'En cotizacion' },
+  { key: 'en_cotizacion', label: 'En cotización' },
   { key: 'convertido_a_reserva', label: 'Convertidos' },
   { key: 'descartado', label: 'Descartados' },
 ]
@@ -143,6 +145,23 @@ function vendedorNombre(lead: Lead, vendedoras: Vendedora[]): string {
 }
 
 // ─── Component ───────────────────────────────────────
+
+/**
+ * R11 (K3/K5): `?lead_id=<uuid>` abre el detalle de ese lead (lo usan la búsqueda global ⌘K y la campana). Es el ÚNICO que
+ * llama `useSearchParams()` y va dentro de `<Suspense>` (Next 15 lo exige; el resto de la página se sigue prerenderizando).
+ * Leído el parámetro, limpia la URL (recargar no reabre el modal; patrón de reservas/page.tsx:62-74).
+ */
+function LectorLeadId({ onLead }: { onLead: (id: string) => void }) {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const id = searchParams.get('lead_id')
+  useEffect(() => {
+    if (!id) return
+    onLead(id)
+    router.replace('/admin/leads', { scroll: false })
+  }, [id, onLead, router])
+  return null
+}
 
 export default function AdminLeadsPage() {
   // LD2-a (30-sep): vendedoras de Personal, no una lista fija en el código (se había quedado
@@ -181,6 +200,10 @@ export default function AdminLeadsPage() {
   const [crearLoading, setCrearLoading] = useState(false)
   const [crearError, setCrearError] = useState<string | null>(null)
   const [experiencias, setExperiencias] = useState<ExperienciaSimple[]>([])
+
+  // R11: el lead que pidió la URL (`?lead_id=`); la última apertura gana (una respuesta tardía no pisa otra)
+  const [leadDeUrl, setLeadDeUrl] = useState<string | null>(null)
+  const aperturaUrlRef = useRef(0)
 
   // ─── Fetchers ────────────────────────────────────────
 
@@ -290,6 +313,7 @@ export default function AdminLeadsPage() {
   // ─── Modal ───────────────────────────────────────────
 
   const openDetalle = (lead: Lead) => {
+    aperturaUrlRef.current += 1
     setLeadDetalle(lead)
     setNuevaNota('')
     setAccionError(null)
@@ -297,11 +321,45 @@ export default function AdminLeadsPage() {
   }
 
   const closeModal = () => {
+    aperturaUrlRef.current += 1
     setModalOpen(false)
     setLeadDetalle(null)
     setNuevaNota('')
     setAccionError(null)
   }
+
+  // R11: `?lead_id=` → GET /api/admin/leads/{id} (las mismas llaves que un renglón de la lista) y abre su detalle.
+  // Si no existe: aviso y la lista normal.
+  useEffect(() => {
+    if (!leadDeUrl) return
+    setLeadDeUrl(null)
+    const numero = ++aperturaUrlRef.current
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/admin/leads/${encodeURIComponent(leadDeUrl)}`, { cache: 'no-store' })
+        const cuerpo: unknown = await res.json().catch(() => null)
+        if (numero !== aperturaUrlRef.current) return
+        if (!res.ok) {
+          aviso.error(
+            res.status === 400 || res.status === 404 || res.status === 422
+              ? 'No encontramos ese lead.'
+              : `No se pudo abrir el lead: ${extraerMensajeError(cuerpo, res.status)}`,
+          )
+          return
+        }
+        if (!cuerpo || typeof cuerpo !== 'object' || typeof (cuerpo as Lead).id !== 'string') {
+          aviso.error('No se pudo abrir el lead.')
+          return
+        }
+        setLeadDetalle(cuerpo as Lead)
+        setNuevaNota('')
+        setAccionError(null)
+        setModalOpen(true)
+      } catch {
+        if (numero === aperturaUrlRef.current) aviso.error('No se pudo abrir el lead: revisa tu conexión.')
+      }
+    })()
+  }, [leadDeUrl])
 
   // ─── Modal Crear Lead ────────────────────────────────
 
@@ -391,7 +449,13 @@ export default function AdminLeadsPage() {
         setTotalCount(data.total_count)
         setTotalPages(data.total_pages)
         const updated = data.items.find((l) => l.id === leadId) || null
-        return updated
+        if (updated) return updated
+        // R11 (§9 C5): un lead abierto por `?lead_id=` (búsqueda ⌘K o campana) puede no estar en la página visible; entonces
+        // se relee solo (GET /api/admin/leads/{id}, las mismas llaves) para que el modal no se quede con el estado viejo.
+        const resLead = await fetch(`/api/admin/leads/${encodeURIComponent(leadId)}`, { cache: 'no-store' })
+        if (!resLead.ok) return null
+        const solo: unknown = await resLead.json().catch(() => null)
+        return solo && typeof solo === 'object' && (solo as Lead).id === leadId ? (solo as Lead) : null
       } catch {
         return null
       }
@@ -521,7 +585,7 @@ export default function AdminLeadsPage() {
         textClass: 'text-[#B15543]',
       },
       {
-        title: 'En cotizacion',
+        title: 'En cotización',
         value: stats.en_cotizacion,
         icon: Mail,
         color: '#F59E0B',
@@ -560,6 +624,9 @@ export default function AdminLeadsPage() {
 
   return (
     <div className="space-y-6">
+      <Suspense fallback={null}>
+        <LectorLeadId onLead={setLeadDeUrl} />
+      </Suspense>
       {/* Header */}
       <div className="flex justify-between items-start gap-4 flex-wrap">
         <div className="flex items-start gap-3">
@@ -1071,7 +1138,7 @@ export default function AdminLeadsPage() {
                   className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#33503E] focus:border-[#33503E] w-full sm:w-auto"
                 >
                   <option value="nuevo">Nuevo</option>
-                  <option value="en_cotizacion">En cotizacion</option>
+                  <option value="en_cotizacion">En cotización</option>
                   <option
                     value="convertido_a_reserva"
                     disabled={!leadDetalle.reserva_creada_id}

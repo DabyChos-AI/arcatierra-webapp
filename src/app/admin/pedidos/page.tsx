@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Package, TrendingUp, DollarSign, Clock, RefreshCw,
   Search, ChevronLeft, ChevronRight, X, Truck, Store,
@@ -24,7 +25,7 @@ import {
   type CausaCancelacion,
 } from '@/types/reembolsos'
 import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
-import { confirmar } from '@/components/ui/Avisos'
+import { aviso, confirmar } from '@/components/ui/Avisos'
 import {
   AlertaPedidoChip,
   AvisosPagoDetalle,
@@ -219,6 +220,24 @@ const TRANSICIONES_VALIDAS: Record<string, string[]> = {
   reembolsado: [],
 }
 
+/**
+ * R11 (K3/K5): `?pedido_id=<uuid>` abre el detalle de ese pedido (lo usan la búsqueda global ⌘K y la campana).
+ * Es el ÚNICO que llama `useSearchParams()` y va dentro de `<Suspense>` (Next 15 lo exige; así el resto de la página se
+ * sigue prerenderizando, como `LectorReserva` de Mi día). Leído el parámetro, limpia la URL (recargar no reabre el
+ * modal; patrón de reservas/page.tsx:62-74).
+ */
+function LectorPedidoId({ onPedido }: { onPedido: (id: string) => void }) {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const id = searchParams.get('pedido_id')
+  useEffect(() => {
+    if (!id) return
+    onPedido(id)
+    router.replace('/admin/pedidos', { scroll: false })
+  }, [id, onPedido, router])
+  return null
+}
+
 export default function AdminPedidosPage() {
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
@@ -261,6 +280,8 @@ export default function AdminPedidosPage() {
   const reembolsoEnCursoRef = useRef(false)
   // Pedido abierto en el modal: una respuesta que llega tarde no pisa el detalle de otro pedido
   const detalleIdRef = useRef<string | null>(null)
+  // R11: el pedido que pidió la URL (`?pedido_id=`); el efecto de abajo abre su detalle
+  const [pedidoDeUrl, setPedidoDeUrl] = useState<string | null>(null)
 
   const fetchStats = useCallback(async () => {
     try {
@@ -300,26 +321,54 @@ export default function AdminPedidosPage() {
     return () => clearInterval(interval)
   }, [fetchStats, fetchPedidos])
 
-  const openDetalle = async (pedidoId: string) => {
+  /** `desdeUrl` (R11): si el pedido no existe o no se puede abrir, el modal se cierra con un aviso y queda la lista. */
+  const openDetalle = async (pedidoId: string, desdeUrl = false) => {
     detalleIdRef.current = pedidoId
     setErrorEstado(null)
     setCausaArcaTierra(false)
     try {
       setLoadingDetalle(true)
       setModalOpen(true)
-      const res = await fetch(`/api/admin/pedidos/${pedidoId}`)
-      if (!res.ok) throw new Error('Error cargando detalle')
+      const res = await fetch(`/api/admin/pedidos/${encodeURIComponent(pedidoId)}`)
+      if (!res.ok) {
+        if (desdeUrl && detalleIdRef.current === pedidoId) {
+          const cuerpo: unknown = await res.json().catch(() => null)
+          cerrarModal()
+          aviso.error(
+            res.status === 400 || res.status === 404 || res.status === 422
+              ? 'No encontramos ese pedido.'
+              : `No se pudo abrir el pedido: ${extraerMensajeError(cuerpo, res.status)}`,
+          )
+          return
+        }
+        throw new Error('Error cargando detalle')
+      }
       const data = await res.json()
       if (detalleIdRef.current !== pedidoId) return
       setDetalle(data)
       setNuevoEstado('')
       setNotaEstado('')
     } catch {
-      if (detalleIdRef.current === pedidoId) setDetalle(null)
+      if (detalleIdRef.current !== pedidoId) return
+      if (desdeUrl) {
+        cerrarModal()
+        aviso.error('No se pudo abrir el pedido: revisa tu conexión.')
+      } else {
+        setDetalle(null)
+      }
     } finally {
       setLoadingDetalle(false)
     }
   }
+
+  // R11: abre el pedido de `?pedido_id=` (una sola vez por enlace)
+  useEffect(() => {
+    if (!pedidoDeUrl) return
+    setPedidoDeUrl(null)
+    void openDetalle(pedidoDeUrl, true)
+    // openDetalle solo usa setters y refs: no hace falta en las dependencias
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pedidoDeUrl])
 
   const cerrarModal = () => {
     detalleIdRef.current = null
@@ -459,6 +508,9 @@ export default function AdminPedidosPage() {
 
   return (
     <div className="space-y-6">
+      <Suspense fallback={null}>
+        <LectorPedidoId onPedido={setPedidoDeUrl} />
+      </Suspense>
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>

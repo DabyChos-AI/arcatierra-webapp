@@ -178,7 +178,7 @@ const MapPickerContent = ({ value, onChange, label, className, zIndex = 50 }: Ma
     <div className={className}>
       {label && (
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          📍 {label}
+          {label}
         </label>
       )}
 
@@ -216,7 +216,7 @@ const MapPickerContent = ({ value, onChange, label, className, zIndex = 50 }: Ma
           rel="noopener noreferrer"
           className="text-xs text-green-600 hover:underline mt-1 inline-block"
         >
-          Ver en Google Maps ↗
+          Ver en Google Maps <span aria-hidden="true">↗</span>
         </a>
       )}
 

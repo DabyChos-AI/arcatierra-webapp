@@ -25,7 +25,8 @@ import {
 import Link from 'next/link';
 import { Recipe, RecipeComment, UserRating } from '@/data/recetas';
 import { productos, Product } from '@/data/productos';
-import { useToast } from '@/components/ui/Toast';
+import { aviso } from '@/components/ui/Avisos';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 
 interface RecipeDetailClientProps {
   recipe: Recipe;
@@ -41,7 +42,6 @@ export default function RecipeDetailClient({ recipe }: RecipeDetailClientProps) 
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [showNutrition, setShowNutrition] = useState(false);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
-  const toast = useToast();
 
   useEffect(() => {
     // Usar comentarios reales de la receta o comentarios vacíos si no existen
@@ -192,30 +192,23 @@ export default function RecipeDetailClient({ recipe }: RecipeDetailClientProps) 
     // Notificar actualización del carrito
     window.dispatchEvent(new Event('cartUpdated'));
 
-    // Mostrar feedback al usuario
+    // Mostrar feedback al usuario (TOAST1, R11: avisos propios, sin emojis ni la acción «Ver carrito»)
     if (exactMatches.length > 0) {
-      const message = `✅ ${exactMatches.length} ingrediente${exactMatches.length > 1 ? 's agregados' : ' agregado'}: ${exactMatches.join(', ')}`;
-      
-      toast.cart(message, {
-        title: '🛒 ¡Ingredientes agregados al carrito!',
-        action: {
-          label: 'Ver carrito',
-          onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
-        }
-      });
+      const message = `${exactMatches.length} ingrediente${exactMatches.length > 1 ? 's agregados' : ' agregado'}: ${exactMatches.join(', ')}`;
+      aviso.exito(message, { titulo: '¡Ingredientes agregados al carrito!' });
     }
 
     if (notFoundIngredients.length > 0) {
       setTimeout(() => {
-        toast.error(`❌ Ingredientes no disponibles en tienda: ${notFoundIngredients.join(', ')}`, {
-          title: 'Ingredientes no encontrados'
+        aviso.error(`Ingredientes no disponibles en tienda: ${notFoundIngredients.join(', ')}`, {
+          titulo: 'Ingredientes no encontrados'
         });
       }, 1000);
     }
 
     if (exactMatches.length === 0) {
-      toast.error('Ningún ingrediente de esta receta está disponible en la tienda actualmente', {
-        title: 'Sin ingredientes disponibles'
+      aviso.error('Ningún ingrediente de esta receta está disponible en la tienda actualmente', {
+        titulo: 'Sin ingredientes disponibles'
       });
     }
   };
@@ -237,10 +230,13 @@ export default function RecipeDetailClient({ recipe }: RecipeDetailClientProps) 
 
       {/* Header con imagen y información básica */}
       <div className="relative h-96 overflow-hidden">
-        <img
+        <OptimizedImage
           src={recipe.image}
           alt={recipe.title}
-          className="w-full h-full object-cover"
+          fill
+          sizes="100vw"
+          priority
+          className="object-cover"
         />
         <div className="absolute inset-0 bg-black bg-opacity-40" />
 
@@ -511,9 +507,11 @@ export default function RecipeDetailClient({ recipe }: RecipeDetailClientProps) 
               <div className="space-y-6">
                 {comments.map((comment) => (
                   <div key={comment.id} className="flex gap-4">
-                    <img
+                    <OptimizedImage
                       src={comment.userAvatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'}
                       alt={comment.userName}
+                      width={40}
+                      height={40}
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div className="flex-1">
@@ -539,9 +537,11 @@ export default function RecipeDetailClient({ recipe }: RecipeDetailClientProps) 
                         <div className="mt-4 pl-6 border-l-2 border-gray-100 space-y-4">
                           {comment.replies.map((reply) => (
                             <div key={reply.id} className="flex gap-3">
-                              <img
+                              <OptimizedImage
                                 src={reply.userAvatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face'}
                                 alt={reply.userName}
+                                width={32}
+                                height={32}
                                 className="w-8 h-8 rounded-full object-cover"
                               />
                               <div className="flex-1">

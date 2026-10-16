@@ -124,8 +124,10 @@ export default function ProductQuickView({
               ========================================
               */}
               
-              {/* Nombre del producto */}
-              <h2 id="quickview-titulo" className="text-2xl font-bold text-gray-900 mb-2">{product.nombre}</h2>
+              {/* Nombre: el de lo que se compra (CAR1, R11: en una canasta, el de la compra única, no «Suscripción») */}
+              <h2 id="quickview-titulo" data-testid="quickview-titulo" className="text-2xl font-bold text-gray-900 mb-2">
+                {(productoCompra ?? product).nombre}
+              </h2>
               
               {/* Rating */}
               <div className="flex items-center gap-1 mb-4">

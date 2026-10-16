@@ -35,6 +35,17 @@ async function pedirListaAdmin(query: string): Promise<{ items?: any[]; total?: 
   return res.json()
 }
 
+/** CAT1 (R11): la categoría tal como viene; vacía o nula → null (antes se volvía el texto «Sin categoría» y el PATCH lo
+ *  guardaba). Las filas que YA traen el texto literal se quedan como están (cambiarlas pide el OK de David). */
+function categoriaDe(valor: unknown): string | null {
+  return typeof valor === 'string' && valor.trim() ? valor : null
+}
+
+const TEXTO_SIN_CATEGORIA = 'Sin categoría'
+/** DESC1 (R11, §9 C10): igual que CAT1, la descripción nula se queda vacía en el estado editable (antes se volvía el texto
+ *  «Sin descripción» y el PATCH lo guardaba: 45 productos lo traen). El texto se pinta solo en la vista previa. */
+const TEXTO_SIN_DESCRIPCION = 'Sin descripción'
+
 interface Producto {
   id: string;
   itemcode: string;
@@ -42,7 +53,8 @@ interface Producto {
   descripcion: string;
   precio: number;
   stock: number;
-  categoria: string;
+  /** CAT1 (R11): null = sin categoría. «Sin categoría» se pinta solo en la vista; nunca se guarda. */
+  categoria: string | null;
   activo: boolean;
   visible_web: boolean;
 }
@@ -128,7 +140,6 @@ export default function ProductosPage() {
     try {
       setLoading(true)
       setErrorCarga(null)
-      console.log('🔄 Iniciando fetchProductos con filtros:', filtros)
       
       // 🔧 SOLUCIÓN: Detectar si necesitamos filtrado local
       const needsLocalFilter = (
@@ -142,13 +153,11 @@ export default function ProductosPage() {
       
       if (needsLocalFilter) {
         // 🚀 CARGAR TODOS LOS PRODUCTOS para filtrado local
-        console.log('🔧 Filtrado local activado - cargando todos los productos...')
         
         const firstData = await pedirListaAdmin('limit=200&page=1&solo_disponibles=false&incluir_inactivos=true')
         const totalProductos = firstData.total || 0
         const totalPaginas = Math.ceil(totalProductos / 200)
         
-        console.log(`📊 Total: ${totalProductos} productos en ${totalPaginas} páginas (incluye inactivos)`)
         
         // Cargar todas las páginas en paralelo
         const promesasPaginas = []
@@ -166,15 +175,14 @@ export default function ProductosPage() {
           id: p.itemcode,
           itemcode: p.itemcode,
           nombre: p.nombre,
-          descripcion: p.descripcion || 'Sin descripción',
+          descripcion: p.descripcion || '',
           precio: parseFloat(p.precio_unitario) || 0,
           stock: aNumero(p.stock_actual),
-          categoria: p.categoria || 'Sin categoría',
+          categoria: categoriaDe(p.categoria),
           activo: p.visible_web !== false,
           visible_web: p.visible_web !== false
         }))
         
-        console.log(`✅ Cargados ${productosApi.length} productos para filtrado local`)
         
       } else {
         // ✅ PAGINACIÓN NORMAL con API
@@ -217,10 +225,10 @@ export default function ProductosPage() {
           id: p.itemcode,
           itemcode: p.itemcode,
           nombre: p.nombre,
-          descripcion: p.descripcion || 'Sin descripción',
+          descripcion: p.descripcion || '',
           precio: parseFloat(p.precio_unitario) || 0,
           stock: aNumero(p.stock_actual),
-          categoria: p.categoria || 'Sin categoría',
+          categoria: categoriaDe(p.categoria),
           activo: p.visible_web !== false,
           visible_web: p.visible_web !== false
         }))
@@ -276,16 +284,14 @@ export default function ProductosPage() {
         setProductos(productosPagina)
         setPaginacion(prev => ({ ...prev, total: totalFiltrados }))
         
-        console.log(`🔧 Filtrado local: ${productosPagina.length}/${totalFiltrados} productos mostrados`)
       }
       
     } catch (error) {
-      console.error('⚠️ Error cargando productos:', error)
+      console.error('Error cargando productos')
       setProductos([])
       setErrorCarga(error instanceof Error && error.message ? error.message : 'No se pudo cargar la lista de productos.')
     } finally {
       setLoading(false)
-      console.log('✅ fetchProductos finalizado, loading = false')
     }
   }
 
@@ -304,17 +310,14 @@ export default function ProductosPage() {
         }
       }
       console.warn(`Categorías admin no disponibles (HTTP ${resAdmin.status}); uso la lista pública`)
-    } catch (error) {
-      console.warn('Categorías admin no disponibles; uso la lista pública', error)
+    } catch {
+      console.warn('Categorías admin no disponibles; uso la lista pública')
     }
     try {
-      console.log('🔄 Cargando categorías desde /api/products/categories')
       const response = await fetch(`${API_URL}/api/products/categories`)
-      console.log('🌐 Response categorías:', response.status, response.ok)
       
       if (response.ok) {
         const data = await response.json()
-        console.log('📄 Data categorías recibida:', data)
         
         // ✅ CORRECCIÓN: La API devuelve array de objetos con propiedad 'categoria'
         const categoriasLimpias = data
@@ -326,20 +329,17 @@ export default function ProductosPage() {
         const categoriasFinales = ['todas', ...categoriasLimpias]
         setCategorias([...categoriasFinales]) // Forzar nuevo array
         
-        console.log(`✅ 📂 Cargadas ${categoriasLimpias.length} categorías:`, categoriasLimpias.slice(0, 5))
-        console.log('🎯 Estado categorías actualizado, debe mostrar en dropdown')
       } else {
-        console.error('❌ Error en response categorías:', response.status)
+        console.error(`Error en la respuesta de categorías (HTTP ${response.status})`)
         setCategorias(['todas']) // Fallback con al menos "todas"
       }
-    } catch (error) {
-      console.error('⚠️ Error cargando categorías:', error)
+    } catch {
+      console.error('Error cargando categorías')
       setCategorias(['todas']) // Fallback con al menos "todas"
     }
   }
 
   useEffect(() => {
-    console.log('🔄 Inicializando componente - cargando categorías')
     fetchCategorias() // Cargar categorías una sola vez
   }, [])
 
@@ -347,7 +347,6 @@ export default function ProductosPage() {
   useEffect(() => {
     const fetchEstadisticas = async () => {
       try {
-        console.log('📊 Cargando estadísticas dashboard...')
         // Obtener total y calcular páginas necesarias
         // Las tarjetas cuentan solo productos VISIBLES (como antes con el listado público). admin/lista trae ocultos
         // por omisión (incluir_inactivos=true), así que el false va explícito.
@@ -355,7 +354,6 @@ export default function ProductosPage() {
         const total = data.total || 0
         const totalPaginas = Math.ceil(total / 200)
         
-        console.log(`📄 Cargando ${totalPaginas} páginas de productos...`)
         
         // Cargar TODAS las páginas en paralelo
         const promesasPaginas = []
@@ -368,7 +366,6 @@ export default function ProductosPage() {
         const todasPaginas = await Promise.all(promesasPaginas)
         const todosProds = todasPaginas.flatMap(p => p.items || [])
         
-        console.log(`✅ Cargados ${todosProds.length} productos totales`)
         
         // Calcular estadísticas reales sobre TODOS los productos
         const conStock = todosProds.filter((p: any) => aNumero(p.stock_actual) > 0).length
@@ -378,7 +375,6 @@ export default function ProductosPage() {
         }).length
         const sinStock = todosProds.filter((p: any) => aNumero(p.stock_actual) <= 0).length
         
-        console.log(`✅ Estadísticas: Total=${total}, EnStock=${conStock}, StockBajo=${bajo}, SinStock=${sinStock}`)
         
         setEstadisticas({
           totalProductos: total,
@@ -386,8 +382,8 @@ export default function ProductosPage() {
           stockBajo: bajo,
           sinStock: sinStock
         })
-      } catch (error) {
-        console.error('❌ Error cargando estadísticas:', error)
+      } catch {
+        console.error('Error cargando estadísticas')
       }
     }
     
@@ -395,9 +391,6 @@ export default function ProductosPage() {
   }, []) // Solo al montar el componente
 
   useEffect(() => {
-    console.log('🔄 useEffect fetchProductos ejecutándose - filtros:', filtros)
-    console.log('🔄 useEffect searchTerm:', searchTerm)
-    console.log('🔄 useEffect paginacion:', paginacion.pagina, paginacion.limite)
     fetchProductos()
   }, [filtros.categoria, filtros.stock, filtros.estado, filtros.visible_web, filtros.order_by, filtros.order, searchTerm, paginacion.pagina, paginacion.limite])
 
@@ -456,7 +449,7 @@ export default function ProductosPage() {
       }
       
     } catch (error: any) {
-      console.error('Error eliminando producto:', error)
+      console.error('Error eliminando producto')
       aviso.error(`Error al eliminar producto: ${error.message}`)
     }
   }
@@ -518,7 +511,7 @@ export default function ProductosPage() {
       setStockAlAbrir(null)
       
     } catch (error: any) {
-      console.error('Error actualizando producto:', error)
+      console.error('Error actualizando producto')
       aviso.error(`Error al actualizar producto: ${error.message}`)
     }
   }
@@ -591,7 +584,7 @@ export default function ProductosPage() {
         descripcion: nuevoProducto.descripcion || '',
         precio: nuevoProducto.precio_unitario,
         stock: nuevoProducto.stock_actual,
-        categoria: nuevoProducto.categoria || '',
+        categoria: categoriaDe(nuevoProducto.categoria),
         activo: nuevoProducto.visible_web !== false,
         visible_web: nuevoProducto.visible_web !== false
       }
@@ -634,7 +627,7 @@ export default function ProductosPage() {
     aviso.exito(`Producto creado exitosamente:\n${nuevoProducto.nombre}\nCódigo: ${nuevoProducto.itemcode}\nPrecio: $${nuevoProducto.precio_unitario}`)
     
     } catch (error: any) {
-      console.error('Error creando producto:', error)
+      console.error('Error creando producto')
       aviso.error(`Error creando producto: ${error.message}`)
     }
   }
@@ -786,7 +779,6 @@ export default function ProductosPage() {
             <select
               value={filtros.categoria}
               onChange={(e) => {
-                console.log('🔄 Filtro categoría cambiado a:', e.target.value)
                 handleFiltroChange('categoria', e.target.value)
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -842,8 +834,8 @@ export default function ProductosPage() {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             >
               <option value="todos">Todos</option>
-              <option value="visible">✅ Visible (tienda)</option>
-              <option value="oculto">❌ Oculto</option>
+              <option value="visible">Visible (tienda)</option>
+              <option value="oculto">Oculto</option>
             </select>
           </div>
 
@@ -1046,7 +1038,6 @@ export default function ProductosPage() {
                     data-itemcode={producto.itemcode}
                     className="hover:bg-gray-50 cursor-pointer"
                     onClick={() => {
-                      console.log('🔍 Abriendo modal preview para:', producto.nombre)
                       setSelectedProductPreview(producto)
                       setShowProductPreview(true)
                     }}
@@ -1072,7 +1063,7 @@ export default function ProductosPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {producto.categoria}
+                      {producto.categoria || TEXTO_SIN_CATEGORIA}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -1089,7 +1080,6 @@ export default function ProductosPage() {
                         aria-label={`Ver ${producto.nombre}`}
                         onClick={(e) => {
                           e.stopPropagation()
-                          console.log('👁️ Botón Ver clickeado para:', producto.nombre)
                           setSelectedProductPreview(producto)
                           setShowProductPreview(true)
                         }}
@@ -1149,7 +1139,7 @@ export default function ProductosPage() {
               <div className="space-y-6">
                 {/* Información Básica */}
                 <div>
-                  <h4 className="text-md font-semibold text-gray-900 mb-4">📦 Información Básica</h4>
+                  <h4 className="text-md font-semibold text-gray-900 mb-4">Información Básica</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input
                       type="text"
@@ -1218,7 +1208,7 @@ export default function ProductosPage() {
                         {categorias.filter(c => c !== 'todas').map((cat) => (
                           <option key={cat} value={cat}>{cat}</option>
                         ))}
-                        <option value="__nueva__">➕ Crear nueva categoría...</option>
+                        <option value="__nueva__">Crear nueva categoría...</option>
                       </select>
                     ) : (
                       <div className="flex gap-2">
@@ -1271,7 +1261,7 @@ export default function ProductosPage() {
 
                 {/* Información del Agricultor */}
                 <div>
-                  <h4 className="text-md font-semibold text-gray-900 mb-4">🚜 Información del Agricultor</h4>
+                  <h4 className="text-md font-semibold text-gray-900 mb-4">Información del Agricultor</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <select
                       value={newProduct.agricultor}
@@ -1286,7 +1276,7 @@ export default function ProductosPage() {
                       className="w-full px-3 py-2 border rounded-lg"
                     >
                       <option value="">Seleccionar agricultor</option>
-                      <option value="nuevo">➕ Agregar nuevo</option>
+                      <option value="nuevo">Agregar nuevo</option>
                     </select>
                     
                     {showNewAgricultorForm && (
@@ -1303,7 +1293,7 @@ export default function ProductosPage() {
 
                 {/* Unidad y Peso */}
                 <div>
-                  <h4 className="text-md font-semibold text-gray-900 mb-4">📦 Información del Producto</h4>
+                  <h4 className="text-md font-semibold text-gray-900 mb-4">Información del Producto</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-700">Unidad</label>
@@ -1346,7 +1336,7 @@ export default function ProductosPage() {
 
                 {/* Métricas Ambientales */}
                 <div>
-                  <h4 className="text-md font-semibold text-gray-900 mb-4">🌱 Métricas Ambientales</h4>
+                  <h4 className="text-md font-semibold text-gray-900 mb-4">Métricas Ambientales</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="text-sm font-medium text-gray-700">CO2 (kg)</label>
@@ -1385,7 +1375,7 @@ export default function ProductosPage() {
 
                 {/* Drag & Drop Imágenes */}
                 <div>
-                  <h4 className="text-md font-semibold text-gray-900 mb-4">📸 Imágenes del Producto</h4>
+                  <h4 className="text-md font-semibold text-gray-900 mb-4">Imágenes del Producto</h4>
                   <div
                     className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
                       dragActive ? 'border-green-500 bg-green-50' : 'border-gray-300'
@@ -1443,7 +1433,7 @@ export default function ProductosPage() {
 
                 {/* Sección SEO */}
                 <div>
-                  <h4 className="text-md font-semibold text-gray-900 mb-4">🔍 SEO Data</h4>
+                  <h4 className="text-md font-semibold text-gray-900 mb-4">SEO Data</h4>
                   <div className="space-y-4">
                     <div>
                       <label className="text-sm font-medium text-gray-700">Meta Title</label>
@@ -1486,7 +1476,7 @@ export default function ProductosPage() {
 
                 {/* Características del Producto */}
                 <div>
-                  <h4 className="text-md font-semibold text-gray-900 mb-4">⭐ Características Destacadas</h4>
+                  <h4 className="text-md font-semibold text-gray-900 mb-4">Características Destacadas</h4>
                   <div className="space-y-4">
                     <div className="flex space-x-2">
                       <input
@@ -1549,11 +1539,6 @@ export default function ProductosPage() {
       )}
 
       {/* Modal Preview Producto Como Card Real */}
-      {showProductPreview && selectedProductPreview && (
-        <>
-          {console.log('🚀 Renderizando modal para:', selectedProductPreview.nombre)}
-        </>
-      )}
       {showProductPreview && selectedProductPreview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 pt-36 px-4 pb-8 overflow-y-auto">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[calc(100vh-180px)] overflow-y-auto">
@@ -1648,7 +1633,7 @@ export default function ProductosPage() {
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Descripción</h3>
                     <p className="text-gray-600 leading-relaxed">
-                      {selectedProductPreview.descripcion}. Descubre la versatilidad del producto 100% puro, 
+                      {selectedProductPreview.descripcion || TEXTO_SIN_DESCRIPCION}. Descubre la versatilidad del producto 100% puro, 
                       un producto comestible de sabor, color y olor neutral, ideal para cocinar. Gracias a su alto 
                       punto de humo, es perfecto para freír, asegurando que tus platillos queden crujientes y deliciosos.
                     </p>
@@ -1717,7 +1702,7 @@ export default function ProductosPage() {
                     
                     <div className="flex space-x-4">
                       <button className="flex-1 bg-red-600 text-white py-3 px-6 rounded-lg hover:bg-red-700 font-semibold">
-                        🛒 Añadir al carrito
+                        Añadir al carrito
                       </button>
                       <button className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50">
                         <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1842,28 +1827,28 @@ export default function ProductosPage() {
                   </label>
                   {!showNewCategoriaInputEdit ? (
                     <select
-                      value={editingProduct.categoria}
+                      value={editingProduct.categoria ?? ''}
                       onChange={(e) => {
                         if (e.target.value === '__nueva__') {
                           setShowNewCategoriaInputEdit(true)
                           setNewCategoriaNameEdit('')
                         } else {
-                          setEditingProduct({...editingProduct, categoria: e.target.value})
+                          setEditingProduct({...editingProduct, categoria: e.target.value || null})
                         }
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                     >
-                      <option value="">Sin categoría</option>
+                      <option value="">{TEXTO_SIN_CATEGORIA}</option>
                       {categorias.filter(c => c !== 'todas').map((cat) => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
                       {/* R2 (D1): si la lista no trae la categoría del producto, se conserva (no se ve «Sin categoría») */}
                       {editingProduct.categoria &&
-                        editingProduct.categoria !== 'Sin categoría' &&
+                        editingProduct.categoria !== TEXTO_SIN_CATEGORIA &&
                         !categorias.includes(editingProduct.categoria) && (
                           <option value={editingProduct.categoria}>{editingProduct.categoria}</option>
                         )}
-                      <option value="__nueva__">➕ Crear nueva categoría...</option>
+                      <option value="__nueva__">Crear nueva categoría...</option>
                     </select>
                   ) : (
                     <div className="flex gap-2">

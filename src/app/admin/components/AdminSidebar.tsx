@@ -35,6 +35,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { CONTADORES_CADA_MS, type ContadoresRespuesta } from '@/types/panel'
 
 // ============================================================================
 // Sidebar v10 hibrido — Sesion 23 Fase C Ola 1 + ajuste por Dabycho
@@ -46,7 +47,7 @@ import { API_URL } from '@/lib/api'
 // (no es item principal de sofias pero sigue accesible).
 // ============================================================================
 
-type BadgeKey = 'reservasActivas' | 'leadsNuevos' | 'misEventosHoy'
+type BadgeKey = 'reservasActivas' | 'leadsNuevos' | 'misEventosHoy' | 'pedidosPorPreparar'
 
 interface NavItem {
   href: string
@@ -109,7 +110,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Tienda',
     items: [
-      { href: '/admin/pedidos', label: 'Pedidos', icon: ShoppingCart, permiso: 'pedidos' },
+      { href: '/admin/pedidos', label: 'Pedidos', icon: ShoppingCart, permiso: 'pedidos', badgeKey: 'pedidosPorPreparar' },
       { href: '/admin/productos', label: 'Productos', icon: Leaf, permiso: 'productos' },
       { href: '/admin/suscripciones', label: 'Suscripciones', icon: Repeat, permiso: 'suscripciones' },
       // Fase 4b (sesión 40): cupones de la tienda y de las reservas privadas (CP1). Permiso nuevo `cupones` (admin y super_admin).
@@ -142,10 +143,12 @@ interface SidebarBadges {
   reservasActivas?: number
   leadsNuevos?: number
   misEventosHoy?: number
+  pedidosPorPreparar?: number
 }
 
-// R8: cada badge se pide solo si el rol tiene el permiso de su pantalla (antes un guía hacía 3 llamadas 403 por minuto).
-// `undefined` = los permisos aún no cargan: no se pide nada todavía.
+// K6 (R11): UNA llamada por minuto a /api/admin/contadores (antes una por contador). La API solo manda las llaves que el
+// rol activo puede ver; una llave ausente = sin insignia. `undefined` = los permisos aún no cargan: no se pide nada.
+// «Reservas» cuenta las tentativas (las que esperan confirmación): antes sumaba las confirmadas del mes y crecía todo el mes.
 export function useSidebarBadges(permisosActivos?: string[]): SidebarBadges {
   const { data: session } = useSession()
   const [badges, setBadges] = useState<SidebarBadges>({})
@@ -154,54 +157,28 @@ export function useSidebarBadges(permisosActivos?: string[]): SidebarBadges {
   useEffect(() => {
     const token = session?.accessToken
     if (!token || clavePermisos === null) return
-    const permisos = new Set(clavePermisos ? clavePermisos.split(',') : [])
     let cancelled = false
+    const positivo = (n: number | undefined) => (typeof n === 'number' && n > 0 ? n : undefined)
 
     async function fetchAll(authToken: string) {
-      const headers = { Authorization: `Bearer ${authToken}` }
-      // Reservas activas (tentativas + confirmadas_mes)
-      if (permisos.has('reservas')) try {
-        const r = await fetch(`${API_URL}/api/admin/reservas/stats`, { headers })
-        if (r.ok) {
-          const data = await r.json()
-          const activas = (data.tentativas || 0) + (data.confirmadas_mes || 0)
-          if (!cancelled) {
-            setBadges((b) => ({ ...b, reservasActivas: activas > 0 ? activas : undefined }))
-          }
-        }
+      try {
+        const r = await fetch(`${API_URL}/api/admin/contadores`, { headers: { Authorization: `Bearer ${authToken}` } })
+        if (!r.ok) return
+        const data: ContadoresRespuesta = await r.json()
+        if (cancelled) return
+        setBadges({
+          reservasActivas: positivo(data.reservas_tentativas),
+          leadsNuevos: positivo(data.leads_nuevos),
+          misEventosHoy: positivo(data.mi_dia_hoy),
+          pedidosPorPreparar: positivo(data.pedidos_por_preparar),
+        })
       } catch {
-        /* silent — endpoint puede 404 si backend aun no reload */
-      }
-      // Leads nuevos
-      if (permisos.has('leads')) try {
-        const r = await fetch(`${API_URL}/api/admin/leads/stats`, { headers })
-        if (r.ok) {
-          const data = await r.json()
-          const nuevos = data.nuevos || 0
-          if (!cancelled) {
-            setBadges((b) => ({ ...b, leadsNuevos: nuevos > 0 ? nuevos : undefined }))
-          }
-        }
-      } catch {
-        /* silent */
-      }
-      // Mi día (R8 · K4): reservas de HOY en el modo de quien pregunta (guía: las suyas; sin ficha: 0)
-      if (permisos.has('mi_dia')) try {
-        const r = await fetch(`${API_URL}/api/admin/mi-dia/conteo`, { headers })
-        if (r.ok) {
-          const data = await r.json()
-          const count = data.count || 0
-          if (!cancelled) {
-            setBadges((b) => ({ ...b, misEventosHoy: count > 0 ? count : undefined }))
-          }
-        }
-      } catch {
-        /* silent */
+        /* silencioso: el menú sigue sin insignias */
       }
     }
 
     fetchAll(token)
-    const interval = setInterval(() => fetchAll(token), 60_000)
+    const interval = setInterval(() => fetchAll(token), CONTADORES_CADA_MS)
     return () => {
       cancelled = true
       clearInterval(interval)

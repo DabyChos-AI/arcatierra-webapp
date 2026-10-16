@@ -5,6 +5,8 @@ import { User, LogOut, Crown, Shield, ChevronDown, Check, Globe, Menu } from 'lu
 import { useSession, signOut } from 'next-auth/react'
 import { useEffect, useState, useRef } from 'react'
 import { esDeveloper, esFundador, type InsigniaPanel, type RolActivo, type RolUsuario } from '@/types/roles'
+import BusquedaGlobal from './BusquedaGlobal'
+import CampanaNotificaciones from './CampanaNotificaciones'
 
 interface AdminHeaderProps {
   rolActivo?: RolActivo | null
@@ -88,9 +90,11 @@ export default function AdminHeader({ rolActivo, roles, insignia = null, onSwitc
         </div>
 
         <div className="flex items-center gap-1 sm:gap-4">
-          {/* HD1 (30-sep): aquí había una campana con un punto rojo fijo (no había
-              notificaciones detrás) y un engrane sin acción. Se quitaron: la campana
-              real vive en AdminTopbar. */}
+          {/* R11 (K3, K5): la búsqueda global (⌘K) y la campana viven AQUÍ, en la barra de TODAS las páginas del panel
+              (AdminTopbar solo la montan 9 páginas). Se montan una sola vez. HD1 (30-sep) había quitado una campana de
+              adorno con un punto rojo fijo. */}
+          <BusquedaGlobal />
+          <CampanaNotificaciones />
 
           {/* Selector de Rol */}
           {rolActivo && hasMultipleRoles && (

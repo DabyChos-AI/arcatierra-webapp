@@ -21,7 +21,8 @@ import {
   Play
 } from 'lucide-react';
 import { recipesData, tipsData, communityStories, Recipe } from '@/data/recetas';
-import { useToast } from '@/components/ui/Toast';
+import { aviso } from '@/components/ui/Avisos';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 import Link from 'next/link';
 
 export default function ClientRecetasPage() {
@@ -33,7 +34,6 @@ export default function ClientRecetasPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [likedRecipes, setLikedRecipes] = useState<string[]>([]);
   const [activeView, setActiveView] = useState<'recetas' | 'consejos' | 'comunidad'>('recetas');
-  const toast = useToast();
 
   // Cargar favoritos desde localStorage - USAR EL MISMO SISTEMA QUE PRODUCTOS
   useEffect(() => {
@@ -72,27 +72,13 @@ export default function ClientRecetasPage() {
       newValue: JSON.stringify(updatedFavorites)
     }));
 
-    // Toast notification con undo
+    // TOAST1 (R11): avisos propios; sin «Deshacer» (L5: los avisos no llevan acciones; se vuelve a marcar con el corazón)
     const recipe = recipesData.find(r => r.id === recipeId);
     if (recipe) {
       if (isCurrentlyLiked) {
-        toast.favorite(`${recipe.title} eliminada de favoritos`, {
-          title: 'Receta eliminada de favoritos',
-          action: {
-            label: 'Deshacer',
-            onClick: () => {
-              const currentFavorites = JSON.parse(localStorage.getItem('arcaTierraFavoritos') || '[]');
-              const restoredFavorites = [...currentFavorites, recipeIdWithPrefix];
-              localStorage.setItem('arcaTierraFavoritos', JSON.stringify(restoredFavorites));
-              setLikedRecipes([...likedRecipes, recipeId]);
-              toast.success(`${recipe.title} restaurada a favoritos`);
-            }
-          }
-        });
+        aviso.info(`${recipe.title} eliminada de favoritos`, { titulo: 'Receta eliminada de favoritos' });
       } else {
-        toast.favorite(`${recipe.title} añadida a favoritos`, {
-          title: 'Receta añadida a favoritos'
-        });
+        aviso.exito(`${recipe.title} añadida a favoritos`, { titulo: 'Receta añadida a favoritos' });
       }
     }
   };
@@ -194,31 +180,27 @@ export default function ClientRecetasPage() {
         const addedCount = matchedProducts.length;
         const totalIngredients = recipe.ingredients.length;
         
-        toast.cart(`${addedCount} de ${totalIngredients} ingredientes agregados al carrito`, {
-          title: `Ingredientes de "${recipe.title}"`,
-          action: {
-            label: 'Ver carrito',
-            onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
-          }
+        aviso.exito(`${addedCount} de ${totalIngredients} ingredientes agregados al carrito`, {
+          titulo: `Ingredientes de "${recipe.title}"`
         });
         
-        // Si hay ingredientes no encontrados, mostrar toast informativo
+        // Si hay ingredientes no encontrados, un aviso informativo
         if (notFoundIngredients.length > 0) {
           setTimeout(() => {
-            toast.warning(`${notFoundIngredients.length} ingredientes no disponibles en tienda: ${notFoundIngredients.join(', ')}`, {
-              title: 'Algunos ingredientes no encontrados'
+            aviso.info(`${notFoundIngredients.length} ingredientes no disponibles en tienda: ${notFoundIngredients.join(', ')}`, {
+              titulo: 'Algunos ingredientes no encontrados'
             });
           }, 1500);
         }
       } else {
         // No se encontraron productos
-        toast.warning('No se encontraron productos disponibles para esta receta', {
-          title: 'Ingredientes no disponibles'
+        aviso.info('No se encontraron productos disponibles para esta receta', {
+          titulo: 'Ingredientes no disponibles'
         });
       }
     } catch (error) {
       console.error('Error al agregar ingredientes al carrito:', error);
-      toast.error('Error al agregar ingredientes al carrito');
+      aviso.error('Error al agregar ingredientes al carrito');
     }
   };
 
@@ -500,15 +482,19 @@ export default function ClientRecetasPage() {
                   {filteredRecipes.map((recipe, index) => (
                     <motion.div
                       key={recipe.id}
+                      data-testid="receta-tarjeta"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: index * 0.1 }}
                       className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300"
                     >
                       <div className="relative group">
-                        <img
+                        <OptimizedImage
                           src={recipe.image}
                           alt={recipe.title}
+                          width={600}
+                          height={384}
+                          sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                           className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                         
@@ -700,9 +686,11 @@ export default function ClientRecetasPage() {
                   className="bg-white p-8 rounded-2xl shadow-sm"
                 >
                   <div className="flex items-start space-x-4">
-                    <img
+                    <OptimizedImage
                       src={story.image}
                       alt={story.author}
+                      width={64}
+                      height={64}
                       className="w-16 h-16 rounded-full object-cover"
                     />
                     <div className="flex-1">

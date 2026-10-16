@@ -100,7 +100,8 @@ export const authOptions: NextAuthOptions = {
           })
 
           if (!response.ok) {
-            console.error('Login failed:', await response.text())
+            // CONS1 (R11): solo el status; un 422 del login trae el `input` (correo y contraseña)
+            console.error('Login failed:', response.status)
             return null
           }
 
@@ -182,15 +183,11 @@ export const authOptions: NextAuthOptions = {
                   refreshToken: result.refresh_token
                 })
               }
-              console.log(`✅ Usuario Google guardado en BD: ${user.email}`)
+              // CONS1 (R11): sin el correo ni el cuerpo del error en el log
+              console.log('✅ Usuario Google guardado en BD')
             } else {
-              // ⚠️ MEJORA: Log detallado cuando el registro falla
-              const errorText = await registerResponse.text()
-              console.error(`❌ Error registrando usuario Google ${user.email}:`, {
-                status: registerResponse.status,
-                statusText: registerResponse.statusText,
-                error: errorText
-              })
+              // Cuando el registro falla: solo el status (el cuerpo puede traer lo capturado)
+              console.error('❌ Error registrando usuario Google:', registerResponse.status, registerResponse.statusText)
             }
           } else if (checkResponse.ok) {
             // Usuario existe, obtener su ID
@@ -215,9 +212,9 @@ export const authOptions: NextAuthOptions = {
                   accessToken: tokenData.access_token,
                   refreshToken: tokenData.refresh_token
                 })
-                console.log(`✅ JWT obtenido para usuario OAuth: ${user.email}`)
+                console.log('✅ JWT obtenido para usuario OAuth')
               } else {
-                console.error(`⚠️ No se pudo obtener JWT para ${user.email}`)
+                console.error('⚠️ No se pudo obtener JWT para el usuario OAuth:', tokenResponse.status)
               }
             } catch (error) {
               console.error('Error obteniendo JWT para OAuth:', error)

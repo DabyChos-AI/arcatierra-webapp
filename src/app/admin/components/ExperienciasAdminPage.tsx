@@ -548,7 +548,7 @@ export default function ExperienciasAdminPage({
       } else {
         mostrarNotificacion('error', data.detail || data.message || 'Error al cambiar estado')
       }
-    } catch (error) {
+    } catch {
       mostrarNotificacion('error', 'Error de conexión')
     } finally {
       setLoadingAction(null)
@@ -593,7 +593,7 @@ export default function ExperienciasAdminPage({
         // 400 de la regla de niño (C6) o 422 de Pydantic: siempre como texto
         mostrarNotificacion('error', extraerMensajeError(data, res.status))
       }
-    } catch (error) {
+    } catch {
       mostrarNotificacion('error', 'Error de conexión')
     } finally {
       setLoadingAction(null)
@@ -637,7 +637,7 @@ export default function ExperienciasAdminPage({
         // 400 de la regla de niño (C6) o 422 de Pydantic: siempre como texto
         mostrarNotificacion('error', extraerMensajeError(data, res.status))
       }
-    } catch (error) {
+    } catch {
       mostrarNotificacion('error', 'Error de conexión')
     } finally {
       setLoadingAction(null)
@@ -735,7 +735,7 @@ export default function ExperienciasAdminPage({
       } else {
         mostrarNotificacion('error', data.detail || 'Error al crear evento')
       }
-    } catch (error) {
+    } catch {
       mostrarNotificacion('error', 'Error de conexión')
     }
   }
@@ -1117,8 +1117,8 @@ export default function ExperienciasAdminPage({
             className={`px-4 py-2 border rounded-lg focus:ring-2 ${theme.ring}`}
           >
             <option value="todos">Todos los estados</option>
-            <option value="activas">✅ Activas</option>
-            <option value="inactivas">⬜ Inactivas</option>
+            <option value="activas">Activas</option>
+            <option value="inactivas">Inactivas</option>
           </select>
           
           {/* A11Y1 (R1): todo botón de solo ícono lleva aria-label (el title no basta) */}
@@ -1320,7 +1320,7 @@ export default function ExperienciasAdminPage({
                         : 'border-transparent text-gray-500 hover:text-gray-700'
                     }`}
                   >
-                    📋 Información
+                    Información
                   </button>
                   <button
                     onClick={() => {
@@ -1333,7 +1333,7 @@ export default function ExperienciasAdminPage({
                         : 'border-transparent text-gray-500 hover:text-gray-700'
                     }`}
                   >
-                    📅 Eventos ({eventos.length})
+                    Eventos ({eventos.length})
                   </button>
                 </nav>
               </div>
@@ -1380,7 +1380,7 @@ export default function ExperienciasAdminPage({
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1">🗓️ Temporada</label>
+                      <label className="block text-sm font-medium mb-1">Temporada</label>
                       {!showNewTemporada ? (
                         <div className="flex gap-2">
                           <select
@@ -1399,7 +1399,7 @@ export default function ExperienciasAdminPage({
                             {temporadasDisponibles.map((temp) => (
                               <option key={temp} value={temp}>{temp}</option>
                             ))}
-                            <option value="__nueva__">➕ Agregar nueva temporada...</option>
+                            <option value="__nueva__">Agregar nueva temporada...</option>
                           </select>
                         </div>
                       ) : (
@@ -1896,7 +1896,7 @@ export default function ExperienciasAdminPage({
                       }`} />
                     </div>
                     <span className="ml-3 text-sm font-medium">
-                      {formData.disponible ? '✅ Visible en la web pública' : '⬜ Oculta (solo admin)'}
+                      {formData.disponible ? 'Visible en la web pública' : 'Oculta (solo admin)'}
                     </span>
                   </label>
                 </div>

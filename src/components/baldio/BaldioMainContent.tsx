@@ -232,7 +232,6 @@ export default function BaldioMainContent() {
                     width={600}
                     height={800}
                     className="w-full h-[800px] object-contain"
-                    quality={100}
                   />
                   <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
                     <div className="opacity-0 hover:opacity-100 transition-opacity bg-white/90 rounded-full p-2">
@@ -267,7 +266,6 @@ export default function BaldioMainContent() {
                 width={1200}
                 height={800}
                 className="w-full h-auto object-contain max-h-[80vh]"
-                quality={100}
               />
             </div>
           </div>

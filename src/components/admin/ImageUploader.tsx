@@ -110,7 +110,7 @@ export function ImageUploader({
     <div className={className}>
       {label && (
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          📷 {label}
+          {label}
         </label>
       )}
 
@@ -283,7 +283,7 @@ export function GalleryUploader({
     <div className={className}>
       {label && (
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          🖼️ {label} ({value.length}/{maxImages})
+          {label} ({value.length}/{maxImages})
         </label>
       )}
 

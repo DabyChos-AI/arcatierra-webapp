@@ -106,8 +106,8 @@ export async function DELETE(
     })
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Error eliminando dirección:', response.status, errorText)
+      // CONS1 (R11): solo el status, sin el cuerpo del error del backend
+      console.error('Error eliminando dirección:', response.status)
       throw new Error('Error eliminando dirección')
     }
 

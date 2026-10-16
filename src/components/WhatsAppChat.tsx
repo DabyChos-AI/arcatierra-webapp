@@ -25,12 +25,15 @@ export default function WhatsAppChat() {
   // UI4 (R2, C6): en /checkout* la burbuja se queda cerrada; abierta sola tapaba el formulario y el botón de pagar a 390 px.
   const enCheckout = pathname?.startsWith('/checkout') ?? false
 
-  // Auto-abrir el chat después de 30 segundos (solo la primera vez, y nunca dentro del panel ni del checkout)
+  // Auto-abrir el chat después de 30 segundos (solo la primera vez, y nunca dentro del panel ni del checkout).
+  // R11 (C6): debajo de md (768 px) NO se abre sola: abierta, su velo `fixed inset-0 md:hidden` tapaba toda la página y se comía
+  // el primer toque. Se mide al disparar (el celular pudo girar) y, si no se abrió, tampoco se marca como vista.
   useEffect(() => {
     if (enAdmin || enCheckout) return
     const hasSeenChat = localStorage.getItem('whatsapp-chat-seen')
     if (!hasSeenChat) {
       const timer = setTimeout(() => {
+        if (!window.matchMedia('(min-width: 768px)').matches) return
         setIsOpen(true)
         localStorage.setItem('whatsapp-chat-seen', 'true')
       }, 30000)
@@ -58,12 +61,12 @@ export default function WhatsAppChat() {
 
   return (
     <>
-      {/* Botón flotante */}
-      <div className="fixed bottom-6 right-6 z-[750]" data-testid="whatsapp-burbuja">
+      {/* Botón flotante. CAR2 (R11): debajo de 640 px, 48 px y al rincón (16 px) para pisar lo menos posible las tarjetas */}
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[750]" data-testid="whatsapp-burbuja">
         {!isOpen && (
           <button
             onClick={() => setIsOpen(true)}
-            className="bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-lg transition-all duration-300 hover:scale-110 animate-pulse"
+            className="bg-green-500 hover:bg-green-600 text-white rounded-full p-3 sm:p-4 shadow-lg transition-all duration-300 hover:scale-110 animate-pulse"
             aria-label="Abrir chat de WhatsApp"
           >
             <MessageCircle className="w-6 h-6" />

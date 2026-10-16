@@ -135,13 +135,15 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   return (
     <>
       {/* Botón flotante vertical - Visible cuando el sidebar está cerrado (client-layout no lo monta en /admin).
-          z-[900]: debajo del nivel de modales (950) de Z_INDEX_HIERARCHY.md, que antes tapaba (el contador de niños a 390 px). */}
+          z-[900]: debajo del nivel de modales (950) de Z_INDEX_HIERARCHY.md, que antes tapaba (el contador de niños a 390 px).
+          CAR2 (R11): debajo de 640 px no se pinta (tapaba el borde derecho de las tarjetas); ahí el carrito se abre con el
+          botón «Carrito» del encabezado fijo (TransparentHeader), que dispara el mismo evento. */}
       {!isOpen && !enCheckout && (
         <button
           onClick={() => window.dispatchEvent(new Event('toggleCartSidebar'))}
           aria-label={`Abrir carrito (${itemCount})`}
           data-testid="carrito-tirador"
-          className="fixed right-0 top-1/2 transform -translate-y-1/2 bg-[#33503E] text-white px-2 py-5 rounded-l-lg shadow-lg z-[900] flex flex-col items-center gap-2"
+          className="fixed right-0 top-1/2 transform -translate-y-1/2 bg-[#33503E] text-white px-2 py-5 rounded-l-lg shadow-lg z-[900] hidden sm:flex flex-col items-center gap-2"
         >
           <ChevronLeft className="w-5 h-5" />
           <div className="flex flex-col items-center">

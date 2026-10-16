@@ -12,7 +12,8 @@ export async function GET() {
 
     const email = session.user.email;
 
-    console.log('📦 Obteniendo carrito para:', email);
+    // CONS1 (R11): el log no lleva el correo ni el carrito
+    console.log('📦 Obteniendo carrito');
 
     // Llamar al backend interno
     const headers: Record<string, string> = {};
@@ -25,7 +26,7 @@ export async function GET() {
     });
     const data = await response.json();
 
-    console.log('✅ Carrito obtenido:', data);
+    console.log('✅ Carrito obtenido:', response.status);
 
     return NextResponse.json(data);
   } catch (error) {

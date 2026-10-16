@@ -2,7 +2,7 @@
 
 // ============================================================================
 // AdminTopbar v10 — Sesion 23 Fase C Ola 1
-// Layout: [Titulo+Breadcrumb] [Busqueda ⌘K (placeholder)] [Notifs] [User chip]
+// Layout: [Titulo+Breadcrumb] [User chip]. R11: la búsqueda ⌘K y la campana viven en AdminHeader (todas las páginas).
 // Consumido por nuevas paginas (Reservas, Mi dia, Personal, etc).
 // NO reemplaza AdminHeader.tsx (que sigue usandose en AdminLayoutClient para
 // secciones legacy con role-switcher).
@@ -11,7 +11,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
-import { Bell, Search, LogOut, ChevronDown } from 'lucide-react'
+import { LogOut, ChevronDown } from 'lucide-react'
 import { etiquetaRol, useMisRoles } from './MisRolesContext'
 
 const TITLES: Record<string, [string, string]> = {
@@ -63,12 +63,7 @@ export default function AdminTopbar() {
   const [title, breadcrumb] = getTitle(pathname)
 
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const [notifMenuOpen, setNotifMenuOpen] = useState(false)
-  const [searchModalOpen, setSearchModalOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
-  const notifMenuRef = useRef<HTMLDivElement>(null)
-
-  const notifCount = 0 // hardcode por ahora — alimentado en Fase D
 
   // Cerrar menus on click outside
   useEffect(() => {
@@ -76,26 +71,9 @@ export default function AdminTopbar() {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setUserMenuOpen(false)
       }
-      if (notifMenuRef.current && !notifMenuRef.current.contains(e.target as Node)) {
-        setNotifMenuOpen(false)
-      }
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
-
-  // Shortcut ⌘K / Ctrl+K
-  useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault()
-        setSearchModalOpen(true)
-      } else if (e.key === 'Escape') {
-        setSearchModalOpen(false)
-      }
-    }
-    document.addEventListener('keydown', handleKey)
-    return () => document.removeEventListener('keydown', handleKey)
   }, [])
 
   const userName = session?.user?.name ?? 'Admin'
@@ -115,54 +93,10 @@ export default function AdminTopbar() {
           <p className="text-xs text-verde-suave truncate">{breadcrumb}</p>
         </div>
 
-        {/* CENTRO: Busqueda */}
-        <div className="flex-1 min-w-0 max-w-xl mx-auto">
-          <button
-            type="button"
-            onClick={() => setSearchModalOpen(true)}
-            className="w-full min-w-0 flex items-center gap-2 px-3 py-2 bg-neutro-light hover:bg-neutro-borde/40 border border-neutro-borde rounded-lg text-sm text-verde-suave transition-colors"
-            aria-label="Buscar (Cmd+K)"
-          >
-            <Search className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
-            <span className="hidden sm:block flex-1 text-left truncate">
-              Buscar reservas, clientes, experiencias...
-            </span>
-            <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 bg-white border border-neutro-borde rounded text-xs text-verde-suave font-mono">
-              ⌘K
-            </kbd>
-          </button>
-        </div>
+        {/* R11 (K3, K5): la búsqueda (⌘K) y la campana pasaron a AdminHeader, la barra de TODAS las páginas. */}
+        <div className="flex-1 min-w-0" />
 
-        {/* DER: Notifs + User */}
         <div className="flex items-center gap-3 flex-shrink-0">
-          {/* Notificaciones */}
-          <div className="relative" ref={notifMenuRef}>
-            <button
-              type="button"
-              onClick={() => setNotifMenuOpen((v) => !v)}
-              className="relative p-2 text-verde hover:bg-neutro-light rounded-lg transition-colors"
-              aria-label="Notificaciones"
-            >
-              <Bell className="h-5 w-5" aria-hidden="true" />
-              {notifCount > 0 && (
-                <span
-                  className="absolute top-1 right-1 w-2 h-2 bg-rojo rounded-full"
-                  aria-label={`${notifCount} notificaciones sin leer`}
-                />
-              )}
-            </button>
-            {notifMenuOpen && (
-              <div className="absolute right-0 mt-2 w-72 bg-white border border-neutro-borde rounded-lg shadow-medium z-[60]">
-                <div className="px-3 py-2 border-b border-neutro-borde">
-                  <p className="text-sm font-semibold text-verde">Notificaciones</p>
-                </div>
-                <div className="px-3 py-6 text-center text-sm text-verde-suave">
-                  Sin notificaciones por ahora — alimentado en Fase D.
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* User chip */}
           <div className="relative" ref={userMenuRef}>
             <button
@@ -223,40 +157,6 @@ export default function AdminTopbar() {
         </div>
       </header>
 
-      {/* Modal busqueda global (placeholder Fase K) */}
-      {searchModalOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center pt-24 px-4"
-          onClick={() => setSearchModalOpen(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Busqueda global"
-        >
-          <div
-            className="bg-white rounded-lg shadow-medium max-w-xl w-full p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <Search className="h-5 w-5 text-verde-suave" aria-hidden="true" />
-              <h2 className="font-display text-lg text-verde">Busqueda global</h2>
-            </div>
-            <div className="bg-amarillo-bg border border-amarillo/30 rounded-lg p-4 mb-4">
-              <p className="text-sm text-verde">
-                La busqueda global estara disponible en Fase K.
-              </p>
-            </div>
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => setSearchModalOpen(false)}
-                className="px-4 py-2 bg-verde text-white rounded-lg text-sm hover:bg-verde-claro transition-colors"
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }

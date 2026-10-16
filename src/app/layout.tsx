@@ -6,7 +6,6 @@ import TransparentHeader from "@/components/layout/TransparentHeader";
 import Footer from "@/components/layout/Footer";
 import SoloFueraDelPanel from "@/components/layout/SoloFueraDelPanel";
 import AuthProvider from '@/components/AuthProvider'
-import { NotificationProvider } from '@/components/NotificationSystem'
 import WhatsAppChat from '@/components/WhatsAppChat'
 import ClientLayout from './client-layout'
 import AnnouncementBanner from '@/components/AnnouncementBanner'
@@ -216,29 +215,28 @@ export default function RootLayout({
       </head>
       <body className={`${akkurat.className} antialiased bg-neutro-crema text-verde-tipografia min-h-screen flex flex-col`}>
         <AuthProvider>
-          <NotificationProvider>
-            {/* Banner Rotativo Superior */}
-            <AnnouncementBanner />
-            
-            {/* Header Transparente */}
-            {/* <HeaderContainer /> */} {/* COMENTADO - No se usa */}
-            <TransparentHeader />
-            
-            {/* Contenido Principal envuelto en ClientLayout */}
-            <ClientLayout>
-              <div className="flex-1">
-                {children}
-              </div>
-            </ClientLayout>
-            
-            {/* Footer Oficial (PIE1, R8: no se pinta en /admin) */}
-            <SoloFueraDelPanel>
-              <Footer />
-            </SoloFueraDelPanel>
-            
-            {/* WhatsApp Chat Flotante */}
-            <WhatsAppChat />
-          </NotificationProvider>
+          {/* TOAST1 (R11): sin el NotificationProvider viejo (no tenía consumidores); los avisos son <AvisosHost /> */}
+          {/* Banner Rotativo Superior */}
+          <AnnouncementBanner />
+          
+          {/* Header Transparente */}
+          {/* <HeaderContainer /> */} {/* COMENTADO - No se usa */}
+          <TransparentHeader />
+          
+          {/* Contenido Principal envuelto en ClientLayout */}
+          <ClientLayout>
+            <div className="flex-1">
+              {children}
+            </div>
+          </ClientLayout>
+          
+          {/* Footer Oficial (PIE1, R8: no se pinta en /admin) */}
+          <SoloFueraDelPanel>
+            <Footer />
+          </SoloFueraDelPanel>
+          
+          {/* WhatsApp Chat Flotante */}
+          <WhatsAppChat />
         </AuthProvider>
 
         {/* A10: registra /sw.js (solo producción; no intercepta nada ni guarda caché) */}

@@ -7,13 +7,12 @@ import { Heart, ShoppingCart, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { productos, Product } from '@/data/productos'
 import { recipesData, Recipe } from '@/data/recetas'
-import { useToast } from '@/components/ui/Toast'
+import { aviso } from '@/components/ui/Avisos'
 import { useFavoritos } from '@/hooks/useFavoritos'
 
 export default function FavoritosPage() {
   const [productosFavoritos, setProductosFavoritos] = useState<Product[]>([])
   const [recetasFavoritas, setRecetasFavoritas] = useState<Recipe[]>([])
-  const toast = useToast()
   
   // Hook de favoritos conectado al backend
   const { favoritos, eliminarFavorito: eliminarFavoritoHook, count } = useFavoritos()
@@ -47,14 +46,10 @@ export default function FavoritosPage() {
       // Actualizar productos mostrados optimísticamente
       setProductosFavoritos(prev => prev.filter(p => p.id !== producto.id))
       
-      // Mostrar toast
-      toast.error(`${producto.nombre} eliminado de favoritos`, {
-        title: 'Favorito eliminado'
-      })
+      // TOAST1 (R11): avisos propios. Quitarlo salió bien: aviso neutro (role="status"), no de error.
+      aviso.info(`${producto.nombre} eliminado de favoritos`, { titulo: 'Favorito eliminado' })
     } else {
-      toast.error('No se pudo eliminar el favorito. Inténtalo de nuevo.', {
-        title: 'Error'
-      })
+      aviso.error('No se pudo eliminar el favorito. Inténtalo de nuevo.', { titulo: 'Error' })
     }
   }
 
@@ -66,14 +61,9 @@ export default function FavoritosPage() {
       // Actualizar recetas mostradas optimísticamente
       setRecetasFavoritas(prev => prev.filter(r => r.id !== receta.id))
       
-      // Mostrar toast
-      toast.error(`${receta.title} eliminada de favoritos`, {
-        title: 'Receta eliminada'
-      })
+      aviso.info(`${receta.title} eliminada de favoritos`, { titulo: 'Receta eliminada' })
     } else {
-      toast.error('No se pudo eliminar el favorito. Inténtalo de nuevo.', {
-        title: 'Error'
-      })
+      aviso.error('No se pudo eliminar el favorito. Inténtalo de nuevo.', { titulo: 'Error' })
     }
   }
 
@@ -106,18 +96,10 @@ export default function FavoritosPage() {
       
       // Notificar actualización del carrito
       window.dispatchEvent(new CustomEvent('cartUpdated'))
-      
-      // Toast deshabilitado - era molesto al agregar múltiples productos
-      // toast.cart(`${producto.nombre} agregado al carrito`, {
-      //   title: '¡Excelente elección!',
-      //   action: {
-      //     label: 'Ver carrito',
-      //     onClick: () => window.dispatchEvent(new Event('toggleCartSidebar'))
-      //   }
-      // })
+      // Sin aviso al agregar (era molesto al agregar varios productos)
     } catch (error) {
       console.error('Error al agregar al carrito:', error)
-      toast.error('No se pudo agregar el producto al carrito.')
+      aviso.error('No se pudo agregar el producto al carrito.')
     }
   }
 
@@ -225,9 +207,11 @@ export default function FavoritosPage() {
                       <div className="relative">
                         <Link href={`/receta/${receta.id}`}>
                           <div className="aspect-square overflow-hidden">
-                            <img
+                            <OptimizedImage
                               src={receta.image}
                               alt={receta.title}
+                              width={400}
+                              height={400}
                               className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                             />
                           </div>

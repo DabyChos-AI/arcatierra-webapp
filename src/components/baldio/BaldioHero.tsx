@@ -28,7 +28,7 @@ export default function BaldioHero() {
           src="/images/baldio/exterior_logo_baldio.jpg" 
           alt="Baldío Restaurante" 
           fill 
-          className="object-cover object-[70%_40%]" quality={100} />
+          className="object-cover object-[70%_40%]" />
       </motion.div>
 
       {/* Contenido superpuesto */}

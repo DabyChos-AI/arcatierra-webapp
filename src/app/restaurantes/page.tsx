@@ -1,8 +1,10 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { ChevronLeft, ChevronRight, Truck, Clock, Calendar, CheckCircle, Leaf, Package, Star, Send } from 'lucide-react'
 import { aviso } from '@/components/ui/Avisos'
+import { API_URL } from '@/lib/api'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 
 // Definición de colores según manual de identidad
 const colors = {
@@ -52,10 +54,15 @@ const ImageCarousel = () => {
             idx === currentSlide ? 'opacity-100' : 'opacity-0'
           }`}
         >
-          <img
+          {/* IMG2 (R11): por el optimizador (AVIF/WebP); fotos de ~600 KB */}
+          <OptimizedImage
             src={image.url}
             alt={image.alt}
-            className="w-full h-full object-contain"
+            fill
+            sizes="(min-width: 1536px) 1536px, 100vw"
+            priority={idx === 0}
+            style={{ objectFit: 'contain' }}
+            className="object-contain"
           />
         </div>
       ))}
@@ -145,17 +152,74 @@ const ProcessStep = ({ icon: Icon, title, number }: ProcessStepProps) => (
 )
 
 const CORREO_RESTAURANTES = 'pedidos@arcatierra.com'
-const ASUNTO_RESTAURANTES = 'Solicitud para restaurantes'
+
+// REST1 (R11, L4): POST /api/restaurantes/solicitud (público, 5/min por IP). La fila cae en la bandeja de Catering y el
+// backend avisa al equipo. Topes = los del modelo Pydantic (`routers/restaurantes.py`, extra="forbid").
+interface FormRestaurante {
+  nombre: string
+  restaurante: string
+  email: string
+  telefono: string
+  mensaje: string
+}
+type CampoRestaurante = keyof FormRestaurante
+
+const FORM_VACIO: FormRestaurante = { nombre: '', restaurante: '', email: '', telefono: '', mensaje: '' }
+const MAXIMO: Record<CampoRestaurante, number> = { nombre: 120, restaurante: 160, email: 254, telefono: 30, mensaje: 2000 }
+const ETIQUETA_CAMPO: Record<CampoRestaurante, string> = {
+  nombre: 'tu nombre',
+  restaurante: 'el nombre del restaurante',
+  email: 'el correo',
+  telefono: 'el teléfono',
+  mensaje: 'el mensaje',
+}
+const TEXTO_ENVIADA = 'Recibimos tu solicitud. Te escribimos pronto.'
+const TEXTO_NO_ENVIADA = `No pudimos enviar tu solicitud. Intenta de nuevo o escríbenos a ${CORREO_RESTAURANTES}.`
+const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+/** El primer dato que falta o está mal, o null si todo sirve (el backend valida igual). */
+function campoInvalido(f: FormRestaurante): { campo: CampoRestaurante; motivo: string } | null {
+  if (!f.nombre.trim()) return { campo: 'nombre', motivo: 'Escribe tu nombre.' }
+  if (!f.restaurante.trim()) return { campo: 'restaurante', motivo: 'Escribe el nombre del restaurante.' }
+  if (!CORREO_VALIDO.test(f.email.trim())) return { campo: 'email', motivo: 'Escribe un correo válido.' }
+  return null
+}
+
+/** `detail` de FastAPI en texto: un 4xx lo trae como texto; un 422 de Pydantic, como lista de `{loc, msg}`. */
+function detalleLegible(detail: unknown): string {
+  if (typeof detail === 'string' && detail.trim()) return detail
+  if (Array.isArray(detail)) {
+    const campos = detail
+      .map((d) => {
+        const loc = d && typeof d === 'object' && 'loc' in d ? (d as { loc: unknown }).loc : null
+        const campo = Array.isArray(loc) ? loc[loc.length - 1] : null
+        return typeof campo === 'string' && campo in ETIQUETA_CAMPO ? ETIQUETA_CAMPO[campo as CampoRestaurante] : null
+      })
+      .filter((c): c is string => c !== null)
+    const unicos = Array.from(new Set(campos))
+    if (unicos.length > 0) return `Revisa ${unicos.join(', ')}.`
+  }
+  return 'Revisa los datos del formulario.'
+}
 
 // Componente principal
 export default function ServicioRestaurantes() {
-  const [formData, setFormData] = useState({
-    nombre: '',
-    restaurante: '',
-    email: '',
-    telefono: '',
-    mensaje: ''
-  })
+  const [formData, setFormData] = useState<FormRestaurante>(FORM_VACIO)
+  const [enviando, setEnviando] = useState(false)
+  const [invalido, setInvalido] = useState<CampoRestaurante | null>(null)
+  const enviandoRef = useRef(false)
+  const refs = {
+    nombre: useRef<HTMLInputElement>(null),
+    restaurante: useRef<HTMLInputElement>(null),
+    email: useRef<HTMLInputElement>(null),
+    telefono: useRef<HTMLInputElement>(null),
+    mensaje: useRef<HTMLTextAreaElement>(null),
+  }
+
+  const cambiar = (campo: CampoRestaurante, valor: string) => {
+    setFormData((prev) => ({ ...prev, [campo]: valor }))
+    if (invalido === campo) setInvalido(null)
+  }
 
   const scrollToContactForm = () => {
     const contactSection = document.getElementById('contacto-formulario')
@@ -167,25 +231,58 @@ export default function ServicioRestaurantes() {
     }
   }
 
-  // REST1 (R8, decisión de David C1/C13): el formulario ya no finge que envía. Hasta conectarlo (R11), «Enviar por correo»
-  // abre el correo de quien escribe con el mensaje listo para pedidos@ (asunto y cuerpo con los campos del formulario) y
-  // deja un aviso persistente con la dirección por si su equipo no tiene aplicación de correo. Nada se imprime en consola.
-  const cuerpoCorreo = [
-    `Nombre: ${formData.nombre.trim()}`,
-    `Restaurante: ${formData.restaurante.trim()}`,
-    `Correo: ${formData.email.trim()}`,
-    `Teléfono: ${formData.telefono.trim()}`,
-    '',
-    formData.mensaje.trim(),
-  ].join('\n')
-  const ligaCorreo = `mailto:${CORREO_RESTAURANTES}?subject=${encodeURIComponent(ASUNTO_RESTAURANTES)}&body=${encodeURIComponent(cuerpoCorreo)}`
-
-  const avisarCorreo = () => {
-    aviso.info(
-      `Se abrió tu aplicación de correo con el mensaje listo para ${CORREO_RESTAURANTES}. Envíalo desde ahí. Si no se abrió, escríbenos a ${CORREO_RESTAURANTES}.`,
-      { persistente: true },
-    )
+  // REST1 (R11): el formulario guarda la solicitud de verdad (antes, R8, abría un `mailto`). El botón se puede pulsar
+  // siempre: si falta un dato, dice cuál y enfoca el campo (s46). Candado contra doble clic: un solo POST.
+  const enviar = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (enviandoRef.current) return
+    const falta = campoInvalido(formData)
+    if (falta) {
+      setInvalido(falta.campo)
+      aviso.error(falta.motivo)
+      refs[falta.campo].current?.focus()
+      return
+    }
+    const telefono = formData.telefono.trim()
+    const mensaje = formData.mensaje.trim()
+    const body = {
+      nombre: formData.nombre.trim(),
+      restaurante: formData.restaurante.trim(),
+      email: formData.email.trim(),
+      telefono: telefono || null,
+      mensaje: mensaje || null,
+    }
+    enviandoRef.current = true
+    setEnviando(true)
+    try {
+      const res = await fetch(`${API_URL}/api/restaurantes/solicitud`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const datos: unknown = await res.json().catch(() => null)
+      if (res.ok) {
+        const message = datos && typeof datos === 'object' ? (datos as { message?: unknown }).message : null
+        aviso.exito(typeof message === 'string' && message.trim() ? message : TEXTO_ENVIADA)
+        setFormData(FORM_VACIO)
+        setInvalido(null)
+        return
+      }
+      const detail = datos && typeof datos === 'object' ? (datos as { detail?: unknown }).detail : null
+      aviso.error(res.status >= 400 && res.status < 500 ? detalleLegible(detail) : TEXTO_NO_ENVIADA)
+    } catch {
+      aviso.error(TEXTO_NO_ENVIADA)
+    } finally {
+      enviandoRef.current = false
+      setEnviando(false)
+    }
   }
+
+  const estiloCampo = (campo: CampoRestaurante): React.CSSProperties => ({
+    borderColor: invalido === campo ? colors.terracota.principal : colors.neutros.beigeCalido,
+    backgroundColor: 'white',
+    color: colors.verde.tipografia,
+  })
 
   return (
     <div style={{ backgroundColor: colors.neutros.crema }}>
@@ -349,86 +446,115 @@ export default function ServicioRestaurantes() {
               Escríbenos o llena este breve formulario de contacto para empezar la conversación.
             </p>
             
-            <div className="space-y-6 text-left">
+            <form onSubmit={enviar} noValidate data-testid="rest-formulario" className="space-y-6 text-left">
               <div className="grid md:grid-cols-2 gap-6">
-                <input
-                  type="text"
-                  placeholder="Tu nombre"
-                  className="w-full px-6 py-4 rounded-lg border-2 focus:outline-none transition-all duration-300"
-                  style={{ 
-                    borderColor: colors.neutros.beigeCalido,
-                    backgroundColor: 'white',
-                    color: colors.verde.tipografia
-                  }}
-                  value={formData.nombre}
-                  onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-                  onFocus={(e) => (e.target as HTMLElement).style.borderColor = colors.terracota.principal}
-                  onBlur={(e) => (e.target as HTMLElement).style.borderColor = colors.neutros.beigeCalido}
-                />
-                <input
-                  type="text"
-                  placeholder="Nombre del restaurante"
-                  className="w-full px-6 py-4 rounded-lg border-2 focus:outline-none transition-all duration-300"
-                  style={{ 
-                    borderColor: colors.neutros.beigeCalido,
-                    backgroundColor: 'white',
-                    color: colors.verde.tipografia
-                  }}
-                  value={formData.restaurante}
-                  onChange={(e) => setFormData({...formData, restaurante: e.target.value})}
-                  onFocus={(e) => (e.target as HTMLElement).style.borderColor = colors.terracota.principal}
-                  onBlur={(e) => (e.target as HTMLElement).style.borderColor = colors.neutros.beigeCalido}
-                />
+                <div>
+                  <label htmlFor="rest-nombre" className="sr-only">Tu nombre</label>
+                  <input
+                    id="rest-nombre"
+                    ref={refs.nombre}
+                    name="nombre"
+                    type="text"
+                    autoComplete="name"
+                    placeholder="Tu nombre"
+                    maxLength={MAXIMO.nombre}
+                    data-testid="rest-nombre"
+                    aria-invalid={invalido === 'nombre' ? true : undefined}
+                    className="w-full px-6 py-4 rounded-lg border-2 focus:outline-none transition-all duration-300"
+                    style={estiloCampo('nombre')}
+                    value={formData.nombre}
+                    onChange={(e) => cambiar('nombre', e.target.value)}
+                    onFocus={(e) => (e.target as HTMLElement).style.borderColor = colors.terracota.principal}
+                    onBlur={(e) => (e.target as HTMLElement).style.borderColor = invalido === 'nombre' ? colors.terracota.principal : colors.neutros.beigeCalido}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="rest-restaurante" className="sr-only">Nombre del restaurante</label>
+                  <input
+                    id="rest-restaurante"
+                    ref={refs.restaurante}
+                    name="restaurante"
+                    type="text"
+                    autoComplete="organization"
+                    placeholder="Nombre del restaurante"
+                    maxLength={MAXIMO.restaurante}
+                    data-testid="rest-restaurante"
+                    aria-invalid={invalido === 'restaurante' ? true : undefined}
+                    className="w-full px-6 py-4 rounded-lg border-2 focus:outline-none transition-all duration-300"
+                    style={estiloCampo('restaurante')}
+                    value={formData.restaurante}
+                    onChange={(e) => cambiar('restaurante', e.target.value)}
+                    onFocus={(e) => (e.target as HTMLElement).style.borderColor = colors.terracota.principal}
+                    onBlur={(e) => (e.target as HTMLElement).style.borderColor = invalido === 'restaurante' ? colors.terracota.principal : colors.neutros.beigeCalido}
+                  />
+                </div>
               </div>
               <div className="grid md:grid-cols-2 gap-6">
-                <input
-                  type="email"
-                  placeholder="Email"
+                <div>
+                  <label htmlFor="rest-email" className="sr-only">Email</label>
+                  <input
+                    id="rest-email"
+                    ref={refs.email}
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="Email"
+                    maxLength={MAXIMO.email}
+                    data-testid="rest-email"
+                    aria-invalid={invalido === 'email' ? true : undefined}
+                    className="w-full px-6 py-4 rounded-lg border-2 focus:outline-none transition-all duration-300"
+                    style={estiloCampo('email')}
+                    value={formData.email}
+                    onChange={(e) => cambiar('email', e.target.value)}
+                    onFocus={(e) => (e.target as HTMLElement).style.borderColor = colors.terracota.principal}
+                    onBlur={(e) => (e.target as HTMLElement).style.borderColor = invalido === 'email' ? colors.terracota.principal : colors.neutros.beigeCalido}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="rest-telefono" className="sr-only">Teléfono</label>
+                  <input
+                    id="rest-telefono"
+                    ref={refs.telefono}
+                    name="telefono"
+                    type="tel"
+                    autoComplete="tel"
+                    placeholder="Teléfono"
+                    maxLength={MAXIMO.telefono}
+                    data-testid="rest-telefono"
+                    aria-invalid={invalido === 'telefono' ? true : undefined}
+                    className="w-full px-6 py-4 rounded-lg border-2 focus:outline-none transition-all duration-300"
+                    style={estiloCampo('telefono')}
+                    value={formData.telefono}
+                    onChange={(e) => cambiar('telefono', e.target.value)}
+                    onFocus={(e) => (e.target as HTMLElement).style.borderColor = colors.terracota.principal}
+                    onBlur={(e) => (e.target as HTMLElement).style.borderColor = invalido === 'telefono' ? colors.terracota.principal : colors.neutros.beigeCalido}
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="rest-mensaje" className="sr-only">Cuéntanos sobre tu restaurante y qué buscas</label>
+                <textarea
+                  id="rest-mensaje"
+                  ref={refs.mensaje}
+                  name="mensaje"
+                  placeholder="Cuéntanos sobre tu restaurante y qué buscas"
+                  rows={4}
+                  maxLength={MAXIMO.mensaje}
+                  data-testid="rest-mensaje"
                   className="w-full px-6 py-4 rounded-lg border-2 focus:outline-none transition-all duration-300"
-                  style={{ 
-                    borderColor: colors.neutros.beigeCalido,
-                    backgroundColor: 'white',
-                    color: colors.verde.tipografia
-                  }}
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  onFocus={(e) => (e.target as HTMLElement).style.borderColor = colors.terracota.principal}
-                  onBlur={(e) => (e.target as HTMLElement).style.borderColor = colors.neutros.beigeCalido}
-                />
-                <input
-                  type="tel"
-                  placeholder="Teléfono"
-                  className="w-full px-6 py-4 rounded-lg border-2 focus:outline-none transition-all duration-300"
-                  style={{ 
-                    borderColor: colors.neutros.beigeCalido,
-                    backgroundColor: 'white',
-                    color: colors.verde.tipografia
-                  }}
-                  value={formData.telefono}
-                  onChange={(e) => setFormData({...formData, telefono: e.target.value})}
-                  onFocus={(e) => (e.target as HTMLElement).style.borderColor = colors.terracota.principal}
-                  onBlur={(e) => (e.target as HTMLElement).style.borderColor = colors.neutros.beigeCalido}
+                  style={estiloCampo('mensaje')}
+                  value={formData.mensaje}
+                  onChange={(e) => cambiar('mensaje', e.target.value)}
+                  onFocus={(e) => e.target.style.borderColor = colors.terracota.principal}
+                  onBlur={(e) => e.target.style.borderColor = colors.neutros.beigeCalido}
                 />
               </div>
-              <textarea
-                placeholder="Cuéntanos sobre tu restaurante y qué buscas"
-                rows={4}
-                className="w-full px-6 py-4 rounded-lg border-2 focus:outline-none transition-all duration-300"
-                style={{ 
-                  borderColor: colors.neutros.beigeCalido,
-                  backgroundColor: 'white',
-                  color: colors.verde.tipografia
-                }}
-                value={formData.mensaje}
-                onChange={(e) => setFormData({...formData, mensaje: e.target.value})}
-                onFocus={(e) => e.target.style.borderColor = colors.terracota.principal}
-                onBlur={(e) => e.target.style.borderColor = colors.neutros.beigeCalido}
-              />
-              <a
-                href={ligaCorreo}
-                onClick={avisarCorreo}
-                data-testid="rest-enviar-correo"
-                className="inline-block w-full md:w-auto text-center px-12 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              <button
+                type="submit"
+                disabled={enviando}
+                aria-busy={enviando}
+                data-testid="rest-enviar"
+                className="inline-flex items-center justify-center gap-2 w-full md:w-auto text-center px-12 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:opacity-70 disabled:hover:scale-100"
                 style={{ 
                   backgroundColor: colors.terracota.principal,
                   color: 'white'
@@ -436,12 +562,10 @@ export default function ServicioRestaurantes() {
                 onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = colors.terracota.oscuro}
                 onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.backgroundColor = colors.terracota.principal}
               >
-                Enviar por correo
-              </a>
-              <p data-testid="rest-nota-correo" className="text-sm" style={{ color: colors.verde.tipografia }}>
-                Se abre tu aplicación de correo con el mensaje listo para {CORREO_RESTAURANTES}.
-              </p>
-            </div>
+                <Send className="w-5 h-5" aria-hidden="true" />
+                {enviando ? 'Enviando…' : 'Enviar solicitud'}
+              </button>
+            </form>
           </div>
         </div>
       </section>
@@ -466,7 +590,7 @@ export default function ServicioRestaurantes() {
               className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:scale-110 transition-all duration-300 w-40 h-40 flex items-center justify-center"
               aria-label="Visitar sitio web de Contramar"
             >
-              <img src="/logos/restauranntes/contramar_logo.png" alt="Logo Contramar" className="max-w-full max-h-full object-contain" />
+              <OptimizedImage src="/logos/restauranntes/contramar_logo.png" alt="Logo Contramar" width={128} height={128} className="max-w-full max-h-full object-contain" />
             </a>
             <a 
               href="https://www.rosetta.com.mx" 
@@ -475,7 +599,7 @@ export default function ServicioRestaurantes() {
               className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:scale-110 transition-all duration-300 w-40 h-40 flex items-center justify-center"
               aria-label="Visitar sitio web de Rosetta"
             >
-              <img src="/logos/restauranntes/rosetta_logo.png" alt="Logo Rosetta" className="max-w-full max-h-full object-contain" />
+              <OptimizedImage src="/logos/restauranntes/rosetta_logo.png" alt="Logo Rosetta" width={128} height={128} className="max-w-full max-h-full object-contain" />
             </a>
             <a 
               href="https://www.azulrestaurantes.com" 
@@ -484,7 +608,7 @@ export default function ServicioRestaurantes() {
               className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:scale-110 transition-all duration-300 w-40 h-40 flex items-center justify-center"
               aria-label="Visitar sitio web de Azul Histórico"
             >
-              <img src="/logos/restauranntes/azul_historico_logo.png" alt="Logo Azul Histórico" className="max-w-full max-h-full object-contain" />
+              <OptimizedImage src="/logos/restauranntes/azul_historico_logo.png" alt="Logo Azul Histórico" width={128} height={128} className="max-w-full max-h-full object-contain" />
             </a>
             <a 
               href="https://www.baldio.mx" 
@@ -493,7 +617,7 @@ export default function ServicioRestaurantes() {
               className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:scale-110 transition-all duration-300 w-40 h-40 flex items-center justify-center"
               aria-label="Visitar sitio web de Baldío"
             >
-              <img src="/logos/restauranntes/baldio_logo.png" alt="Logo Baldío" className="max-w-full max-h-full object-contain" />
+              <OptimizedImage src="/logos/restauranntes/baldio_logo.png" alt="Logo Baldío" width={128} height={128} className="max-w-full max-h-full object-contain" />
             </a>
             <a 
               href="https://www.grupomaximo.mx" 
@@ -502,7 +626,7 @@ export default function ServicioRestaurantes() {
               className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:scale-110 transition-all duration-300 w-40 h-40 flex items-center justify-center"
               aria-label="Visitar sitio web de Grupo Máximo"
             >
-              <img src="/logos/restauranntes/grupo_maximo_logo.png" alt="Logo Grupo Máximo" className="max-w-full max-h-full object-contain" />
+              <OptimizedImage src="/logos/restauranntes/grupo_maximo_logo.png" alt="Logo Grupo Máximo" width={128} height={128} className="max-w-full max-h-full object-contain" />
             </a>
             <a 
               href="https://www.tetetlan.com" 
@@ -511,7 +635,7 @@ export default function ServicioRestaurantes() {
               className="p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:scale-110 transition-all duration-300 w-40 h-40 flex items-center justify-center"
               aria-label="Visitar sitio web de Tetitlán"
             >
-              <img src="/logos/restauranntes/tetetlan_logo.jpg" alt="Logo Tetitlán" className="max-w-full max-h-full object-contain" />
+              <OptimizedImage src="/logos/restauranntes/tetetlan_logo.jpg" alt="Logo Tetitlán" width={128} height={128} className="max-w-full max-h-full object-contain" />
             </a>
           </div>
         </div>

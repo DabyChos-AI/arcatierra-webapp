@@ -387,7 +387,8 @@ export default function TarjetaGrilla({
         </div>
       )}
 
-      {/* Huecos (solo privadas y solo a quien edita) */}
+      {/* Huecos (solo a quien edita). R11 · HUE2: también fechas públicas e internos activos (sin_guia, sin_chinampa): el
+          backend los manda en `huecos` con la misma lista de códigos; aquí se pintan igual para cualquier tipo. */}
       {item.huecos.length > 0 && (
         <div className="flex flex-wrap gap-1" aria-label="Datos que faltan">
           {item.huecos.map((h) => (

@@ -50,9 +50,9 @@ const STEPS: { num: number; label: string }[] = [
   { num: 1, label: 'Cliente' },
   { num: 2, label: 'Experiencia' },
   { num: 3, label: 'Add-ons' },
-  { num: 4, label: 'Cotizacion' },
+  { num: 4, label: 'Cotización' },
   { num: 5, label: 'Asignaciones' },
-  { num: 6, label: 'Confirmacion' },
+  { num: 6, label: 'Confirmación' },
 ]
 
 // Catalogos editables de PS1 (/admin/catalogos). Chinampa se guarda por NOMBRE;
@@ -2550,7 +2550,7 @@ function Paso6Confirmacion({
         </ResumenSeccion>
       )}
 
-      <ResumenSeccion titulo="Cotizacion">
+      <ResumenSeccion titulo="Cotización">
         {wiz.cortesia && (
           <p data-testid="wiz-resumen-cortesia" className="font-medium">
             <strong className="text-terracota">Cortesía</strong>: no se cobra
@@ -2670,7 +2670,7 @@ function Paso6Confirmacion({
             }
             className="w-4 h-4 text-terracota border-neutro-borde rounded focus:ring-terracota"
           />
-          Enviar cotizacion PDF por email al cliente
+          Enviar cotización PDF por email al cliente
           {wiz.cortesia && (
             <span className="text-xs text-verde-suave">
               (no aplica: las cortesías no se cotizan)

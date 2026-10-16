@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Heart, ShoppingCart, Star, MapPin, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 
 export interface Product {
   id: string
@@ -35,17 +36,9 @@ interface ProductCardProps {
   precioSuscripcion?: number
 }
 
-// Helper: detectar si un producto es canasta
 import { precioLegible, esGratuito } from '@/lib/precio'
-
-function esCanasta(itemcode: string): boolean {
-  return /^188[5-9]U?$/.test(itemcode) || /^189[0-1]U?$/.test(itemcode)
-}
-
-// Helper: obtener itemcode de compra única (con U)
-function obtenerItemcodeCompraUnica(itemcode: string): string {
-  return itemcode.endsWith('U') ? itemcode : itemcode + 'U'
-}
+// TYP1 (R11): una sola definición de canasta (1885–1891, con o sin U)
+import { esCanasta } from '@/types/tienda'
 
 // Helper: clase de badge
 function getBadgeClass(badge: string): string {
@@ -80,9 +73,11 @@ export default function ProductCard({
     >
       {/* Imagen del producto */}
       <div className="relative aspect-square overflow-hidden">
-        <img
-          src={product.imagen}
+        <OptimizedImage
+          src={product.imagen || '/placeholder-product.jpg'}
           alt={product.nombre}
+          width={400}
+          height={400}
           className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
         />
         

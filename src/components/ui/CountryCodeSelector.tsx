@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, Search } from 'lucide-react'
-import Image from 'next/image'
+import OptimizedImage from '@/components/ui/OptimizedImage'
 
 interface Country {
   code: string
@@ -104,9 +104,11 @@ export default function CountryCodeSelector({ value, onChange, className = '' }:
       >
         {selectedCountry ? (
           <span className="flex items-center gap-2">
-            <img 
-              src={getFlagUrl(selectedCountry.code)} 
+            <OptimizedImage
+              src={getFlagUrl(selectedCountry.code)}
               alt={selectedCountry.name}
+              width={24}
+              height={16}
               className="w-6 h-4 object-cover rounded-sm"
             />
             <span className="font-medium">{selectedCountry.dialCode}</span>
@@ -151,9 +153,11 @@ export default function CountryCodeSelector({ value, onChange, className = '' }:
                     country.dialCode === value ? 'bg-green-50' : ''
                   }`}
                 >
-                  <img 
-                    src={getFlagUrl(country.code)} 
+                  <OptimizedImage
+                    src={getFlagUrl(country.code)}
                     alt={country.name}
+                    width={24}
+                    height={16}
                     className="w-6 h-4 object-cover rounded-sm flex-shrink-0"
                   />
                   <span className="flex-1 text-left text-sm">{country.name}</span>

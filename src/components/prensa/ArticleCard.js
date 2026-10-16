@@ -2,16 +2,12 @@
 
 import { Calendar, ExternalLink, Share2, Star } from 'lucide-react'
 import OptimizedImage from '@/components/ui/OptimizedImage'
+import { formatFechaMexico } from '@/lib/dates'
 
 export default function ArticleCard({ article }) {
-  const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
+  // PRE2 (R11): `new Date('2024-03-15')` es medianoche UTC; el servidor y un navegador en México pintaban días
+  // distintos (React #418, error de hidratación). formatFechaMexico arma la fecha sin hora tal cual viene.
+  const formatDate = (dateString) => formatFechaMexico(dateString, { month: 'long' })
 
   const getBadgeClass = (category) => {
     switch (category) {
@@ -171,14 +167,9 @@ export default function ArticleCard({ article }) {
 
 // Componente para artículos destacados con diseño especial
 export function FeaturedArticleCard({ article }) {
-  const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
+  // PRE2 (R11): `new Date('2024-03-15')` es medianoche UTC; el servidor y un navegador en México pintaban días
+  // distintos (React #418, error de hidratación). formatFechaMexico arma la fecha sin hora tal cual viene.
+  const formatDate = (dateString) => formatFechaMexico(dateString, { month: 'long' })
   
   const handleShare = async () => {
     if (navigator.share) {
