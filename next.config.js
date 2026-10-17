@@ -12,8 +12,12 @@ const nextConfig = {
   // Netlify»). Sirve AVIF o WebP según lo que acepte el navegador; sharp viene con Node 22 (B2).
   // Las rutas locales (/images/**, /uploads/**) no necesitan patrón. `OptimizedImage` manda
   // `unoptimized` a lo que no esté en esta lista.
+  // C14 (R11, 17-oct-2026): SOLO WebP. Con AVIF, una petición cortada a media codificación (el navegador cambia de
+  // página, el lazy-load se cancela) dejaba esa variante colgada PARA SIEMPRE: toda petición nueva con la misma clave
+  // esperaba sin respuesta (medido: el hero AVIF w=1920 de la portada y otra foto, 2 de 3, hasta recrear el
+  // contenedor). WebP no se cuelga (2 de 2 cortadas) y codifica ~8 veces más rápido. qa T277b lo vigila.
   images: {
-    formats: ['image/avif', 'image/webp'],
+    formats: ['image/webp'],
     minimumCacheTTL: 86400,
     remotePatterns: [
       {
