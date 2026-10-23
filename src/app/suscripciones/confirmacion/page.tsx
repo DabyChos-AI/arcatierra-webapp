@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { CheckCircle, XCircle, Clock, ArrowRight, Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { CORREO_GENERAL } from '@/lib/contacto'
 
 interface PendingSubscription {
   subscription_id: string
@@ -153,7 +154,7 @@ function ConfirmacionContent() {
                     Intentar de nuevo
                   </Button>
                 </Link>
-                <Link href="mailto:experiencias@arcatierra.com">
+                <Link href={`mailto:${CORREO_GENERAL}`}>
                   <Button variant="outline">
                     Contactar soporte
                   </Button>

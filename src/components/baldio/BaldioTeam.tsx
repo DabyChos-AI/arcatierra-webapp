@@ -42,46 +42,32 @@ export default function BaldioTeam() {
     }
   }
 
+  // TEL3: sin `socialMedia` — eran enlaces vacíos («https://instagram.com», twitter.com, linkedin.com) y no se inventan
+  // cuentas personales. Si una persona da la suya, se agrega aquí y el bloque de íconos de abajo la pinta.
   const team: TeamMember[] = [
     {
       name: "Ana María Rodríguez",
       role: "Chef Ejecutiva",
       bio: "Formada en Le Cordon Bleu de París y con experiencia en restaurantes de renombre en Europa y América Latina, Ana María regresó a México para crear Baldío, un proyecto que fusiona sus raíces mexicanas con técnicas contemporáneas. Su filosofía culinaria se centra en el respeto al ingrediente y la temporalidad.",
-      image: "/images/baldio/chef_ejecutiva.jpg",
-      socialMedia: {
-        instagram: "https://instagram.com",
-        twitter: "https://twitter.com",
-      }
+      image: "/images/baldio/chef_ejecutiva.jpg"
     },
     {
       name: "Carlos Méndez",
       role: "Chef de Cocina",
       bio: "Especializado en técnicas de fermentación y conservación, Carlos trabaja estrechamente con productores locales para seleccionar los mejores ingredientes. Su enfoque creativo y meticuloso ha sido fundamental en el desarrollo de los platillos emblemáticos de Baldío.",
-      image: "/images/baldio/chef_cocina.jpg",
-      socialMedia: {
-        instagram: "https://instagram.com",
-        linkedin: "https://linkedin.com",
-      }
+      image: "/images/baldio/chef_cocina.jpg"
     },
     {
       name: "Elena Gutiérrez",
       role: "Sommelier",
       bio: "Certificada por la Court of Master Sommeliers, Elena ha diseñado una carta de vinos que destaca productores mexicanos emergentes junto con etiquetas internacionales seleccionadas. Su pasión por los maridajes poco convencionales aporta una dimensión única a la experiencia Baldío.",
-      image: "/images/baldio/sommelier.jpg",
-      socialMedia: {
-        instagram: "https://instagram.com",
-        twitter: "https://twitter.com",
-        linkedin: "https://linkedin.com",
-      }
+      image: "/images/baldio/sommelier.jpg"
     },
     {
       name: "Javier Torres",
       role: "Chef Pastelero",
       bio: "Con formación en el Basque Culinary Center, Javier combina técnicas clásicas de repostería con sabores mexicanos tradicionales. Su trabajo con cacao nacional y frutas autóctonas ha revolucionado la carta de postres de Baldío.",
-      image: "/images/baldio/chef_pastelero.jpg",
-      socialMedia: {
-        instagram: "https://instagram.com",
-      }
+      image: "/images/baldio/chef_pastelero.jpg"
     }
   ]
 

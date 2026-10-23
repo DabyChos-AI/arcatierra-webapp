@@ -10,6 +10,7 @@ import { leerCarrito } from '@/lib/carrito'
 import { textoApartadoHasta } from '@/types/tienda'
 import { formatFechaMexico } from '@/lib/dates'
 import { linkWhatsApp } from '@/lib/whatsapp'
+import { CORREO_GENERAL } from '@/lib/contacto'
 
 interface DatosPagoFallido {
   paymentId: string | null
@@ -202,7 +203,7 @@ function PagoFallidoContent() {
           </p>
           <div className="space-y-1">
             <p>
-              Email: <a href="mailto:soporte@arcatierra.com" className="text-[#B15543] hover:underline">soporte@arcatierra.com</a>
+              Email: <a href={`mailto:${CORREO_GENERAL}`} className="text-[#B15543] hover:underline">{CORREO_GENERAL}</a>
             </p>
             <p>
               WhatsApp:{' '}

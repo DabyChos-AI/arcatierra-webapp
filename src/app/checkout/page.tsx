@@ -8,6 +8,7 @@ import CheckoutFormSingleStep from '@/components/CheckoutFormSingleStep'
 import DeliveryTypeSelector from '@/components/ui/DeliveryTypeSelector'
 import ConMiCanasta, { type CanastaExtras } from '@/components/ui/ConMiCanasta'
 import { API_URL } from '@/lib/api'
+import { BODEGA } from '@/lib/bodega'
 import {
   ShoppingCart,
   ArrowLeft,
@@ -304,7 +305,7 @@ export default function CheckoutPage() {
                     return (
                       <div className={`${nota} text-green-600 bg-green-50`} data-testid="envio-nota">
                         <Store className={icono} aria-hidden="true" />
-                        Recoger en: Gob. Antonio Díez de Bonilla #37, San Miguel Chapultepec
+                        Recoger en: {BODEGA.corta} · {BODEGA.horario}
                       </div>
                     )
                   }

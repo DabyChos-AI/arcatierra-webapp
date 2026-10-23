@@ -5,6 +5,7 @@ import { useInView } from 'framer-motion'
 import { useRef } from 'react'
 import Link from 'next/link'
 import { Phone, Mail, MapPin, Clock, Calendar } from 'lucide-react'
+import { CONTACTO } from '@/lib/contacto'  // TEL3: teléfono de una sola fuente
 
 export default function BaldioCallToAction() {
   const ref = useRef(null)
@@ -71,7 +72,7 @@ export default function BaldioCallToAction() {
                   </div>
                   <div>
                     <p className="font-medium text-[#E3DBCB]">Teléfono</p>
-                    <p className="text-white/80">+52 (55) 1234 5678</p>
+                    <a href={CONTACTO.telefonoHref} className="text-white/80 hover:underline">{CONTACTO.telefonoVisible}</a>
                   </div>
                 </li>
                 <li className="flex items-start gap-4">

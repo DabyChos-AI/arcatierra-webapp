@@ -6,6 +6,7 @@ import { useRef, useState } from 'react';
 import { Mail, Phone, Instagram, MapPin, Download, Calendar, Users, CheckCircle } from 'lucide-react';
 import QuoteRequestModal from './QuoteRequestModal';
 import ServicesInfoModal from './ServicesInfoModal';
+import { CONTACTO } from '@/lib/contacto';
 
 export default function CateringContact() {
   const ref = useRef(null);
@@ -36,7 +37,7 @@ export default function CateringContact() {
   };
 
   const openInstagram = () => {
-    window.open('https://www.instagram.com/arca.tierra', '_blank');
+    window.open(CONTACTO.redes.instagram, '_blank');  // TEL3: lib/contacto.ts
   };
 
   const openGoogleMaps = () => {

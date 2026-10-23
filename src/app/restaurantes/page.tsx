@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Truck, Clock, Calendar, CheckCircle, Leaf, P
 import { aviso } from '@/components/ui/Avisos'
 import { API_URL } from '@/lib/api'
 import OptimizedImage from '@/components/ui/OptimizedImage'
+import { CORREO_GENERAL } from '@/lib/contacto'
 
 // Definición de colores según manual de identidad
 const colors = {
@@ -151,7 +152,7 @@ const ProcessStep = ({ icon: Icon, title, number }: ProcessStepProps) => (
   </div>
 )
 
-const CORREO_RESTAURANTES = 'pedidos@arcatierra.com'
+const CORREO_RESTAURANTES = CORREO_GENERAL  // MAILC1: lib/contacto.ts
 
 // REST1 (R11, L4): POST /api/restaurantes/solicitud (público, 5/min por IP). La fila cae en la bandeja de Catering y el
 // backend avisa al equipo. Topes = los del modelo Pydantic (`routers/restaurantes.py`, extra="forbid").

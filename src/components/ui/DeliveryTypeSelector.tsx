@@ -2,15 +2,8 @@
 
 import { useState } from 'react'
 import { Truck, Store, CheckCircle } from 'lucide-react'
-
-// Dirección de la matriz (sincronizado con PostalCodeSelector.tsx y backend)
-const DIRECCION_MATRIZ = {
-  calle: 'Calle Gobernador Antonio Díez de Bonilla #37',
-  colonia: 'San Miguel Chapultepec',
-  cp: '11850',
-  ciudad: 'CDMX',
-  horario: 'Lun, Mié, Vie: 10am - 5pm'
-}
+// BOD1: dirección y horario de la bodega, una sola fuente (gemela del backend: services/bodega.py)
+import { BODEGA } from '@/lib/bodega'
 
 interface DeliveryTypeSelectorProps {
   value: 'envio_domicilio' | 'recoger_almacen'
@@ -142,8 +135,19 @@ export default function DeliveryTypeSelector({
           
           {value === 'recoger_almacen' && (
             <div className="mt-2 text-sm text-gray-600 space-y-1">
-              <p>📍 {DIRECCION_MATRIZ.calle}, {DIRECCION_MATRIZ.colonia}</p>
-              <p>🕐 {DIRECCION_MATRIZ.horario}</p>
+              <p data-testid="bodega-direccion">
+                📍 {BODEGA.completa} ·{' '}
+                <a
+                  href={BODEGA.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-testid="bodega-como-llegar"
+                  className="font-medium text-green-700 underline hover:text-green-800"
+                >
+                  Cómo llegar
+                </a>
+              </p>
+              <p data-testid="bodega-horario">🕐 {BODEGA.horario}</p>
             </div>
           )}
         </div>

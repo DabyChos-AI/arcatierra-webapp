@@ -256,8 +256,7 @@ export const metadata: Metadata = {
           "addressLocality": "Ciudad de México",
           "addressRegion": "CDMX",
           "addressCountry": "MX"
-        },
-        "telephone": "+52-55-XXXX-XXXX"
+        }
       }
     })
   }

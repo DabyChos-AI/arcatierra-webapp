@@ -9,6 +9,7 @@ import WhatsAppChat from '@/components/WhatsAppChat'
 import ClientLayout from './client-layout'
 import AnnouncementBanner from '@/components/AnnouncementBanner'
 import RegistrarSW from '@/components/RegistrarSW'
+import { CONTACTO, CORREO_GENERAL } from '@/lib/contacto'
 
 // TIPOGRAFÍAS OFICIALES ARCA TIERRA - Manual de Identidad
 
@@ -171,15 +172,12 @@ export default function RootLayout({
               },
               "contactPoint": {
                 "@type": "ContactPoint",
-                "telephone": "+52-55-1234-5678",
+                "telephone": CONTACTO.telefono,
                 "contactType": "customer service",
-                "email": "info@arcatierra.com",
+                "email": CORREO_GENERAL,
                 "availableLanguage": ["es-MX"]
               },
-              "sameAs": [
-                "https://www.facebook.com/arcatierra",
-                "https://www.instagram.com/arcatierra"
-              ],
+              "sameAs": [CONTACTO.redes.instagram, CONTACTO.redes.facebook, CONTACTO.redes.tiktok, CONTACTO.redes.youtube],
               "hasOfferCatalog": {
                 "@type": "OfferCatalog",
                 "name": "Productos Orgánicos ArcaTierra",

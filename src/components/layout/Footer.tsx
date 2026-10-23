@@ -1,8 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
 import OptimizedImage from '@/components/ui/OptimizedImage';
-import { Facebook, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Instagram, Mail, Phone, MapPin, Youtube } from 'lucide-react';
 import NewsletterForm from './NewsletterForm';
+// TEL3: teléfono y redes de una sola fuente
+import { CONTACTO, CORREO_GENERAL, ICONO_TIKTOK_PATH, SAME_AS } from '@/lib/contacto';
 
 const Footer: React.FC = () => {
   return (
@@ -91,21 +93,21 @@ const Footer: React.FC = () => {
             <div className="flex items-center space-x-3">
               <Mail className="h-5 w-5 text-white/80" />
               <a 
-                href="mailto:info@arcatierra.com"
+                href={`mailto:${CORREO_GENERAL}`}
                 className="footer-section a hover:text-white transition-colors"
                 itemProp="email"
               >
-                info@arcatierra.com
+                {CORREO_GENERAL}
               </a>
             </div>
             <div className="flex items-center space-x-3">
               <Phone className="h-5 w-5 text-white/80" />
               <a 
-                href="tel:+525510515525"
+                href={CONTACTO.telefonoHref}
                 className="footer-section a hover:text-white transition-colors"
                 itemProp="telephone"
               >
-                +52 55 1051 5525
+                {CONTACTO.telefonoVisible}
               </a>
             </div>
             <div className="flex items-center space-x-3">
@@ -124,7 +126,7 @@ const Footer: React.FC = () => {
           <h3 className="footer-section h3">Síguenos</h3>
           <div className="flex space-x-4">
             <a
-              href="https://facebook.com/arcatierra"
+              href={CONTACTO.redes.facebook}
               aria-label="Facebook de ArcaTierra"
               rel="noopener noreferrer"
               target="_blank"
@@ -133,13 +135,33 @@ const Footer: React.FC = () => {
               <Facebook className="h-6 w-6 text-white" />
             </a>
             <a
-              href="https://instagram.com/arcatierra"
+              href={CONTACTO.redes.instagram}
               aria-label="Instagram de ArcaTierra"
               rel="noopener noreferrer"
               target="_blank"
               className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
             >
               <Instagram className="h-6 w-6 text-white" />
+            </a>
+            <a
+              href={CONTACTO.redes.tiktok}
+              aria-label="TikTok de ArcaTierra"
+              rel="noopener noreferrer"
+              target="_blank"
+              className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path d={ICONO_TIKTOK_PATH} />
+              </svg>
+            </a>
+            <a
+              href={CONTACTO.redes.youtube}
+              aria-label="YouTube de ArcaTierra"
+              rel="noopener noreferrer"
+              target="_blank"
+              className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
+            >
+              <Youtube className="h-6 w-6 text-white" />
             </a>
           </div>
           
@@ -202,15 +224,12 @@ const Footer: React.FC = () => {
             },
             "contactPoint": {
               "@type": "ContactPoint",
-              "telephone": "+52-55-1234-5678",
+              "telephone": CONTACTO.telefono,
               "contactType": "customer service",
-              "email": "info@arcatierra.com",
+              "email": CORREO_GENERAL,
               "availableLanguage": "es-MX"
             },
-            "sameAs": [
-              "https://www.facebook.com/arcatierra",
-              "https://www.instagram.com/arcatierra"
-            ],
+            "sameAs": SAME_AS,
             "hasOfferCatalog": {
               "@type": "OfferCatalog",
               "name": "Productos Orgánicos ArcaTierra",

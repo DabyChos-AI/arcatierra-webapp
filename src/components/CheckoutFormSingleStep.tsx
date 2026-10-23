@@ -31,6 +31,7 @@ import DireccionEntrega, {
 import { formatFechaMexico } from '@/lib/dates'
 import { MapPin, CreditCard, User, Calendar, CalendarDays, Tag, PackageX } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { BODEGA, TEXTO_PEDIDO_RECOGER } from '@/lib/bodega'
 import { avisarTrasNavegar } from '@/components/ui/Avisos'
 import { calcularCostoEnvio, subtotalProductos as calcSubtotalProductos } from '@/lib/envio'
 import {
@@ -99,7 +100,6 @@ function esLineaExperiencia(linea: unknown): linea is LineaExperienciaValidada {
   return !!l && l.tipo === 'experiencia' && typeof l.evento_id === 'string'
 }
 
-const DIRECCION_ALMACEN = 'RECOGER EN ALMACÉN - Calle Gobernador Antonio Díez de Bonilla #37, San Miguel Chapultepec, CDMX'
 /** RCG1: la «llave» del calendario de recoger en `DiaElegido.cp` (no es un C.P.: nunca tiene 5 dígitos). */
 const CP_RECOGER = 'recoger'
 const MAX_ALERGIAS = 500
@@ -204,7 +204,8 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
     vencido: textoApartadoVencido({ hayExperiencias, hayProductos }),
   }
 
-  // RCG1 (R11b, DR40): «Recoger en almacén» no pide dirección, C.P. ni zona: solo el día (cualquier día hábil).
+  // RCG1 (R11b, DR40) + BOD1: «Recoger en almacén» no pide dirección, C.P. ni zona: solo el día (lunes, miércoles o
+  // viernes desde hoy + 2, sin días sin entrega; la regla vive en DeliveryDatePicker con lib/bodega.ts).
   const recoger = tipoEntrega === 'recoger_almacen' && !canasta
 
   // ─── A12: lo que se deriva de la elección (una sola fuente; nada de copiar la dirección a otro estado) ────────────
@@ -513,7 +514,8 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
       codigo_cupon: canasta ? undefined : cupon?.codigo,
     }
     if (canasta) return { ...base, delivery_address: '', delivery_postal_code: '' }
-    if (tipoEntrega === 'recoger_almacen') return { ...base, delivery_address: DIRECCION_ALMACEN, delivery_postal_code: '11850' }
+    // BOD1: la dirección de la bodega sale de lib/bodega.ts (el backend guarda la suya, la misma, mande lo que mande)
+    if (tipoEntrega === 'recoger_almacen') return { ...base, delivery_address: TEXTO_PEDIDO_RECOGER, delivery_postal_code: BODEGA.codigoPostal }
     if (direccionElegida) {
       return {
         ...base,
@@ -1031,7 +1033,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
               />
               </div>
 
-              {/* RCG1 (DR40): recoger = solo el día hábil (lunes a viernes desde hoy + 2, sin días sin entrega). */}
+              {/* RCG1 (DR40) + BOD1: recoger = solo el día (lunes, miércoles o viernes desde hoy + 2, sin días sin entrega). */}
               {recoger && (
                 <div className="animate-in fade-in slide-in-from-top-2 duration-300" data-testid="checkout-recoger">
                   <div className="flex items-center gap-2 mb-3">

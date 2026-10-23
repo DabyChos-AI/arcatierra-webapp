@@ -6,6 +6,7 @@ import { Suspense } from 'react'
 import { Search, Heart, ShoppingCart, Grid3X3, LayoutGrid, Star, Filter, Eye, MapPin, ChevronDown, ChevronRight, ChevronLeft, X, Mic, MicOff } from 'lucide-react'
 import { useVoiceSearch } from '@/hooks/useVoiceSearch'
 import { aviso } from '@/components/ui/Avisos'
+import { CONTACTO, CORREO_GENERAL, SAME_AS } from '@/lib/contacto'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -368,17 +369,13 @@ const storeStructuredData = {
     "latitude": 19.432608,
     "longitude": -99.133209
   },
-  "telephone": "+52 55 1234 5678",
-  "email": "hola@arcatierra.com",
+  "telephone": CONTACTO.telefono, // TEL3: lib/contacto.ts
+  "email": CORREO_GENERAL,
   "openingHours": "Mo-Fr 07:00-18:00",
   "paymentAccepted": "Cash, Credit Card, Debit Card, Bank Transfer",
   "currenciesAccepted": "MXN",
   "priceRange": "$$",
-  "sameAs": [
-    "https://www.instagram.com/arcatierra",
-    "https://www.facebook.com/arcatierra",
-    "https://twitter.com/arcatierra"
-  ],
+  "sameAs": SAME_AS,
   "hasOfferCatalog": {
     "@type": "OfferCatalog",
     "name": "Catálogo de Productos Agroecológicos",

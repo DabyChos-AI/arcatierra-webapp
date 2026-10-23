@@ -4,8 +4,8 @@
 import { formatFechaMexico, formatFechaHoraMexico } from '@/lib/dates'
 import type { PortalExperiencia, TipoPortal } from '@/types/portal'
 
-/** Buzón del equipo de Experiencias (el mismo de `checkout/success` y de `/usuario/reservas`, que lo importa de aquí). */
-export const CORREO_EXPERIENCIAS = 'info@arcatierra.com'
+/** Buzón del equipo de Experiencias (MAILC1: de `lib/contacto.ts`; `/usuario/reservas` lo importa de aquí). */
+export { CORREO_EXPERIENCIAS } from '@/lib/contacto'
 
 const FECHA_LARGA: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
 

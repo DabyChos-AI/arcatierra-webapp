@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronDown, ChevronUp, HelpCircle, Phone, Mail, MessageCircle } from 'lucide-react';
 import { faqData, FaqCategory } from '@/data/faq';
+import { CONTACTO, CORREO_EXPERIENCIAS } from '@/lib/contacto';  // TEL3: teléfono de una sola fuente
 
 export default function FAQPage() {
   const [categoriaActiva, setCategoriaActiva] = useState<FaqCategory>('reservas');
@@ -189,7 +190,7 @@ export default function FAQPage() {
             >
               <Phone className="w-8 h-8 mx-auto mb-3" />
               <h3 className="font-semibold mb-2">Teléfono</h3>
-              <p className="text-neutral-100">+52 55 1234 5678</p>
+              <a href={CONTACTO.telefonoHref} className="text-neutral-100 hover:underline">{CONTACTO.telefonoVisible}</a>
             </motion.div>
 
             <motion.div
@@ -200,7 +201,7 @@ export default function FAQPage() {
             >
               <Mail className="w-8 h-8 mx-auto mb-3" />
               <h3 className="font-semibold mb-2">Email</h3>
-              <p className="text-neutral-100">hola@arcatierra.com</p>
+              <a href={`mailto:${CORREO_EXPERIENCIAS}`} className="text-neutral-100 hover:underline">{CORREO_EXPERIENCIAS}</a>
             </motion.div>
 
             <motion.div

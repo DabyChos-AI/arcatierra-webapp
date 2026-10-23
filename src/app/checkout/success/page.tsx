@@ -7,11 +7,11 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { experienciasDelCarrito, leerCarrito, vaciarCarrito } from '@/lib/carrito'
 import { formatFechaMexico } from '@/lib/dates'
+import { CORREO_EXPERIENCIAS, CORREO_GENERAL } from '@/lib/contacto'
 
-/** MAILP1 (R7): a quién escribe el cliente. Experiencias (el mismo correo de `app/experiencias/[slug]/page.tsx`)
- *  si la compra traía experiencias o su referencia es `AT-EXP-…`; si no, el de pedidos de siempre. */
-const CORREO_EXPERIENCIAS = 'info@arcatierra.com'
-const CORREO_PEDIDOS = 'pedidos@arcatierra.com'
+/** MAILP1 (R7) + MAILC1: a quién escribe el cliente. Experiencias si la compra traía experiencias o su referencia es
+ *  `AT-EXP-…`; si no, el general. Los dos de `lib/contacto.ts`. */
+const CORREO_PEDIDOS = CORREO_GENERAL
 
 interface DatosPagoExitoso {
   paymentId: string | null

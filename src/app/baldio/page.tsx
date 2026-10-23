@@ -41,7 +41,6 @@ export const metadata: Metadata = {
       "name": "Baldío Restaurante",
       "description": "Primer restaurante en México con Estrella Verde Michelin. Cocina sostenible con cero desperdicio e ingredientes de chinampas.",
       "url": "https://arcatierra.com/baldio",
-      "telephone": "+52-55-XXXX-XXXX",
       "address": {
         "@type": "PostalAddress",
         "streetAddress": "Arca Tierra, Colonia Condesa",

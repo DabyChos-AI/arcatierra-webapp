@@ -2,6 +2,7 @@
 
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import { Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import { CONTACTO } from '@/lib/contacto';  // TEL3: teléfono de una sola fuente
 
 const CateringFooter = () => {
   return (
@@ -64,7 +65,7 @@ const CateringFooter = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <Instagram size={16} className="text-terracota-light" />
-                <a href="https://instagram.com/arca.tierra" target="_blank" rel="noopener noreferrer" className="text-neutral-light hover:text-white transition-colors text-sm">
+                <a href={CONTACTO.redes.instagram} target="_blank" rel="noopener noreferrer" className="text-neutral-light hover:text-white transition-colors text-sm">
                   @arca.tierra
                 </a>
               </div>

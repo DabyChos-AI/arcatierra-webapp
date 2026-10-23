@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { useInView } from 'framer-motion'
 import { useRef, useState } from 'react'
 import { Calendar, Clock, Users, Phone, Mail } from 'lucide-react'
+import { CONTACTO } from '@/lib/contacto'  // TEL3: teléfono de una sola fuente
 
 export default function BaldioReservationForm() {
   const ref = useRef(null)
@@ -314,7 +315,7 @@ export default function BaldioReservationForm() {
                 <ul className="space-y-3">
                   <li className="flex items-center gap-3">
                     <Phone className="h-5 w-5 text-[#B15543]" />
-                    <span className="text-[#3A4741] font-medium">+52 (55) 1234 5678</span>
+                    <a href={CONTACTO.telefonoHref} className="text-[#3A4741] font-medium hover:underline">{CONTACTO.telefonoVisible}</a>
                   </li>
                   <li className="flex items-center gap-3">
                     <Mail className="h-5 w-5 text-[#B15543]" />

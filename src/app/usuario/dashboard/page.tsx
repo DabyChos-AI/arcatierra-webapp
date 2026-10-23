@@ -9,6 +9,7 @@ import {
   Edit3, Trash2, Home, Building2, AlertCircle, CreditCard, Package, Repeat
 } from 'lucide-react'
 import PostalCodeSelector from '@/components/ui/PostalCodeSelector'
+import { BODEGA } from '@/lib/bodega'
 import { confirmar } from '@/components/ui/Avisos'
 
 interface ZonaEntrega {
@@ -802,10 +803,11 @@ export default function DashboardPage() {
                     onRecogerEnMatriz={() => {
                       setFormDireccion({
                         ...formDireccion,
-                        calle: 'Calle Anatole France 307',
-                        colonia: 'Polanco Reforma',
-                        alcaldia: 'Miguel Hidalgo',
-                        codigo_postal: '11550'
+                        // BOD1: la bodega de lib/bodega.ts (una sola fuente)
+                        calle: BODEGA.calle,
+                        colonia: BODEGA.colonia,
+                        alcaldia: BODEGA.alcaldia,
+                        codigo_postal: BODEGA.codigoPostal
                       })
                     }}
                   />

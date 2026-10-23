@@ -17,6 +17,7 @@ import {
   Sparkles
 } from 'lucide-react'
 import OptimizedImage from '@/components/ui/OptimizedImage'
+import { CONTACTO, CORREO_EXPERIENCIAS } from '@/lib/contacto'  // TEL3: teléfono de una sola fuente
 
 const experienciasPrivadas = [
   {
@@ -258,13 +259,13 @@ export default function ExperienciasPrivadasPage() {
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
               <Mail className="w-8 h-8 text-[#CCBB9A] mx-auto mb-4" />
               <h3 className="font-semibold text-[#E8E4DF] mb-2">Email</h3>
-              <p className="text-[#CCBB9A]">eventos@arcatierra.com</p>
+              <a href={`mailto:${CORREO_EXPERIENCIAS}`} className="text-[#CCBB9A] hover:underline">{CORREO_EXPERIENCIAS}</a>
             </div>
             
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
               <Phone className="w-8 h-8 text-[#CCBB9A] mx-auto mb-4" />
               <h3 className="font-semibold text-[#E8E4DF] mb-2">Teléfono</h3>
-              <p className="text-[#CCBB9A]">+52 55 1234 5678</p>
+              <a href={CONTACTO.telefonoHref} className="text-[#CCBB9A] hover:underline">{CONTACTO.telefonoVisible}</a>
             </div>
           </div>
 

@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { User, Mail, Phone, MapPin, Calendar, Edit3, Save, X, Camera } from 'lucide-react'
 import CountryCodeSelector from '@/components/ui/CountryCodeSelector'
 import PostalCodeSelector from '@/components/ui/PostalCodeSelector'
+import { BODEGA } from '@/lib/bodega'
 import { aviso } from '@/components/ui/Avisos'
 import OptimizedImage from '@/components/ui/OptimizedImage'
 import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
@@ -470,8 +471,9 @@ export default function PerfilPage() {
                         handleInputChange('codigoPostal', cp)
                       }}
                       onRecogerEnMatriz={() => {
-                        handleInputChange('address', 'Calle Anatole France 307, Polanco Reforma, Miguel Hidalgo, CDMX')
-                        handleInputChange('codigoPostal', '11550')
+                        // BOD1: la bodega de lib/bodega.ts (una sola fuente)
+                        handleInputChange('address', BODEGA.completa)
+                        handleInputChange('codigoPostal', BODEGA.codigoPostal)
                       }}
                     />
                   ) : (

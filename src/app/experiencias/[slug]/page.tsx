@@ -12,6 +12,7 @@ import { useSession } from 'next-auth/react';
 import { API_URL } from '@/lib/api';
 import { formatFechaMexico, hoyMexico } from '@/lib/dates';
 import { linkWhatsApp } from '@/lib/whatsapp';
+import { CORREO_EXPERIENCIAS } from '@/lib/contacto';
 import { horario } from '@/app/admin/eventos/components/fechas';
 import { formatMXN } from '@/types/reservas';
 import type { FechaPublica } from '@/types/compra-experiencias';
@@ -234,13 +235,12 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
     ].filter((linea): linea is string => linea !== null);
 
     if (medio === 'whatsapp') {
-      const msg = encodeURIComponent(
-        [
-          `Hola, me interesa la experiencia privada "${experiencia.nombre}". Mi nombre es ${nombreLimpio}.`,
-          ...detalles,
-        ].join('\n')
-      );
-      window.open(`https://wa.me/525510515525?text=${msg}`, '_blank');
+      // TEL3: el número sale de lib/whatsapp.ts (linkWhatsApp codifica el texto)
+      const msg = [
+        `Hola, me interesa la experiencia privada "${experiencia.nombre}". Mi nombre es ${nombreLimpio}.`,
+        ...detalles,
+      ].join('\n');
+      window.open(linkWhatsApp(msg), '_blank');
     } else {
       const subject = encodeURIComponent(`Solicitud experiencia privada: ${experiencia.nombre}`);
       const comentariosLimpios = privComentarios.trim();
@@ -259,7 +259,7 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
           'Quedo atento/a a su respuesta.',
         ].join('\n')
       );
-      window.open(`mailto:info@arcatierra.com?subject=${subject}&body=${body}`, '_blank');
+      window.open(`mailto:${CORREO_EXPERIENCIAS}?subject=${subject}&body=${body}`, '_blank');  // MAILC1
     }
     cerrarModal();
   };

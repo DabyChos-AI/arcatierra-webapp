@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { ChevronLeft, ChevronRight, MapPin, Truck, CheckCircle2, AlertCircle, Loader2, Store } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { hoyMexico, sumarDias } from '@/lib/dates'
+import { BODEGA, DIAS_MINIMOS_RECOGER, NOMBRES_DIAS_RECOGER, esDiaDeRecoger } from '@/lib/bodega'
 import type { DiaNoHabil, RespuestaDiasNoHabiles } from '@/types/datos-cliente'
 
 /** Una zona de `GET /api/zonas-entrega/{cp}` (la misma forma que usa PostalCodeSelector). */
@@ -23,14 +24,14 @@ export interface ZonaEntrega {
 }
 
 /**
- * RCG1 (R11b, DR40): `recoger` = «Recoger en almacén». Sin zona ni C.P. (no pide `/api/zonas-entrega`): cualquier día hábil
- * (lunes a viernes, sin los días sin entrega, hasta el tope) desde `hoyMexico() + DIAS_MINIMOS_RECOGER`, la misma regla con
- * la que el backend acepta la fecha al pagar.
+ * RCG1 (R11b, DR40) + BOD1 (K2): `recoger` = «Recoger en almacén». Sin zona ni C.P. (no pide `/api/zonas-entrega`): solo
+ * lunes, miércoles o viernes (sin los días sin entrega, hasta el tope) desde `hoyMexico() + DIAS_MINIMOS_RECOGER`, la misma
+ * regla con la que el backend acepta la fecha al pagar. Días, mínimo y horario: `lib/bodega.ts` (una sola fuente).
  */
 export type ModoCalendario = 'entrega' | 'recoger'
 
-/** El mínimo de días para recoger: el mismo del checkout (hoy + 2). */
-export const DIAS_MINIMOS_RECOGER = 2
+/** El mínimo de días para recoger (hoy + 2): se re-exporta de `lib/bodega.ts`. */
+export { DIAS_MINIMOS_RECOGER }
 
 /** Lunes a viernes (0 = domingo), la forma de `diasDisponibles` de una zona. */
 const DIAS_HABILES: readonly boolean[] = [false, true, true, true, true, true, false]
@@ -220,9 +221,10 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
     if (tope !== null && iso > tope) return false
     if (sinEntrega.has(iso)) return false
 
-    // Verificar día de la semana
+    // Verificar día de la semana (BOD1: para recoger, solo lunes, miércoles o viernes)
+    if (recoger) return esDiaDeRecoger(iso)
     const dayOfWeek = diaDeLaSemana(iso)
-    if (recoger || !zona) return DIAS_HABILES[dayOfWeek]
+    if (!zona) return DIAS_HABILES[dayOfWeek]
     const diasDisponibles = [
       zona.domingo,
       zona.lunes,
@@ -287,7 +289,9 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
         {recoger ? (
           <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-100 rounded-xl">
             <Store className="w-5 h-5 text-green-600 flex-shrink-0" aria-hidden="true" />
-            <p className="mb-0 text-sm text-green-800">Elige el día en que pasas por tu pedido (lunes a viernes).</p>
+            <p className="mb-0 text-sm text-green-800" data-testid="recoger-horario">
+              Elige el día en que pasas por tu pedido ({NOMBRES_DIAS_RECOGER}). Horario: {BODEGA.horario}
+            </p>
           </div>
         ) : loading ? (
           <div className="flex items-center gap-2 text-gray-500 animate-pulse">
@@ -459,7 +463,9 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
               <p className="text-lg font-semibold text-gray-900">
                 {formatSelectedDate(selected)}
               </p>
-              {!recoger && (
+              {recoger ? (
+                <p className="text-xs text-gray-500 mt-1">Horario: {BODEGA.horario}</p>
+              ) : (
                 <p className="text-xs text-gray-500 mt-1">
                   Horario de entrega: 9:00 AM - 6:00 PM
                 </p>

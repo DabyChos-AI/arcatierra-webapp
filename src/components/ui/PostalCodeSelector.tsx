@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { ChevronDown, Search, MapPin, Bike, Heart, Store } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+// BOD1: la dirección de la bodega, una sola fuente (antes aquí había otra dirección, que no era la bodega)
+import { BODEGA } from '@/lib/bodega'
 
 interface ZonaEntrega {
   id: number
@@ -23,16 +25,6 @@ interface PostalCodeSelectorProps {
   value: string
   onChange: (cp: string, zona: ZonaEntrega | null) => void
   onRecogerEnMatriz?: () => void
-}
-
-// Dirección de la matriz de Arca Tierra
-const DIRECCION_MATRIZ = {
-  calle: 'Calle Anatole France 307',
-  colonia: 'Polanco Reforma',
-  municipio: 'Miguel Hidalgo',
-  cp: '11550',
-  ciudad: 'CDMX',
-  completa: 'Calle Anatole France 307, Polanco Reforma, Miguel Hidalgo, CDMX, CP 11550'
 }
 
 export default function PostalCodeSelector({ value, onChange, onRecogerEnMatriz }: PostalCodeSelectorProps) {
@@ -220,7 +212,7 @@ export default function PostalCodeSelector({ value, onChange, onRecogerEnMatriz 
                         tus productos súper frescos 🌱
                       </p>
                       <p className="text-xs text-gray-500 mt-2">
-                        📍 {DIRECCION_MATRIZ.calle}, {DIRECCION_MATRIZ.colonia}
+                        📍 {BODEGA.corta}
                       </p>
                       {onRecogerEnMatriz && (
                         <button
