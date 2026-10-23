@@ -615,7 +615,7 @@ function SuscripcionesContent() {
               <div className="bg-green-50 p-4 rounded-lg">
                 <h4 className="font-semibold text-green-800 mb-2">¿Cómo funciona?</h4>
                 <ul className="text-sm text-green-700 space-y-1">
-                  <li>• Puedes pausar o cancelar en cualquier momento</li>
+                  <li>• Puedes cancelar en cualquier momento</li>
                   <li>• Cambios hasta 3 días hábiles antes de la entrega</li>
                   <li>• Notificación 24h antes de cada entrega</li>
                   <li>• Primer cargo al confirmar la suscripción</li>
@@ -629,7 +629,7 @@ function SuscripcionesContent() {
               selectedFrequency={selectedFrequency}
               frequencyName={currentFrequency?.name || 'Semanal'}
               carneSelections={carneSelections}
-              onSubscribe={async (formData, zonaEntrega, selectedDate) => {
+              onSubscribe={async (formData, zonaEntrega) => {
                 // Crear suscripción para la primera canasta seleccionada
                 const canastaId = selectedCanastas[0]
                 const plan = plans.find(p => p.id === canastaId)

@@ -100,6 +100,8 @@ function esLineaExperiencia(linea: unknown): linea is LineaExperienciaValidada {
 }
 
 const DIRECCION_ALMACEN = 'RECOGER EN ALMACÉN - Calle Gobernador Antonio Díez de Bonilla #37, San Miguel Chapultepec, CDMX'
+/** RCG1: la «llave» del calendario de recoger en `DiaElegido.cp` (no es un C.P.: nunca tiene 5 dígitos). */
+const CP_RECOGER = 'recoger'
 const MAX_ALERGIAS = 500
 const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -202,6 +204,9 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
     vencido: textoApartadoVencido({ hayExperiencias, hayProductos }),
   }
 
+  // RCG1 (R11b, DR40): «Recoger en almacén» no pide dirección, C.P. ni zona: solo el día (cualquier día hábil).
+  const recoger = tipoEntrega === 'recoger_almacen' && !canasta
+
   // ─── A12: lo que se deriva de la elección (una sola fuente; nada de copiar la dirección a otro estado) ────────────
   const direccionElegida =
     modoDireccion === 'guardada' ? direcciones.find((d) => d.id === direccionIdElegida) ?? null : null
@@ -209,7 +214,8 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
   const zonaEntrega: ZonaEntrega | null =
     modoDireccion === 'guardada' ? (coberturaElegida?.estado === 'si' ? coberturaElegida.zona : null) : zonaNueva
   // El C.P. que ve el calendario: el de la zona (5 dígitos). Si cambia, el día elegido ya no vale (otro calendario).
-  const cpEntrega = zonaEntrega?.codigo_postal ?? ''
+  // Para recoger, la marca CP_RECOGER: cambiar entre recoger y domicilio también invalida el día elegido.
+  const cpEntrega = recoger ? CP_RECOGER : zonaEntrega?.codigo_postal ?? ''
   const direccionNueva = direccionNuevaPedido(camposNueva, zonaNueva, conSesion)
   const diaEntrega = diaElegido && diaElegido.cp === cpEntrega ? diaElegido : null
   const selectedDeliveryDate = diaEntrega?.date ?? null
@@ -535,7 +541,10 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
       return 'Completa tu nombre, apellido y teléfono.'
     }
     // Con la canasta (SU2) la dirección, la zona y la fecha las pone el backend.
-    if (hayProductos && !canasta) {
+    // RCG1: para recoger solo hace falta el día.
+    if (hayProductos && recoger) {
+      if (!selectedDeliveryDate) return 'Elige el día en que recoges tu pedido.'
+    } else if (hayProductos && !canasta) {
       const falta = faltaEnLaDireccion()
       if (falta) return falta
       if (!zonaEntrega) return 'El código postal no tiene cobertura de entrega. Verifica tu código postal.'
@@ -976,7 +985,9 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
         <div className="border-b pb-6">
           <div className="flex items-center gap-2 mb-4">
             <MapPin className="w-5 h-5 text-[#B15543]" />
-            <h3 className="text-lg font-semibold">{hayExperiencias ? 'Entrega de tus productos' : 'Dirección de Entrega'}</h3>
+            <h3 className="text-lg font-semibold">
+              {hayExperiencias ? 'Entrega de tus productos' : recoger ? 'Recoger tu pedido' : 'Dirección de Entrega'}
+            </h3>
           </div>
 
           {canasta ? (
@@ -1000,6 +1011,9 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
             </div>
           ) : (
             <>
+              {/* RCG1: para recoger no se pide dirección. El formulario queda MONTADO y oculto (como con una guardada):
+                  PostalCodeSelector perdería la zona al remontarse si la persona vuelve a «Envío a domicilio». */}
+              <div hidden={recoger}>
               <DireccionEntrega
                 conSesion={conSesion}
                 cargando={cargandoDirecciones}
@@ -1015,10 +1029,32 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
                 onZonaNueva={cambiarZonaNueva}
                 error={errorDireccion}
               />
+              </div>
+
+              {/* RCG1 (DR40): recoger = solo el día hábil (lunes a viernes desde hoy + 2, sin días sin entrega). */}
+              {recoger && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-300" data-testid="checkout-recoger">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Calendar className="w-5 h-5 text-green-700" aria-hidden="true" />
+                    <p className="text-sm font-medium text-gray-700">
+                      Selecciona el día en que recoges tu pedido
+                    </p>
+                  </div>
+                  <DeliveryDatePicker
+                    key={CP_RECOGER}
+                    modo="recoger"
+                    codigoPostal=""
+                    selectedDate={selectedDeliveryDate}
+                    onDateSelect={(date, _zona, iso) => {
+                      setDiaElegido(date && iso ? { cp: CP_RECOGER, date, iso } : null)
+                    }}
+                  />
+                </div>
+              )}
 
               {/* Día de entrega: el calendario de la zona de la dirección elegida (guardada o nueva). Un C.P. distinto
                   remonta el calendario (`key`) y el día elegido con otro C.P. ya no cuenta (`diaEntrega`). */}
-              {zonaEntrega && (
+              {!recoger && zonaEntrega && (
                 <div className="mt-6 animate-in fade-in slide-in-from-top-2 duration-300">
                   <div className="flex items-center gap-2 mb-3">
                     <Calendar className="w-5 h-5 text-green-700" aria-hidden="true" />
@@ -1329,7 +1365,7 @@ export default function CheckoutFormSingleStep({ cartItems, onOrderComplete, tip
           onClick={pagarSoloProductos}
           data-testid="checkout-pagar-productos"
           disabled={loading || !customerData.nombre || !customerData.apellido || !customerData.telefono ||
-                   (!canasta && (!direccionLista || !zonaEntrega || !selectedDeliveryDate))}
+                   (!canasta && (recoger ? !selectedDeliveryDate : (!direccionLista || !zonaEntrega || !selectedDeliveryDate)))}
           className="w-full h-auto whitespace-normal bg-[#B15543] hover:bg-[#9a4a3a] text-white text-lg py-6"
         >
           {loading ? (

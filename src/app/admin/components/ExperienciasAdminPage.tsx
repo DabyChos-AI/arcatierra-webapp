@@ -76,9 +76,10 @@ interface Experiencia {
 // ─── Editar una fecha (EV3 + NV1, Fase 3 de PLAN-EXP-SIN-FALLAS) ──────────────────────────
 // Contrato: EXP-FASE3-CONTRATO.md §C1/§F1. Los tipos son de @/types/eventos-experiencia.
 
-/** D6 (Fase 4a): lo que se avisa ANTES de publicar una fecha; ya existe la compra en línea (WEB1). */
+/** D6 (Fase 4a): lo que se avisa ANTES de publicar una fecha; ya existe la compra en línea (WEB1).
+ * CV48 (R11b, David 22-oct): la venta en línea cierra 48 h antes (`HORAS_CIERRE_VENTA` de services/compra_reglas.py). */
 const AVISO_PUBLICAR =
-  'Al publicarla, la fecha se ve en la web y se puede comprar en línea hasta 24 horas antes. ¿Publicarla?'
+  'Al publicarla, la fecha se ve en la web y se puede comprar en línea hasta 48 horas antes. ¿Publicarla?'
 
 // ─── NI1: regla de niño de la experiencia (Fase 4a de PLAN-EXP-SIN-FALLAS, contrato EXP-FASE4 §C6/§F6) ──
 /** Mismo texto que el 400 del backend (C6). */

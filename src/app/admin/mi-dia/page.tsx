@@ -10,6 +10,9 @@
 //   GET /api/admin/mi-dia/reserva/{id} (`MiDiaBusqueda`): si está en tu día (hoy o mañana) cambia a esa pestaña, baja a
 //   la tarjeta y la resalta; si no, una tarjeta arriba con el motivo y «Ver mi día». Sin el parámetro no cambia nada.
 //   `useSearchParams` vive en un lector dentro de <Suspense> (Next 15 lo exige) para que el resto se prerenderice igual.
+// - R11b (MID1, L8): debajo de las reservas, la sección «Fechas públicas» (`fechas_publicas`: hora, experiencia, chinampa,
+//   personas/cupo y guías; sin compradores ni «Llegaron»). Los totales suman «+ N personas en M fechas públicas». «Sin
+//   experiencias» solo si no hay reservas NI fechas públicas.
 
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
@@ -22,6 +25,7 @@ import { extraerMensajeError } from '../reservas/components/errores'
 import type { DiaMiDia, LlegadaReserva, LlegadaResponse, MiDiaBusqueda, MiDiaResponse } from '@/types/mi-dia'
 import TarjetaMiDia from './components/TarjetaMiDia'
 import TarjetaBusqueda, { type EstadoBusqueda } from './components/TarjetaBusqueda'
+import TarjetaFechaPublica from './components/TarjetaFechaPublica'
 import { dondeAbrir, normalizarBusqueda, normalizarMiDia } from './components/normalizar'
 import { TEXTO_SIN_FICHA, fechaLarga, plural, textoVacio } from './components/textos'
 
@@ -337,6 +341,17 @@ export default function MiDiaPage() {
                 <p data-testid="midia-totales" className="text-sm text-verde-suave">
                   {plural(vista.items.length, 'experiencia', 'experiencias')} ·{' '}
                   {plural(vista.total_personas, 'persona', 'personas')} · {plural(vista.total_ninos, 'niño', 'niños')}
+                  {vista.fechas_publicas.length > 0 && (
+                    <span
+                      data-testid="midia-totales-publicas"
+                      data-personas={vista.total_personas_publicas}
+                      data-fechas={vista.fechas_publicas.length}
+                      className="block"
+                    >
+                      + {plural(vista.total_personas_publicas, 'persona', 'personas')} en{' '}
+                      {plural(vista.fechas_publicas.length, 'fecha pública', 'fechas públicas')}
+                    </span>
+                  )}
                 </p>
               )}
             </>
@@ -412,7 +427,7 @@ export default function MiDiaPage() {
             <Info className="mt-0.5 h-5 w-5 shrink-0 text-amarillo" aria-hidden="true" />
             <p>{TEXTO_SIN_FICHA}</p>
           </div>
-        ) : vista.items.length === 0 ? (
+        ) : vista.items.length === 0 && vista.fechas_publicas.length === 0 ? (
           <p
             data-testid="midia-vacio"
             className="rounded-xl border border-neutro-borde bg-white p-6 text-center text-base text-verde-suave"
@@ -420,18 +435,35 @@ export default function MiDiaPage() {
             {textoVacio(dia, vista.modo)}
           </p>
         ) : (
-          <div data-testid="midia-lista" className="space-y-3">
-            {vista.items.map((r) => (
-              <TarjetaMiDia
-                key={r.reserva_id}
-                r={r}
-                enCurso={enCurso.has(r.reserva_id)}
-                onMarcar={marcar}
-                onDeshacer={deshacer}
-                escaneada={r.reserva_id === escaneadaId}
-              />
-            ))}
-          </div>
+          <>
+            {vista.items.length > 0 && (
+              <div data-testid="midia-lista" className="space-y-3">
+                {vista.items.map((r) => (
+                  <TarjetaMiDia
+                    key={r.reserva_id}
+                    r={r}
+                    enCurso={enCurso.has(r.reserva_id)}
+                    onMarcar={marcar}
+                    onDeshacer={deshacer}
+                    escaneada={r.reserva_id === escaneadaId}
+                  />
+                ))}
+              </div>
+            )}
+            {vista.fechas_publicas.length > 0 && (
+              <section data-testid="midia-publicas" aria-labelledby="midia-publicas-titulo" className="space-y-3 pt-2">
+                <h2 id="midia-publicas-titulo" className="mb-0 font-display text-2xl text-verde">
+                  Fechas públicas
+                </h2>
+                <p className="text-sm text-verde-suave">
+                  Experiencias abiertas al público: cuántas personas van, sin datos de quien compró.
+                </p>
+                {vista.fechas_publicas.map((f) => (
+                  <TarjetaFechaPublica key={f.evento_id} f={f} />
+                ))}
+              </section>
+            )}
+          </>
         )}
       </div>
       <Suspense fallback={null}>

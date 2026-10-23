@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { ChevronLeft, ChevronRight, MapPin, Truck, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, MapPin, Truck, CheckCircle2, AlertCircle, Loader2, Store } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 import { hoyMexico, sumarDias } from '@/lib/dates'
 import type { DiaNoHabil, RespuestaDiasNoHabiles } from '@/types/datos-cliente'
@@ -22,8 +22,23 @@ export interface ZonaEntrega {
   tiempo_minimo_dias: number
 }
 
+/**
+ * RCG1 (R11b, DR40): `recoger` = «Recoger en almacén». Sin zona ni C.P. (no pide `/api/zonas-entrega`): cualquier día hábil
+ * (lunes a viernes, sin los días sin entrega, hasta el tope) desde `hoyMexico() + DIAS_MINIMOS_RECOGER`, la misma regla con
+ * la que el backend acepta la fecha al pagar.
+ */
+export type ModoCalendario = 'entrega' | 'recoger'
+
+/** El mínimo de días para recoger: el mismo del checkout (hoy + 2). */
+export const DIAS_MINIMOS_RECOGER = 2
+
+/** Lunes a viernes (0 = domingo), la forma de `diasDisponibles` de una zona. */
+const DIAS_HABILES: readonly boolean[] = [false, true, true, true, true, true, false]
+
 interface DeliveryDatePickerProps {
+  /** En modo `recoger` no se usa (va vacío). */
   codigoPostal: string
+  modo?: ModoCalendario
   /**
    * `date` = medianoche LOCAL del día elegido (para pintarlo); `iso` = ese día como `AAAA-MM-DD`, que es lo que se
    * manda al backend. Nunca `date.toISOString()`: fuera de UTC-6 corre el día (TZ1b).
@@ -104,11 +119,12 @@ function mesDeHoyMexico(): Date {
   return new Date(anio, mes - 1, 1)
 }
 
-export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selectedDate }: DeliveryDatePickerProps) {
+export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selectedDate, modo = 'entrega' }: DeliveryDatePickerProps) {
+  const recoger = modo === 'recoger'
   const [zona, setZona] = useState<ZonaEntrega | null>(null)
   // Con un C.P. completo arranca «Verificando cobertura…»: el checkout remonta el calendario al cambiar de C.P. (R6) y,
   // sin esto, durante el debounce se veía «Ingresa tu código postal completo» con un C.P. ya completo.
-  const [loading, setLoading] = useState(() => codigoPostal.length >= 5)
+  const [loading, setLoading] = useState(() => !recoger && codigoPostal.length >= 5)
   const [error, setError] = useState<string | null>(null)
   const [currentMonth, setCurrentMonth] = useState(mesDeHoyMexico)
   const [selected, setSelected] = useState<Date | null>(selectedDate || null)
@@ -131,8 +147,9 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
   // El último día que se puede agendar (inclusive), como el backend: `fecha > hoy + DIAS_MAXIMO_AGENDA` se rechaza.
   const tope = maximoDias !== null ? sumarDias(hoyMexico(), maximoDias) : null
 
-  // Buscar zona cuando cambia el CP
+  // Buscar zona cuando cambia el CP (para recoger no hay zona: no se pide nada)
   useEffect(() => {
+    if (recoger) return
     const fetchZona = async () => {
       try {
         const response = await fetch(`${API_URL}/api/zonas-entrega/${codigoPostal}`)
@@ -164,7 +181,10 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
     setError(null)
     const debounce = setTimeout(fetchZona, 300)
     return () => clearTimeout(debounce)
-  }, [codigoPostal])
+  }, [codigoPostal, recoger])
+
+  // El calendario se puede usar: con zona (entrega) o siempre (recoger).
+  const hayCalendario = recoger || zona !== null
 
   // Calcular días del mes
   const diasDelMes = useMemo(() => {
@@ -189,9 +209,9 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
 
   // Verificar si un día (`AAAA-MM-DD`) está disponible para entrega, contando desde el «hoy» de México
   const isIsoAvailable = (iso: string): boolean => {
-    if (!zona) return false
+    if (!recoger && !zona) return false
 
-    const minimo = sumarDias(hoyMexico(), zona.tiempo_minimo_dias || 2)
+    const minimo = sumarDias(hoyMexico(), recoger ? DIAS_MINIMOS_RECOGER : zona?.tiempo_minimo_dias || 2)
 
     // No disponible si es antes del mínimo (las fechas `AAAA-MM-DD` se comparan como texto)
     if (iso < minimo) return false
@@ -202,6 +222,7 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
 
     // Verificar día de la semana
     const dayOfWeek = diaDeLaSemana(iso)
+    if (recoger || !zona) return DIAS_HABILES[dayOfWeek]
     const diasDisponibles = [
       zona.domingo,
       zona.lunes,
@@ -247,7 +268,7 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
 
   // Obtener próximo día disponible
   const getNextAvailableDay = (): string | null => {
-    if (!zona) return null
+    if (!hayCalendario) return null
 
     const hoy = hoyMexico()
     for (let i = 0; i < 30; i++) {
@@ -260,10 +281,15 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full" data-testid="entrega-calendario" data-modo={modo}>
       {/* Header con estado de zona */}
       <div className="mb-4">
-        {loading ? (
+        {recoger ? (
+          <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-100 rounded-xl">
+            <Store className="w-5 h-5 text-green-600 flex-shrink-0" aria-hidden="true" />
+            <p className="mb-0 text-sm text-green-800">Elige el día en que pasas por tu pedido (lunes a viernes).</p>
+          </div>
+        ) : loading ? (
           <div className="flex items-center gap-2 text-gray-500 animate-pulse">
             <Loader2 className="w-4 h-4 animate-spin" />
             <span className="text-sm">Verificando cobertura...</span>
@@ -294,7 +320,7 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
       </div>
 
       {/* Calendario */}
-      {zona && (
+      {hayCalendario && (
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden transition-all duration-300 ease-out">
           {/* Cabecera del calendario */}
           <div className="bg-gradient-to-r from-green-700 to-green-600 px-4 py-3">
@@ -422,30 +448,32 @@ export default function DeliveryDatePicker({ codigoPostal, onDateSelect, selecte
       )}
 
       {/* Fecha seleccionada */}
-      {selected && zona && (
+      {selected && hayCalendario && (
         <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-100">
           <div className="flex items-start gap-3">
             <div className="p-2 bg-white rounded-xl shadow-sm">
-              <Truck className="w-6 h-6 text-green-600" />
+              {recoger ? <Store className="w-6 h-6 text-green-600" aria-hidden="true" /> : <Truck className="w-6 h-6 text-green-600" />}
             </div>
             <div className="flex-1">
-              <p className="text-sm text-gray-600">Tu pedido llegará el</p>
+              <p className="text-sm text-gray-600">{recoger ? 'Recoges tu pedido el' : 'Tu pedido llegará el'}</p>
               <p className="text-lg font-semibold text-gray-900">
                 {formatSelectedDate(selected)}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
-                Horario de entrega: 9:00 AM - 6:00 PM
-              </p>
+              {!recoger && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Horario de entrega: 9:00 AM - 6:00 PM
+                </p>
+              )}
             </div>
           </div>
         </div>
       )}
 
       {/* Próximo día disponible si no hay selección */}
-      {zona && !selected && (
+      {hayCalendario && !selected && (
         <div className="mt-3 text-center">
           <p className="text-sm text-gray-500">
-            Próxima entrega disponible: <span className="font-medium text-green-700">{getNextAvailableDay()}</span>
+            {recoger ? 'Primer día para recoger:' : 'Próxima entrega disponible:'} <span className="font-medium text-green-700">{getNextAvailableDay()}</span>
           </p>
         </div>
       )}

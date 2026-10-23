@@ -74,7 +74,7 @@ export default function ProductCard({
       {/* Imagen del producto */}
       <div className="relative aspect-square overflow-hidden">
         <OptimizedImage
-          src={product.imagen || '/placeholder-product.jpg'}
+          src={product.imagen || '/images/placeholder-producto.webp'}
           alt={product.nombre}
           width={400}
           height={400}

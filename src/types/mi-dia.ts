@@ -58,6 +58,25 @@ export interface ReservaMiDia {
   puede_marcar_llegada: boolean
 }
 
+/**
+ * R11b (MID1): una fecha PÚBLICA del día (eventos_calendario de una experiencia pública, con sus guías de
+ * eventos_calendario_guias). Modo `guia`: solo las que lleva ese guía; modo `todas`: todas las del día con al menos un
+ * lugar vendido o un guía asignado. Sin compradores ni contacto: solo cuántas personas van. No lleva «Llegaron».
+ */
+export interface FechaPublicaMiDia {
+  evento_id: string
+  /** HH:MM:SS */
+  hora_inicio: string | null
+  hora_fin: string | null
+  experiencia_nombre: string
+  chinampa: string | null
+  /** Personas que van: lugares vendidos en línea (pagados) + tickets registrados por canal. */
+  personas: number
+  /** Cupo de la fecha o null si no tiene tope. */
+  cupo: number | null
+  guias: GuiaMiDia[]
+}
+
 export interface MiDiaResponse {
   dia: DiaMiDia
   /** YYYY-MM-DD (México) */
@@ -68,6 +87,9 @@ export interface MiDiaResponse {
   items: ReservaMiDia[]
   total_personas: number
   total_ninos: number
+  /** R11b (MID1). Siempre viene (lista vacía si no hay); `total_personas` NO las suma. */
+  fechas_publicas: FechaPublicaMiDia[]
+  total_personas_publicas: number
 }
 
 /** GET /api/admin/mi-dia/conteo → badge del menú (reservas de HOY en el modo de quien pregunta; sin_ficha = 0). */

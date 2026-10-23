@@ -18,6 +18,9 @@ const nextConfig = {
   // contenedor). WebP no se cuelga (2 de 2 cortadas) y codifica ~8 veces más rápido. qa T277b lo vigila.
   images: {
     formats: ['image/webp'],
+    // IMG3 (R11b, sesión 51): los anchos por omisión saltan de 2048 a 3840; una pantalla retina de 1440 (2880 px) pedía el hero a
+    // 3840 (medido por front-web). Con 2880 como tope, nada pide más de lo que se ve. Mismo orden y valores de Next salvo el último.
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 2880],
     minimumCacheTTL: 86400,
     remotePatterns: [
       {
@@ -140,6 +143,9 @@ const nextConfig = {
       { source: '/user-dashboard', destination: '/usuario/dashboard', permanent: true },
       { source: '/user-dashboard/:ruta*', destination: '/usuario/dashboard', permanent: true },
       { source: '/admin/qr-codes', destination: '/admin', permanent: false },
+      // R11b (ACC1, David 22-oct): /dashboard era un tablero con datos inventados y el destino por omisión al entrar.
+      // Ahora manda a la cuenta real; el archivo viejo se queda en su lugar (retirarlo pide el OK de David).
+      { source: '/dashboard', destination: '/usuario/dashboard', permanent: false },
     ]
   },
 

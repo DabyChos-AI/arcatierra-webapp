@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { aviso } from '@/components/ui/Avisos'
 import { Sprout } from 'lucide-react'
+import Link from 'next/link'
+
+const DESTINO_POR_OMISION = '/usuario/dashboard'
 
 export default function SignIn() {
   const [loading, setLoading] = useState(false)
@@ -33,19 +36,21 @@ export default function SignIn() {
    * A dónde mandar al usuario después de entrar.
    * El middleware agrega ?callbackUrl=… cuando rebota a alguien de una ruta
    * protegida, así que respetarlo devuelve a la persona a donde iba (por
-   * ejemplo /admin/reportes) en vez de tirarla siempre al dashboard.
+   * ejemplo /admin/reportes) en vez de tirarla siempre a su cuenta.
+   * ACC1-a (R11b, David 22-oct): por omisión, la cuenta real del cliente
+   * (/usuario/dashboard); /dashboard eran datos inventados.
    */
   const destinoTrasLogin = () => {
-    if (typeof window === 'undefined') return '/dashboard'
+    if (typeof window === 'undefined') return DESTINO_POR_OMISION
     const cb = new URLSearchParams(window.location.search).get('callbackUrl')
-    if (!cb) return '/dashboard'
+    if (!cb) return DESTINO_POR_OMISION
     try {
       // Solo rutas de este mismo sitio: un callbackUrl externo sería un
       // redirect abierto.
       const url = new URL(cb, window.location.origin)
-      return url.origin === window.location.origin ? url.pathname + url.search : '/dashboard'
+      return url.origin === window.location.origin ? url.pathname + url.search : DESTINO_POR_OMISION
     } catch {
-      return '/dashboard'
+      return DESTINO_POR_OMISION
     }
   }
 
@@ -84,7 +89,7 @@ export default function SignIn() {
     setLoading(true)
     try {
       await signIn('google', { 
-        callbackUrl: '/dashboard',
+        callbackUrl: DESTINO_POR_OMISION,
         redirect: true 
       })
     } catch (error) {
@@ -210,6 +215,16 @@ export default function SignIn() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#33503E] focus:border-transparent"
                   placeholder="••••••••"
                 />
+                {/* ACC1 (R11b): recuperar contraseña */}
+                <div className="mt-1.5 text-right">
+                  <Link
+                    href="/auth/recuperar"
+                    data-testid="signin-olvide"
+                    className="text-sm font-medium text-[#B15543] hover:underline"
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </Link>
+                </div>
               </div>
 
               {errorLogin && (

@@ -60,6 +60,11 @@ export type TipoNotificacion =
   | 'suscripcion_nueva'
   | 'suscripcion_cancelada'
   | 'reembolso'
+  // R11b (WF11): permiso `mensajes`
+  | 'contacto'
+  | 'newsletter'
+  // R11b (SUB7): permiso `suscripciones` (sin «atendida»: el aviso sale una vez por episodio)
+  | 'cobro_fallido'
 
 export interface Notificacion {
   id: number
@@ -106,6 +111,9 @@ export const ETIQUETA_NOTIFICACION: Record<TipoNotificacion, string> = {
   suscripcion_nueva: 'Suscripción nueva',
   suscripcion_cancelada: 'Suscripción cancelada',
   reembolso: 'Reembolso',
+  contacto: 'Mensaje de contacto',
+  newsletter: 'Suscriptor del newsletter',
+  cobro_fallido: 'Cobro de suscripción rechazado',
 }
 
 /** La campana relee cada tanto (ms) y al abrirse. */
@@ -122,6 +130,8 @@ export interface ContadoresRespuesta {
   mi_dia_hoy?: number
   /** Pedidos por preparar (pagados sin entregar), permiso `pedidos`. */
   pedidos_por_preparar?: number
+  /** R11b (WF11): mensajes de /contacto en estado «nuevo», permiso `mensajes`. */
+  mensajes_nuevos?: number
   /** No leídas de la campana: siempre viene. */
   notificaciones_no_leidas: number
 }

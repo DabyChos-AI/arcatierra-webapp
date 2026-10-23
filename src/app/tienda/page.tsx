@@ -98,7 +98,7 @@ function getCanastaImage(nombre: string, original?: string): string {
   if (n.includes('canasta completa')) return '/images/tienda/canasta-completa-tienda-arca-tierra.jpg'
   if (n.includes('canasta familiar')) return '/images/tienda/canasta-familiar-tienda-arca-tierra.jpg'
   
-  return '/placeholder-product.jpg'
+  return '/images/placeholder-producto.webp'
 }
 
 // MAPEO: Itemcodes de BD a IDs de suscripción
@@ -1323,7 +1323,7 @@ function TiendaPageContent() {
                   {/* Imagen del producto */}
                   <div className="relative aspect-square overflow-hidden">
                     <Image
-                      src={getCanastaImage(product.nombre, product.imagen) || '/placeholder-product.jpg'}
+                      src={getCanastaImage(product.nombre, product.imagen) || '/images/placeholder-producto.webp'}
                       alt={product.nombre}
                       width={400}
                       height={400}

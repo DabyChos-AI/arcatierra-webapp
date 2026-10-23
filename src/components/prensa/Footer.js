@@ -3,6 +3,7 @@
 import OptimizedImage from '@/components/ui/OptimizedImage'
 import Link from 'next/link'
 import { Mail, Phone, MapPin, Facebook, Instagram, Twitter, Youtube } from 'lucide-react'
+import NewsletterForm from '@/components/layout/NewsletterForm'
 
 export default function Footer() {
   return (
@@ -132,18 +133,8 @@ export default function Footer() {
               </p>
             </div>
             <div>
-              <form className="flex flex-wrap sm:flex-nowrap gap-4">
-                <input
-                  type="email" className="w-full sm:flex-grow px-4 py-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-terracota"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="w-full sm:w-auto px-6 py-3 bg-terracota text-white font-medium rounded-lg hover:bg-opacity-90 transition-colors"
-                >
-                  Suscribirse
-                </button>
-              </form>
+              {/* WF11 (R11b): mismo formulario que el pie del sitio, con origen «prensa» */}
+              <NewsletterForm origen="prensa" />
             </div>
           </div>
         </div>

@@ -41,6 +41,8 @@ export default function DeliveryTypeSelector({
       
       {/* Opción: Envío a domicilio */}
       <label 
+        data-testid="entrega-tipo-domicilio"
+        data-elegido={value === 'envio_domicilio' ? '1' : '0'}
         className={`
           flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all
           ${value === 'envio_domicilio' 
@@ -97,8 +99,10 @@ export default function DeliveryTypeSelector({
         </span>
       </label>
 
-      {/* Opción: Recoger en almacén */}
+      {/* Opción: Recoger en almacén (RCG1: solo pide el día, sin dirección ni C.P.) */}
       <label 
+        data-testid="entrega-tipo-recoger"
+        data-elegido={value === 'recoger_almacen' ? '1' : '0'}
         className={`
           flex items-start p-4 rounded-xl border-2 cursor-pointer transition-all
           ${value === 'recoger_almacen' 

@@ -87,7 +87,7 @@ export default function FavoritosPage() {
           price: producto.precio,
           unit: producto.unidad,
           quantity: 1,
-          image: producto.imagen || '/placeholder-product.jpg'
+          image: producto.imagen || '/images/placeholder-producto.webp'
         })
       }
       
@@ -145,7 +145,7 @@ export default function FavoritosPage() {
                   <Link href={`/producto/${producto.id}`}>
                     <div className="aspect-square overflow-hidden">
                       <OptimizedImage
-                        src={producto.imagen || '/placeholder-product.jpg'}
+                        src={producto.imagen || '/images/placeholder-producto.webp'}
                         alt={producto.nombre}
                         width={400}
                         height={400}

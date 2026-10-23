@@ -60,15 +60,29 @@ export async function adminProxy(
       backendRes.ok
     ) {
       const blob = await backendRes.arrayBuffer()
+      // R11b (MANP1, §9 C10): también la caché y el «no indexar» del backend (manuales: private, max-age=300 · noindex).
+      const reenviadas: Record<string, string> = {}
+      for (const [cabecera, nombre] of [
+        ['content-disposition', 'Content-Disposition'],
+        ['cache-control', 'Cache-Control'],
+        ['x-robots-tag', 'X-Robots-Tag'],
+      ] as const) {
+        const valor = backendRes.headers.get(cabecera)
+        if (valor) reenviadas[nombre] = valor
+      }
       return new NextResponse(blob, {
         status: backendRes.status,
-        headers: {
-          'Content-Type': resContentType,
-          ...(backendRes.headers.get('content-disposition')
-            ? { 'Content-Disposition': backendRes.headers.get('content-disposition')! }
-            : {}),
-        },
+        headers: { 'Content-Type': resContentType, ...reenviadas },
       })
+    }
+
+    // R11b (§9 C10): un error que no es JSON (p. ej. HTML o texto de un 404/502) sale con el status del backend y un
+    // `{detail}` genérico; antes `json()` reventaba y la pantalla veía 500 «Error interno del proxy».
+    if (!backendRes.ok && !resContentType.includes('application/json')) {
+      return NextResponse.json(
+        { detail: `El servidor respondió con error ${backendRes.status}.` },
+        { status: backendRes.status }
+      )
     }
 
     // Respuesta JSON normal

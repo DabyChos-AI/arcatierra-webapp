@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import { Facebook, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import NewsletterForm from './NewsletterForm';
 
 const Footer: React.FC = () => {
   return (
@@ -145,18 +146,8 @@ const Footer: React.FC = () => {
           {/* Newsletter */}
           <div className="mt-6">
             <h4 className="text-white font-semibold mb-3">Newsletter</h4>
-            <form className="flex flex-col sm:flex-row gap-2">
-              <input
-                type="email" className="flex-1 px-3 py-2 bg-white/10 border border-white/20 rounded-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
-                required
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 bg-white text-terracota font-semibold rounded-md hover:bg-white/90 transition-colors"
-              >
-                Suscribirse
-              </button>
-            </form>
+            {/* WF11 (R11b): guarda el correo con su consentimiento; se ve y se exporta en /admin/mensajes */}
+            <NewsletterForm origen="pie" />
           </div>
         </div>
       </div>
@@ -169,22 +160,16 @@ const Footer: React.FC = () => {
         
         <nav className="legal-links flex flex-wrap gap-6" aria-label="Enlaces legales">
           <Link 
-            href="/legal/privacidad" 
+            href="/privacidad" 
             className="text-white/80 hover:text-white text-sm transition-colors"
           >
             Política de Privacidad
           </Link>
           <Link 
-            href="/legal/terminos" 
+            href="/terminos" 
             className="text-white/80 hover:text-white text-sm transition-colors"
           >
             Términos y Condiciones
-          </Link>
-          <Link 
-            href="/legal/cookies" 
-            className="text-white/80 hover:text-white text-sm transition-colors"
-          >
-            Política de Cookies
           </Link>
         </nav>
       </div>

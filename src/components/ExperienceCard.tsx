@@ -93,7 +93,7 @@ export default function ExperienceCard({ experiencia, index }: ExperienceCardPro
       {/* Imagen */}
       <div className="relative overflow-hidden h-64">
         <OptimizedImage
-          src={experiencia.imagen || '/placeholder-experience.jpg'}
+          src={experiencia.imagen || '/images/experiencias-placeholder.jpg'}
           alt={experiencia.nombre}
           fill
           className="object-cover group-hover:scale-110 transition-transform duration-700"

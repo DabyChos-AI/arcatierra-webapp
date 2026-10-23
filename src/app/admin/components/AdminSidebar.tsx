@@ -31,6 +31,9 @@ import {
   CalendarRange,
   Ticket,
   TicketPercent,
+  BookOpen,
+  MessageSquare,
+  ShoppingBasket,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -47,13 +50,15 @@ import { CONTADORES_CADA_MS, type ContadoresRespuesta } from '@/types/panel'
 // (no es item principal de sofias pero sigue accesible).
 // ============================================================================
 
-type BadgeKey = 'reservasActivas' | 'leadsNuevos' | 'misEventosHoy' | 'pedidosPorPreparar'
+type BadgeKey = 'reservasActivas' | 'leadsNuevos' | 'misEventosHoy' | 'pedidosPorPreparar' | 'mensajesNuevos'
 
 interface NavItem {
   href: string
   label: string
   icon: LucideIcon
   permiso: string
+  /** R11b (MANP1): el item se ve con CUALQUIERA de estos permisos (si viene, manda sobre `permiso`). */
+  permisosAlguno?: string[]
   badgeKey?: BadgeKey
 }
 
@@ -105,6 +110,16 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: '/admin/plantillas-email', label: 'Plantillas Email', icon: Mail, permiso: 'plantillas_email' },
       { href: '/admin/reportes', label: 'Reportes', icon: BarChart, permiso: 'reportes' },
+      // R11b (WF11, DR71): mensajes de /contacto y correos del newsletter. Permiso nuevo `mensajes` (admin y super_admin).
+      { href: '/admin/mensajes', label: 'Mensajes', icon: MessageSquare, permiso: 'mensajes', badgeKey: 'mensajesNuevos' },
+      // R11b (MANP1, DR74): la guía del panel y el manual de Experiencias; los guías solo la parte de Mi día.
+      {
+        href: '/admin/manuales',
+        label: 'Manuales',
+        icon: BookOpen,
+        permiso: 'experiencias_privadas',
+        permisosAlguno: ['experiencias_publicas', 'experiencias_privadas', 'mi_dia'],
+      },
     ],
   },
   {
@@ -115,6 +130,8 @@ const NAV_SECTIONS: NavSection[] = [
       { href: '/admin/suscripciones', label: 'Suscripciones', icon: Repeat, permiso: 'suscripciones' },
       // Fase 4b (sesión 40): cupones de la tienda y de las reservas privadas (CP1). Permiso nuevo `cupones` (admin y super_admin).
       { href: '/admin/cupones', label: 'Cupones', icon: TicketPercent, permiso: 'cupones' },
+      // R11b (CARR1, DR58): carritos abandonados, con su propio permiso `carritos` (admin, operador y super_admin).
+      { href: '/admin/carritos-abandonados', label: 'Carritos abandonados', icon: ShoppingBasket, permiso: 'carritos' },
     ],
   },
   {
@@ -144,6 +161,7 @@ interface SidebarBadges {
   leadsNuevos?: number
   misEventosHoy?: number
   pedidosPorPreparar?: number
+  mensajesNuevos?: number
 }
 
 // K6 (R11): UNA llamada por minuto a /api/admin/contadores (antes una por contador). La API solo manda las llaves que el
@@ -171,6 +189,7 @@ export function useSidebarBadges(permisosActivos?: string[]): SidebarBadges {
           leadsNuevos: positivo(data.leads_nuevos),
           misEventosHoy: positivo(data.mi_dia_hoy),
           pedidosPorPreparar: positivo(data.pedidos_por_preparar),
+          mensajesNuevos: positivo(data.mensajes_nuevos),
         })
       } catch {
         /* silencioso: el menú sigue sin insignias */
@@ -188,6 +207,11 @@ export function useSidebarBadges(permisosActivos?: string[]): SidebarBadges {
   return badges
 }
 
+function puedeVer(item: NavItem, permisos: string[]): boolean {
+  if (item.permisosAlguno) return item.permisosAlguno.some((p) => permisos.includes(p))
+  return permisos.includes(item.permiso)
+}
+
 /**
  * R8 (M3): primera pantalla del menú que el rol puede ver. La usa /admin (Dashboard) para mandar a quien no tiene
  * `dashboard` (un guía, cocina) a su pantalla en vez de mostrarle «No se pudo cargar el dashboard».
@@ -199,7 +223,7 @@ export function primeraRutaPermitida(permisos: string[] | null | undefined): str
   if (permisos.includes('mi_dia')) return '/admin/mi-dia'
   for (const seccion of NAV_SECTIONS) {
     for (const item of seccion.items) {
-      if (permisos.includes(item.permiso)) return item.href
+      if (puedeVer(item, permisos)) return item.href
     }
   }
   return null
@@ -238,7 +262,7 @@ export default function AdminSidebar({ isOpen, onClose, permisosActivos }: Admin
   // va a rechazar con 403.
   const filterItems = (items: NavItem[]) => {
     if (permisosActivos === undefined) return items
-    return items.filter((item) => permisosActivos.includes(item.permiso))
+    return items.filter((item) => puedeVer(item, permisosActivos))
   }
 
   // Filtrar secciones que queden vacias luego de aplicar permisos

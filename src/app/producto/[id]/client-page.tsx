@@ -44,7 +44,7 @@ function getCanastaImage(nombre: string, original?: string): string {
   if (n.includes('canasta media')) return '/images/canastas/canastamedia.jpg'
   if (n.includes('canasta completa')) return '/images/canastas/canastacompleta.jpg'
   if (n.includes('canasta familiar')) return '/images/canastas/canastafamiliar.jpg'
-  return original && original.trim() !== '' ? original : '/placeholder-product.jpg'
+  return original && original.trim() !== '' ? original : '/images/placeholder-producto.webp'
 }
 
 type ClientProductoPageProps = {

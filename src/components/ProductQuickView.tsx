@@ -62,7 +62,7 @@ export default function ProductQuickView({
             {/* Imagen del producto */}
             <div className="w-full md:w-2/5 relative h-48 md:h-auto">
               <OptimizedImage
-                src={product.imagen || '/placeholder-product.jpg'}
+                src={product.imagen || '/images/placeholder-producto.webp'}
                 alt={product.nombre}
                 fill
                 sizes="(min-width: 768px) 40vw, 100vw"

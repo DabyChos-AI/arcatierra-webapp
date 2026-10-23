@@ -88,7 +88,12 @@ const ESTADO_BADGE: Record<string, { bg: string; text: string; label: string }> 
   en_ruta: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'En ruta' },
   entregada: { bg: 'bg-green-100', text: 'text-green-700', label: 'Entregada' },
   cancelada: { bg: 'bg-red-100', text: 'text-red-700', label: 'Cancelada' },
+  // SUB7 (R11b): la pone y la quita SOLO el webhook de MercadoPago (cobro de la suscripción rechazado / aprobado).
+  retenida: { bg: 'bg-orange-100', text: 'text-orange-800', label: 'Retenida (cobro pendiente)' },
 }
+
+/** SUB7: una entrega retenida no ofrece ningún cambio de estado (el backend también lo rechaza con 400). */
+const ESTADO_SIN_ACCIONES = 'retenida'
 
 const ESTADO_FLOW = ['pendiente', 'programada', 'preparacion', 'en_ruta', 'entregada']
 
@@ -254,7 +259,7 @@ export default function AdminEntregasPage() {
   // ─── Actions ─────────────────────────────────────────
 
   const cambiarEstado = async (nuevoEstado: string) => {
-    if (!detalle) return
+    if (!detalle || detalle.estado === ESTADO_SIN_ACCIONES) return
     try {
       setAccionLoading(true)
       const res = await fetch(`/api/admin/entregas/${detalle.id}/estado`, {
@@ -1056,8 +1061,23 @@ export default function AdminEntregasPage() {
                         </div>
                       </div>
 
+                      {/* SUB7 (R11b): retenida = sin acciones; sale sola cuando MercadoPago aprueba el cobro */}
+                      {detalle.estado === ESTADO_SIN_ACCIONES && (
+                        <div
+                          data-testid="entrega-retenida-aviso"
+                          role="status"
+                          className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-sm text-orange-900"
+                        >
+                          <p className="font-medium">Retenida: el cobro de la suscripción está pendiente</p>
+                          <p className="mt-1">
+                            No se puede cambiar a mano. Vuelve a «Programada» sola cuando MercadoPago apruebe el cobro; si la
+                            fecha ya no alcanza, se cancela con una nota.
+                          </p>
+                        </div>
+                      )}
+
                       {/* Next state action */}
-                      {detalle.estado !== 'cancelada' && detalle.estado !== 'entregada' && (
+                      {detalle.estado !== 'cancelada' && detalle.estado !== 'entregada' && detalle.estado !== ESTADO_SIN_ACCIONES && (
                         <div className="border border-green-200 rounded-lg p-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
@@ -1084,7 +1104,7 @@ export default function AdminEntregasPage() {
                       )}
 
                       {/* Cancel */}
-                      {detalle.estado !== 'cancelada' && detalle.estado !== 'entregada' && (
+                      {detalle.estado !== 'cancelada' && detalle.estado !== 'entregada' && detalle.estado !== ESTADO_SIN_ACCIONES && (
                         <div className="border border-red-200 rounded-lg p-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">

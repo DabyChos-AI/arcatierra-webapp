@@ -41,7 +41,7 @@ function getCanastaImage(nombre: string): string {
   if (n.includes('canasta media')) return '/images/canastas/canastamedia.jpg'
   if (n.includes('canasta completa')) return '/images/canastas/canastacompleta.jpg'
   if (n.includes('canasta familiar')) return '/images/canastas/canastafamiliar.jpg'
-  return '/placeholder-product.jpg'
+  return '/images/placeholder-producto.webp'
 }
 
 // Helper: convertir API product a Product

@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import { 
   User, TrendingUp, Heart, MapPin, ShoppingBag, 
   Leaf, Droplets, Recycle, Calendar, Plus,
-  Edit3, Trash2, Home, Building2, AlertCircle, CreditCard
+  Edit3, Trash2, Home, Building2, AlertCircle, CreditCard, Package, Repeat
 } from 'lucide-react'
 import PostalCodeSelector from '@/components/ui/PostalCodeSelector'
 import { confirmar } from '@/components/ui/Avisos'
@@ -639,6 +639,25 @@ export default function DashboardPage() {
                 >
                   <ShoppingBag className="h-5 w-5 text-green-600" />
                   <span className="font-medium text-green-800">Explorar Tienda</span>
+                </button>
+
+                {/* ACC1 (R11b): Mis pedidos y Mis suscripciones */}
+                <button 
+                  onClick={() => router.push('/usuario/pedidos')}
+                  data-testid="dashboard-mis-pedidos"
+                  className="w-full flex items-center gap-3 p-3 bg-neutro-light rounded-lg hover:bg-neutro-crema transition-colors text-left"
+                >
+                  <Package className="h-5 w-5 text-terracota" aria-hidden="true" />
+                  <span className="font-medium text-verde">Mis pedidos</span>
+                </button>
+
+                <button 
+                  onClick={() => router.push('/usuario/suscripciones')}
+                  data-testid="dashboard-mis-suscripciones"
+                  className="w-full flex items-center gap-3 p-3 bg-neutro-light rounded-lg hover:bg-neutro-crema transition-colors text-left"
+                >
+                  <Repeat className="h-5 w-5 text-terracota" aria-hidden="true" />
+                  <span className="font-medium text-verde">Mis suscripciones</span>
                 </button>
 
                 <button 

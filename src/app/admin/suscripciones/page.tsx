@@ -1,13 +1,23 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
-  Package, Users, DollarSign, Calendar, RefreshCw,
-  Search, Eye, X, Pause, Play, XCircle,
-  ChevronLeft, ChevronRight, AlertTriangle, Repeat
+  Package, DollarSign, Calendar, RefreshCw,
+  Search, Eye, X, Pause, XCircle,
+  ChevronLeft, ChevronRight, AlertTriangle, Repeat, CreditCard
 } from 'lucide-react'
 import { formatFechaMexico, formatFechaHoraMexico } from '@/lib/dates'
-import { aviso } from '@/components/ui/Avisos'
+import { aviso, confirmar } from '@/components/ui/Avisos'
+
+// R11b · SUB6 + SUB7 (decisión de David, 22-oct; contrato §4.8):
+// - SUB6 «B»: ya no se pausa, reanuda ni reactiva. El panel hace lo mismo que el cliente: solo «Cancelar» (también en
+//   MercadoPago: se detiene el cobro y las canastas futuras). `PUT …/estado` solo acepta `cancelada` (400 con otro, 409 si ya
+//   estaba cancelada): el `detail` se muestra tal cual dentro del modal, que no se cierra.
+// - SUB7: si MercadoPago rechaza el cobro de un periodo, la fila trae `cobro_fallido_desde` (y `cobro_fallido_detalle`, el
+//   `status_detail` de MP) y las canastas se retienen hasta que el cobro se apruebe: insignia «Cobro rechazado desde <fecha>».
+// - La campana (`cobro_fallido`) abre `?suscripcion_id=<id>`: `LectorSuscripcionId` (dentro de <Suspense>, como Pedidos) abre
+//   ese detalle y limpia la URL.
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -36,6 +46,10 @@ interface Suscripcion {
   fecha_creacion: string | null
   fecha_actualizacion: string | null
   usuario: SuscripcionUsuario
+  /** SUB7 (R11b): ISO del primer cobro rechazado del episodio; null/ausente = al corriente. */
+  cobro_fallido_desde?: string | null
+  /** SUB7: `status_detail` de MercadoPago del último rechazo (p. ej. «cc_rejected_insufficient_amount»). */
+  cobro_fallido_detalle?: string | null
 }
 
 interface SuscripcionDetalle extends Suscripcion {
@@ -91,6 +105,50 @@ const MP_STATUS_BADGE: Record<string, { bg: string; text: string }> = {
 
 type TabKey = 'datos' | 'entregas' | 'acciones'
 
+/** SUB6 (§4.8): el texto del diálogo de «Cancelar», el mismo que ve el cliente. */
+const TEXTO_CANCELAR_SUSCRIPCION =
+  'Se cancela también en MercadoPago: se detiene el cobro y las canastas futuras. Para volver, el cliente se suscribe de nuevo.'
+
+/** SUB7: el `status_detail` de MercadoPago en palabras (los de `checkout/failure` y los que MP manda en cobros recurrentes). */
+const MOTIVO_RECHAZO: Record<string, string> = {
+  cc_rejected_insufficient_amount: 'Fondos insuficientes en la tarjeta',
+  cc_rejected_card_disabled: 'Tarjeta deshabilitada',
+  cc_rejected_call_for_authorize: 'El banco pide que el titular autorice el pago',
+  cc_rejected_high_risk: 'Rechazado por seguridad del banco o de MercadoPago',
+  cc_rejected_blacklist: 'Tarjeta bloqueada para pagos en línea',
+  cc_rejected_max_attempts: 'Se superó el límite de intentos',
+  cc_rejected_duplicated_payment: 'Pago duplicado',
+  cc_rejected_duplicate_payment: 'Pago duplicado',
+  cc_rejected_bad_filled_card_number: 'Número de tarjeta incorrecto',
+  cc_rejected_bad_filled_date: 'Tarjeta vencida o fecha incorrecta',
+  cc_rejected_bad_filled_security_code: 'Código de seguridad incorrecto',
+  cc_rejected_bad_filled_other: 'Datos de la tarjeta incorrectos',
+  cc_rejected_card_error: 'La tarjeta no se pudo procesar',
+  cc_rejected_other_reason: 'El banco rechazó el pago',
+}
+
+function motivoRechazo(detalle: string | null | undefined): string | null {
+  const d = (detalle ?? '').trim()
+  if (!d) return null
+  return MOTIVO_RECHAZO[d] ?? `Motivo de MercadoPago: ${d}`
+}
+
+/**
+ * R11b: `?suscripcion_id=<uuid>` (lo abre la campana con el aviso `cobro_fallido`). Es el ÚNICO que llama
+ * `useSearchParams()` y va dentro de `<Suspense>`; leído el parámetro, limpia la URL (recargar no reabre el modal).
+ */
+function LectorSuscripcionId({ onSuscripcion }: { onSuscripcion: (id: string) => void }) {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const id = (searchParams.get('suscripcion_id') ?? '').trim()
+  useEffect(() => {
+    if (!id) return
+    onSuscripcion(id)
+    router.replace('/admin/suscripciones', { scroll: false })
+  }, [id, onSuscripcion, router])
+  return null
+}
+
 // ─── Component ───────────────────────────────────────────
 
 export default function AdminSuscripcionesPage() {
@@ -121,9 +179,11 @@ export default function AdminSuscripcionesPage() {
   const [entregas, setEntregas] = useState<EntregaItem[]>([])
   const [loadingEntregas, setLoadingEntregas] = useState(false)
 
-  // Acciones
+  // Acciones (SUB6: solo cancelar). Candado ANTES del await de `confirmar` (s48); el error se queda en el modal.
   const [accionLoading, setAccionLoading] = useState(false)
-  const [confirmAction, setConfirmAction] = useState<string | null>(null)
+  const [errorAccion, setErrorAccion] = useState<string | null>(null)
+  const accionEnCursoRef = useRef(false)
+  const detalleIdRef = useRef<string | null>(null)
 
   // ─── Fetchers ────────────────────────────────────────
 
@@ -163,27 +223,34 @@ export default function AdminSuscripcionesPage() {
 
   // ─── Detail modal ────────────────────────────────────
 
-  const openDetalle = async (id: string) => {
+  const openDetalle = useCallback(async (id: string) => {
+    detalleIdRef.current = id
     try {
       setLoadingDetalle(true)
       setModalOpen(true)
       setActiveTab('datos')
-      setConfirmAction(null)
-      const res = await fetch(`/api/admin/suscripciones/${id}`)
+      setErrorAccion(null)
+      const res = await fetch(`/api/admin/suscripciones/${encodeURIComponent(id)}`)
       if (!res.ok) throw new Error('Error cargando detalle')
-      setDetalle(await res.json())
+      const datos = await res.json()
+      if (detalleIdRef.current === id) setDetalle(datos)
     } catch {
-      setDetalle(null)
+      if (detalleIdRef.current === id) setDetalle(null)
     } finally {
-      setLoadingDetalle(false)
+      if (detalleIdRef.current === id) setLoadingDetalle(false)
     }
-  }
+  }, [])
 
   const closeModal = () => {
+    detalleIdRef.current = null
     setModalOpen(false)
     setDetalle(null)
-    setConfirmAction(null)
+    setErrorAccion(null)
   }
+
+  const abrirDesdeUrl = useCallback((id: string) => {
+    void openDetalle(id)
+  }, [openDetalle])
 
   // ─── Entregas tab ────────────────────────────────────
 
@@ -216,29 +283,40 @@ export default function AdminSuscripcionesPage() {
 
   // ─── Actions ─────────────────────────────────────────
 
-  const cambiarEstado = async (nuevoEstado: string) => {
-    if (!detalle) return
+  const cancelarSuscripcion = async () => {
+    if (!detalle || accionEnCursoRef.current) return
+    accionEnCursoRef.current = true
+    setAccionLoading(true)
+    setErrorAccion(null)
     try {
-      setAccionLoading(true)
-      const res = await fetch(`/api/admin/suscripciones/${detalle.id}/estado`, {
+      const ok = await confirmar({
+        titulo: 'Cancelar suscripción',
+        mensaje: TEXTO_CANCELAR_SUSCRIPCION,
+        textoAceptar: 'Sí, cancelar suscripción', // no repite el nombre del botón de la pestaña (s48)
+        textoCancelar: 'Volver',
+        peligro: true,
+      })
+      if (!ok) return
+      const res = await fetch(`/api/admin/suscripciones/${encodeURIComponent(detalle.id)}/estado`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estado: nuevoEstado }),
+        body: JSON.stringify({ estado: 'cancelada' }),
       })
       if (!res.ok) {
-        const err = await res.json()
-        aviso.error(err.detail || 'Error al cambiar estado')
+        const err: unknown = await res.json().catch(() => null)
+        const detail = err && typeof err === 'object' ? (err as { detail?: unknown }).detail : null
+        setErrorAccion(typeof detail === 'string' && detail.trim() ? detail : `No se pudo cancelar (error ${res.status}).`)
         return
       }
-      // Refresh everything
+      aviso.exito('Suscripción cancelada.')
       closeModal()
       fetchSuscripciones()
       fetchMetricas()
     } catch {
-      aviso.error('Error de red al cambiar estado')
+      setErrorAccion('No se pudo cancelar: revisa tu conexión e intenta de nuevo.')
     } finally {
+      accionEnCursoRef.current = false
       setAccionLoading(false)
-      setConfirmAction(null)
     }
   }
 
@@ -421,6 +499,7 @@ export default function AdminSuscripcionesPage() {
                   return (
                     <tr
                       key={sub.id}
+                      data-testid={`suscripcion-fila-${sub.id}`}
                       className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
                       onClick={() => openDetalle(sub.id)}
                     >
@@ -443,6 +522,16 @@ export default function AdminSuscripcionesPage() {
                         <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${estadoBadge.bg} ${estadoBadge.text}`}>
                           {ESTADO_LABELS[sub.estado] || sub.estado}
                         </span>
+                        {sub.cobro_fallido_desde && (
+                          <span
+                            data-testid={`suscripcion-cobro-fallido-${sub.id}`}
+                            title={motivoRechazo(sub.cobro_fallido_detalle) ?? undefined}
+                            className="mt-1 flex items-center justify-center gap-1 whitespace-nowrap rounded-full bg-rojo-bg px-2 py-0.5 text-xs font-medium text-rojo"
+                          >
+                            <CreditCard className="h-3 w-3" aria-hidden="true" />
+                            Cobro rechazado desde {formatDate(sub.cobro_fallido_desde)}
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-center">
                         {mpBadge ? (
@@ -503,13 +592,20 @@ export default function AdminSuscripcionesPage() {
           className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center pt-4 overflow-y-auto"
           onClick={e => { if (e.target === e.currentTarget) closeModal() }}
         >
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl mx-4 my-4 relative" onClick={e => e.stopPropagation()}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Detalle de la suscripción"
+            data-testid="suscripcion-detalle"
+            className="bg-white rounded-xl shadow-2xl w-full max-w-3xl mx-4 my-4 relative"
+            onClick={e => e.stopPropagation()}
+          >
             {/* Modal header - sticky */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white rounded-t-xl z-10">
               <h2 className="text-xl font-bold text-gray-900">
                 {detalle ? (detalle.nombre_suscripcion || 'Suscripcion') : 'Cargando...'}
               </h2>
-              <button onClick={closeModal} className="p-2 hover:bg-gray-100 rounded-full bg-white shadow-sm">
+              <button onClick={closeModal} aria-label="Cerrar" data-testid="suscripcion-detalle-cerrar" className="p-2 hover:bg-gray-100 rounded-full bg-white shadow-sm">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -529,6 +625,8 @@ export default function AdminSuscripcionesPage() {
                   ]).map(tab => (
                     <button
                       key={tab.key}
+                      type="button"
+                      data-testid={`suscripcion-tab-${tab.key}`}
                       onClick={() => setActiveTab(tab.key)}
                       className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                         activeTab === tab.key
@@ -564,6 +662,27 @@ export default function AdminSuscripcionesPage() {
                           </>
                         )}
                       </div>
+
+                      {/* SUB7: cobro rechazado (las canastas se retienen hasta que MercadoPago apruebe un cobro) */}
+                      {detalle.cobro_fallido_desde && (
+                        <div
+                          data-testid="suscripcion-detalle-cobro-fallido"
+                          role="status"
+                          className="flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg p-4 text-sm text-rojo"
+                        >
+                          <CreditCard className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                          <div>
+                            <p className="font-semibold">Cobro rechazado desde {formatDate(detalle.cobro_fallido_desde)}</p>
+                            {motivoRechazo(detalle.cobro_fallido_detalle) && (
+                              <p data-testid="suscripcion-detalle-cobro-motivo">{motivoRechazo(detalle.cobro_fallido_detalle)}</p>
+                            )}
+                            <p className="mt-1 text-gray-700">
+                              Las canastas no salen hasta que MercadoPago apruebe un cobro (lo reintenta solo). Al cliente le llegó un
+                              correo y lo ve en Mis suscripciones.
+                            </p>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Suscripcion info */}
                       <div>
@@ -717,6 +836,7 @@ export default function AdminSuscripcionesPage() {
                                     entregada: { bg: 'bg-green-100', text: 'text-green-700' },
                                     cancelada: { bg: 'bg-red-100', text: 'text-red-700' },
                                     pendiente: { bg: 'bg-yellow-100', text: 'text-yellow-700' },
+                                    retenida: { bg: 'bg-orange-100', text: 'text-orange-700' }, // SUB7: cobro pendiente
                                   }
                                   const badge = entregaBadge[entregaEstado] || { bg: 'bg-gray-100', text: 'text-gray-700' }
                                   return (
@@ -762,136 +882,52 @@ export default function AdminSuscripcionesPage() {
                     </div>
                   )}
 
-                  {/* ─── Tab: Acciones ─── */}
+                  {/* ─── Tab: Acciones (SUB6: solo cancelar) ─── */}
                   {activeTab === 'acciones' && (
                     <div className="space-y-4">
                       <p className="text-sm text-gray-500 mb-4">
                         Estado actual: <span className="font-semibold">{ESTADO_LABELS[detalle.estado] || detalle.estado}</span>
                       </p>
 
-                      {/* Pausar */}
-                      {detalle.estado === 'activa' && (
-                        <div className="border border-yellow-200 rounded-lg p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <Pause className="h-5 w-5 text-yellow-600" />
-                              <div>
-                                <p className="font-medium text-gray-900">Pausar suscripcion</p>
-                                <p className="text-xs text-gray-500">La suscripcion dejara de generar cobros temporalmente</p>
-                              </div>
-                            </div>
-                            {confirmAction === 'pausada' ? (
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => cambiarEstado('pausada')}
-                                  disabled={accionLoading}
-                                  className="px-4 py-2 bg-yellow-500 text-white rounded-lg text-sm font-medium hover:bg-yellow-600 disabled:opacity-50"
-                                >
-                                  {accionLoading ? 'Pausando...' : 'Confirmar'}
-                                </button>
-                                <button
-                                  onClick={() => setConfirmAction(null)}
-                                  className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200"
-                                >
-                                  Cancelar
-                                </button>
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => setConfirmAction('pausada')}
-                                className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-medium hover:bg-yellow-200"
-                              >
-                                Pausar
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Reanudar */}
-                      {detalle.estado === 'pausada' && (
-                        <div className="border border-green-200 rounded-lg p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <Play className="h-5 w-5 text-green-600" />
-                              <div>
-                                <p className="font-medium text-gray-900">Reanudar suscripcion</p>
-                                <p className="text-xs text-gray-500">La suscripcion volvera a estar activa y generar cobros</p>
-                              </div>
-                            </div>
-                            {confirmAction === 'activa' ? (
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => cambiarEstado('activa')}
-                                  disabled={accionLoading}
-                                  className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50"
-                                >
-                                  {accionLoading ? 'Reanudando...' : 'Confirmar'}
-                                </button>
-                                <button
-                                  onClick={() => setConfirmAction(null)}
-                                  className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200"
-                                >
-                                  Cancelar
-                                </button>
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => setConfirmAction('activa')}
-                                className="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-medium hover:bg-green-200"
-                              >
-                                Reanudar
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Cancelar */}
-                      {detalle.estado !== 'cancelada' && (
+                      {detalle.estado !== 'cancelada' ? (
                         <div className="border border-red-200 rounded-lg p-4">
-                          <div className="flex items-center justify-between">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
                             <div className="flex items-center gap-3">
                               <XCircle className="h-5 w-5 text-red-600" />
                               <div>
-                                <p className="font-medium text-gray-900">Cancelar suscripcion</p>
-                                <p className="text-xs text-gray-500">Esta accion es irreversible. La suscripcion sera cancelada definitivamente.</p>
+                                <p className="font-medium text-gray-900">Cancelar suscripción</p>
+                                <p className="text-xs text-gray-500">{TEXTO_CANCELAR_SUSCRIPCION}</p>
                               </div>
                             </div>
-                            {confirmAction === 'cancelada' ? (
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => cambiarEstado('cancelada')}
-                                  disabled={accionLoading}
-                                  className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50"
-                                >
-                                  {accionLoading ? 'Cancelando...' : 'Confirmar cancelacion'}
-                                </button>
-                                <button
-                                  onClick={() => setConfirmAction(null)}
-                                  className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200"
-                                >
-                                  Volver
-                                </button>
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => setConfirmAction('cancelada')}
-                                className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium hover:bg-red-200"
-                              >
-                                Cancelar suscripcion
-                              </button>
-                            )}
+                            <button
+                              type="button"
+                              data-testid="suscripcion-panel-cancelar"
+                              onClick={() => void cancelarSuscripcion()}
+                              disabled={accionLoading}
+                              className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50"
+                            >
+                              {accionLoading ? 'Cancelando…' : 'Cancelar suscripción'}
+                            </button>
                           </div>
+                          <p className="mt-3 text-xs text-gray-500">
+                            Las suscripciones ya no se pausan ni se reactivan: el cliente puede cancelar y volver a suscribirse.
+                          </p>
+                          {errorAccion && (
+                            <p
+                              data-testid="suscripcion-panel-error"
+                              role="alert"
+                              className="mt-3 flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg p-3 text-sm text-rojo"
+                            >
+                              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                              {errorAccion}
+                            </p>
+                          )}
                         </div>
-                      )}
-
-                      {/* Already cancelled */}
-                      {detalle.estado === 'cancelada' && (
+                      ) : (
                         <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-500">
                           <XCircle className="h-8 w-8 mx-auto text-gray-300 mb-2" />
-                          <p className="font-medium">Esta suscripcion esta cancelada</p>
-                          <p className="text-sm">No hay acciones disponibles</p>
+                          <p className="font-medium">Esta suscripción está cancelada</p>
+                          <p className="text-sm">No hay acciones disponibles. Para volver, el cliente se suscribe de nuevo.</p>
                         </div>
                       )}
                     </div>
@@ -904,6 +940,9 @@ export default function AdminSuscripcionesPage() {
           </div>
         </div>
       )}
+      <Suspense fallback={null}>
+        <LectorSuscripcionId onSuscripcion={abrirDesdeUrl} />
+      </Suspense>
     </div>
   )
 }

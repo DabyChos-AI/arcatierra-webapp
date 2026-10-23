@@ -731,7 +731,7 @@ export default function AdminPedidosPage() {
                           <span className="inline-flex items-center text-xs text-emerald-700">
                             <Ticket className="h-3.5 w-3.5 mr-1" aria-hidden="true" />Experiencia
                           </span>
-                        ) : pedido.tipo_entrega === 'recoger_bodega' ? (
+                        ) : pedido.tipo_entrega === 'recoger_almacen' ? (
                           <span className="inline-flex items-center text-xs text-orange-600">
                             <Store className="h-3.5 w-3.5 mr-1" />Bodega
                           </span>
@@ -1218,7 +1218,7 @@ export default function AdminPedidosPage() {
                     <span className="ml-2 font-medium">
                       {detalle.tipo_entrega === TIPO_ENTREGA_EXPERIENCIA
                         ? 'Experiencia (sin envío)'
-                        : detalle.tipo_entrega === 'recoger_bodega'
+                        : detalle.tipo_entrega === 'recoger_almacen'
                           ? 'Recoger en bodega'
                           : 'Envío a domicilio'}
                     </span>

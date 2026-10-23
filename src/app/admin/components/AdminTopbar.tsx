@@ -33,6 +33,10 @@ const TITLES: Record<string, [string, string]> = {
   '/admin/pedidos': ['Pedidos', 'Tienda / Pedidos'],
   '/admin/productos': ['Productos', 'Tienda / Productos'],
   '/admin/suscripciones': ['Suscripciones', 'Tienda / Suscripciones'],
+  // R11b
+  '/admin/carritos-abandonados': ['Carritos abandonados', 'Tienda / Carritos abandonados'],
+  '/admin/mensajes': ['Mensajes', 'Operacion / Mensajes'],
+  '/admin/manuales': ['Manuales', 'Operacion / Manuales'],
 }
 
 function getTitle(pathname: string | null): [string, string] {
@@ -104,6 +108,7 @@ export default function AdminTopbar() {
               onClick={() => setUserMenuOpen((v) => !v)}
               className="flex items-center gap-2 p-1 pr-2 rounded-lg hover:bg-neutro-light transition-colors"
               aria-label="Menu de usuario"
+              data-testid="admin-topbar-menu"
             >
               <div
                 className="w-8 h-8 rounded-full bg-verde text-white flex items-center justify-center text-xs font-semibold"
@@ -136,8 +141,9 @@ export default function AdminTopbar() {
               <div className="absolute right-0 mt-2 w-56 bg-white border border-neutro-borde rounded-lg shadow-medium z-[60]">
                 <div className="px-3 py-2 border-b border-neutro-borde">
                   <p className="text-sm font-semibold text-verde truncate">{userName}</p>
-                  <p className="text-xs text-verde-suave truncate">
-                    {session?.user?.email ?? ''}
+                  {/* MENU1 (R11b, DR38): solo el nombre y el rol; el correo del empleado ya no se pinta (salía en las capturas). */}
+                  <p className="text-xs text-verde-suave truncate" data-testid="admin-topbar-menu-rol">
+                    {roleLabel}
                   </p>
                 </div>
                 <button

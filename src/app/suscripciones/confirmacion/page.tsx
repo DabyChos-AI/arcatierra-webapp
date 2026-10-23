@@ -81,7 +81,7 @@ function ConfirmacionContent() {
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <span>Puedes pausar o cancelar desde tu perfil en cualquier momento</span>
+                    <span>Puedes cancelar desde Mi cuenta › Mis suscripciones en cualquier momento</span>
                   </li>
                 </ul>
               </div>
@@ -91,7 +91,7 @@ function ConfirmacionContent() {
               </p>
 
               <div className="flex gap-4 justify-center">
-                <Link href="/usuario/dashboard">
+                <Link href="/usuario/suscripciones">
                   <Button className="bg-[#33503E] hover:bg-[#2a4233] text-white">
                     Ver mis suscripciones
                     <ArrowRight className="w-4 h-4 ml-2" />

@@ -1,14 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import CountryCodeSelector from '@/components/ui/CountryCodeSelector'
-import DeliveryDatePicker from '@/components/ui/DeliveryDatePicker'
 import PostalCodeSelector from '@/components/ui/PostalCodeSelector'
 import { MapPin, CreditCard, User, Phone, Mail, Edit2, Calendar, Leaf, Package } from 'lucide-react'
 import { API_URL } from '@/lib/api'
+import { formatFechaMexico } from '@/lib/dates'
+import type { PrimeraEntregaRespuesta } from '@/types/cuenta'
 import { TEXTO_METODO_PAGO_CORTO } from '@/types/tienda'
 import { aviso } from '@/components/ui/Avisos'
 
@@ -36,12 +37,16 @@ interface SubscriptionPlan {
   }
 }
 
+type EstadoPrimeraEntrega = { fase: 'cargando' } | { fase: 'listo'; fecha: string } | { fase: 'error' }
+
+const FECHA_ISO = /^\d{4}-\d{2}-\d{2}$/
+
 interface SubscriptionCheckoutFormProps {
   selectedPlans: SubscriptionPlan[]
   selectedFrequency: string
   frequencyName: string
   carneSelections: { [key: string]: string }
-  onSubscribe: (formData: any, zonaEntrega: any, selectedDate: Date | null) => Promise<void>
+  onSubscribe: (formData: any, zonaEntrega: any) => Promise<void>
   isSubscribing: boolean
 }
 
@@ -73,8 +78,12 @@ export default function SubscriptionCheckoutForm({
     alergias: '',
   })
 
-  const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<Date | null>(null)
   const [zonaEntrega, setZonaEntrega] = useState<any>(null)
+
+  // SUBF1 (R11b, DR41): la fecha REAL de la primera canasta, la que calcula el backend con la misma regla con la que la
+  // programa (`GET /api/subscriptions/primera-entrega`, público). Antes había un calendario que nunca se mandaba.
+  const [primeraEntrega, setPrimeraEntrega] = useState<EstadoPrimeraEntrega>({ fase: 'cargando' })
+  const pedidoPrimeraRef = useRef(0)
 
   const finalPrice = selectedPlans.reduce((total, plan) => total + plan.price, 0)
 
@@ -96,25 +105,29 @@ export default function SubscriptionCheckoutForm({
     return null
   }
 
-  // Función para calcular la próxima fecha de entrega disponible
-  const getNextDeliveryDate = (zona: any): Date | null => {
-    if (!zona) return null
-    
-    const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado']
-    const today = new Date()
-    const tiempoMinimo = zona.tiempo_minimo_dias || 2
-    
-    for (let i = tiempoMinimo; i < tiempoMinimo + 14; i++) {
-      const fecha = new Date(today)
-      fecha.setDate(today.getDate() + i)
-      const diaSemana = diasSemana[fecha.getDay()]
-      
-      if (zona[diaSemana]) {
-        return fecha
-      }
+  // SUBF1: se relee al cambiar el día preferido; una respuesta vieja no pisa a la nueva.
+  const cargarPrimeraEntrega = useCallback(async (diaPreferido: string) => {
+    const pedido = ++pedidoPrimeraRef.current
+    setPrimeraEntrega({ fase: 'cargando' })
+    try {
+      const res = await fetch(
+        `${API_URL}/api/subscriptions/primera-entrega?dia_preferido=${encodeURIComponent(diaPreferido)}`,
+        { cache: 'no-store' }
+      )
+      const datos: unknown = res.ok ? await res.json().catch(() => null) : null
+      if (pedido !== pedidoPrimeraRef.current) return
+      const fecha = (datos as Partial<PrimeraEntregaRespuesta> | null)?.fecha
+      setPrimeraEntrega(
+        typeof fecha === 'string' && FECHA_ISO.test(fecha) ? { fase: 'listo', fecha } : { fase: 'error' }
+      )
+    } catch {
+      if (pedido === pedidoPrimeraRef.current) setPrimeraEntrega({ fase: 'error' })
     }
-    return null
-  }
+  }, [])
+
+  useEffect(() => {
+    void cargarPrimeraEntrega(deliveryData.diaPreferido)
+  }, [deliveryData.diaPreferido, cargarPrimeraEntrega])
 
   // Cargar datos del usuario desde el backend
   useEffect(() => {
@@ -166,12 +179,6 @@ export default function SubscriptionCheckoutForm({
                 if (zona) {
                   console.log('✅ Zona encontrada automáticamente')
                   setZonaEntrega(zona)
-                  
-                  const nextDate = getNextDeliveryDate(zona)
-                  if (nextDate) {
-                    console.log('📅 Fecha de entrega pre-seleccionada')
-                    setSelectedDeliveryDate(nextDate)
-                  }
                 } else {
                   console.log('⚠️ CP sin cobertura, forzando edición')
                   setEditingAddress(true)
@@ -248,7 +255,7 @@ export default function SubscriptionCheckoutForm({
       alergias: deliveryData.alergias,
     }
 
-    await onSubscribe(formData, zonaEntrega, selectedDeliveryDate)
+    await onSubscribe(formData, zonaEntrega)
   }
 
   if (loadingUserData) {
@@ -269,7 +276,7 @@ export default function SubscriptionCheckoutForm({
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-[#33503E] mb-2">¡Completa tu Suscripción!</h2>
         <p className="text-sm text-gray-600">
-          Tu primera canasta llegará la próxima semana
+          Abajo ves la fecha de tu primera canasta.
         </p>
       </div>
 
@@ -392,31 +399,9 @@ export default function SubscriptionCheckoutForm({
                   onChange={(cp, zona) => {
                     setDeliveryData({...deliveryData, postal_code: cp, alcaldia: zona?.municipio || ''})
                     setZonaEntrega(zona)
-                    if (!zona) {
-                      setSelectedDeliveryDate(null)
-                    }
                   }}
                 />
               </div>
-
-              {/* Selector de fecha de entrega - Solo si hay zona seleccionada */}
-              {zonaEntrega && (
-                <div className="mt-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Calendar className="w-5 h-5 text-green-700" />
-                    <label className="text-sm font-medium text-gray-700">
-                      Fecha de tu primera entrega
-                    </label>
-                  </div>
-                  <DeliveryDatePicker
-                    codigoPostal={deliveryData.postal_code}
-                    selectedDate={selectedDeliveryDate}
-                    onDateSelect={(date, zona) => {
-                      setSelectedDeliveryDate(date)
-                    }}
-                  />
-                </div>
-              )}
 
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -449,9 +434,6 @@ export default function SubscriptionCheckoutForm({
                 )}
                 {zonaEntrega?.municipio && (
                   <p><span className="font-medium">Alcaldía:</span> {zonaEntrega.municipio}</p>
-                )}
-                {selectedDeliveryDate && (
-                  <p><span className="font-medium">Primera entrega:</span> {selectedDeliveryDate.toLocaleDateString('es-MX', { day: 'numeric', month: 'long' })}</p>
                 )}
               </div>
               {deliveryData.referencias && (
@@ -489,6 +471,41 @@ export default function SubscriptionCheckoutForm({
             <p className="text-xs text-gray-500 mt-1">
               Se respetará según disponibilidad de tu zona
             </p>
+          </div>
+
+          {/* SUBF1: la fecha real de la primera canasta (sin calendario: la decide la regla del backend) */}
+          <div
+            className="mt-4 flex items-start gap-2 rounded-lg border border-green-100 bg-green-50 p-3"
+            data-testid="suscripcion-primera-entrega"
+            data-estado={primeraEntrega.fase}
+            data-fecha={primeraEntrega.fase === 'listo' ? primeraEntrega.fecha : undefined}
+            aria-live="polite"
+          >
+            <Calendar className="mt-0.5 h-5 w-5 shrink-0 text-green-700" aria-hidden="true" />
+            <div className="min-w-0 text-sm text-green-800">
+              {primeraEntrega.fase === 'cargando' && <p className="mb-0">Calculando la fecha de tu primera canasta…</p>}
+              {primeraEntrega.fase === 'listo' && (
+                <p className="mb-0">
+                  Tu primera canasta llega el{' '}
+                  <span className="font-semibold">
+                    {formatFechaMexico(primeraEntrega.fecha, { weekday: 'long', day: 'numeric', month: 'long', year: undefined })}
+                  </span>
+                  .
+                </p>
+              )}
+              {primeraEntrega.fase === 'error' && (
+                <p className="mb-0">
+                  No pudimos calcular la fecha de tu primera canasta en este momento.{' '}
+                  <button
+                    type="button"
+                    onClick={() => void cargarPrimeraEntrega(deliveryData.diaPreferido)}
+                    className="font-medium text-[#B15543] underline"
+                  >
+                    Intentar de nuevo
+                  </button>
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="mt-4">

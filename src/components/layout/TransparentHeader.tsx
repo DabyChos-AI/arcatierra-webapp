@@ -537,6 +537,8 @@ const HeaderPublico: React.FC = () => {
   const userMenuItems = [
     { name: 'Mi perfil', href: '/usuario/perfil' },
     { name: 'Mis reservas', href: '/usuario/reservas' },
+    { name: 'Mis pedidos', href: '/usuario/pedidos' }, // ACC1 (R11b)
+    { name: 'Mis suscripciones', href: '/usuario/suscripciones' }, // ACC1 (R11b)
     { name: 'Favoritos', href: '/usuario/favoritos' },
     { name: 'Mi cuenta', href: '/usuario/dashboard' },
     ...(isEmployee ? [{ name: 'Panel de Administración', href: '/admin', isAdmin: true }] : []),
@@ -547,6 +549,8 @@ const HeaderPublico: React.FC = () => {
   const userDropdownLinks = [
     { name: 'Mi perfil', href: '/usuario/perfil' },
     { name: 'Mis reservas', href: '/usuario/reservas' },
+    { name: 'Mis pedidos', href: '/usuario/pedidos' }, // ACC1 (R11b)
+    { name: 'Mis suscripciones', href: '/usuario/suscripciones' }, // ACC1 (R11b)
     { name: 'Favoritos', href: '/usuario/favoritos' },
     { name: 'Mi cuenta', href: '/usuario/dashboard' },
   ];
