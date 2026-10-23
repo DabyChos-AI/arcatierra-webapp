@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { useTemaAdmin } from '../TemaAdminContext'
 
 export interface ReservaPorExperiencia {
   experiencia: string
@@ -23,6 +24,18 @@ interface ChartReservasPorExperienciaProps {
 
 const VERDE = '#33503E'
 
+// K2 (DR77): recharts pinta por props, no por clases: los colores salen del tema. `claro` = los valores de
+// siempre (sin cambios); `oscuro` medido sobre la superficie #1C2420 (números 6.98, nombres 10.14, barras 6.95).
+const COLORES = {
+  claro: { barra: VERDE, rejilla: '#E4D7C3', eje: '#748880', nombres: '#3A4741', cursor: 'rgba(51,80,62,0.06)' },
+  oscuro: { barra: '#7FB894', rejilla: '#34413A', eje: '#A2AFA8', nombres: '#C7D1CB', cursor: 'rgba(255,255,255,0.06)' },
+} as const
+
+const CLASE_TOOLTIP = {
+  claro: 'rounded-md bg-[rgba(44,38,32,0.92)] text-white px-2.5 py-1.5 text-xs shadow-medium',
+  oscuro: 'k2-tooltip-grafica rounded-md text-white px-2.5 py-1.5 text-xs shadow-medium',
+} as const
+
 interface TooltipPayloadItem {
   value: number
   payload: ReservaPorExperiencia
@@ -35,10 +48,11 @@ function ReservasTooltip({
   active?: boolean
   payload?: TooltipPayloadItem[]
 }) {
+  const { tema } = useTemaAdmin()
   if (!active || !payload || payload.length === 0) return null
   const p = payload[0].payload
   return (
-    <div className="rounded-md bg-[rgba(44,38,32,0.92)] text-white px-2.5 py-1.5 text-xs shadow-medium">
+    <div className={CLASE_TOOLTIP[tema]}>
       <div className="font-semibold">{p.experiencia}</div>
       <div>
         {p.count} reservas ({p.porcentaje}%)
@@ -51,6 +65,8 @@ export default function ChartReservasPorExperiencia({
   data,
   loading,
 }: ChartReservasPorExperienciaProps) {
+  const { tema } = useTemaAdmin()
+  const c = COLORES[tema]
   const top = data.slice(0, 8)
 
   return (
@@ -78,27 +94,27 @@ export default function ChartReservasPorExperiencia({
               layout="vertical"
               margin={{ top: 4, right: 16, left: 0, bottom: 4 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#E4D7C3" horizontal={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={c.rejilla} horizontal={false} />
               <XAxis
                 type="number"
-                tick={{ fontSize: 10, fill: '#748880' }}
+                tick={{ fontSize: 10, fill: c.eje }}
                 tickLine={false}
-                axisLine={{ stroke: '#E4D7C3' }}
+                axisLine={{ stroke: c.rejilla }}
                 allowDecimals={false}
               />
               <YAxis
                 type="category"
                 dataKey="experiencia"
                 width={150}
-                tick={{ fontSize: 11, fill: '#3A4741' }}
+                tick={{ fontSize: 11, fill: c.nombres }}
                 tickLine={false}
                 axisLine={false}
               />
               <Tooltip
                 content={<ReservasTooltip />}
-                cursor={{ fill: 'rgba(51,80,62,0.06)' }}
+                cursor={{ fill: c.cursor }}
               />
-              <Bar dataKey="count" fill={VERDE} radius={[0, 4, 4, 0]} barSize={16} />
+              <Bar dataKey="count" fill={c.barra} radius={[0, 4, 4, 0]} barSize={16} />
             </BarChart>
           </ResponsiveContainer>
         </div>

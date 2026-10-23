@@ -1,5 +1,7 @@
 'use client'
 
+import { useTemaAdmin } from '../TemaAdminContext'
+
 export interface HeatmapDia {
   dia: number
   count: number
@@ -13,6 +15,9 @@ interface HeatmapProps {
 
 // Terracota base para la escala de densidad.
 const TERRACOTA_RGB = '177, 85, 67'
+// K2 (DR77): en oscuro la escala va sobre la terracota clara (#E58F7C) y el día sin reservas se ve un poco más
+// (0.14): sobre la superficie oscura 0.05 desaparece. Niveles medidos contra #1C2420: 1.2 · 1.7 · 2.4 · 3.5 · 4.8 · 6.5.
+const TERRACOTA_RGB_OSCURO = '229, 143, 124'
 
 /** Opacidad por cantidad de reservas (sobre terracota). */
 function opacidad(count: number): number {
@@ -21,6 +26,15 @@ function opacidad(count: number): number {
   if (count === 2) return 0.4
   if (count <= 4) return 0.6
   if (count <= 7) return 0.8
+  return 1.0
+}
+
+function opacidadOscuro(count: number): number {
+  if (count <= 0) return 0.14
+  if (count === 1) return 0.28
+  if (count === 2) return 0.46
+  if (count <= 4) return 0.64
+  if (count <= 7) return 0.82
   return 1.0
 }
 
@@ -33,6 +47,11 @@ function nombreMes(mes: string, opts: Intl.DateTimeFormatOptions): string {
 }
 
 export default function Heatmap({ data, mes }: HeatmapProps) {
+  const { tema } = useTemaAdmin()
+  const fondoCelda = (count: number) =>
+    tema === 'oscuro'
+      ? `rgba(${TERRACOTA_RGB_OSCURO}, ${opacidadOscuro(count)})`
+      : `rgba(${TERRACOTA_RGB}, ${opacidad(count)})`
   const cols = data.length || 31
   const mesLargo = nombreMes(mes, { month: 'long', year: 'numeric' })
   const mesCorto = nombreMes(mes, { month: 'long' })
@@ -46,7 +65,9 @@ export default function Heatmap({ data, mes }: HeatmapProps) {
           Densidad del mes — {tituloMes}
         </h3>
         <span className="text-[10.5px] text-verde-suave font-normal">
-          Cada cuadro = 1 día · más oscuro = más reservas
+          {tema === 'oscuro'
+            ? 'Cada cuadro = 1 día · más claro = más reservas'
+            : 'Cada cuadro = 1 día · más oscuro = más reservas'}
         </span>
       </div>
 
@@ -85,7 +106,7 @@ export default function Heatmap({ data, mes }: HeatmapProps) {
                 }`}
                 className="aspect-square rounded-[3px] transition-transform hover:scale-125"
                 style={{
-                  backgroundColor: `rgba(${TERRACOTA_RGB}, ${opacidad(d.count)})`,
+                  backgroundColor: fondoCelda(d.count),
                 }}
               />
             ))}
@@ -99,7 +120,7 @@ export default function Heatmap({ data, mes }: HeatmapProps) {
                 key={`leg-${c}`}
                 className="w-3 h-3 rounded-[2px] flex-shrink-0"
                 style={{
-                  backgroundColor: `rgba(${TERRACOTA_RGB}, ${opacidad(c)})`,
+                  backgroundColor: fondoCelda(c),
                 }}
                 aria-hidden="true"
               />

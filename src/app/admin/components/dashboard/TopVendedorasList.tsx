@@ -1,5 +1,7 @@
 'use client'
 
+import { useTemaAdmin } from '../TemaAdminContext'
+
 export interface Vendedora {
   id: string
   nombre: string
@@ -14,6 +16,9 @@ interface TopVendedorasListProps {
 
 // Paleta de avatares (cicla por índice), coherente con el demo.
 const AVATAR_COLORS = ['#B15543', '#33503E', '#7C3AED', '#F59E0B', '#DB2777']
+// K2 (DR77): en oscuro, los mismos tonos más profundos para que las iniciales blancas se lean (≥ 5.9:1;
+// el ámbar claro da 2.15 con blanco). El claro no cambia.
+const AVATAR_COLORS_OSCURO = ['#A04A3A', '#3D6B50', '#6D28D9', '#92400E', '#BE185D']
 
 function iniciales(nombre: string): string {
   const parts = nombre.trim().split(/\s+/).filter(Boolean)
@@ -28,6 +33,8 @@ function formatMonto(n: number): string {
 }
 
 export default function TopVendedorasList({ items, loading }: TopVendedorasListProps) {
+  const { tema } = useTemaAdmin()
+  const colores = tema === 'oscuro' ? AVATAR_COLORS_OSCURO : AVATAR_COLORS
   const max = items.length > 0 ? Math.max(...items.map((v) => v.ingresos), 1) : 1
 
   return (
@@ -65,7 +72,7 @@ export default function TopVendedorasList({ items, loading }: TopVendedorasListP
               <div key={v.id} className="flex items-center gap-3">
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0"
-                  style={{ backgroundColor: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
+                  style={{ backgroundColor: colores[i % colores.length] }}
                   aria-hidden="true"
                 >
                   {iniciales(v.nombre)}

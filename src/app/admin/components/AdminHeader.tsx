@@ -1,12 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { User, LogOut, Crown, Shield, ChevronDown, Check, Globe, Menu } from 'lucide-react'
+import { User, LogOut, Crown, Shield, ChevronDown, Check, Globe, Menu, Moon, Sun } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 import { useEffect, useState, useRef } from 'react'
 import { esDeveloper, esFundador, type InsigniaPanel, type RolActivo, type RolUsuario } from '@/types/roles'
 import BusquedaGlobal from './BusquedaGlobal'
 import CampanaNotificaciones from './CampanaNotificaciones'
+import { useTemaAdmin } from './TemaAdminContext'
 
 interface AdminHeaderProps {
   rolActivo?: RolActivo | null
@@ -61,6 +62,7 @@ export default function AdminHeader({ rolActivo, roles, insignia = null, onSwitc
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  const { tema, alternarTema } = useTemaAdmin()
   const hasMultipleRoles = roles && roles.length > 1
   const rolColor = rolActivo ? getRolColor(rolActivo.nombre) : null
 
@@ -192,6 +194,22 @@ export default function AdminHeader({ rolActivo, roles, insignia = null, onSwitc
               ) : null}
             </div>
           </div>
+
+          {/* K2 (DR77): sol/luna junto a la foto. Claro por defecto; la elección se queda en este aparato. */}
+          <button
+            type="button"
+            onClick={alternarTema}
+            aria-pressed={tema === 'oscuro'}
+            aria-label={tema === 'oscuro' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            title={tema === 'oscuro' ? 'Modo claro' : 'Modo oscuro'}
+            data-testid="admin-tema-alternar"
+            data-tema={tema}
+            className="p-2 text-gray-600 hover:text-green-700 hover:bg-gray-100 rounded-lg"
+          >
+            {tema === 'oscuro'
+              ? <Sun className="h-5 w-5" aria-hidden="true" />
+              : <Moon className="h-5 w-5" aria-hidden="true" />}
+          </button>
 
           {/* HD1: el navbar público ya no se pinta en /admin; por aquí se vuelve al sitio */}
           <Link

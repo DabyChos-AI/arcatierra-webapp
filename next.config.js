@@ -144,7 +144,7 @@ const nextConfig = {
       { source: '/user-dashboard/:ruta*', destination: '/usuario/dashboard', permanent: true },
       { source: '/admin/qr-codes', destination: '/admin', permanent: false },
       // R11b (ACC1, David 22-oct): /dashboard era un tablero con datos inventados y el destino por omisión al entrar.
-      // Ahora manda a la cuenta real; el archivo viejo se queda en su lugar (retirarlo pide el OK de David).
+      // Ahora manda a la cuenta real. RET2 (OK de David, 23-oct): la página vieja se retiró; esta redirección no dependía de ella.
       { source: '/dashboard', destination: '/usuario/dashboard', permanent: false },
     ]
   },

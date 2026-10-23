@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import AdminSidebar from './AdminSidebar'
 import AdminHeader from './AdminHeader'
 import { MisRolesContext, type EstadoRoles } from './MisRolesContext'
+import { TemaAdminContext } from './TemaAdminContext'
+import { ATRIBUTO_TEMA_ADMIN, guardarTema, leerTemaGuardado, type TemaAdmin } from '../tema'
 import type { InsigniaPanel, MisRoles, RolActivo, RolUsuario } from '@/types/roles'
 
 // HDR1: solo los dos valores conocidos; cualquier otra cosa (o la llave ausente: API anterior a R3) = sin insignia.
@@ -34,6 +36,28 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
   // menú nunca abría.
   const abrirMenu = useCallback(() => setSidebarOpen(true), [])
   const cerrarMenu = useCallback(() => setSidebarOpen(false), [])
+
+  // K2 (DR77): null hasta leer lo guardado en este aparato (el botón se pinta como claro y el servidor igual: sin
+  // diferencia al hidratar). Mientras es null no se toca el atributo: lo puso el script de layout.tsx antes de pintar
+  // y quitarlo aquí haría parpadear el oscuro. El atributo va en <html> (los modales con portal salen de este <div>) y
+  // se quita al desmontar: al volver al sitio con «Ver sitio» la página pública queda clara.
+  const [tema, setTema] = useState<TemaAdmin | null>(null)
+  useEffect(() => { setTema(leerTemaGuardado()) }, [])
+  useEffect(() => {
+    if (tema === null) return
+    const raiz = document.documentElement
+    if (tema === 'oscuro') raiz.setAttribute(ATRIBUTO_TEMA_ADMIN, 'oscuro')
+    else raiz.removeAttribute(ATRIBUTO_TEMA_ADMIN)
+  }, [tema])
+  useEffect(() => () => document.documentElement.removeAttribute(ATRIBUTO_TEMA_ADMIN), [])
+  const alternarTema = useCallback(() => {
+    setTema((actual) => {
+      const nuevo: TemaAdmin = actual === 'oscuro' ? 'claro' : 'oscuro'
+      guardarTema(nuevo)
+      return nuevo
+    })
+  }, [])
+  const contextoTema = useMemo(() => ({ tema: tema ?? 'claro', alternarTema }), [tema, alternarTema])
 
   // Fetch roles del usuario al montar
   useEffect(() => {
@@ -92,6 +116,7 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
 
   return (
     <MisRolesContext.Provider value={contextoMisRoles}>
+     <TemaAdminContext.Provider value={contextoTema}>
       <div className="min-h-screen bg-gray-50">
         <AdminHeader
           rolActivo={rolActivo}
@@ -118,6 +143,7 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
           </main>
         </div>
       </div>
+     </TemaAdminContext.Provider>
     </MisRolesContext.Provider>
   )
 }

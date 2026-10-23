@@ -1,0 +1,183 @@
+/* K2 (R11, DR77): lo que el generador de clases no alcanza (FullCalendar, Leaflet, controles nativos…).
+   Escrito a mano por front-especiales. Todo dentro de @media screen y de html[data-tema-admin="oscuro"]:
+   sin el atributo (claro) o al imprimir, ninguna regla de esta hoja aplica.
+   Colores con los tokens --k2-* de tema-oscuro.css (front-tema) y su valor de partida como respaldo.
+   Contrastes medidos contra la superficie #1C2420 (WCAG). */
+
+@media screen {
+  /* ── Salida de emergencia: lo que representa «papel» (vista previa de correos) se queda claro también en
+        los controles nativos y en el fondo de un iframe. ─────────────────────────────────────────────── */
+  html[data-tema-admin="oscuro"] .k2-claro {
+    color-scheme: light;
+  }
+
+  /* ── Controles nativos ─────────────────────────────────────────────────────────────────────────────
+        color-scheme: dark (tema-oscuro.css) ya oscurece scrollbars, date picker y <select>. Aquí: los campos
+        SIN clase de fondo toman la superficie del panel en vez del gris del navegador. Todo dentro de
+        :where() = especificidad 0: cualquier clase (bg-white reasignada, bg-transparent…) gana. */
+  :where(html[data-tema-admin="oscuro"])
+    :where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="button"], [type="submit"], [type="reset"], [type="image"]), select, textarea):not(:where(.k2-claro, .k2-claro *)) {
+    background-color: var(--k2-superficie, #1C2420);
+    color: var(--k2-texto, #E7ECE8);
+    border-color: var(--k2-borde-fuerte, #46554C);
+  }
+  :where(html[data-tema-admin="oscuro"]) :where(select:not(:where(.k2-claro, .k2-claro *))) :where(option, optgroup) {
+    background-color: var(--k2-superficie, #1C2420);
+    color: var(--k2-texto, #E7ECE8);
+  }
+  /* (0,1,2): le gana al ::placeholder del preflight (0,0,2); las clases placeholder-* reasignadas ganan. */
+  html[data-tema-admin="oscuro"] :where(input, textarea):not(:where(.k2-claro, .k2-claro *))::placeholder {
+    color: var(--k2-texto-4, #8C9992); /* 4.9 sobre la superficie */
+  }
+  :where(html[data-tema-admin="oscuro"]) :where(input[type="checkbox"], input[type="radio"], input[type="range"], progress):not(:where(.k2-claro, .k2-claro *)) {
+    accent-color: #6FD39A;
+  }
+  /* Barras de desplazamiento con los tonos del panel (Firefox y Chrome ≥ 121). */
+  html[data-tema-admin="oscuro"] {
+    scrollbar-color: var(--k2-borde-fuerte, #46554C) var(--k2-fondo, #141A17);
+  }
+  html[data-tema-admin="oscuro"] ::selection {
+    background-color: rgba(111, 211, 154, 0.35);
+  }
+
+  /* ── Gráficas (recharts): ejes, rejilla y series van por props desde useTemaAdmin; aquí solo el tooltip. ── */
+  html[data-tema-admin="oscuro"] .k2-tooltip-grafica {
+    background-color: var(--k2-superficie-3, #303C35); /* blanco encima: 11.3 */
+    border: 1px solid var(--k2-borde-fuerte, #46554C);
+  }
+
+  /* ── FullCalendar (Reservas › Calendario) ────────────────────────────────────────────────────────────
+        Sus colores salen de variables --fc-* (en :root) y de las reglas de ReservasCalendario.tsx (styled-jsx,
+        con !important). Las variables se redefinen en .fc; las reglas del componente se pisan con más
+        especificidad (html[atributo] + las mismas clases). El texto del evento lo pinta .fc-event-main con
+        --fc-event-text-color: se fijan la variable y el color de cada parte (memoria s34). */
+  html[data-tema-admin="oscuro"] .fc {
+    --fc-page-bg-color: var(--k2-superficie, #1C2420);
+    --fc-neutral-bg-color: var(--k2-superficie-2, #25302A);
+    --fc-neutral-text-color: var(--k2-texto-3, #A2AFA8);
+    --fc-border-color: var(--k2-borde, #34413A);
+    --fc-today-bg-color: rgba(251, 191, 36, 0.1);
+    --fc-highlight-color: rgba(124, 184, 240, 0.18);
+    --fc-non-business-color: rgba(0, 0, 0, 0.18);
+    --fc-more-link-bg-color: var(--k2-superficie-3, #303C35);
+    --fc-more-link-text-color: var(--k2-texto, #E7ECE8);
+    --fc-event-selected-overlay-color: rgba(255, 255, 255, 0.12);
+    --fc-now-indicator-color: #F87171;
+    --fc-event-text-color: var(--k2-texto, #E7ECE8);
+    color: var(--k2-texto, #E7ECE8);
+  }
+  /* Números de día, días de la semana, horas y «+N más» (el componente los pone #111827). */
+  html[data-tema-admin="oscuro"] .fc .fc-col-header-cell-cushion,
+  html[data-tema-admin="oscuro"] .fc .fc-daygrid-day-number,
+  html[data-tema-admin="oscuro"] .fc .fc-daygrid-more-link,
+  html[data-tema-admin="oscuro"] .fc .fc-timegrid-axis-cushion,
+  html[data-tema-admin="oscuro"] .fc .fc-timegrid-slot-label-cushion,
+  html[data-tema-admin="oscuro"] .fc .fc-list-day-text,
+  html[data-tema-admin="oscuro"] .fc .fc-list-day-side-text {
+    color: var(--k2-texto, #E7ECE8); /* 13.3 */
+  }
+  /* Días del otro mes: FullCalendar los baja a opacity .3 (ilegible en oscuro). Se distinguen con un gris
+     más tenue que sigue pasando 4.5. */
+  html[data-tema-admin="oscuro"] .fc .fc-day-other .fc-daygrid-day-top {
+    opacity: 1;
+  }
+  html[data-tema-admin="oscuro"] .fc .fc-day-other .fc-daygrid-day-number {
+    color: var(--k2-texto-4, #8C9992); /* 4.9 */
+  }
+  html[data-tema-admin="oscuro"] .fc .fc-daygrid-more-link:hover {
+    background-color: var(--k2-superficie-3, #303C35);
+  }
+  html[data-tema-admin="oscuro"] .fc .fc-toolbar-title {
+    color: var(--k2-texto, #E7ECE8);
+  }
+  /* Botones: el verde de la marca se queda (blanco encima 8.9); un borde más claro lo separa de la superficie. */
+  html[data-tema-admin="oscuro"] .fc .fc-button-primary {
+    border-color: #4A6B57 !important;
+  }
+  html[data-tema-admin="oscuro"] .fc .fc-button-primary:not(:disabled).fc-button-active {
+    border-color: #B15543 !important;
+  }
+  /* Popover de «+N más». */
+  html[data-tema-admin="oscuro"] .fc-theme-standard .fc-popover {
+    background: var(--k2-superficie, #1C2420);
+    border-color: var(--k2-borde-fuerte, #46554C);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  }
+  html[data-tema-admin="oscuro"] .fc-theme-standard .fc-popover-header {
+    background: var(--k2-superficie-2, #25302A);
+    color: var(--k2-texto, #E7ECE8);
+  }
+  html[data-tema-admin="oscuro"] .fc .fc-popover-close {
+    color: var(--k2-texto-2, #C7D1CB);
+    opacity: 1;
+  }
+
+  /* Tarjetas de evento por estado: fondo teñido OPACO (el acento mezclado sobre la superficie) y letra clara.
+     Medido (letra #E7ECE8): tentativa 8.3 · confirmada 9.8 · pagada 6.6 · realizada 8.8 · cancelada 10.4 ·
+     reagendada 8.3. Cada estado conserva su tono (ámbar, verde, verde fuerte, azul, gris, naranja). */
+  html[data-tema-admin="oscuro"] .fc .at-evt {
+    --fc-event-text-color: var(--k2-texto, #E7ECE8);
+  }
+  html[data-tema-admin="oscuro"] .fc .at-evt,
+  html[data-tema-admin="oscuro"] .fc .at-evt .fc-event-main,
+  html[data-tema-admin="oscuro"] .fc .at-evt .fc-event-main-frame,
+  html[data-tema-admin="oscuro"] .fc .at-evt .fc-event-time,
+  html[data-tema-admin="oscuro"] .fc .at-evt .fc-event-title {
+    color: var(--k2-texto, #E7ECE8) !important;
+  }
+  html[data-tema-admin="oscuro"] .fc .at-evt-tentativa {
+    background-color: #494321 !important;
+    border-color: #AD8923 !important;
+  }
+  html[data-tema-admin="oscuro"] .fc .at-evt-confirmada {
+    background-color: #283C31 !important;
+    border-color: #417357 !important;
+  }
+  html[data-tema-admin="oscuro"] .fc .at-evt-pagada {
+    background-color: #355845 !important;
+    border-color: #6FD39A !important;
+  }
+  html[data-tema-admin="oscuro"] .fc .at-evt-realizada {
+    background-color: #2F424A !important;
+    border-color: #517592 !important;
+  }
+  html[data-tema-admin="oscuro"] .fc .at-evt-cancelada {
+    background-color: #2E3632 !important;
+    border-color: var(--k2-borde-fuerte, #46554C) !important;
+  }
+  html[data-tema-admin="oscuro"] .fc .at-evt-reagendada {
+    background-color: #494231 !important;
+    border-color: #A37E52 !important;
+  }
+
+  /* ── Leaflet (MapPicker): las teselas se quedan como están. Los controles, la atribución y el popup son
+        tarjetas blancas sobre el mapa con su propia letra oscura: se fijan para que nada del oscuro (letra
+        heredada, enlaces, color-scheme) les cambie el color. ──────────────────────────────────────────── */
+  html[data-tema-admin="oscuro"] .leaflet-container {
+    color-scheme: light;
+  }
+  html[data-tema-admin="oscuro"] .leaflet-container .leaflet-bar a {
+    background-color: #fff;
+    color: #000;
+    border-bottom-color: #ccc;
+  }
+  html[data-tema-admin="oscuro"] .leaflet-container .leaflet-bar a:hover {
+    background-color: #f4f4f4;
+    color: #000;
+  }
+  html[data-tema-admin="oscuro"] .leaflet-container .leaflet-control-attribution {
+    background: rgba(255, 255, 255, 0.85);
+    color: #333;
+  }
+  html[data-tema-admin="oscuro"] .leaflet-container .leaflet-control-attribution a {
+    color: #0b5f86;
+  }
+  html[data-tema-admin="oscuro"] .leaflet-container .leaflet-popup-content-wrapper,
+  html[data-tema-admin="oscuro"] .leaflet-container .leaflet-popup-tip {
+    background: #fff;
+    color: #333;
+  }
+  html[data-tema-admin="oscuro"] .leaflet-container a.leaflet-popup-close-button {
+    color: #555;
+  }
+}

@@ -1477,7 +1477,7 @@ function PreviewTab({ asuntoConMock, cuerpoConMock }: PreviewTabProps) {
           srcDoc={cuerpoConMock || '<p style="font-family:sans-serif;color:#888;padding:1rem">Sin contenido — escribe HTML en la pestaña Cuerpo HTML.</p>'}
           title="Vista previa del email"
           sandbox=""
-          className="w-full h-96 border border-gray-300 rounded-lg bg-white"
+          className="k2-claro w-full h-96 border border-gray-300 rounded-lg bg-white"
         />
       </div>
       <p className="text-xs text-gray-500 leading-relaxed">

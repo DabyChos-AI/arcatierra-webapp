@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-// import HeaderContainer from "@/components/header/HeaderContainer"; // COMENTADO - No se usa
 import TransparentHeader from "@/components/layout/TransparentHeader";
 import Footer from "@/components/layout/Footer";
 import SoloFueraDelPanel from "@/components/layout/SoloFueraDelPanel";
@@ -122,7 +121,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={`${mendozaRoman.variable} ${akkurat.variable}`}>
+    // K2: el script de app/admin/layout.tsx pone data-tema-admin en <html> antes de hidratar; suppressHydrationWarning
+    // solo cubre los atributos de este elemento, no los de sus hijos.
+    <html lang="es" className={`${mendozaRoman.variable} ${akkurat.variable}`} suppressHydrationWarning>
       <head>
         {/* Preload recursos críticos */}
         <link rel="preload" href="/logo-arcatierra.png" as="image" />
@@ -220,7 +221,6 @@ export default function RootLayout({
           <AnnouncementBanner />
           
           {/* Header Transparente */}
-          {/* <HeaderContainer /> */} {/* COMENTADO - No se usa */}
           <TransparentHeader />
           
           {/* Contenido Principal envuelto en ClientLayout */}
