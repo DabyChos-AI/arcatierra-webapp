@@ -4,6 +4,7 @@ import "./globals.css";
 import TransparentHeader from "@/components/layout/TransparentHeader";
 import Footer from "@/components/layout/Footer";
 import SoloFueraDelPanel from "@/components/layout/SoloFueraDelPanel";
+import SoloSitioActual from "@/components/layout/SoloSitioActual";
 import AuthProvider from '@/components/AuthProvider'
 import WhatsAppChat from '@/components/WhatsAppChat'
 import ClientLayout from './client-layout'
@@ -215,11 +216,14 @@ export default function RootLayout({
       <body className={`${akkurat.className} antialiased bg-neutro-crema text-verde-tipografia min-h-screen flex flex-col`}>
         <AuthProvider>
           {/* TOAST1 (R11): sin el NotificationProvider viejo (no tenía consumidores); los avisos son <AvisosHost /> */}
-          {/* Banner Rotativo Superior */}
-          <AnnouncementBanner />
-          
-          {/* Header Transparente */}
-          <TransparentHeader />
+          {/* R15 (F0): la cinta, la cabecera y el pie de hoy no se pintan en el sitio nuevo (segmento 'nuevo'); en producción, igual que antes */}
+          <SoloSitioActual>
+            {/* Banner Rotativo Superior */}
+            <AnnouncementBanner />
+
+            {/* Header Transparente */}
+            <TransparentHeader />
+          </SoloSitioActual>
           
           {/* Contenido Principal envuelto en ClientLayout */}
           <ClientLayout>
@@ -229,9 +233,11 @@ export default function RootLayout({
           </ClientLayout>
           
           {/* Footer Oficial (PIE1, R8: no se pinta en /admin) */}
-          <SoloFueraDelPanel>
-            <Footer />
-          </SoloFueraDelPanel>
+          <SoloSitioActual>
+            <SoloFueraDelPanel>
+              <Footer />
+            </SoloFueraDelPanel>
+          </SoloSitioActual>
           
           {/* WhatsApp Chat Flotante */}
           <WhatsAppChat />
