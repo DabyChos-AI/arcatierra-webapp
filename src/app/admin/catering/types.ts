@@ -66,7 +66,7 @@ export const ESTADO_BADGE: Record<
 > = {
   sin_contactar: {
     label: 'Sin contactar',
-    classes: 'bg-[#B15543]/10 text-[#B15543] border border-[#B15543]/30',
+    classes: 'bg-[#B15543]/10 text-terracota-oscuro border border-[#B15543]/30',
   },
   cotizando: {
     label: 'Cotizando',

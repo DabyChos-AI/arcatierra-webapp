@@ -76,10 +76,11 @@ export function dinero(monto: number): string {
   return MONEDA.format(monto)
 }
 
-/** «jueves, 29 de octubre» desde `YYYY-MM-DD` (sin correrla de día). */
+/** «martes, 3 de noviembre de 2026» desde `YYYY-MM-DD` (sin correrla de día). UIX2 (R15 · F1): con año; sin él, la
+ *  próxima canasta de enero vista en diciembre no decía de qué año era. */
 export function fechaLarga(fecha: string | null): string {
   if (!fecha) return ''
-  const t = formatFechaMexico(fecha, { weekday: 'long', day: 'numeric', month: 'long', year: undefined })
+  const t = formatFechaMexico(fecha, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   return t === '-' ? '' : t
 }
 

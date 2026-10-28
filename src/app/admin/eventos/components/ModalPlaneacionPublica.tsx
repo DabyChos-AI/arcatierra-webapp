@@ -152,7 +152,7 @@ export default function ModalPlaneacionPublica({
               <ClipboardList className="h-5 w-5 text-terracota" aria-hidden="true" />
               Planeación de la fecha
             </h2>
-            <p className="text-sm text-verde-suave mt-0.5">
+            <p className="text-sm text-verde-medio mt-0.5">
               {base.experiencia_nombre ?? base.nombre_evento} ·{' '}
               {formatFechaMexico(base.fecha_evento, { weekday: 'long' })} ·{' '}
               {horario(base.hora_inicio, base.hora_fin)}
@@ -165,7 +165,7 @@ export default function ModalPlaneacionPublica({
             aria-label="Cerrar modal"
             className="p-2 hover:bg-neutro-light rounded-lg"
           >
-            <X className="h-5 w-5 text-verde-suave" aria-hidden="true" />
+            <X className="h-5 w-5 text-verde-medio" aria-hidden="true" />
           </button>
         </div>
 
@@ -190,7 +190,7 @@ export default function ModalPlaneacionPublica({
           {error && (
             <div
               role="alert"
-              className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-rojo"
+              className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-red-700"
             >
               <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
               <span>{error}</span>

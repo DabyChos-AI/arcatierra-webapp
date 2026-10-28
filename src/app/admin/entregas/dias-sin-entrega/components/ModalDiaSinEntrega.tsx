@@ -115,7 +115,7 @@ export default function ModalDiaSinEntrega({
             aria-label="Cerrar"
             className="p-2 hover:bg-neutro-light rounded-lg disabled:opacity-50"
           >
-            <X className="h-5 w-5 text-verde-suave" aria-hidden="true" />
+            <X className="h-5 w-5 text-verde-medio" aria-hidden="true" />
           </button>
         </header>
 
@@ -142,7 +142,7 @@ export default function ModalDiaSinEntrega({
                 aria-invalid={fechaPasada ? true : undefined}
                 className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
               />
-              <p id="dsn-fecha-ayuda" className="mt-1 text-xs text-verde-suave">
+              <p id="dsn-fecha-ayuda" className="mt-1 text-xs text-verde-medio">
                 Hoy o un día futuro. Las canastas de suscripción de ese día se corren al siguiente día hábil; los
                 pedidos de la tienda NO se mueven (al guardar verás cuáles hay para avisarles).
               </p>
@@ -176,7 +176,7 @@ export default function ModalDiaSinEntrega({
               aria-describedby="dsn-motivo-ayuda"
               className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
             />
-            <p id="dsn-motivo-ayuda" className="mt-1 text-xs text-verde-suave">
+            <p id="dsn-motivo-ayuda" className="mt-1 text-xs text-verde-medio">
               Lo ve el cliente en el calendario de entregas. {motivo.length}/{MAX_MOTIVO}
             </p>
           </div>
@@ -185,7 +185,7 @@ export default function ModalDiaSinEntrega({
             <div
               role="alert"
               data-testid="dsn-modal-error"
-              className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-rojo"
+              className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-red-700"
             >
               <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" aria-hidden="true" />
               <span>{error}</span>

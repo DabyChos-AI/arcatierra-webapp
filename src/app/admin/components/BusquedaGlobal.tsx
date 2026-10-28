@@ -314,7 +314,7 @@ export default function BusquedaGlobal() {
       >
         <Search className="h-5 w-5 sm:h-4 sm:w-4 shrink-0" aria-hidden="true" />
         <span className="hidden sm:inline text-sm">Buscar</span>
-        <kbd className="hidden md:inline-flex items-center rounded border border-neutro-borde bg-white px-1.5 py-0.5 font-mono text-xs text-verde-suave">
+        <kbd className="hidden md:inline-flex items-center rounded border border-neutro-borde bg-white px-1.5 py-0.5 font-mono text-xs text-verde-medio">
           {atajo}
         </kbd>
       </button>
@@ -338,7 +338,7 @@ export default function BusquedaGlobal() {
             className="flex w-full min-w-0 max-w-xl max-h-[calc(100dvh-6rem)] flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
           >
             <div className="flex shrink-0 items-center gap-2 border-b border-neutro-borde px-3 py-2">
-              <Search className="h-5 w-5 shrink-0 text-verde-suave" aria-hidden="true" />
+              <Search className="h-5 w-5 shrink-0 text-verde-medio" aria-hidden="true" />
               <input
                 ref={inputRef}
                 type="text"
@@ -359,14 +359,14 @@ export default function BusquedaGlobal() {
                 placeholder="Folio, nombre, correo o teléfono"
                 onChange={(e) => setTexto(e.target.value)}
                 onKeyDown={alTeclearInput}
-                className="min-w-0 flex-1 border-0 bg-transparent py-2 text-base text-verde-tipografia placeholder:text-verde-suave focus:outline-none focus:ring-0"
+                className="min-w-0 flex-1 border-0 bg-transparent py-2 text-base text-verde-tipografia placeholder:text-verde-medio focus:outline-none focus:ring-0"
               />
               <button
                 type="button"
                 data-testid="busqueda-global-cerrar"
                 aria-label="Cerrar búsqueda"
                 onClick={cerrar}
-                className="shrink-0 rounded p-1.5 text-verde-suave hover:bg-neutro-light hover:text-verde"
+                className="shrink-0 rounded p-1.5 text-verde-medio hover:bg-neutro-light hover:text-verde"
               >
                 <X className="h-5 w-5" aria-hidden="true" />
               </button>
@@ -374,14 +374,14 @@ export default function BusquedaGlobal() {
 
             <div className="min-h-0 flex-1 overflow-y-auto" aria-busy={pendiente}>
               {corta && (
-                <p id={idAyuda} data-testid="busqueda-ayuda" className="mb-0 px-4 py-6 text-sm text-verde-suave">
+                <p id={idAyuda} data-testid="busqueda-ayuda" className="mb-0 px-4 py-6 text-sm text-verde-medio">
                   Escribe al menos {BUSQUEDA_MIN} letras. Busca reservas, pedidos, clientes y leads por folio, nombre, correo o
                   teléfono.
                 </p>
               )}
 
               {!corta && pendiente && planos.length === 0 && (
-                <p id={idAyuda} data-testid="busqueda-cargando" role="status" className="mb-0 px-4 py-6 text-sm text-verde-suave">
+                <p id={idAyuda} data-testid="busqueda-cargando" role="status" className="mb-0 px-4 py-6 text-sm text-verde-medio">
                   Buscando…
                 </p>
               )}
@@ -401,7 +401,7 @@ export default function BusquedaGlobal() {
               )}
 
               {!corta && !pendiente && estado === 'listo' && planos.length === 0 && (
-                <p id={idAyuda} data-testid="busqueda-vacio" role="status" className="mb-0 break-words px-4 py-6 text-sm text-verde-suave">
+                <p id={idAyuda} data-testid="busqueda-vacio" role="status" className="mb-0 break-words px-4 py-6 text-sm text-verde-medio">
                   Sin resultados para «{qResultados}».
                 </p>
               )}
@@ -425,7 +425,7 @@ export default function BusquedaGlobal() {
                       <div key={g.tipo} role="group" aria-labelledby={idGrupo} data-testid={`busqueda-grupo-${g.tipo}`}>
                         <p
                           id={idGrupo}
-                          className="mb-0 px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wider text-verde-suave"
+                          className="mb-0 px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wider text-verde-medio"
                         >
                           {g.etiqueta}
                         </p>
@@ -453,7 +453,7 @@ export default function BusquedaGlobal() {
                               }`}
                             >
                               <p className="mb-0 truncate text-sm font-medium text-verde">{r.titulo}</p>
-                              {r.subtitulo && <p className="mb-0 truncate text-xs text-verde-suave">{r.subtitulo}</p>}
+                              {r.subtitulo && <p className="mb-0 truncate text-xs text-verde-medio">{r.subtitulo}</p>}
                             </div>
                           )
                         })}

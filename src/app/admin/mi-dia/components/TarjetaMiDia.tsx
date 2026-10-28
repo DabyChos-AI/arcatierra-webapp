@@ -30,7 +30,7 @@ interface Props {
 const CLASE_ESTADO: Record<ReservaMiDia['estado'], string> = {
   confirmada: 'bg-azul-bg text-azul',
   pagada: 'bg-verde/10 text-verde',
-  realizada: 'bg-neutro-light text-verde-suave',
+  realizada: 'bg-neutro-light text-verde-medio',
 }
 
 export default function TarjetaMiDia({ r, enCurso, onMarcar, onDeshacer, escaneada = false }: Props) {
@@ -79,7 +79,7 @@ export default function TarjetaMiDia({ r, enCurso, onMarcar, onDeshacer, escanea
         <p className="flex items-baseline gap-2 text-verde" data-testid={`midia-hora-${r.reserva_id}`}>
           <Clock className="h-5 w-5 shrink-0 self-center text-terracota" aria-hidden="true" />
           <span className="text-3xl font-bold leading-none">{inicio}</span>
-          {fin && <span className="text-sm text-verde-suave">a {fin}</span>}
+          {fin && <span className="text-sm text-verde-medio">a {fin}</span>}
         </p>
         <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${CLASE_ESTADO[r.estado]}`}>
           {ETIQUETA_ESTADO[r.estado] ?? r.estado}
@@ -89,19 +89,19 @@ export default function TarjetaMiDia({ r, enCurso, onMarcar, onDeshacer, escanea
       {/* Experiencia y grupo */}
       <h2 className="mb-0 mt-2 font-display text-xl leading-snug text-verde">{r.experiencia_nombre}</h2>
       {r.grupo_nombre && <p className="mt-0.5 text-sm text-verde-tipografia">Grupo: {r.grupo_nombre}</p>}
-      <p className="mt-0.5 text-xs text-verde-suave">Folio {r.booking_id}</p>
+      <p className="mt-0.5 text-xs text-verde-medio">Folio {r.booking_id}</p>
 
       {/* Chinampa e idioma */}
       <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-verde-tipografia">
         {r.chinampa && (
           <span className="inline-flex items-center gap-1">
-            <MapPin className="h-4 w-4 text-verde-suave" aria-hidden="true" />
+            <MapPin className="h-4 w-4 text-verde-medio" aria-hidden="true" />
             {r.chinampa}
           </span>
         )}
         {idioma && (
           <span className="inline-flex items-center gap-1">
-            <Languages className="h-4 w-4 text-verde-suave" aria-hidden="true" />
+            <Languages className="h-4 w-4 text-verde-medio" aria-hidden="true" />
             {idioma}
           </span>
         )}
@@ -144,7 +144,7 @@ export default function TarjetaMiDia({ r, enCurso, onMarcar, onDeshacer, escanea
           </ul>
         </div>
       ) : (
-        <p className="mt-3 text-xs text-verde-suave">Sin alergias registradas.</p>
+        <p className="mt-3 text-xs text-verde-medio">Sin alergias registradas.</p>
       )}
 
       {/* Invitados plegables */}
@@ -174,9 +174,9 @@ export default function TarjetaMiDia({ r, enCurso, onMarcar, onDeshacer, escanea
                 return (
                   <li key={i} className="px-3 py-2 text-sm">
                     <p className="font-medium text-verde-tipografia">{(inv.nombre ?? '').trim() || `Invitado ${i + 1}`}</p>
-                    {datos.length > 0 && <p className="text-xs text-verde-suave">{datos.join(' · ')}</p>}
+                    {datos.length > 0 && <p className="text-xs text-verde-medio">{datos.join(' · ')}</p>}
                     {inv.alergias && inv.alergias.trim() && (
-                      <p className="mt-0.5 rounded bg-rojo-bg px-1.5 py-0.5 text-xs text-rojo">Alergias: {inv.alergias}</p>
+                      <p className="mt-0.5 rounded bg-rojo-bg px-1.5 py-0.5 text-xs text-red-700">Alergias: {inv.alergias}</p>
                     )}
                   </li>
                 )
@@ -188,7 +188,7 @@ export default function TarjetaMiDia({ r, enCurso, onMarcar, onDeshacer, escanea
 
       {/* Guías */}
       <p className="mt-3 text-sm text-verde-tipografia" data-testid={`midia-guias-${r.reserva_id}`}>
-        <span className="text-verde-suave">Guías: </span>
+        <span className="text-verde-medio">Guías: </span>
         {r.guias.length > 0 ? r.guias.map((g) => g.nombre).join(', ') : 'Sin guía asignado'}
       </p>
 
@@ -222,7 +222,7 @@ export default function TarjetaMiDia({ r, enCurso, onMarcar, onDeshacer, escanea
         r.puede_marcar_llegada && (
           <div className="mt-3 flex flex-wrap items-end gap-2 border-t border-neutro-borde pt-3">
             <div className="w-28">
-              <label htmlFor={idPersonas} className="block text-xs text-verde-suave">
+              <label htmlFor={idPersonas} className="block text-xs text-verde-medio">
                 ¿Cuántas llegaron?
               </label>
               <input

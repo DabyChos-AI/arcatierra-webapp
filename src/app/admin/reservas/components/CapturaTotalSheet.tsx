@@ -89,7 +89,7 @@ export default function CapturaTotalSheet({
         <h3 id="detalle-capturar-total-titulo" className="text-sm font-semibold text-verde">
           Capturar total (reserva del Sheet)
         </h3>
-        <p className="text-xs text-verde-suave mt-0.5">
+        <p className="text-xs text-verde-medio mt-0.5">
           El precio del Sheet no se recalcula con el catálogo: escribe lo que se pactó con el cliente. El estado de
           pago y el saldo se recalculan con estos dos montos y el cambio queda en la Auditoría.
         </p>
@@ -115,7 +115,7 @@ export default function CapturaTotalSheet({
             aria-describedby="d-total-pactado-ayuda"
             className={inputClass}
           />
-          <p id="d-total-pactado-ayuda" className="text-xs text-verde-suave mt-1">
+          <p id="d-total-pactado-ayuda" className="text-xs text-verde-medio mt-1">
             Hoy: {formatMXN(totalGuardado)}
             {Number(reserva.propina_monto) > 0 && ` · propina ya cargada ${formatMXN(Number(reserva.propina_monto))}`}
           </p>
@@ -140,7 +140,7 @@ export default function CapturaTotalSheet({
             aria-describedby="d-pagado-externo-ayuda"
             className={inputClass}
           />
-          <p id="d-pagado-externo-ayuda" className="text-xs text-verde-suave mt-1">
+          <p id="d-pagado-externo-ayuda" className="text-xs text-verde-medio mt-1">
             Hoy registrado: {formatMXN(pagadoGuardado)}. Vacío = se conserva; si la reserva dice «pagada» y no hay
             monto, se toma el total como pagado.
           </p>
@@ -166,7 +166,7 @@ export default function CapturaTotalSheet({
         <p
           role="alert"
           data-testid="detalle-total-error"
-          className="bg-rojo-bg border border-rojo/30 rounded-lg p-2 text-sm text-rojo"
+          className="bg-rojo-bg border border-rojo/30 rounded-lg p-2 text-sm text-red-700"
         >
           {error}
         </p>

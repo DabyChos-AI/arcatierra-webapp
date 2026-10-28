@@ -204,7 +204,7 @@ export default function CateringPage() {
         value: stats.cotizando,
         icon: Clock,
         bgClass: 'bg-amber-50',
-        textClass: 'text-amber-600',
+        textClass: 'text-amber-700',
       },
       {
         title: 'Cerradas ganadas (mes)',
@@ -509,12 +509,12 @@ export default function CateringPage() {
                       </td>
                       <td className="px-4 py-3 text-gray-700">
                         {it.empresa || (
-                          <span className="text-gray-400 italic">—</span>
+                          <span className="text-gray-500 italic">—</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-gray-700">
                         {it.tipo_evento || (
-                          <span className="text-gray-400 italic">—</span>
+                          <span className="text-gray-500 italic">—</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
@@ -532,7 +532,7 @@ export default function CateringPage() {
                       </td>
                       <td className="px-4 py-3 text-gray-700">
                         {it.vendedor_nombre || (
-                          <span className="text-gray-400 italic">Sin asignar</span>
+                          <span className="text-gray-500 italic">Sin asignar</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-center">

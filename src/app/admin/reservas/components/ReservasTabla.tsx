@@ -300,7 +300,7 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
               Buscar reservas
             </label>
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde-suave"
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde-medio"
               aria-hidden="true"
             />
             <input
@@ -316,7 +316,7 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
                 type="button"
                 aria-label="Limpiar busqueda"
                 onClick={() => setBusquedaInput('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-verde-suave hover:text-verde"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-verde-medio hover:text-verde"
               >
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
@@ -369,7 +369,7 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
           />
 
           <div>
-            <label htmlFor="filtro-desde" className="block text-xs text-verde-suave mb-1">
+            <label htmlFor="filtro-desde" className="block text-xs text-verde-medio mb-1">
               Desde
             </label>
             <input
@@ -382,7 +382,7 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
           </div>
 
           <div>
-            <label htmlFor="filtro-hasta" className="block text-xs text-verde-suave mb-1">
+            <label htmlFor="filtro-hasta" className="block text-xs text-verde-medio mb-1">
               Hasta
             </label>
             <input
@@ -510,7 +510,7 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
                 ))
               ) : sortedItems.length === 0 ? (
                 <tr>
-                  <td colSpan={13} className="px-3 py-10 text-center text-verde-suave">
+                  <td colSpan={13} className="px-3 py-10 text-center text-verde-medio">
                     <p className="mb-3">No hay reservas con estos filtros.</p>
                     <button
                       type="button"
@@ -586,14 +586,14 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
                       <td className="px-3 py-3 text-verde max-w-[180px] truncate" title={cliente ?? 'Falta el nombre del cliente'}>
                         {cliente ?? <span className="text-terracota">Falta nombre</span>}
                         {extrasPersonas && (
-                          <div className="text-xs text-verde-suave" data-testid="reserva-ninos-staff">
+                          <div className="text-xs text-verde-medio" data-testid="reserva-ninos-staff">
                             {extrasPersonas}
                           </div>
                         )}
                       </td>
                       <td className="px-3 py-3 text-verde max-w-[160px] truncate" title={r.reseller_nombre ?? 'Venta directa, sin reseller'}>
                         {r.reseller_nombre ?? (
-                          <span className="text-verde-suave" aria-label="Sin reseller">✕</span>
+                          <span className="text-verde-medio" aria-label="Sin reseller">✕</span>
                         )}
                       </td>
                       <td className="px-3 py-3 text-center text-verde tabular-nums">{invitados}</td>
@@ -650,7 +650,7 @@ export default function ReservasTabla({ refreshKey, onRowClick }: ReservasTablaP
 
         {/* Paginacion */}
         <div className="flex items-center justify-between px-4 py-3 bg-neutro-light/40 border-t border-neutro-borde flex-wrap gap-3">
-          <div className="flex items-center gap-3 text-sm text-verde-suave">
+          <div className="flex items-center gap-3 text-sm text-verde-medio">
             <span>
               <span data-testid="reservas-total" data-total={total}>
                 {total}

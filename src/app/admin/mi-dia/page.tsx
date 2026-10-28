@@ -338,7 +338,7 @@ export default function MiDiaPage() {
                 </p>
               )}
               {vista.modo !== 'sin_ficha' && (
-                <p data-testid="midia-totales" className="text-sm text-verde-suave">
+                <p data-testid="midia-totales" className="text-sm text-verde-medio">
                   {plural(vista.items.length, 'experiencia', 'experiencias')} ·{' '}
                   {plural(vista.total_personas, 'persona', 'personas')} · {plural(vista.total_ninos, 'niño', 'niños')}
                   {vista.fechas_publicas.length > 0 && (
@@ -368,8 +368,8 @@ export default function MiDiaPage() {
           />
         )}
 
-        {/* Pestañas Hoy / Mañana */}
-        <div role="tablist" aria-label="Día" className="grid grid-cols-2 gap-1 rounded-xl bg-neutro-light p-1">
+        {/* Pestañas Hoy / Mañana (K2B: `k2-riel` = en oscuro la activa sube sobre el riel, tema-oscuro-especiales.css) */}
+        <div role="tablist" aria-label="Día" className="k2-riel grid grid-cols-2 gap-1 rounded-xl bg-neutro-light p-1">
           {PESTANAS.map((p) => {
             const activa = p.dia === dia
             return (
@@ -430,7 +430,7 @@ export default function MiDiaPage() {
         ) : vista.items.length === 0 && vista.fechas_publicas.length === 0 ? (
           <p
             data-testid="midia-vacio"
-            className="rounded-xl border border-neutro-borde bg-white p-6 text-center text-base text-verde-suave"
+            className="rounded-xl border border-neutro-borde bg-white p-6 text-center text-base text-verde-medio"
           >
             {textoVacio(dia, vista.modo)}
           </p>
@@ -455,7 +455,7 @@ export default function MiDiaPage() {
                 <h2 id="midia-publicas-titulo" className="mb-0 font-display text-2xl text-verde">
                   Fechas públicas
                 </h2>
-                <p className="text-sm text-verde-suave">
+                <p className="text-sm text-verde-medio">
                   Experiencias abiertas al público: cuántas personas van, sin datos de quien compró.
                 </p>
                 {vista.fechas_publicas.map((f) => (

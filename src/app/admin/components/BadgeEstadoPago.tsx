@@ -9,11 +9,11 @@ interface BadgeEstadoPagoProps {
 const ESTADO_PAGO_CONFIG: Record<ReservaEstadoPago, { label: string; classes: string }> = {
   sin_pagar: {
     label: 'Sin pagar',
-    classes: 'bg-rojo-bg text-rojo border border-rojo/30',
+    classes: 'bg-rojo-bg text-red-700 border border-rojo/30',
   },
   anticipo: {
     label: 'Anticipo',
-    classes: 'bg-amarillo-bg text-amarillo border border-amarillo/30',
+    classes: 'bg-amarillo-bg text-amber-700 border border-amarillo/30',
   },
   pagado: {
     label: 'Pagado',
@@ -21,7 +21,7 @@ const ESTADO_PAGO_CONFIG: Record<ReservaEstadoPago, { label: string; classes: st
   },
   reembolsado: {
     label: 'Reembolsado',
-    classes: 'bg-neutro-borde text-verde-suave',
+    classes: 'bg-neutro-borde text-verde-claro',
   },
   // PS1: estado propio con total $0 (ronda 2 de David)
   cortesia: {

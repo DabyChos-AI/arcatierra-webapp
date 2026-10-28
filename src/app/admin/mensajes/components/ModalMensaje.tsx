@@ -120,9 +120,9 @@ export default function ModalMensaje({ mensajeId, token, onCerrar, onActualizado
         </div>
 
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
-          {cargando && !mensaje && <p className="text-sm text-verde-suave">Cargando…</p>}
+          {cargando && !mensaje && <p className="text-sm text-verde-medio">Cargando…</p>}
           {errorCarga && (
-            <div role="alert" className="rounded-lg border border-rojo/30 bg-rojo-bg p-3 text-sm text-rojo">
+            <div role="alert" className="rounded-lg border border-rojo/30 bg-rojo-bg p-3 text-sm text-red-700">
               <p>{errorCarga}</p>
               <button
                 type="button"
@@ -136,13 +136,13 @@ export default function ModalMensaje({ mensajeId, token, onCerrar, onActualizado
           {mensaje && (
             <>
               <dl className="grid grid-cols-1 gap-x-4 gap-y-2 text-sm sm:grid-cols-[auto,1fr]">
-                <dt className="text-verde-suave">De</dt>
+                <dt className="text-verde-medio">De</dt>
                 <dd className="break-words font-medium text-verde">{mensaje.nombre}</dd>
-                <dt className="text-verde-suave">Correo</dt>
+                <dt className="text-verde-medio">Correo</dt>
                 <dd className="break-all text-verde-tipografia">{mensaje.email}</dd>
-                <dt className="text-verde-suave">Asunto</dt>
+                <dt className="text-verde-medio">Asunto</dt>
                 <dd className="break-words text-verde-tipografia">{mensaje.asunto ?? '(sin asunto)'}</dd>
-                <dt className="text-verde-suave">Recibido</dt>
+                <dt className="text-verde-medio">Recibido</dt>
                 <dd className="text-verde-tipografia">{fechaHora(mensaje.creado_en)}</dd>
               </dl>
 
@@ -152,7 +152,7 @@ export default function ModalMensaje({ mensajeId, token, onCerrar, onActualizado
 
               <div className="flex flex-wrap items-end gap-3">
                 <div>
-                  <label htmlFor="mensaje-estado" className="block text-xs text-verde-suave">
+                  <label htmlFor="mensaje-estado" className="block text-xs text-verde-medio">
                     Estado
                   </label>
                   <select
@@ -185,7 +185,7 @@ export default function ModalMensaje({ mensajeId, token, onCerrar, onActualizado
                 </a>
               </div>
               {mensaje.atendido_en && (
-                <p className="text-xs text-verde-suave">
+                <p className="text-xs text-verde-medio">
                   Último cambio: {fechaHora(mensaje.atendido_en)}
                   {mensaje.atendido_por_nombre ? ` · ${mensaje.atendido_por_nombre}` : ''}
                 </p>
@@ -194,7 +194,7 @@ export default function ModalMensaje({ mensajeId, token, onCerrar, onActualizado
                 <p
                   data-testid="mensaje-detalle-error"
                   role="alert"
-                  className="flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg p-3 text-sm text-rojo"
+                  className="flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg p-3 text-sm text-red-700"
                 >
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                   {errorAccion}

@@ -9,7 +9,7 @@ import type { RolPersonal } from '@/types/catalogos'
 export default function ChipRol({ rol }: { rol: RolPersonal }) {
   const esVendedora = rol === 'vendedora'
   const classes = esVendedora
-    ? 'bg-terracota/10 text-terracota'
+    ? 'bg-terracota/10 text-terracota-oscuro'
     : 'bg-verde/10 text-verde'
   const label = esVendedora ? 'Vendedora' : 'Guía'
 

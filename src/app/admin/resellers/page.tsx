@@ -416,7 +416,7 @@ export default function ResellersPage() {
             </div>
             <div>
               <h1 className="font-display text-3xl text-verde">Resellers / Clientes B2B</h1>
-              <p className="text-sm text-verde-suave mt-1">
+              <p className="text-sm text-verde-medio mt-1">
                 Turoperadores, hoteles, corporativos y aliados con tarifas negociadas
               </p>
             </div>
@@ -454,7 +454,7 @@ export default function ResellersPage() {
           </div>
           <div className="relative flex-1">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde-suave"
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde-medio"
               aria-hidden="true"
             />
             <label htmlFor="reseller-search" className="sr-only">
@@ -490,7 +490,7 @@ export default function ResellersPage() {
         </div>
 
         {error && (
-          <div className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex items-center gap-2 text-sm text-rojo">
+          <div className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex items-center gap-2 text-sm text-red-700">
             <AlertTriangle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
             <span>{error}</span>
             <button
@@ -508,10 +508,10 @@ export default function ResellersPage() {
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="h-6 w-6 animate-spin text-terracota" aria-hidden="true" />
-              <span className="ml-3 text-sm text-verde-suave">Cargando resellers...</span>
+              <span className="ml-3 text-sm text-verde-medio">Cargando resellers...</span>
             </div>
           ) : items.length === 0 ? (
-            <div className="text-center py-16 text-verde-suave">
+            <div className="text-center py-16 text-verde-medio">
               <Handshake className="h-12 w-12 mx-auto text-neutro-gris mb-3" aria-hidden="true" />
               <p className="font-medium">No hay resellers en esta vista</p>
               <p className="text-sm mt-1">Ajusta los filtros o agrega un nuevo reseller.</p>
@@ -540,11 +540,11 @@ export default function ResellersPage() {
                       <Fragment key={r.id}>
                         <tr className="border-b border-neutro-borde hover:bg-neutro-light/50">
                           <td className="px-4 py-3 font-medium text-verde">{r.nombre}</td>
-                          <td className="px-4 py-3 text-verde-suave">{tipoLabel(r.tipo)}</td>
-                          <td className="px-4 py-3 text-verde-suave">
-                            {r.contacto_nombre || <span className="italic text-neutro-gris">—</span>}
+                          <td className="px-4 py-3 text-verde-medio">{tipoLabel(r.tipo)}</td>
+                          <td className="px-4 py-3 text-verde-medio">
+                            {r.contacto_nombre || <span className="italic text-verde-medio">—</span>}
                           </td>
-                          <td className="px-4 py-3 text-center tabular-nums text-verde-suave">
+                          <td className="px-4 py-3 text-center tabular-nums text-verde-medio">
                             {r.reservas_count}
                           </td>
                           <td className="px-4 py-3">
@@ -553,7 +553,7 @@ export default function ResellersPage() {
                                 configuradas
                               </span>
                             ) : (
-                              <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-neutro-light text-verde-suave">
+                              <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-neutro-light text-verde-medio">
                                 sin tarifas
                               </span>
                             )}
@@ -564,7 +564,7 @@ export default function ResellersPage() {
                                 Activo
                               </span>
                             ) : (
-                              <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-rojo/10 text-rojo">
+                              <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-rojo/10 text-red-700">
                                 Inactivo
                               </span>
                             )}
@@ -621,12 +621,12 @@ export default function ResellersPage() {
                                 className="sticky left-0 w-[100cqw] px-4 py-3 space-y-3"
                               >
                                 {detalleLoading ? (
-                                  <div className="flex items-center gap-2 text-sm text-verde-suave">
+                                  <div className="flex items-center gap-2 text-sm text-verde-medio">
                                     <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                                     Cargando reservas...
                                   </div>
                                 ) : !detalle || detalle.reservas.length === 0 ? (
-                                  <p className="text-sm text-verde-suave italic">
+                                  <p className="text-sm text-verde-medio italic">
                                     Sin reservas registradas para este reseller.
                                   </p>
                                 ) : (
@@ -639,7 +639,7 @@ export default function ResellersPage() {
                                     <div className="overflow-x-auto">
                                       <table className="w-full text-xs">
                                         <thead>
-                                          <tr className="text-left text-verde-suave">
+                                          <tr className="text-left text-verde-medio">
                                             <th className="px-2 py-1 font-medium">Booking</th>
                                             <th className="px-2 py-1 font-medium">Fecha</th>
                                             <th className="px-2 py-1 font-medium text-right">Monto</th>
@@ -667,7 +667,7 @@ export default function ResellersPage() {
                                               <td className="px-2 py-1 text-right tabular-nums text-verde">
                                                 {rv.monto_total != null ? formatMXN(rv.monto_total) : '—'}
                                               </td>
-                                              <td className="px-2 py-1 text-verde-suave">{rv.estado}</td>
+                                              <td className="px-2 py-1 text-verde-medio">{rv.estado}</td>
                                             </tr>
                                           ))}
                                         </tbody>
@@ -690,7 +690,7 @@ export default function ResellersPage() {
 
           {totalPages > 1 && (
             <div className="flex items-center justify-between px-4 py-3 bg-neutro-light border-t border-neutro-borde text-sm">
-              <span className="text-verde-suave">
+              <span className="text-verde-medio">
                 {totalCount} resellers · Página {page} de {totalPages}
               </span>
               <div className="flex gap-2">
@@ -741,13 +741,13 @@ export default function ResellersPage() {
                 className="p-2 hover:bg-neutro-light rounded-lg"
                 disabled={saving}
               >
-                <X className="h-5 w-5 text-verde-suave" aria-hidden="true" />
+                <X className="h-5 w-5 text-verde-medio" aria-hidden="true" />
               </button>
             </div>
 
             <div className="p-6 space-y-6">
               {formError && (
-                <div className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-rojo">
+                <div className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-red-700">
                   <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
                   <span>{formError}</span>
                 </div>
@@ -791,7 +791,7 @@ export default function ResellersPage() {
                 <legend className="text-sm font-semibold text-verde px-2">Contacto principal</legend>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label htmlFor="res-cnombre" className="block text-xs text-verde-suave mb-1">
+                    <label htmlFor="res-cnombre" className="block text-xs text-verde-medio mb-1">
                       Nombre
                     </label>
                     <input
@@ -803,7 +803,7 @@ export default function ResellersPage() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="res-cemail" className="block text-xs text-verde-suave mb-1">
+                    <label htmlFor="res-cemail" className="block text-xs text-verde-medio mb-1">
                       Email
                     </label>
                     <input
@@ -815,7 +815,7 @@ export default function ResellersPage() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="res-ctel" className="block text-xs text-verde-suave mb-1">
+                    <label htmlFor="res-ctel" className="block text-xs text-verde-medio mb-1">
                       Teléfono
                     </label>
                     <input
@@ -836,7 +836,7 @@ export default function ResellersPage() {
                 </legend>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label htmlFor="res-comision" className="block text-xs text-verde-suave mb-1">
+                    <label htmlFor="res-comision" className="block text-xs text-verde-medio mb-1">
                       Comisión (%)
                     </label>
                     <input
@@ -855,13 +855,13 @@ export default function ResellersPage() {
                     <p
                       id="res-comision-ayuda"
                       data-testid="res-comision-ayuda"
-                      className="text-xs text-verde-suave mt-1"
+                      className="text-xs text-verde-medio mt-1"
                     >
                       Se guarda en cada reserva al crearla; no se resta del precio al cliente.
                     </p>
                   </div>
                   <div>
-                    <label htmlFor="res-idioma" className="block text-xs text-verde-suave mb-1">
+                    <label htmlFor="res-idioma" className="block text-xs text-verde-medio mb-1">
                       Idioma default
                     </label>
                     <select
@@ -875,7 +875,7 @@ export default function ResellersPage() {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="res-moneda" className="block text-xs text-verde-suave mb-1">
+                    <label htmlFor="res-moneda" className="block text-xs text-verde-medio mb-1">
                       Moneda default
                     </label>
                     <select
@@ -898,7 +898,7 @@ export default function ResellersPage() {
                 </legend>
                 <div className="space-y-2">
                   {tarifaRows.length === 0 && (
-                    <p className="text-xs text-verde-suave italic">
+                    <p className="text-xs text-verde-medio italic">
                       Sin tarifas configuradas. Agrega una fila para negociar precios por experiencia.
                     </p>
                   )}
@@ -912,7 +912,7 @@ export default function ResellersPage() {
                       <div key={idx} className="space-y-1">
                         <div className="flex items-end gap-2 flex-wrap">
                           <div className="flex-1 min-w-[180px]">
-                            <label htmlFor={`tarifa-exp-${idx}`} className="block text-xs text-verde-suave mb-1">
+                            <label htmlFor={`tarifa-exp-${idx}`} className="block text-xs text-verde-medio mb-1">
                               Experiencia
                             </label>
                             <select
@@ -931,7 +931,7 @@ export default function ResellersPage() {
                             </select>
                           </div>
                           <div className="w-40">
-                            <label htmlFor={`tarifa-precio-${idx}`} className="block text-xs text-verde-suave mb-1">
+                            <label htmlFor={`tarifa-precio-${idx}`} className="block text-xs text-verde-medio mb-1">
                               Precio del grupo (MXN)
                             </label>
                             <input
@@ -960,7 +960,7 @@ export default function ResellersPage() {
                         <p
                           id={`tarifa-ayuda-${idx}`}
                           data-testid={`tarifa-ayuda-${idx}`}
-                          className="text-xs text-verde-suave"
+                          className="text-xs text-verde-medio"
                         >
                           Reemplaza el precio base de la experiencia ({cubre}). Los adicionales y los niños se cobran
                           con el catálogo.
@@ -981,7 +981,7 @@ export default function ResellersPage() {
 
                 {/* Escape hatch JSON */}
                 <div className="mt-4">
-                  <label htmlFor="tarifas-json" className="block text-xs text-verde-suave mb-1">
+                  <label htmlFor="tarifas-json" className="block text-xs text-verde-medio mb-1">
                     JSON crudo (sincronizado — edición avanzada)
                   </label>
                   <textarea

@@ -17,10 +17,10 @@ export const POR_PAGINA_NEWSLETTER = 50
 export const ESTADOS_MENSAJE: EstadoMensaje[] = ['nuevo', 'leido', 'respondido', 'archivado']
 
 export const CLASE_ESTADO_MENSAJE: Record<EstadoMensaje, string> = {
-  nuevo: 'bg-terracota/10 text-terracota',
+  nuevo: 'bg-terracota/10 text-terracota-oscuro',
   leido: 'bg-azul-bg text-azul',
   respondido: 'bg-verde/10 text-verde',
-  archivado: 'bg-neutro-light text-verde-suave',
+  archivado: 'bg-neutro-light text-verde-medio',
 }
 
 export const ETIQUETA_ORIGEN: Record<SuscriptorNewsletter['origen'], string> = {

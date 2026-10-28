@@ -140,10 +140,10 @@ export default function AdminHeader({ rolActivo, roles, insignia = null, onSwitc
                             <p className={`text-sm font-medium ${isActive ? color.text : 'text-gray-700'}`}>
                               {formatRolName(rol.nombre)}
                             </p>
-                            <p className="text-xs text-gray-400">{rol.descripcion}</p>
+                            <p className="text-xs text-gray-500">{rol.descripcion}</p>
                           </div>
                         </div>
-                        {isActive && <Check className="h-4 w-4 text-green-600" />}
+                        {isActive && <Check className="h-4 w-4 text-green-700" />}
                       </button>
                     )
                   })}
@@ -190,7 +190,7 @@ export default function AdminHeader({ rolActivo, roles, insignia = null, onSwitc
               {esSuperAdmin ? (
                 <span data-testid="admin-header-insignia" data-insignia="developer" className="text-xs font-semibold text-blue-600">Super Admin</span>
               ) : conCorona ? (
-                <span data-testid="admin-header-insignia" data-insignia="fundador" className="text-xs font-semibold text-yellow-600">Fundador</span>
+                <span data-testid="admin-header-insignia" data-insignia="fundador" className="text-xs font-semibold text-yellow-700">Fundador</span>
               ) : null}
             </div>
           </div>

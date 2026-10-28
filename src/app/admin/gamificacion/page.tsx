@@ -146,7 +146,7 @@ export default function GamificacionPage() {
                     </div>
                     
                     <div className="flex-shrink-0 h-10 w-10">
-                      <div className="h-10 w-10 rounded-full bg-green-600 flex items-center justify-center text-white font-semibold">
+                      <div className="h-10 w-10 rounded-full bg-green-700 flex items-center justify-center text-white font-semibold">
                         {empleado.nombre?.charAt(0) || 'N'}
                       </div>
                     </div>
@@ -156,9 +156,9 @@ export default function GamificacionPage() {
                         <p className="font-semibold text-gray-900">{empleado.nombre || 'Sin nombre'}</p>
                         {index < 3 && (
                           <Trophy className={`h-4 w-4 ${
-                            index === 0 ? 'text-yellow-500' :
+                            index === 0 ? 'text-yellow-700' :
                             index === 1 ? 'text-gray-500' :
-                            'text-orange-500'
+                            'text-orange-700'
                           }`} />
                         )}
                       </div>
@@ -171,7 +171,7 @@ export default function GamificacionPage() {
                     <div className="flex items-center space-x-4">
                       <div>
                         <p className="text-sm text-gray-500">Este mes</p>
-                        <p className="font-bold text-green-600">{empleado.puntos_mes_actual.toLocaleString()}</p>
+                        <p className="font-bold text-green-700">{empleado.puntos_mes_actual.toLocaleString()}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">Total</p>

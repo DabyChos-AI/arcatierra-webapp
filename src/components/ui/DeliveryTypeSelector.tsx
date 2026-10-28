@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Truck, Store, CheckCircle } from 'lucide-react'
+import { Truck, Store, CheckCircle, MapPin, Clock } from 'lucide-react'
 // BOD1: dirección y horario de la bodega, una sola fuente (gemela del backend: services/bodega.py)
 import { BODEGA } from '@/lib/bodega'
 
@@ -135,19 +135,26 @@ export default function DeliveryTypeSelector({
           
           {value === 'recoger_almacen' && (
             <div className="mt-2 text-sm text-gray-600 space-y-1">
-              <p data-testid="bodega-direccion">
-                📍 {BODEGA.completa} ·{' '}
-                <a
-                  href={BODEGA.mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-testid="bodega-como-llegar"
-                  className="font-medium text-green-700 underline hover:text-green-800"
-                >
-                  Cómo llegar
-                </a>
+              {/* UIX2 (R15 · F1): íconos de lucide-react en lugar de los emojis 📍 y 🕐; el texto no cambia. */}
+              <p data-testid="bodega-direccion" className="flex items-start gap-1.5">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-green-600" aria-hidden="true" />
+                <span>
+                  {BODEGA.completa} ·{' '}
+                  <a
+                    href={BODEGA.mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid="bodega-como-llegar"
+                    className="font-medium text-green-700 underline hover:text-green-800"
+                  >
+                    Cómo llegar
+                  </a>
+                </span>
               </p>
-              <p data-testid="bodega-horario">🕐 {BODEGA.horario}</p>
+              <p data-testid="bodega-horario" className="flex items-start gap-1.5">
+                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-green-600" aria-hidden="true" />
+                <span>{BODEGA.horario}</span>
+              </p>
             </div>
           )}
         </div>

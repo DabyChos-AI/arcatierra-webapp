@@ -114,14 +114,14 @@ export default function ModalPagoManual({
               Registrar pago manual
             </h2>
             {bookingId && (
-              <p className="text-xs text-verde-suave mt-0.5 font-mono">{bookingId}</p>
+              <p className="text-xs text-verde-medio mt-0.5 font-mono">{bookingId}</p>
             )}
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Cerrar modal pago manual"
-            className="p-1 rounded hover:bg-neutro-light text-verde-suave"
+            className="p-1 rounded hover:bg-neutro-light text-verde-medio"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -129,13 +129,13 @@ export default function ModalPagoManual({
 
         <div className="flex-1 overflow-auto px-4 sm:px-6 py-4 space-y-4">
           {error && (
-            <div role="alert" className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo">
+            <div role="alert" className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-red-700">
               {error}
             </div>
           )}
 
           <div className="bg-neutro-light rounded-lg p-3 text-sm flex justify-between">
-            <span className="text-verde-suave">Saldo pendiente:</span>
+            <span className="text-verde-medio">Saldo pendiente:</span>
             <span className="text-verde font-medium tabular-nums">
               {formatMXN(saldoPendiente)}
             </span>

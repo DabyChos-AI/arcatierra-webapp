@@ -5,5 +5,5 @@
  * Ej: 4.5 → "~4.5h est.".
  */
 export default function DisplayDuracion({ horas }: { horas: number }) {
-  return <span className="text-verde-suave">~{horas}h est.</span>
+  return <span className="text-verde-medio">~{horas}h est.</span>
 }

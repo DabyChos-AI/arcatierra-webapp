@@ -37,13 +37,13 @@ export default function MultiSelectGuias({
         <label htmlFor={containerId} className="text-sm font-medium text-verde">
           {label}
         </label>
-        <span className="text-xs text-verde-suave">
+        <span className="text-xs text-verde-medio">
           Seleccionados: {selectedIds.length} de {guias.length}
         </span>
       </div>
 
       {guias.length === 0 ? (
-        <div className="border border-neutro-borde rounded-lg p-3 bg-neutro-light text-sm text-verde-suave">
+        <div className="border border-neutro-borde rounded-lg p-3 bg-neutro-light text-sm text-verde-medio">
           No hay guias disponibles. Confirma con personal.
         </div>
       ) : (
@@ -77,7 +77,7 @@ export default function MultiSelectGuias({
                     {guia.idiomas.map((idioma) => (
                       <span
                         key={idioma}
-                        className="text-[10px] uppercase bg-neutro-light text-verde-suave px-1.5 py-0.5 rounded"
+                        className="text-[10px] uppercase bg-neutro-light text-verde-medio px-1.5 py-0.5 rounded"
                       >
                         {idioma}
                       </span>
@@ -85,7 +85,7 @@ export default function MultiSelectGuias({
                   </span>
                 )}
                 {isPendiente && (
-                  <span className="text-xs text-verde-suave italic">(pdte)</span>
+                  <span className="text-xs text-verde-medio italic">(pdte)</span>
                 )}
               </label>
             )

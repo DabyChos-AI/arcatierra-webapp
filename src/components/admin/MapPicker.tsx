@@ -193,7 +193,7 @@ const MapPickerContent = ({ value, onChange, label, className, zIndex = 50 }: Ma
         <button
           type="button"
           onClick={() => setIsMapOpen(true)}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+          className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 flex items-center gap-2"
         >
           <MapPin className="h-4 w-4" />
           Mapa
@@ -214,7 +214,7 @@ const MapPickerContent = ({ value, onChange, label, className, zIndex = 50 }: Ma
           href={`https://www.google.com/maps?q=${value}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-green-600 hover:underline mt-1 inline-block"
+          className="text-xs text-green-700 hover:underline mt-1 inline-block"
         >
           Ver en Google Maps <span aria-hidden="true">↗</span>
         </a>
@@ -248,7 +248,7 @@ const MapPickerContent = ({ value, onChange, label, className, zIndex = 50 }: Ma
                 <button
                   onClick={handleSearch}
                   disabled={isSearching}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 disabled:opacity-50"
                 >
                   {isSearching ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
                 </button>
@@ -281,7 +281,7 @@ const MapPickerContent = ({ value, onChange, label, className, zIndex = 50 }: Ma
                     {position[0].toFixed(6)}, {position[1].toFixed(6)}
                   </span>
                 ) : (
-                  <span className="text-gray-400">Haz clic en el mapa para seleccionar</span>
+                  <span className="text-gray-500">Haz clic en el mapa para seleccionar</span>
                 )}
               </div>
               <div className="flex gap-2">
@@ -294,7 +294,7 @@ const MapPickerContent = ({ value, onChange, label, className, zIndex = 50 }: Ma
                 <button
                   onClick={handleConfirm}
                   disabled={!position}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 disabled:opacity-50"
                 >
                   Confirmar Ubicación
                 </button>

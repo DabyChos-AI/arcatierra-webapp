@@ -747,10 +747,10 @@ export default function AdminClientesPage() {
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           {[
             { title: 'Total clientes', value: stats.total_clientes, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-            { title: 'Nuevos este mes', value: stats.nuevos_este_mes, icon: UserPlus, color: 'text-green-600', bg: 'bg-green-50' },
+            { title: 'Nuevos este mes', value: stats.nuevos_este_mes, icon: UserPlus, color: 'text-green-700', bg: 'bg-green-50' },
             { title: 'Con pedidos', value: stats.con_pedidos, icon: ShoppingCart, color: 'text-[#B15543]', bg: 'bg-orange-50' },
             { title: 'Con suscripciones', value: stats.con_suscripciones, icon: CreditCard, color: 'text-purple-600', bg: 'bg-purple-50' },
-            { title: 'Tasa recompra', value: `${stats.tasa_recompra}%`, icon: Repeat, color: 'text-amber-600', bg: 'bg-amber-50' },
+            { title: 'Tasa recompra', value: `${stats.tasa_recompra}%`, icon: Repeat, color: 'text-amber-700', bg: 'bg-amber-50' },
           ].map((kpi, i) => (
             <div key={i} className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="flex items-center">
@@ -861,7 +861,7 @@ export default function AdminClientesPage() {
                           <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">Bloqueado</span>
                         )}
                         {cliente.origen_registro && (
-                          <span className="text-xs text-gray-400">{cliente.origen_registro}</span>
+                          <span className="text-xs text-gray-500">{cliente.origen_registro}</span>
                         )}
                       </div>
                     </td>
@@ -869,7 +869,7 @@ export default function AdminClientesPage() {
                     <td className="px-4 py-3 text-gray-600">{cliente.telefono || '-'}</td>
                     <td className="px-4 py-3 text-center">
                       <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
-                        cliente.total_pedidos > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                        cliente.total_pedidos > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
                       }`}>
                         {cliente.total_pedidos}
                       </span>
@@ -972,7 +972,7 @@ export default function AdminClientesPage() {
                       <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-4">
                         <span className="text-sm text-gray-500">Estado:</span>
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          detalle.estado === 'activo' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                          detalle.estado === 'activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'
                         }`}>
                           {detalle.estado === 'activo' ? 'Activo' : 'Bloqueado'}
                         </span>
@@ -1059,7 +1059,7 @@ export default function AdminClientesPage() {
                             <p className="font-medium flex items-center gap-1">
                               {detalle.telefono || '-'}
                               {detalle.telefono && (
-                                <a href={`https://wa.me/52${detalle.telefono.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-600">
+                                <a href={`https://wa.me/52${detalle.telefono.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-700">
                                   <Phone className="h-3.5 w-3.5" />
                                 </a>
                               )}
@@ -1122,7 +1122,7 @@ export default function AdminClientesPage() {
                         ) : direccionesCompletas.length === 0 && !dirFormOpen ? (
                           <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
                             <MapPin className="h-8 w-8 mx-auto text-gray-300 mb-2" />
-                            <p className="text-sm text-gray-400">Sin direcciones registradas</p>
+                            <p className="text-sm text-gray-500">Sin direcciones registradas</p>
                             <button
                               onClick={() => openDirForm()}
                               className="mt-2 text-sm text-[#33503E] hover:underline"
@@ -1186,7 +1186,7 @@ export default function AdminClientesPage() {
                                       )}
                                     </div>
                                     {dir.referencias && (
-                                      <p className="text-xs text-gray-400 mt-1">Ref: {dir.referencias}</p>
+                                      <p className="text-xs text-gray-500 mt-1">Ref: {dir.referencias}</p>
                                     )}
                                     {/* Fotos thumbnails readonly */}
                                     {dir.fotos && dir.fotos.length > 0 && (
@@ -1498,7 +1498,7 @@ export default function AdminClientesPage() {
                           Pedidos recientes ({detalle.pedidos.length})
                         </h3>
                         {detalle.pedidos.length === 0 ? (
-                          <p className="text-gray-400 text-sm">Sin pedidos</p>
+                          <p className="text-gray-500 text-sm">Sin pedidos</p>
                         ) : (
                           <div className="border border-gray-200 rounded-lg overflow-hidden">
                             <table className="w-full text-sm">
@@ -1537,7 +1537,7 @@ export default function AdminClientesPage() {
                           Suscripciones ({detalle.suscripciones.length})
                         </h3>
                         {detalle.suscripciones.length === 0 ? (
-                          <p className="text-gray-400 text-sm">Sin suscripciones</p>
+                          <p className="text-gray-500 text-sm">Sin suscripciones</p>
                         ) : (
                           <div className="space-y-2">
                             {detalle.suscripciones.map(sub => (
@@ -1566,14 +1566,14 @@ export default function AdminClientesPage() {
                           Pagos recientes ({detalle.pagos.length})
                         </h3>
                         {detalle.pagos.length === 0 ? (
-                          <p className="text-gray-400 text-sm">Sin pagos</p>
+                          <p className="text-gray-500 text-sm">Sin pagos</p>
                         ) : (
                           <div className="space-y-2">
                             {detalle.pagos.map(pago => (
                               <div key={pago.id} className="border border-gray-200 rounded-lg p-3 flex items-center justify-between">
                                 <div>
                                   <span className="font-mono text-xs text-gray-500">{pago.mp_payment_id || '-'}</span>
-                                  <span className="ml-2 text-xs text-gray-400">{pago.mp_payment_method}</span>
+                                  <span className="ml-2 text-xs text-gray-500">{pago.mp_payment_method}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${

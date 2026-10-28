@@ -137,7 +137,7 @@ export default function CarritosAbandonadosPage() {
           </select>
           <button
             onClick={fetchData}
-            className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700"
+            className="flex items-center space-x-2 px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-800"
           >
             <RefreshCw className="h-4 w-4" />
             <span>Actualizar</span>
@@ -152,7 +152,7 @@ export default function CarritosAbandonadosPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Carritos Abandonados</p>
-                <p className="text-2xl font-bold text-amber-600">{estadisticas.total_abandonados}</p>
+                <p className="text-2xl font-bold text-amber-700">{estadisticas.total_abandonados}</p>
               </div>
               <ShoppingCart className="h-8 w-8 text-amber-300" />
             </div>
@@ -162,7 +162,7 @@ export default function CarritosAbandonadosPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Valor Potencial</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-green-700">
                   ${estadisticas.valor_total_abandonado.toFixed(2)}
                 </p>
               </div>
@@ -252,7 +252,7 @@ export default function CarritosAbandonadosPage() {
                       <div className="text-sm text-gray-900 font-semibold">{carrito.total_items} items</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-bold text-green-600">${carrito.total_monto.toFixed(2)}</div>
+                      <div className="text-sm font-bold text-green-700">${carrito.total_monto.toFixed(2)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getAlertaColor(carrito.estado_alerta)}`}>
@@ -265,7 +265,7 @@ export default function CarritosAbandonadosPage() {
                           // TODO: Implementar modal de detalle
                           aviso.info(`Ver detalle de carrito: ${carrito.usuario_id}`)
                         }}
-                        className="text-amber-600 hover:text-amber-900 font-medium"
+                        className="text-amber-700 hover:text-amber-900 font-medium"
                       >
                         Ver detalle →
                       </button>

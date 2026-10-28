@@ -275,7 +275,7 @@ export default function ModalTickets({
               <Ticket className="h-5 w-5 text-terracota" aria-hidden="true" />
               Tickets por canal
             </h2>
-            <p className="text-sm text-verde-suave mt-0.5">
+            <p className="text-sm text-verde-medio mt-0.5">
               {evento.experiencia_nombre ?? evento.nombre_evento} ·{' '}
               {formatFechaMexico(evento.fecha_evento, { weekday: 'long' })} ·{' '}
               {horario(evento.hora_inicio, evento.hora_fin)}
@@ -288,7 +288,7 @@ export default function ModalTickets({
             aria-label="Cerrar modal de tickets"
             className="p-2 hover:bg-neutro-light rounded-lg"
           >
-            <X className="h-5 w-5 text-verde-suave" aria-hidden="true" />
+            <X className="h-5 w-5 text-verde-medio" aria-hidden="true" />
           </button>
         </div>
 
@@ -300,16 +300,16 @@ export default function ModalTickets({
             aria-live="polite"
           >
             <div className="bg-neutro-light border border-neutro-borde rounded-lg p-3">
-              <p className="text-xs text-verde-suave">Ocupados</p>
+              <p className="text-xs text-verde-medio">Ocupados</p>
               <p className="text-lg font-display font-semibold text-verde tabular-nums">
                 {ocupada}
                 {!sinTope(capacidad) && (
-                  <span className="text-sm text-verde-suave"> / {capacidad}</span>
+                  <span className="text-sm text-verde-medio"> / {capacidad}</span>
                 )}
               </p>
             </div>
             <div className="bg-verde/10 border border-verde/30 rounded-lg p-3">
-              <p className="text-xs text-verde-suave">Disponibles</p>
+              <p className="text-xs text-verde-medio">Disponibles</p>
               <p className="text-lg font-display font-semibold text-verde tabular-nums">
                 {sinTope(capacidad)
                   ? 'Sin tope'
@@ -317,13 +317,13 @@ export default function ModalTickets({
               </p>
             </div>
             <div className="bg-terracota/5 border border-terracota/20 rounded-lg p-3">
-              <p className="text-xs text-verde-suave">Registrados a mano</p>
+              <p className="text-xs text-verde-medio">Registrados a mano</p>
               <p className="text-lg font-display font-semibold text-verde tabular-nums">
                 {resumen?.tickets_registrados ?? evento.tickets_registrados}
               </p>
             </div>
             <div className="bg-azul-bg border border-azul/30 rounded-lg p-3">
-              <p className="text-xs text-verde-suave">Página web</p>
+              <p className="text-xs text-verde-medio">Página web</p>
               <p className="text-lg font-display font-semibold text-verde tabular-nums">
                 {resumen?.tickets_web ?? evento.tickets_web}
               </p>
@@ -360,7 +360,7 @@ export default function ModalTickets({
             <div
               role="alert"
               data-testid="tickets-error"
-              className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-rojo"
+              className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-red-700"
             >
               <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
               <span>{error}</span>
@@ -385,7 +385,7 @@ export default function ModalTickets({
                   {cargando ? (
                     <tr>
                       <td colSpan={6} className="px-3 py-8">
-                        <div className="flex items-center justify-center text-sm text-verde-suave">
+                        <div className="flex items-center justify-center text-sm text-verde-medio">
                           <Loader2 className="h-5 w-5 animate-spin text-terracota mr-2" aria-hidden="true" />
                           Cargando ventas...
                         </div>
@@ -406,7 +406,7 @@ export default function ModalTickets({
                     </tr>
                   ) : ventas.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-3 py-6 text-center text-verde-suave">
+                      <td colSpan={6} className="px-3 py-6 text-center text-verde-medio">
                         Sin ventas registradas para esta fecha.
                       </td>
                     </tr>
@@ -426,7 +426,7 @@ export default function ModalTickets({
                           {v.fuente_id ? (
                             v.fuente_nombre ?? '—'
                           ) : (
-                            <span className="italic text-verde-suave">Sin desglose</span>
+                            <span className="italic text-verde-medio">Sin desglose</span>
                           )}
                         </td>
                         <td className="px-3 py-2 text-center tabular-nums text-verde font-medium">
@@ -438,7 +438,7 @@ export default function ModalTickets({
                         <td className="px-3 py-2 text-verde whitespace-nowrap">
                           {formatFechaMexico(v.fecha_venta)}
                         </td>
-                        <td className="px-3 py-2 text-verde-suave max-w-[200px] truncate" title={v.notas ?? undefined}>
+                        <td className="px-3 py-2 text-verde-medio max-w-[200px] truncate" title={v.notas ?? undefined}>
                           {v.notas ?? '—'}
                         </td>
                         <td className="px-3 py-2">
@@ -518,7 +518,7 @@ export default function ModalTickets({
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div className="sm:col-span-2">
-                  <label htmlFor="tk-fuente" className="block text-xs text-verde-suave mb-1">
+                  <label htmlFor="tk-fuente" className="block text-xs text-verde-medio mb-1">
                     Canal {!form.ventaId && <span className="text-rojo">*</span>}
                   </label>
                   <select
@@ -542,12 +542,12 @@ export default function ModalTickets({
                       </option>
                     ))}
                   </select>
-                  <p id="tk-fuente-nota" className="text-xs text-verde-suave mt-1">
+                  <p id="tk-fuente-nota" className="text-xs text-verde-medio mt-1">
                     Las ventas de la página se registran solas al pagarse.
                   </p>
                 </div>
                 <div>
-                  <label htmlFor="tk-cantidad" className="block text-xs text-verde-suave mb-1">
+                  <label htmlFor="tk-cantidad" className="block text-xs text-verde-medio mb-1">
                     Cantidad <span className="text-rojo">*</span>
                   </label>
                   <input
@@ -563,7 +563,7 @@ export default function ModalTickets({
                   />
                 </div>
                 <div>
-                  <label htmlFor="tk-monto" className="block text-xs text-verde-suave mb-1">
+                  <label htmlFor="tk-monto" className="block text-xs text-verde-medio mb-1">
                     Monto (MXN)
                   </label>
                   <input
@@ -579,7 +579,7 @@ export default function ModalTickets({
                   />
                 </div>
                 <div>
-                  <label htmlFor="tk-fecha" className="block text-xs text-verde-suave mb-1">
+                  <label htmlFor="tk-fecha" className="block text-xs text-verde-medio mb-1">
                     Fecha de venta
                   </label>
                   <input
@@ -591,7 +591,7 @@ export default function ModalTickets({
                   />
                 </div>
                 <div className="sm:col-span-3">
-                  <label htmlFor="tk-notas" className="block text-xs text-verde-suave mb-1">
+                  <label htmlFor="tk-notas" className="block text-xs text-verde-medio mb-1">
                     Notas
                   </label>
                   <input
@@ -674,7 +674,7 @@ function FilaVentaWeb({ venta: v }: { venta: VentaTicket }) {
       <td className="px-3 py-2 text-center tabular-nums text-verde font-medium">
         {v.cantidad}
         {/* Igual que en el carrito y el checkout: «3 personas (2 adultos, 1 niño)» */}
-        <span data-testid="ticket-web-personas" className="block text-xs font-normal text-verde-suave">
+        <span data-testid="ticket-web-personas" className="block text-xs font-normal text-verde-medio">
           {textoPersonas(Math.max(0, v.cantidad - ninos), ninos)}
         </span>
       </td>
@@ -683,29 +683,29 @@ function FilaVentaWeb({ venta: v }: { venta: VentaTicket }) {
       <td className="px-3 py-2 text-verde min-w-[220px]">
         <dl className="space-y-0.5 text-xs">
           <div>
-            <dt className="inline text-verde-suave">Comprador: </dt>
+            <dt className="inline text-verde-medio">Comprador: </dt>
             <dd data-testid="ticket-web-comprador" className="inline font-medium">
               {v.comprador_nombre || '—'}
             </dd>
           </div>
           <div>
-            <dt className="inline text-verde-suave">Niños: </dt>
+            <dt className="inline text-verde-medio">Niños: </dt>
             <dd className="inline">{ninos}</dd>
           </div>
           <div>
-            <dt className="inline text-verde-suave">Alergias: </dt>
+            <dt className="inline text-verde-medio">Alergias: </dt>
             <dd data-testid="ticket-web-alergias" className="inline break-words">
               {v.alergias || 'Ninguna'}
             </dd>
           </div>
           <div>
-            <dt className="inline text-verde-suave">Pedido: </dt>
+            <dt className="inline text-verde-medio">Pedido: </dt>
             <dd data-testid="ticket-web-pedido" className="inline font-mono">
               {v.numero_pedido || '—'}
             </dd>
           </div>
           <div data-testid="ticket-web-contacto">
-            <dt className="inline text-verde-suave">Contacto: </dt>
+            <dt className="inline text-verde-medio">Contacto: </dt>
             <dd className="inline break-all">
               {[v.comprador_email, v.comprador_telefono].filter(Boolean).join(' · ') || '—'}
             </dd>
@@ -713,7 +713,7 @@ function FilaVentaWeb({ venta: v }: { venta: VentaTicket }) {
         </dl>
       </td>
       <td className="px-3 py-2 text-center">
-        <span data-testid="ticket-web-nota" className="text-xs text-verde-suave">
+        <span data-testid="ticket-web-nota" className="text-xs text-verde-medio">
           Se cancela desde Pedidos
         </span>
       </td>

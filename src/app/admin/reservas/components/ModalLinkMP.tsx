@@ -205,7 +205,7 @@ export default function ModalLinkMP({
             type="button"
             onClick={onClose}
             aria-label="Cerrar modal link MP"
-            className="p-1 rounded hover:bg-neutro-light text-verde-suave"
+            className="p-1 rounded hover:bg-neutro-light text-verde-medio"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -213,7 +213,7 @@ export default function ModalLinkMP({
 
         <div className="flex-1 overflow-auto px-4 sm:px-6 py-4 space-y-4">
           {error && (
-            <div role="alert" className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo">
+            <div role="alert" className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-red-700">
               {error}
             </div>
           )}
@@ -252,7 +252,7 @@ export default function ModalLinkMP({
                       <span className="flex-1">
                         <span className="block text-verde font-medium">{opt.label}</span>
                         {opt.monto !== null && (
-                          <span className="block text-xs text-verde-suave">
+                          <span className="block text-xs text-verde-medio">
                             {formatMXN(opt.monto)}
                           </span>
                         )}
@@ -290,7 +290,7 @@ export default function ModalLinkMP({
                     <div className="flex items-center gap-1">
                       <label
                         htmlFor="link-mp-pct-libre"
-                        className="text-sm text-verde-suave"
+                        className="text-sm text-verde-medio"
                       >
                         % libre
                       </label>
@@ -311,7 +311,7 @@ export default function ModalLinkMP({
                     <span className="font-semibold tabular-nums">
                       {formatMXN(montoCustom)}
                     </span>{' '}
-                    <span className="text-verde-suave">
+                    <span className="text-verde-medio">
                       ({porcentaje}% de {formatMXN(totalActual)})
                     </span>
                   </p>
@@ -368,7 +368,7 @@ export default function ModalLinkMP({
                   aria-describedby="link-mp-vigencia-ayuda"
                   className="w-32 border border-neutro-borde rounded-lg px-3 py-2 text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
                 />
-                <p id="link-mp-vigencia-ayuda" className="text-xs text-verde-suave mt-1">
+                <p id="link-mp-vigencia-ayuda" className="text-xs text-verde-medio mt-1">
                   De {VIGENCIA_MIN} a {VIGENCIA_MAX} días: el link deja de aceptar pagos al terminar
                   ese día (hora de México). Vacío = sin vencimiento.
                 </p>
@@ -391,7 +391,7 @@ export default function ModalLinkMP({
                   aria-describedby="link-mp-concepto-ayuda"
                   className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
                 />
-                <p id="link-mp-concepto-ayuda" className="text-xs text-verde-suave mt-1">
+                <p id="link-mp-concepto-ayuda" className="text-xs text-verde-medio mt-1">
                   Lo que el cliente ve en MercadoPago ({concepto.length}/{MAX_CONCEPTO}).
                 </p>
               </div>
@@ -406,7 +406,7 @@ export default function ModalLinkMP({
                 />
                 <span>
                   Enviar email al cliente
-                  <span className="block text-xs text-verde-suave">
+                  <span className="block text-xs text-verde-medio">
                     Usa la plantilla «Link de pago» (Plantillas Email) solo si está activa en el
                     idioma de la reserva y el cliente tiene correo real; si no, no sale nada y te
                     decimos por qué.
@@ -482,7 +482,7 @@ export default function ModalLinkMP({
                   {textoCorreo(result.correo_cliente)}
                 </p>
               )}
-              <p className="text-xs text-verde-suave break-all">
+              <p className="text-xs text-verde-medio break-all">
                 Preference ID: <span className="font-mono">{result.preference_id ?? '—'}</span>
               </p>
             </div>

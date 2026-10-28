@@ -12,23 +12,10 @@
   }
 
   /* ── Controles nativos ─────────────────────────────────────────────────────────────────────────────
-        color-scheme: dark (tema-oscuro.css) ya oscurece scrollbars, date picker y <select>. Aquí: los campos
-        SIN clase de fondo toman la superficie del panel en vez del gris del navegador. Todo dentro de
-        :where() = especificidad 0: cualquier clase (bg-white reasignada, bg-transparent…) gana. */
-  :where(html[data-tema-admin="oscuro"])
-    :where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="button"], [type="submit"], [type="reset"], [type="image"]), select, textarea):not(:where(.k2-claro, .k2-claro *)) {
-    background-color: var(--k2-superficie, #1C2420);
-    color: var(--k2-texto, #E7ECE8);
-    border-color: var(--k2-borde-fuerte, #46554C);
-  }
-  :where(html[data-tema-admin="oscuro"]) :where(select:not(:where(.k2-claro, .k2-claro *))) :where(option, optgroup) {
-    background-color: var(--k2-superficie, #1C2420);
-    color: var(--k2-texto, #E7ECE8);
-  }
-  /* (0,1,2): le gana al ::placeholder del preflight (0,0,2); las clases placeholder-* reasignadas ganan. */
-  html[data-tema-admin="oscuro"] :where(input, textarea):not(:where(.k2-claro, .k2-claro *))::placeholder {
-    color: var(--k2-texto-4, #8C9992); /* 4.9 sobre la superficie */
-  }
+        color-scheme: dark (tema-oscuro.css) ya oscurece scrollbars, date picker y <select>. El fondo y el borde
+        de los campos sin clase, las <option> y el ::placeholder son reglas base de tema-oscuro.css (K2 §8 C7).
+        K2B (R15 F1): aquí había tres bloques con los mismos valores que perdían siempre contra esas reglas base
+        (el color de letra que traía el de los campos lo pisaba el `color: inherit` del preflight); se quitaron. */
   :where(html[data-tema-admin="oscuro"]) :where(input[type="checkbox"], input[type="radio"], input[type="range"], progress):not(:where(.k2-claro, .k2-claro *)) {
     accent-color: #6FD39A;
   }
@@ -179,5 +166,34 @@
   }
   html[data-tema-admin="oscuro"] .leaflet-container a.leaflet-popup-close-button {
     color: #555;
+  }
+
+  /* ── K2B (R15 F1): control segmentado (.k2-riel; Mi día › Hoy/Mañana). En claro la opción activa es blanca sobre
+        el riel neutro-light; en oscuro el blanco pasaría a --k2-superficie, MÁS oscura que el riel (superficie-2).
+        La activa sube a superficie-4 (terracota encima 4.72; 1.4:1 contra el riel) y el hover de las otras, a
+        superficie-3 al 60 %. (0,3,1) y (0,4,1): les ganan a .bg-white y .hover:bg-white/60 generados (0,2,1)/(0,3,1). */
+  html[data-tema-admin="oscuro"] .k2-riel > .bg-white:not(:where(.k2-claro, .k2-claro *)) {
+    background-color: var(--k2-superficie-4, #3A4740);
+  }
+  html[data-tema-admin="oscuro"] .k2-riel > .hover\:bg-white\/60:hover:not(:where(.k2-claro, .k2-claro *)) {
+    background-color: rgb(var(--k2-superficie-3-rgb, 48 60 53) / 0.6);
+  }
+
+  /* ── K2B (R15 F1): botones de verde de marca. #33503E sobre la superficie #1C2420 da 1.9:1 como forma (WCAG 1.4.11
+        pide 3). Solo en controles (button, a, label, role=button), no en barras ni insignias: el relleno sube a #4D795E
+        (mismo tono y saturación: blanco encima 4.99 · 3.18 contra la superficie · 3.54 contra el fondo) y su hover
+        (verde-claro en claro) baja a #40644D (blanco 6.67). (0,3,1) y (0,4,1): les ganan a las clases generadas.
+        Sobre un pozo (superficie-2 #25302A) ningún relleno da 3:1 y a la vez 4.5 con letra blanca: un borde interior
+        #6E9C7F (4.38 contra superficie-2 · 5.08 contra la superficie) marca la forma. Fuera en :focus-visible, para no
+        tapar el anillo de foco de teclado. */
+  html[data-tema-admin="oscuro"] :is(button, a, label, [role="button"]):is(.bg-verde, .bg-\[\#33503E\]):not(:where(.k2-claro, .k2-claro *)) {
+    background-color: #4D795E;
+  }
+  html[data-tema-admin="oscuro"] :is(button, a, label, [role="button"]):is(.bg-verde, .bg-\[\#33503E\]):not(:focus-visible):not(:where(.k2-claro, .k2-claro *)) {
+    outline: 1px solid #6E9C7F;
+    outline-offset: -1px;
+  }
+  html[data-tema-admin="oscuro"] :is(button, a, label, [role="button"]):is(.hover\:bg-verde-claro, .hover\:bg-\[\#475A52\], .hover\:bg-\[\#2a4233\]):hover:not(:disabled):not(:where(.k2-claro, .k2-claro *)) {
+    background-color: #40644D;
   }
 }

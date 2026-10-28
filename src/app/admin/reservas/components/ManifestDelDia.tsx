@@ -53,7 +53,7 @@ function ordenarPorHora(a: Reserva, b: Reserva): number {
 function FilaInvitados({ invitados, minimo }: { invitados: ManifestInvitado[] | undefined; minimo: number }) {
   if (!invitados || invitados.length === 0) {
     return (
-      <ul className="text-xs text-verde-suave space-y-0.5">
+      <ul className="text-xs text-verde-medio space-y-0.5">
         {Array.from({ length: minimo }).map((_, i) => (
           <li key={i}>Guest {i + 1}</li>
         ))}
@@ -182,7 +182,7 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
             data-testid="manifest-rango-texto"
             className="inline-flex items-center gap-1.5 text-sm text-verde"
           >
-            <CalendarDays className="h-4 w-4 text-verde-suave" aria-hidden="true" />
+            <CalendarDays className="h-4 w-4 text-verde-medio" aria-hidden="true" />
             {textoRango(rangoFechas.desde, rangoFechas.hasta)}
           </p>
         )}
@@ -202,7 +202,7 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
             disabled
             title="Disponible en Fase D"
             aria-label="Exportar PDF (disponible en Fase D)"
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-neutro-borde rounded-lg text-verde-suave opacity-50 cursor-not-allowed"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-neutro-borde rounded-lg text-verde-medio opacity-50 cursor-not-allowed"
           >
             PDF
           </button>
@@ -229,7 +229,7 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
 
       {/* Loading */}
       {loading && (
-        <div className="bg-white border border-neutro-borde rounded-lg p-6 inline-flex items-center gap-2 text-verde-suave">
+        <div className="bg-white border border-neutro-borde rounded-lg p-6 inline-flex items-center gap-2 text-verde-medio">
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
           Cargando manifest...
         </div>
@@ -239,7 +239,7 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
       {!loading && !error && data.length === 0 && (
         <div
           data-testid="manifest-vacio"
-          className="bg-white border border-neutro-borde rounded-lg p-8 text-center text-verde-suave"
+          className="bg-white border border-neutro-borde rounded-lg p-8 text-center text-verde-medio"
         >
           <p className="text-lg font-medium text-verde">Sin eventos en el rango seleccionado</p>
           <p className="text-sm mt-1">Cuando haya reservas confirmadas para estas fechas, apareceran aqui.</p>
@@ -347,7 +347,7 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
                           <td className="px-3 py-2 text-verde">
                             {cliente}
                             {r.reseller_nombre && (
-                              <span className="block text-xs text-verde-suave">vía {r.reseller_nombre}</span>
+                              <span className="block text-xs text-verde-medio">vía {r.reseller_nombre}</span>
                             )}
                           </td>
                           <td className="px-3 py-2 text-center text-verde tabular-nums">{invitados}</td>
@@ -389,7 +389,7 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
                                 {r.usuario_telefono}
                               </a>
                             ) : (
-                              <span className="text-verde-suave">—</span>
+                              <span className="text-verde-medio">—</span>
                             )}
                           </td>
                           <td className="px-3 py-2 text-verde">{r.chinampa_asignada ?? '—'}</td>
@@ -398,7 +398,7 @@ export default function ManifestDelDia({ refreshKey, onRowClick }: ManifestDelDi
                           </td>
                           <td className="px-3 py-2 text-rojo text-xs max-w-[160px]">
                             {r.notas_alergias || (
-                              <span className="text-verde-suave">—</span>
+                              <span className="text-verde-medio">—</span>
                             )}
                           </td>
                         </tr>

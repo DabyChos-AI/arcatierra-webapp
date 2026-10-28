@@ -106,7 +106,7 @@ export default function GrillaSemana({
               </header>
               <div className="flex flex-col gap-2 p-2">
                 {items.length === 0 ? (
-                  <p className="m-0 px-1 py-1 text-xs italic text-verde-suave">
+                  <p className="m-0 px-1 py-1 text-xs italic text-verde-medio">
                     {soloHuecos && dia.items.length > 0 ? 'Sin huecos' : 'Sin eventos'}
                   </p>
                 ) : (

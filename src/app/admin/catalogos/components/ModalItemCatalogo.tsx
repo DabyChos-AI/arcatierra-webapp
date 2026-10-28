@@ -200,7 +200,7 @@ export default function ModalItemCatalogo({
             className="p-2 hover:bg-neutro-light rounded-lg"
             disabled={saving}
           >
-            <X className="h-5 w-5 text-verde-suave" aria-hidden="true" />
+            <X className="h-5 w-5 text-verde-medio" aria-hidden="true" />
           </button>
         </div>
 
@@ -209,7 +209,7 @@ export default function ModalItemCatalogo({
             <div
               role="alert"
               data-testid="catalogos-modal-error"
-              className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-rojo"
+              className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-red-700"
             >
               <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
               <span>{formError}</span>
@@ -270,7 +270,7 @@ export default function ModalItemCatalogo({
                 ))}
               </select>
               {personalLoading && (
-                <p className="text-xs text-verde-suave mt-1">Cargando Personal…</p>
+                <p className="text-xs text-verde-medio mt-1">Cargando Personal…</p>
               )}
               {personalError && (
                 <p className="text-xs text-rojo mt-1">
@@ -309,7 +309,7 @@ export default function ModalItemCatalogo({
               aria-describedby="cat-orden-ayuda"
               className="w-32 px-3 py-2 border border-neutro-borde rounded-lg text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
             />
-            <p id="cat-orden-ayuda" className="text-xs text-verde-suave mt-1">
+            <p id="cat-orden-ayuda" className="text-xs text-verde-medio mt-1">
               Menor sale primero en las listas.
             </p>
           </div>

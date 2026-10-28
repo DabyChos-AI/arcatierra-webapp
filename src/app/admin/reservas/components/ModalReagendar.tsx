@@ -176,14 +176,14 @@ export default function ModalReagendar({
               Reagendar reserva
             </h2>
             {bookingId && (
-              <p className="text-xs text-verde-suave mt-0.5 font-mono">{bookingId}</p>
+              <p className="text-xs text-verde-medio mt-0.5 font-mono">{bookingId}</p>
             )}
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Cerrar modal reagendar"
-            className="p-1 rounded hover:bg-neutro-light text-verde-suave"
+            className="p-1 rounded hover:bg-neutro-light text-verde-medio"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -191,13 +191,13 @@ export default function ModalReagendar({
 
         <div className="flex-1 overflow-auto px-4 sm:px-6 py-4 space-y-4">
           {error && (
-            <div role="alert" className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo">
+            <div role="alert" className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-red-700">
               {error}
             </div>
           )}
 
           <div className="bg-neutro-light rounded-lg p-3 text-sm">
-            <p className="text-verde-suave">Fecha y hora actual</p>
+            <p className="text-verde-medio">Fecha y hora actual</p>
             <p className="text-verde font-medium tabular-nums">
               {formatFechaMexico(fechaActual)} · {horaCorta(horaActual)}
               {horaFinActual ? `–${horaCorta(horaFinActual)}` : ''}
@@ -243,7 +243,7 @@ export default function ModalReagendar({
               id="reagendar-fin"
               data-testid="reag-fin"
               data-origen={finNuevo.origen}
-              className={`text-xs -mt-2 ${finNuevo.cruzaMedianoche ? 'text-rojo' : 'text-verde-suave'}`}
+              className={`text-xs -mt-2 ${finNuevo.cruzaMedianoche ? 'text-rojo' : 'text-verde-medio'}`}
             >
               {finNuevo.cruzaMedianoche
                 ? 'La experiencia terminaría después de la medianoche: elige una hora más temprana.'
@@ -292,7 +292,7 @@ export default function ModalReagendar({
               className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
               placeholder="Se guardan en la nota del reagendado; el cliente no las ve."
             />
-            <p id="reagendar-notas-ayuda" className="text-xs text-verde-suave mt-1">
+            <p id="reagendar-notas-ayuda" className="text-xs text-verde-medio mt-1">
               {notas.length}/{MAX_NOTAS}
             </p>
           </div>
@@ -311,7 +311,7 @@ export default function ModalReagendar({
             </label>
             <label
               className={`flex items-start gap-2 text-sm ${
-                puedeAvisarGuias ? 'text-verde cursor-pointer' : 'text-verde-suave cursor-not-allowed'
+                puedeAvisarGuias ? 'text-verde cursor-pointer' : 'text-verde-medio cursor-not-allowed'
               }`}
             >
               <input

@@ -154,11 +154,11 @@ export default function TabNewsletter({ token }: Props) {
     <section aria-label="Suscriptores del newsletter" className="space-y-4">
       <div className="flex flex-wrap items-end gap-3">
         <div className="min-w-0 flex-1 sm:max-w-xs">
-          <label htmlFor="newsletter-buscar" className="block text-xs text-verde-suave">
+          <label htmlFor="newsletter-buscar" className="block text-xs text-verde-medio">
             Buscar
           </label>
           <div className="relative mt-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-verde-suave" aria-hidden="true" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-verde-medio" aria-hidden="true" />
             <input
               id="newsletter-buscar"
               data-testid="newsletter-buscar"
@@ -171,7 +171,7 @@ export default function TabNewsletter({ token }: Props) {
           </div>
         </div>
         <div>
-          <label htmlFor="newsletter-filtro-estado" className="block text-xs text-verde-suave">
+          <label htmlFor="newsletter-filtro-estado" className="block text-xs text-verde-medio">
             Estado
           </label>
           <select
@@ -202,7 +202,7 @@ export default function TabNewsletter({ token }: Props) {
         </button>
       </div>
       {datos && (
-        <p data-testid="newsletter-activos" className="text-sm text-verde-suave">
+        <p data-testid="newsletter-activos" className="text-sm text-verde-medio">
           {plural(datos.activos, 'suscriptor activo', 'suscriptores activos')} · el CSV trae solo los activos.
         </p>
       )}
@@ -225,13 +225,13 @@ export default function TabNewsletter({ token }: Props) {
       )}
 
       {cargando && !datos ? (
-        <p data-testid="newsletter-panel-cargando" aria-busy="true" className="text-sm text-verde-suave">
+        <p data-testid="newsletter-panel-cargando" aria-busy="true" className="text-sm text-verde-medio">
           Cargando suscriptores…
         </p>
       ) : datos && datos.items.length === 0 && !error ? (
         <div
           data-testid="newsletter-panel-vacio"
-          className="flex flex-col items-center gap-2 rounded-xl border border-neutro-borde bg-white p-8 text-center text-verde-suave"
+          className="flex flex-col items-center gap-2 rounded-xl border border-neutro-borde bg-white p-8 text-center text-verde-medio"
         >
           <Mail className="h-8 w-8" aria-hidden="true" />
           <p>{q || estado ? 'Ningún correo coincide con el filtro.' : 'Todavía nadie se suscribe al newsletter.'}</p>
@@ -252,8 +252,8 @@ export default function TabNewsletter({ token }: Props) {
                 className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
               >
                 <div className="min-w-0">
-                  <p className={`break-all text-sm ${activo ? 'text-verde' : 'text-verde-suave line-through'}`}>{s.email}</p>
-                  <p className="text-xs text-verde-suave">
+                  <p className={`break-all text-sm ${activo ? 'text-verde' : 'text-verde-medio line-through'}`}>{s.email}</p>
+                  <p className="text-xs text-verde-medio">
                     {ETIQUETA_ORIGEN[s.origen]} · aceptó el {fechaHora(s.consentido_en)}
                     {!activo && s.baja_en ? ` · baja el ${fechaHora(s.baja_en)}` : ''}
                   </p>

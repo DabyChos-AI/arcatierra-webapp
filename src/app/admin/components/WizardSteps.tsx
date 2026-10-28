@@ -20,13 +20,13 @@ export default function WizardSteps({ steps, current, onJump }: WizardStepsProps
           ? 'bg-verde text-white'
           : isCurrent
           ? 'bg-terracota text-white ring-2 ring-terracota/30'
-          : 'bg-neutro-borde text-verde-suave'
+          : 'bg-neutro-borde text-verde-claro'
 
         const labelClasses = isCurrent
-          ? 'bg-terracota/10 text-terracota font-medium'
+          ? 'bg-terracota/10 text-terracota-oscuro font-medium'
           : isCompleted
           ? 'text-verde'
-          : 'text-verde-suave'
+          : 'text-verde-medio'
 
         const lineClasses = step.num < current ? 'bg-verde' : 'bg-neutro-borde'
 

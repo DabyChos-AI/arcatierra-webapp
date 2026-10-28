@@ -272,12 +272,12 @@ export default function AddonsPage() {
               <h1 className="font-display text-3xl text-verde">
                 Catálogo de Add-ons
                 {!loading && (
-                  <span className="ml-2 text-lg text-verde-suave tabular-nums">
+                  <span className="ml-2 text-lg text-verde-medio tabular-nums">
                     ({totalCount}{ocultosCount > 0 ? ` · ${ocultosCount} oculto${ocultosCount === 1 ? '' : 's'}` : ''})
                   </span>
                 )}
               </h1>
-              <p className="text-sm text-verde-suave mt-1">
+              <p className="text-sm text-verde-medio mt-1">
                 Servicios y items extra disponibles para sumar a reservas privadas
               </p>
             </div>
@@ -297,7 +297,7 @@ export default function AddonsPage() {
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
           <div className="relative flex-1">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde-suave"
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde-medio"
               aria-hidden="true"
             />
             <label htmlFor="addon-search" className="sr-only">
@@ -347,7 +347,7 @@ export default function AddonsPage() {
         )}
 
         {error && (
-          <div className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex items-center gap-2 text-sm text-rojo">
+          <div className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex items-center gap-2 text-sm text-red-700">
             <AlertTriangle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
             <span>{error}</span>
             <button
@@ -365,10 +365,10 @@ export default function AddonsPage() {
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="h-6 w-6 animate-spin text-terracota" aria-hidden="true" />
-              <span className="ml-3 text-sm text-verde-suave">Cargando add-ons...</span>
+              <span className="ml-3 text-sm text-verde-medio">Cargando add-ons...</span>
             </div>
           ) : items.length === 0 ? (
-            <div className="text-center py-16 text-verde-suave">
+            <div className="text-center py-16 text-verde-medio">
               <PackagePlus className="h-12 w-12 mx-auto text-neutro-gris mb-3" aria-hidden="true" />
               <p className="font-medium">No hay add-ons en esta vista</p>
               <p className="text-sm mt-1">Ajusta los filtros o agrega un nuevo add-on.</p>
@@ -391,7 +391,7 @@ export default function AddonsPage() {
                       <td className="px-4 py-3">
                         <div className="font-medium text-verde">{a.nombre}</div>
                         {a.descripcion && (
-                          <div className="text-xs text-verde-suave mt-0.5 max-w-md truncate">
+                          <div className="text-xs text-verde-medio mt-0.5 max-w-md truncate">
                             {a.descripcion}
                           </div>
                         )}
@@ -412,7 +412,7 @@ export default function AddonsPage() {
                           className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs disabled:opacity-50 ${
                             a.disponible
                               ? 'bg-verde/10 text-verde hover:bg-verde/20'
-                              : 'bg-neutro-light text-verde-suave hover:bg-neutro-borde/40'
+                              : 'bg-neutro-light text-verde-medio hover:bg-neutro-borde/40'
                           }`}
                         >
                           {toggling === a.id ? (
@@ -459,7 +459,7 @@ export default function AddonsPage() {
 
           {totalPages > 1 && (
             <div className="flex items-center justify-between px-4 py-3 bg-neutro-light border-t border-neutro-borde text-sm">
-              <span className="text-verde-suave">
+              <span className="text-verde-medio">
                 {totalCount} add-ons · Página {page} de {totalPages}
               </span>
               <div className="flex gap-2">
@@ -510,7 +510,7 @@ export default function AddonsPage() {
                 className="p-2 hover:bg-neutro-light rounded-lg"
                 disabled={saving}
               >
-                <X className="h-5 w-5 text-verde-suave" aria-hidden="true" />
+                <X className="h-5 w-5 text-verde-medio" aria-hidden="true" />
               </button>
             </div>
 
@@ -519,7 +519,7 @@ export default function AddonsPage() {
                 <div
                   role="alert"
                   data-testid="addon-form-error"
-                  className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-rojo"
+                  className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-red-700"
                 >
                   <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
                   <span>{formError}</span>
@@ -557,7 +557,7 @@ export default function AddonsPage() {
                     aria-describedby="addon-precio-ayuda"
                     className="w-full px-3 py-2 border border-neutro-borde rounded-lg text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
                   />
-                  <p id="addon-precio-ayuda" data-testid="addon-precio-ayuda" className="text-xs text-verde-suave mt-1">
+                  <p id="addon-precio-ayuda" data-testid="addon-precio-ayuda" className="text-xs text-verde-medio mt-1">
                     En la reserva se cobra precio × cantidad (la cantidad se elige al agregarlo; empieza en 1).
                   </p>
                 </div>
@@ -576,7 +576,7 @@ export default function AddonsPage() {
                     aria-describedby="addon-cap-ayuda"
                     className="w-full px-3 py-2 border border-neutro-borde rounded-lg text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
                   />
-                  <p id="addon-cap-ayuda" data-testid="addon-cap-ayuda" className="text-xs text-verde-suave mt-1">
+                  <p id="addon-cap-ayuda" data-testid="addon-cap-ayuda" className="text-xs text-verde-medio mt-1">
                     Vacío o 0 = sin tope de personas
                   </p>
                 </div>

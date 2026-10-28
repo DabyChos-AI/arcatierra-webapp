@@ -37,6 +37,8 @@ const TITLES: Record<string, [string, string]> = {
   '/admin/carritos-abandonados': ['Carritos abandonados', 'Tienda / Carritos abandonados'],
   '/admin/mensajes': ['Mensajes', 'Operacion / Mensajes'],
   '/admin/manuales': ['Manuales', 'Operacion / Manuales'],
+  // R15 F1 (WF7): pantalla de front-panel, grupo «Sitio web» del menú
+  '/admin/contenido-sitio': ['Contenido del sitio', 'Sitio web / Contenido del sitio'],
 }
 
 function getTitle(pathname: string | null): [string, string] {
@@ -94,7 +96,7 @@ export default function AdminTopbar() {
         <div className="min-w-0">
           {/* H1 (R7): <p> y no <h1>, como AdminHeader: el <h1> es de cada pantalla (uno por ruta). */}
           <p className="font-display text-xl text-verde leading-tight truncate">{title}</p>
-          <p className="text-xs text-verde-suave truncate">{breadcrumb}</p>
+          <p className="text-xs text-verde-medio truncate">{breadcrumb}</p>
         </div>
 
         {/* R11 (K3, K5): la búsqueda (⌘K) y la campana pasaron a AdminHeader, la barra de TODAS las páginas. */}
@@ -124,14 +126,14 @@ export default function AdminTopbar() {
                   <span
                     data-testid="admin-topbar-rol"
                     data-rol={rolActivo?.nombre ?? ''}
-                    className="bg-terracota/10 text-terracota text-xs px-2 py-0.5 rounded-full"
+                    className="bg-terracota/10 text-terracota-oscuro text-xs px-2 py-0.5 rounded-full"
                   >
                     {roleLabel}
                   </span>
                 )}
               </div>
               <ChevronDown
-                className={`h-4 w-4 text-verde-suave transition-transform ${
+                className={`h-4 w-4 text-verde-medio transition-transform ${
                   userMenuOpen ? 'rotate-180' : ''
                 }`}
                 aria-hidden="true"
@@ -142,7 +144,7 @@ export default function AdminTopbar() {
                 <div className="px-3 py-2 border-b border-neutro-borde">
                   <p className="text-sm font-semibold text-verde truncate">{userName}</p>
                   {/* MENU1 (R11b, DR38): solo el nombre y el rol; el correo del empleado ya no se pinta (salía en las capturas). */}
-                  <p className="text-xs text-verde-suave truncate" data-testid="admin-topbar-menu-rol">
+                  <p className="text-xs text-verde-medio truncate" data-testid="admin-topbar-menu-rol">
                     {roleLabel}
                   </p>
                 </div>

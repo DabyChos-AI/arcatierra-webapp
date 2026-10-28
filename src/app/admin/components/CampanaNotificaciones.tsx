@@ -351,7 +351,7 @@ export default function CampanaNotificaciones() {
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-neutro-borde px-4 py-3">
             <p className="mb-0 text-sm font-semibold text-verde">
               Notificaciones
-              {noLeidas > 0 && <span className="ml-1 font-normal text-verde-suave">({insignia} sin leer)</span>}
+              {noLeidas > 0 && <span className="ml-1 font-normal text-verde-medio">({insignia} sin leer)</span>}
             </p>
             {noLeidas > 0 && (
               <button
@@ -369,7 +369,7 @@ export default function CampanaNotificaciones() {
 
           <div className="min-h-0 flex-1 overflow-y-auto">
             {estado === 'cargando' && items.length === 0 && (
-              <p data-testid="campana-cargando" role="status" className="mb-0 px-4 py-6 text-center text-sm text-verde-suave">
+              <p data-testid="campana-cargando" role="status" className="mb-0 px-4 py-6 text-center text-sm text-verde-medio">
                 Cargando avisos…
               </p>
             )}
@@ -392,7 +392,7 @@ export default function CampanaNotificaciones() {
             )}
 
             {estado === 'listo' && items.length === 0 && (
-              <p data-testid="campana-vacio" className="mb-0 px-4 py-6 text-center text-sm text-verde-suave">
+              <p data-testid="campana-vacio" className="mb-0 px-4 py-6 text-center text-sm text-verde-medio">
                 Sin avisos en los últimos 30 días
               </p>
             )}
@@ -416,13 +416,13 @@ export default function CampanaNotificaciones() {
                       >
                         <span className="flex items-center gap-2">
                           {!n.leida && <span className="h-2 w-2 shrink-0 rounded-full bg-terracota" aria-hidden="true" />}
-                          <span className="min-w-0 flex-1 truncate text-xs font-semibold uppercase tracking-wide text-verde-suave">
+                          <span className="min-w-0 flex-1 truncate text-xs font-semibold uppercase tracking-wide text-verde-medio">
                             {etiqueta}
                           </span>
                           <time
                             dateTime={n.creada_en}
                             title={formatFechaHoraMexico(n.creada_en)}
-                            className="shrink-0 text-xs text-verde-suave"
+                            className="shrink-0 text-xs text-verde-medio"
                           >
                             {haceCuanto(n.creada_en, ahora)}
                           </time>
@@ -430,7 +430,7 @@ export default function CampanaNotificaciones() {
                         <span className={`mt-1 block break-words text-sm ${n.leida ? 'text-verde-tipografia' : 'font-semibold text-verde'}`}>
                           {n.titulo}
                         </span>
-                        {n.detalle && <span className="mt-0.5 block break-words text-xs text-verde-suave">{n.detalle}</span>}
+                        {n.detalle && <span className="mt-0.5 block break-words text-xs text-verde-medio">{n.detalle}</span>}
                         <span className="sr-only">{n.leida ? ' (leída)' : ' (sin leer)'}</span>
                       </button>
                       {conAtencion && (

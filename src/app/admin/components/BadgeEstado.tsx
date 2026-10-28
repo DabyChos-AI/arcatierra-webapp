@@ -9,11 +9,11 @@ interface BadgeEstadoProps {
 const ESTADO_CONFIG: Record<ReservaEstado, { label: string; classes: string }> = {
   tentativo: {
     label: 'Tentativa',
-    classes: 'bg-amarillo-bg text-amarillo border border-amarillo/30',
+    classes: 'bg-amarillo-bg text-amber-700 border border-amarillo/30',
   },
   tentativa: {
     label: 'Tentativa',
-    classes: 'bg-amarillo-bg text-amarillo border border-amarillo/30',
+    classes: 'bg-amarillo-bg text-amber-700 border border-amarillo/30',
   },
   confirmada: {
     label: 'Confirmada',
@@ -29,7 +29,7 @@ const ESTADO_CONFIG: Record<ReservaEstado, { label: string; classes: string }> =
   },
   cancelada: {
     label: 'Cancelada',
-    classes: 'bg-neutro-borde text-verde-suave line-through',
+    classes: 'bg-neutro-borde text-verde-claro line-through',
   },
   reagendada: {
     label: 'Reagendada',

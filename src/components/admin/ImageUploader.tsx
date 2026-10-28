@@ -127,7 +127,7 @@ export function ImageUploader({
           <button
             type="button"
             onClick={handleRemove}
-            className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
           >
             <X className="h-4 w-4" />
           </button>
@@ -164,14 +164,14 @@ export function ImageUploader({
             <div className="flex flex-col items-center gap-2">
               <Upload className="h-10 w-10 text-gray-400" />
               <p className="text-sm text-gray-600">{placeholder}</p>
-              <p className="text-xs text-gray-400">JPEG, PNG, WebP (máx. 10MB)</p>
+              <p className="text-xs text-gray-500">JPEG, PNG, WebP (máx. 10MB)</p>
             </div>
           )}
         </div>
       )}
 
       {error && (
-        <div className="mt-2 flex items-center gap-2 text-red-500 text-sm">
+        <div className="mt-2 flex items-center gap-2 text-red-600 text-sm">
           <AlertCircle className="h-4 w-4" />
           {error}
         </div>
@@ -302,7 +302,7 @@ export function GalleryUploader({
               <button
                 type="button"
                 onClick={() => handleRemove(index)}
-                className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -341,14 +341,14 @@ export function GalleryUploader({
             <div className="flex flex-col items-center gap-2">
               <ImageIcon className="h-8 w-8 text-gray-400" />
               <p className="text-sm text-gray-600">Arrastra imágenes o haz clic</p>
-              <p className="text-xs text-gray-400">Puedes seleccionar múltiples</p>
+              <p className="text-xs text-gray-500">Puedes seleccionar múltiples</p>
             </div>
           )}
         </div>
       )}
 
       {error && (
-        <div className="mt-2 flex items-center gap-2 text-red-500 text-sm">
+        <div className="mt-2 flex items-center gap-2 text-red-600 text-sm">
           <AlertCircle className="h-4 w-4" />
           {error}
         </div>

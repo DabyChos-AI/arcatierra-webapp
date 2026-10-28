@@ -217,7 +217,7 @@ export default function ModalPreviewReporte({
           <div className="flex flex-wrap items-end gap-4 border-b border-neutro-borde bg-neutro-light px-5 py-3">
             {usaSemana && (
               <div className="flex flex-col gap-1">
-                <label htmlFor="semana-reporte" className="text-xs font-semibold text-verde-suave">
+                <label htmlFor="semana-reporte" className="text-xs font-semibold text-verde-medio">
                   Semana (cualquier día)
                 </label>
                 <input
@@ -234,7 +234,7 @@ export default function ModalPreviewReporte({
             )}
             {usaMeses && (
               <div className="flex flex-col gap-1">
-                <label htmlFor="meses-proyeccion" className="text-xs font-semibold text-verde-suave">
+                <label htmlFor="meses-proyeccion" className="text-xs font-semibold text-verde-medio">
                   Meses de proyección
                 </label>
                 <select
@@ -268,7 +268,7 @@ export default function ModalPreviewReporte({
               {metaVisible.map(([k, v]) => (
                 <span
                   key={k}
-                  className="rounded-full bg-neutro-light px-3 py-1 text-xs text-verde-suave"
+                  className="rounded-full bg-neutro-light px-3 py-1 text-xs text-verde-medio"
                 >
                   {META_ETIQUETAS[k]}: <strong className="text-verde">{String(v)}</strong>
                 </span>
@@ -290,7 +290,7 @@ export default function ModalPreviewReporte({
                   <li key={nombre}>{nombre}</li>
                 ))}
               </ul>
-              <p className="mt-1 text-verde-suave">
+              <p className="mt-1 text-verde-medio">
                 En el consolidado del Excel cada uno suma aparte de su producto: pide que se agreguen
                 a la tabla de equivalencias.
               </p>
@@ -298,7 +298,7 @@ export default function ModalPreviewReporte({
           )}
 
           {cargando && !preview ? (
-            <div className="flex items-center justify-center gap-2 py-16 text-verde-suave">
+            <div className="flex items-center justify-center gap-2 py-16 text-verde-medio">
               <Loader2 className="h-5 w-5 animate-spin" />
               Cargando vista previa…
             </div>
@@ -317,7 +317,7 @@ export default function ModalPreviewReporte({
               </button>
             </div>
           ) : preview && preview.filas.length === 0 ? (
-            <p className="py-12 text-center text-sm text-verde-suave">
+            <p className="py-12 text-center text-sm text-verde-medio">
               No hay datos para los filtros seleccionados. Puedes cambiar la fecha o el rango
               y volver a intentar.
             </p>
@@ -360,7 +360,7 @@ export default function ModalPreviewReporte({
         <div className="flex flex-wrap items-center justify-end gap-3 border-t border-neutro-borde bg-neutro-light px-5 py-3">
           <button
             onClick={onCerrar}
-            className="rounded-lg border border-neutro-borde px-4 py-2 text-sm text-verde-suave transition hover:bg-white"
+            className="rounded-lg border border-neutro-borde px-4 py-2 text-sm text-verde-medio transition hover:bg-white"
           >
             Cerrar
           </button>

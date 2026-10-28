@@ -1,0 +1,36 @@
+/*
+ * R15 · F1 (WF1, sesión 54): ajustes del sitio nuevo sobre src/app/globals.css (que no se toca: es del sitio de hoy).
+ * Solo lo importa src/app/nuevo/layout.tsx: producción no carga este archivo.
+ *
+ * globals.css le pone la letra de hoy DIRECTO a cada etiqueta (`p, span, div, li, a, button, input, textarea, label` y
+ * `h1…h6` con tamaño, peso, color y margen). Aquí, dentro de [data-sitio-nuevo], esas etiquetas vuelven a heredar del
+ * contenedor (que pone font-sn-texto). La especificidad es (0,0,2): gana a la de globals.css (0,0,1) y pierde contra cualquier
+ * clase de Tailwind (0,1,0), así que `font-sn-mono`, `text-[28px]`, `mb-3`… siguen mandando, sin depender del orden de carga.
+ */
+body :where([data-sitio-nuevo]) :is(p, span, div, li, a, button, input, textarea, label, address, nav, ul, ol) {
+  font-family: inherit;
+}
+
+body :where([data-sitio-nuevo]) :is(h1, h2, h3, h4, h5, h6) {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  margin: 0;
+}
+
+/* Foco como la maqueta: solo con teclado (globals.css lo pinta también con el ratón), terra sobre claro y durazno en el pie. */
+body :where([data-sitio-nuevo]) *:focus:not(:focus-visible) {
+  outline: none;
+}
+
+body :where([data-sitio-nuevo]) *:focus-visible {
+  outline: 2px solid #975543;
+  outline-offset: 3px;
+}
+
+body :where([data-sitio-nuevo]) footer *:focus-visible {
+  outline-color: #f2d4a8;
+}

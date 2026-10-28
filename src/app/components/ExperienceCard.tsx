@@ -15,6 +15,7 @@ interface ExperienceCardProps {
   url?: string;
 }
 
+// CLS1 (R15 · F1): clases de tailwind.config.ts; las «arcatierra-*» no existen (el precio salía blanco sobre transparente).
 const ExperienceCard: React.FC<ExperienceCardProps> = ({
   id,
   title,
@@ -59,7 +60,7 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
           }} 
         />
         {price && (
-          <div className="absolute top-4 right-4 bg-arcatierra-terracota-principal text-white py-1 px-3 rounded-full font-semibold">
+          <div className="absolute top-4 right-4 bg-terracota-principal text-white py-1 px-3 rounded-full font-semibold">
             {price}
           </div>
         )}
@@ -68,7 +69,7 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
             {tags.map((tag, i) => (
               <span 
                 key={i}
-                className="text-xs font-semibold py-1 px-2 rounded-full bg-white/80 text-arcatierra-verde-tipografia"
+                className="text-xs font-semibold py-1 px-2 rounded-full bg-white/80 text-verde-tipografia"
               >
                 {tag}
               </span>
@@ -85,7 +86,7 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
         }}
         transition={{ duration: 0.3, delay: 0.1 }}
       >
-        <h3 className="text-xl font-semibold mb-2 text-arcatierra-verde-tipografia">{title}</h3>
+        <h3 className="text-xl font-semibold mb-2 text-verde-tipografia">{title}</h3>
         
         <div className="flex items-center gap-2 mb-3 text-sm text-gray-600">
           {location && (

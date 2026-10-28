@@ -85,7 +85,7 @@ export default function ManualesPage() {
           </div>
           <div className="min-w-0">
             <h1 className="mb-0 font-display text-3xl text-verde">Manuales</h1>
-            <p className="text-sm text-verde-suave">Se abren en otra pestaña. Solo ves los de tu rol.</p>
+            <p className="text-sm text-verde-medio">Se abren en otra pestaña. Solo ves los de tu rol.</p>
           </div>
         </header>
 
@@ -107,17 +107,17 @@ export default function ManualesPage() {
         )}
 
         {!token && status !== 'loading' ? (
-          <p className="text-sm text-verde-suave">Tu sesión expiró. Vuelve a iniciar sesión.</p>
+          <p className="text-sm text-verde-medio">Tu sesión expiró. Vuelve a iniciar sesión.</p>
         ) : manuales === null ? (
           !error && (
-            <p data-testid="manuales-cargando" aria-busy={cargando} className="text-sm text-verde-suave">
+            <p data-testid="manuales-cargando" aria-busy={cargando} className="text-sm text-verde-medio">
               Cargando manuales…
             </p>
           )
         ) : manuales.length === 0 ? (
           <p
             data-testid="manuales-vacio"
-            className="rounded-xl border border-neutro-borde bg-white p-8 text-center text-verde-suave"
+            className="rounded-xl border border-neutro-borde bg-white p-8 text-center text-verde-medio"
           >
             No tienes manuales para tu rol.
           </p>
@@ -140,7 +140,7 @@ export default function ManualesPage() {
                     <FileText className="mt-1 h-6 w-6 shrink-0 text-terracota" aria-hidden="true" />
                     <div className="min-w-0">
                       <h2 className="mb-0 font-display text-xl leading-snug text-verde">{m.titulo}</h2>
-                      {detalles.length > 0 && <p className="mt-0.5 text-xs text-verde-suave">{detalles.join(' · ')}</p>}
+                      {detalles.length > 0 && <p className="mt-0.5 text-xs text-verde-medio">{detalles.join(' · ')}</p>}
                       {m.descripcion && <p className="mt-2 text-sm text-verde-tipografia">{m.descripcion}</p>}
                     </div>
                   </div>

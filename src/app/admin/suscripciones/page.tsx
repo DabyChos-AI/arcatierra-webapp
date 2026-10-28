@@ -366,8 +366,8 @@ export default function AdminSuscripcionesPage() {
       {metricas && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { title: 'Activas', value: metricas.total_activas, icon: Repeat, color: 'text-green-600', bg: 'bg-green-50' },
-            { title: 'Pausadas', value: metricas.total_pausadas, icon: Pause, color: 'text-yellow-600', bg: 'bg-yellow-50' },
+            { title: 'Activas', value: metricas.total_activas, icon: Repeat, color: 'text-green-700', bg: 'bg-green-50' },
+            { title: 'Pausadas', value: metricas.total_pausadas, icon: Pause, color: 'text-yellow-700', bg: 'bg-yellow-50' },
             { title: 'MRR Mensual', value: formatMoney(metricas.mrr), icon: DollarSign, color: 'text-[#B15543]', bg: 'bg-orange-50' },
             { title: 'Entregas 7 dias', value: metricas.proximas_entregas_7dias, icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50' },
           ].map((kpi, i) => (
@@ -479,15 +479,15 @@ export default function AdminSuscripcionesPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Suscripcion</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Cliente</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Tipo Canasta</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Frecuencia</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">Precio</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">Estado</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">MP Status</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Fecha Inicio</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">Acciones</th>
+                  <th className="text-left px-3 py-3 font-medium text-gray-600">Suscripcion</th>
+                  <th className="text-left px-3 py-3 font-medium text-gray-600">Cliente</th>
+                  <th className="text-left px-3 py-3 font-medium text-gray-600">Tipo Canasta</th>
+                  <th className="text-left px-3 py-3 font-medium text-gray-600">Frecuencia</th>
+                  <th className="text-right px-3 py-3 font-medium text-gray-600">Precio</th>
+                  <th className="text-center px-3 py-3 font-medium text-gray-600">Estado</th>
+                  <th className="text-center px-3 py-3 font-medium text-gray-600">MP Status</th>
+                  <th className="text-left px-3 py-3 font-medium text-gray-600">Fecha Inicio</th>
+                  <th className="text-center px-3 py-3 font-medium text-gray-600">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -503,22 +503,22 @@ export default function AdminSuscripcionesPage() {
                       className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
                       onClick={() => openDetalle(sub.id)}
                     >
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900 truncate max-w-[200px]">
+                      <td className="px-3 py-3">
+                        <div className="font-medium text-gray-900 max-w-[180px] break-words">
                           {sub.nombre_suscripcion || 'Sin nombre'}
                         </div>
-                        <div className="text-xs text-gray-400 font-mono">{sub.id.slice(0, 8)}...</div>
+                        <div className="text-xs text-gray-500 font-mono">{sub.id.slice(0, 8)}...</div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-3">
                         <div className="font-medium text-gray-900">{sub.usuario?.nombre || 'Sin nombre'}</div>
-                        <div className="text-xs text-gray-500">{sub.usuario?.email || '-'}</div>
+                        <div className="text-xs text-gray-500 break-all">{sub.usuario?.email || '-'}</div>
                       </td>
-                      <td className="px-4 py-3 text-gray-700">{sub.tipo_canasta || '-'}</td>
-                      <td className="px-4 py-3 text-gray-700 capitalize">{sub.frecuencia || '-'}</td>
-                      <td className="px-4 py-3 text-right font-semibold text-gray-900">
+                      <td className="px-3 py-3 text-gray-700">{sub.tipo_canasta || '-'}</td>
+                      <td className="px-3 py-3 text-gray-700 capitalize">{sub.frecuencia || '-'}</td>
+                      <td className="px-3 py-3 text-right font-semibold text-gray-900">
                         {formatMoney(sub.precio_base)}
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-3 py-3 text-center">
                         <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${estadoBadge.bg} ${estadoBadge.text}`}>
                           {ESTADO_LABELS[sub.estado] || sub.estado}
                         </span>
@@ -526,24 +526,24 @@ export default function AdminSuscripcionesPage() {
                           <span
                             data-testid={`suscripcion-cobro-fallido-${sub.id}`}
                             title={motivoRechazo(sub.cobro_fallido_detalle) ?? undefined}
-                            className="mt-1 flex items-center justify-center gap-1 whitespace-nowrap rounded-full bg-rojo-bg px-2 py-0.5 text-xs font-medium text-rojo"
+                            className="mx-auto mt-1 flex max-w-[10rem] items-center justify-center gap-1 rounded-lg bg-rojo-bg px-2 py-0.5 text-center text-xs font-medium text-red-700"
                           >
                             <CreditCard className="h-3 w-3" aria-hidden="true" />
                             Cobro rechazado desde {formatDate(sub.cobro_fallido_desde)}
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-3 py-3 text-center">
                         {mpBadge ? (
                           <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${mpBadge.bg} ${mpBadge.text}`}>
                             {sub.mp_status}
                           </span>
                         ) : (
-                          <span className="text-xs text-gray-400">-</span>
+                          <span className="text-xs text-gray-500">-</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-gray-600">{formatDate(sub.fecha_inicio)}</td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-3 py-3 text-gray-600 whitespace-nowrap">{formatDate(sub.fecha_inicio)}</td>
+                      <td className="px-3 py-3 text-center">
                         <button
                           type="button"
                           onClick={e => { e.stopPropagation(); openDetalle(sub.id) }}
@@ -668,7 +668,7 @@ export default function AdminSuscripcionesPage() {
                         <div
                           data-testid="suscripcion-detalle-cobro-fallido"
                           role="status"
-                          className="flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg p-4 text-sm text-rojo"
+                          className="flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg p-4 text-sm text-red-700"
                         >
                           <CreditCard className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                           <div>
@@ -916,7 +916,7 @@ export default function AdminSuscripcionesPage() {
                             <p
                               data-testid="suscripcion-panel-error"
                               role="alert"
-                              className="mt-3 flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg p-3 text-sm text-rojo"
+                              className="mt-3 flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg p-3 text-sm text-red-700"
                             >
                               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                               {errorAccion}

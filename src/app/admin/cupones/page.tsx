@@ -177,7 +177,7 @@ export default function CuponesPage() {
             </div>
             <div className="min-w-0">
               <h1 className="font-display text-3xl text-verde mb-0">Cupones</h1>
-              <p className="text-sm text-verde-suave mt-1">
+              <p className="text-sm text-verde-medio mt-1">
                 Códigos de descuento de la tienda y de las reservas privadas del panel
               </p>
             </div>
@@ -197,7 +197,7 @@ export default function CuponesPage() {
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
           <div className="relative flex-1 min-w-0">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde-suave"
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde-medio"
               aria-hidden="true"
             />
             <label htmlFor="cupones-buscar" className="sr-only">
@@ -244,7 +244,7 @@ export default function CuponesPage() {
           <div
             data-testid="cupones-error"
             role="alert"
-            className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex items-center gap-2 text-sm text-rojo"
+            className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex items-center gap-2 text-sm text-red-700"
           >
             <AlertTriangle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
             <span className="min-w-0">{mensajeError}</span>
@@ -273,10 +273,10 @@ export default function CuponesPage() {
           {cargando ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="h-6 w-6 animate-spin text-terracota" aria-hidden="true" />
-              <span className="ml-3 text-sm text-verde-suave">Cargando cupones...</span>
+              <span className="ml-3 text-sm text-verde-medio">Cargando cupones...</span>
             </div>
           ) : items.length === 0 ? (
-            <div data-testid="cupones-vacio" className="text-center py-16 px-4 text-verde-suave">
+            <div data-testid="cupones-vacio" className="text-center py-16 px-4 text-verde-medio">
               <TicketPercent className="h-12 w-12 mx-auto text-neutro-gris mb-3" aria-hidden="true" />
               <p className="font-medium">
                 {busqueda || filtroActivo ? 'Ningún cupón coincide con la búsqueda' : 'Todavía no hay cupones'}
@@ -310,19 +310,19 @@ export default function CuponesPage() {
                         className="border-b border-neutro-borde hover:bg-neutro-light/50 align-top"
                       >
                         <td className="px-4 py-3 font-mono font-medium text-verde whitespace-nowrap">{c.codigo}</td>
-                        <td className="px-4 py-3 text-verde-suave min-w-[160px]">
-                          {c.descripcion || <span className="italic text-neutro-gris">—</span>}
+                        <td className="px-4 py-3 text-verde-medio min-w-[160px]">
+                          {c.descripcion || <span className="italic text-verde-medio">—</span>}
                         </td>
                         <td className="px-4 py-3 text-verde whitespace-nowrap">
                           {textoValorCupon(c)}
                           {Number(c.minimo_compra) > 0 && (
-                            <span className="block text-xs text-verde-suave">
+                            <span className="block text-xs text-verde-medio">
                               Mínimo {formatMXN(Number(c.minimo_compra))}
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-verde-suave">{textoAplicaA(c)}</td>
-                        <td className="px-4 py-3 text-verde-suave whitespace-nowrap">{textoVigencia(c)}</td>
+                        <td className="px-4 py-3 text-verde-medio">{textoAplicaA(c)}</td>
+                        <td className="px-4 py-3 text-verde-medio whitespace-nowrap">{textoVigencia(c)}</td>
                         <td
                           data-testid={`cupon-usos-${c.codigo}`}
                           className="px-4 py-3 tabular-nums text-verde whitespace-nowrap"
@@ -330,7 +330,7 @@ export default function CuponesPage() {
                         >
                           {textoUsos(c)}
                           {c.usos > 0 && (
-                            <span className="block text-xs text-verde-suave">
+                            <span className="block text-xs text-verde-medio">
                               {c.usos_pedidos} tienda · {c.usos_reservas} reservas
                             </span>
                           )}
@@ -385,7 +385,7 @@ export default function CuponesPage() {
 
           {!cargando && total > 0 && (
             <div className="flex items-center justify-between flex-wrap gap-2 px-4 py-3 bg-neutro-light border-t border-neutro-borde text-sm">
-              <span className="text-verde-suave">
+              <span className="text-verde-medio">
                 {total} cupón(es){totalPages > 1 ? ` · Página ${page} de ${totalPages}` : ''}
               </span>
               {totalPages > 1 && (

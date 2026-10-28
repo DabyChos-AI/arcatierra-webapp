@@ -55,7 +55,7 @@ export default function TarjetaBusqueda({ busqueda, fueraDeLista = false, onCerr
 
       {busqueda.estado === 'cargando' ? (
         <p className="mt-3 flex items-center gap-2 text-base text-verde-tipografia" aria-busy="true">
-          <Loader2 className="h-5 w-5 shrink-0 animate-spin text-verde-suave" aria-hidden="true" />
+          <Loader2 className="h-5 w-5 shrink-0 animate-spin text-verde-medio" aria-hidden="true" />
           Buscando la reserva escaneada…
         </p>
       ) : (
@@ -70,7 +70,7 @@ export default function TarjetaBusqueda({ busqueda, fueraDeLista = false, onCerr
                   {datos.experiencia_nombre}
                 </h2>
               )}
-              <p data-testid="midia-busqueda-folio" className="text-sm text-verde-suave">
+              <p data-testid="midia-busqueda-folio" className="text-sm text-verde-medio">
                 Folio {datos.booking_id}
               </p>
               {fecha && (
@@ -96,7 +96,7 @@ export default function TarjetaBusqueda({ busqueda, fueraDeLista = false, onCerr
               role={busqueda.estado === 'error' ? 'alert' : undefined}
               className={`mt-3 flex items-start gap-2 rounded-lg p-3 text-base ${
                 busqueda.estado === 'error'
-                  ? 'border border-rojo/30 bg-rojo-bg text-rojo'
+                  ? 'border border-rojo/30 bg-rojo-bg text-red-700'
                   : 'border border-amarillo/40 bg-amarillo-bg text-verde-tipografia'
               }`}
             >

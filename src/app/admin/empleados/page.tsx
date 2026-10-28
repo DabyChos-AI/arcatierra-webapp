@@ -212,7 +212,7 @@ export default function EmpleadosPage() {
         </div>
         <button 
           onClick={() => setShowNewModal(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          className="flex items-center space-x-2 px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800"
         >
           <Plus className="h-4 w-4" />
           <span>Nuevo Empleado</span>
@@ -312,7 +312,7 @@ export default function EmpleadosPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-green-600 flex items-center justify-center text-white font-semibold">
+                          <div className="h-10 w-10 rounded-full bg-green-700 flex items-center justify-center text-white font-semibold">
                             {empleado.nombre?.charAt(0) || 'N/A'}
                           </div>
                         </div>
@@ -321,7 +321,7 @@ export default function EmpleadosPage() {
                             {empleado.nombre || 'Sin nombre'}
                           </div>
                           <div className="text-sm text-gray-500">{empleado.email}</div>
-                          <div className="text-xs text-gray-400">#{empleado.numero_empleado}</div>
+                          <div className="text-xs text-gray-500">#{empleado.numero_empleado}</div>
                         </div>
                       </div>
                     </td>
@@ -354,7 +354,7 @@ export default function EmpleadosPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button 
                         onClick={() => handleEditEmpleado(empleado)}
-                        className="text-green-600 hover:text-green-900 mr-3 p-1 rounded-lg hover:bg-green-50"
+                        className="text-green-700 hover:text-green-900 mr-3 p-1 rounded-lg hover:bg-green-50"
                         title="Editar empleado"
                       >
                         <Edit2 className="h-4 w-4" />
@@ -385,7 +385,7 @@ export default function EmpleadosPage() {
                 </h3>
                 <button
                   onClick={handleCloseModal}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-500 hover:text-gray-600"
                 >
                   ×
                 </button>
@@ -393,7 +393,7 @@ export default function EmpleadosPage() {
 
               <div className="space-y-4">
                 <div className="flex items-center space-x-4 mb-4">
-                  <div className="h-16 w-16 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                  <div className="h-16 w-16 bg-green-700 rounded-full flex items-center justify-center text-white font-bold text-xl">
                     {selectedEmpleado.nombre?.charAt(0) || 'N'}
                   </div>
                   <div>
@@ -486,7 +486,7 @@ export default function EmpleadosPage() {
                   Cerrar
                 </button>
                 <button
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800"
                   onClick={handleSaveChanges}
                 >
                   Guardar Cambios
@@ -508,7 +508,7 @@ export default function EmpleadosPage() {
                 </h3>
                 <button
                   onClick={() => setShowNewModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-500 hover:text-gray-600"
                 >
                   ×
                 </button>
@@ -604,7 +604,7 @@ export default function EmpleadosPage() {
                   Cancelar
                 </button>
                 <button
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800"
                   onClick={handleCreateEmpleado}
                 >
                   Crear Empleado

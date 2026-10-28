@@ -31,7 +31,8 @@ export default function HomePage() {
   ];
 
   return (
-    <main className="min-h-screen bg-arcatierra-beige-bg">
+    // CLS1 (R15 · F1): clases de tailwind.config.ts; las «arcatierra-*» no existen (eran variables CSS) y no pintaban nada.
+    <main className="min-h-screen bg-neutro-light">
       {/* Hero Section con Parallax */}
       <HeroParallax
         title="Alimentos Mexicanos Naturales"

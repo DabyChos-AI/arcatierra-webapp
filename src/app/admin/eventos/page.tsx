@@ -52,7 +52,7 @@ function fechaCorta(iso: string): string {
 }
 
 function Guias({ evento }: { evento: EventoPlaneacion }) {
-  if (evento.guias.length === 0) return <span className="text-verde-suave">—</span>
+  if (evento.guias.length === 0) return <span className="text-verde-medio">—</span>
   return <span>{evento.guias.map((g) => nombreGuia(g)).join(', ')}</span>
 }
 
@@ -197,7 +197,7 @@ export default function EventosPage() {
             </div>
             <div>
               <h1 className="font-display text-3xl text-verde">Eventos y fechas públicas</h1>
-              <p className="text-sm text-verde-suave mt-1">
+              <p className="text-sm text-verde-medio mt-1">
                 Planeación de las fechas públicas (chinampa, cocina, guías, tickets por canal) y
                 eventos internos
               </p>
@@ -291,14 +291,14 @@ export default function EventosPage() {
                 className={`flex items-center gap-2 px-4 py-3 text-sm border-b-2 -mb-px whitespace-nowrap transition-colors ${
                   activa
                     ? 'border-terracota text-terracota font-semibold'
-                    : 'border-transparent text-verde-suave hover:text-verde'
+                    : 'border-transparent text-verde-medio hover:text-verde'
                 }`}
               >
                 {p.label}
                 {!loading && (
                   <span
                     className={`inline-flex items-center justify-center min-w-[1.25rem] px-1.5 rounded-full text-xs tabular-nums ${
-                      activa ? 'bg-terracota/10 text-terracota' : 'bg-neutro-light text-verde-suave'
+                      activa ? 'bg-terracota/10 text-terracota-oscuro' : 'bg-neutro-light text-verde-medio'
                     }`}
                   >
                     {n}
@@ -331,7 +331,7 @@ export default function EventosPage() {
           <div
             role="alert"
             data-testid="eventos-error"
-            className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex items-center gap-2 text-sm text-rojo"
+            className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex items-center gap-2 text-sm text-red-700"
           >
             <AlertTriangle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
             <span>{error}</span>
@@ -396,7 +396,7 @@ export default function EventosPage() {
                     <td colSpan={columnas} className="px-4 py-12">
                       <div className="flex items-center justify-center">
                         <Loader2 className="h-6 w-6 animate-spin text-terracota" aria-hidden="true" />
-                        <span className="ml-3 text-sm text-verde-suave">Cargando eventos...</span>
+                        <span className="ml-3 text-sm text-verde-medio">Cargando eventos...</span>
                       </div>
                     </td>
                   </tr>
@@ -404,7 +404,7 @@ export default function EventosPage() {
                   <tr>
                     <td
                       colSpan={columnas}
-                      className="px-4 py-12 text-center text-verde-suave"
+                      className="px-4 py-12 text-center text-verde-medio"
                       data-testid="eventos-vacio"
                     >
                       <CalendarDays className="h-10 w-10 mx-auto text-neutro-gris mb-3" aria-hidden="true" />
@@ -519,7 +519,7 @@ export default function EventosPage() {
                 aria-label="Cerrar confirmación"
                 className="p-2 hover:bg-neutro-light rounded-lg"
               >
-                <X className="h-5 w-5 text-verde-suave" aria-hidden="true" />
+                <X className="h-5 w-5 text-verde-medio" aria-hidden="true" />
               </button>
             </div>
             <div className="p-6 space-y-3">
@@ -531,7 +531,7 @@ export default function EventosPage() {
               {errorBorrar && (
                 <div
                   role="alert"
-                  className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-rojo"
+                  className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-red-700"
                 >
                   <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
                   <span>{errorBorrar}</span>
@@ -588,7 +588,7 @@ function FilaPublica({
           <span className="font-medium text-verde">{nombre}</span>
           {!evento.visible_publico && (
             <span
-              className="inline-flex items-center gap-1 rounded-full text-xs px-2 py-0.5 bg-neutro-borde text-verde-suave"
+              className="inline-flex items-center gap-1 rounded-full text-xs px-2 py-0.5 bg-neutro-borde text-verde-claro"
               title="No se ve en la página: no se vende en línea"
               data-testid="evento-chip-oculta"
             >
@@ -603,7 +603,7 @@ function FilaPublica({
           )}
         </div>
         {(evento.cocina_nombre || evento.idioma) && (
-          <div className="text-xs text-verde-suave mt-0.5">
+          <div className="text-xs text-verde-medio mt-0.5">
             {[evento.cocina_nombre, evento.idioma ? etiquetaIdioma(evento.idioma) : null]
               .filter(Boolean)
               .join(' · ')}
@@ -616,7 +616,7 @@ function FilaPublica({
         </span>
         {disponibles !== null && (
           <div
-            className={`text-xs tabular-nums ${disponibles === 0 ? 'text-rojo' : 'text-verde-suave'}`}
+            className={`text-xs tabular-nums ${disponibles === 0 ? 'text-rojo' : 'text-verde-medio'}`}
           >
             {disponibles === 0 ? 'Lleno' : `${disponibles} ${disponibles === 1 ? 'disponible' : 'disponibles'}`}
           </div>
@@ -625,7 +625,7 @@ function FilaPublica({
       <td className="px-4 py-3 text-center whitespace-nowrap text-verde tabular-nums">
         {evento.tickets_registrados} registrados · {evento.tickets_web} web
       </td>
-      <td className="px-4 py-3 text-verde">{evento.chinampa ?? <span className="text-verde-suave">—</span>}</td>
+      <td className="px-4 py-3 text-verde">{evento.chinampa ?? <span className="text-verde-medio">—</span>}</td>
       <td className="px-4 py-3 text-verde max-w-[220px]">
         <Guias evento={evento} />
       </td>
@@ -675,12 +675,12 @@ function FilaInterno({
       <td className="px-4 py-3">
         <div className="font-medium text-verde">{evento.nombre_evento}</div>
         {evento.descripcion && (
-          <div className="text-xs text-verde-suave mt-0.5 max-w-md truncate" title={evento.descripcion}>
+          <div className="text-xs text-verde-medio mt-0.5 max-w-md truncate" title={evento.descripcion}>
             {evento.descripcion}
           </div>
         )}
         {(evento.cocina_nombre || evento.idioma) && (
-          <div className="text-xs text-verde-suave mt-0.5">
+          <div className="text-xs text-verde-medio mt-0.5">
             {[evento.cocina_nombre, evento.idioma ? etiquetaIdioma(evento.idioma) : null]
               .filter(Boolean)
               .join(' · ')}
@@ -688,9 +688,9 @@ function FilaInterno({
         )}
       </td>
       <td className="px-4 py-3 text-center tabular-nums text-verde">
-        {evento.personas ?? <span className="text-verde-suave">—</span>}
+        {evento.personas ?? <span className="text-verde-medio">—</span>}
       </td>
-      <td className="px-4 py-3 text-verde">{evento.chinampa ?? <span className="text-verde-suave">—</span>}</td>
+      <td className="px-4 py-3 text-verde">{evento.chinampa ?? <span className="text-verde-medio">—</span>}</td>
       <td className="px-4 py-3 text-verde max-w-[220px]">
         <Guias evento={evento} />
       </td>

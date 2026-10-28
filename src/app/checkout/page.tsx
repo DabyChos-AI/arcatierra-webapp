@@ -44,6 +44,14 @@ function co2Ahorrado(item: ItemCarrito): number {
   return (Number(metricas?.co2_saved) || 0) * (Number(item.quantity) || 0)
 }
 
+/** UIX2: los kg de CO₂ del carrito con un decimal, o null si no hay dato o redondeado da 0.0 (la frase no sale). */
+function textoCo2(items: ItemCarrito[]): string | null {
+  const total = items.reduce((sum, item) => sum + co2Ahorrado(item), 0)
+  if (!Number.isFinite(total) || total <= 0) return null
+  const texto = total.toFixed(1)
+  return texto === '0.0' ? null : texto
+}
+
 function textoExperienciasQuitadas(n: number): string {
   return n === 1
     ? 'Quitamos 1 experiencia de tu carrito: vuelve a elegir la fecha'
@@ -72,6 +80,7 @@ export default function CheckoutPage() {
 
   const hayExperiencias = cartItems.some(esItemExperiencia)
   const hayProductos = cartItems.some((item) => !esItemExperiencia(item))
+  const co2Texto = textoCo2(cartItems)
 
   useEffect(() => {
     if (!accessToken) { setCanastas([]); setConCanasta(null); return }
@@ -347,14 +356,16 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {hayProductos && (
-              <div className="mt-4 p-3 bg-green-50 rounded-lg">
+              {/* UIX2 (R15 · F1): la frase solo sale si los productos traen el dato y redondeado no es 0.0 (antes decía
+                  «ahorras aproximadamente 0.0 kg de CO₂»). Sin dato no se calcula ni se inventa una cifra. */}
+              {hayProductos && co2Texto && (
+              <div className="mt-4 p-3 bg-green-50 rounded-lg" data-testid="checkout-co2">
                 <p className="flex items-start gap-1.5 text-xs text-green-700">
                   <Sprout className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                   <span>
                     Con tu compra ahorras aproximadamente{' '}
                     <strong>
-                      {cartItems.reduce((sum, item) => sum + co2Ahorrado(item), 0).toFixed(1)} kg de CO₂
+                      {co2Texto} kg de CO₂
                     </strong>
                   </span>
                 </p>

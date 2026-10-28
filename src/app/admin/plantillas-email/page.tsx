@@ -62,7 +62,7 @@ const TIPOS_TABS: { key: FiltroTipo; label: string }[] = [
 const TIPO_BADGE: Record<PlantillaTipo, string> = {
   confirmacion: 'bg-[#33503E]/10 text-[#33503E] border border-[#33503E]/30',
   recordatorio: 'bg-amber-50 text-amber-700 border border-amber-200',
-  cotizacion: 'bg-[#B15543]/10 text-[#B15543] border border-[#B15543]/30',
+  cotizacion: 'bg-[#B15543]/10 text-terracota-oscuro border border-[#B15543]/30',
   cancelacion: 'bg-red-50 text-red-700 border border-red-200',
   reagendamiento: 'bg-blue-50 text-blue-700 border border-blue-200',
   link_pago: 'bg-violet-50 text-violet-700 border border-violet-200',
@@ -810,7 +810,7 @@ export default function PlantillasEmailPage() {
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
           <AlertTriangle
-            className="h-5 w-5 text-red-400 mr-2"
+            className="h-5 w-5 text-red-600 mr-2"
             aria-hidden="true"
           />
           <span className="text-red-700">{error}</span>
@@ -898,7 +898,7 @@ export default function PlantillasEmailPage() {
                   >
                     <td className="px-4 py-3 text-gray-700">
                       {p.experiencia_nombre ?? (
-                        <span className="italic text-gray-400">Genérica</span>
+                        <span className="italic text-gray-500">Genérica</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -1085,7 +1085,7 @@ export default function PlantillasEmailPage() {
                   className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2"
                 >
                   <AlertTriangle
-                    className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0"
+                    className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0"
                     aria-hidden="true"
                   />
                   <span className="text-sm text-red-700 flex-1">
@@ -1095,7 +1095,7 @@ export default function PlantillasEmailPage() {
                     type="button"
                     onClick={() => setModalError(null)}
                     aria-label="Cerrar error"
-                    className="text-red-500 hover:text-red-700"
+                    className="text-red-600 hover:text-red-700"
                   >
                     <X className="h-4 w-4" aria-hidden="true" />
                   </button>
@@ -1217,7 +1217,7 @@ function DatosTab({ formData, updateField, experiencias }: DatosTabProps) {
           htmlFor="modal-asunto"
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          Asunto <span className="text-red-500">*</span>
+          Asunto <span className="text-red-600">*</span>
         </label>
         <input
           id="modal-asunto"
@@ -1243,7 +1243,7 @@ function DatosTab({ formData, updateField, experiencias }: DatosTabProps) {
             htmlFor="modal-tipo"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Tipo <span className="text-red-500">*</span>
+            Tipo <span className="text-red-600">*</span>
           </label>
           <select
             id="modal-tipo"
@@ -1265,7 +1265,7 @@ function DatosTab({ formData, updateField, experiencias }: DatosTabProps) {
             htmlFor="modal-idioma"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Idioma <span className="text-red-500">*</span>
+            Idioma <span className="text-red-600">*</span>
           </label>
           <select
             id="modal-idioma"
@@ -1382,7 +1382,7 @@ function CuerpoTab({
           htmlFor="modal-cuerpo-html"
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          Cuerpo HTML <span className="text-red-500">*</span>
+          Cuerpo HTML <span className="text-red-600">*</span>
         </label>
         <textarea
           id="modal-cuerpo-html"
@@ -1432,7 +1432,7 @@ function CuerpoTab({
                 <span
                   key={v.key}
                   title={v.descripcion}
-                  className="px-1.5 py-0.5 text-[11px] rounded bg-gray-50 text-gray-400 border border-gray-200 font-mono"
+                  className="px-1.5 py-0.5 text-[11px] rounded bg-gray-50 text-gray-500 border border-gray-200 font-mono"
                 >
                   {v.key}
                 </span>
@@ -1463,7 +1463,7 @@ function PreviewTab({ asuntoConMock, cuerpoConMock }: PreviewTabProps) {
         <p className="text-xs text-gray-500 mb-1">Asunto</p>
         <p className="font-medium text-gray-900 break-words">
           {asuntoConMock || (
-            <span className="italic text-gray-400">
+            <span className="italic text-gray-500">
               Sin asunto — completa la pestaña Datos.
             </span>
           )}

@@ -117,7 +117,9 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
   return (
     <MisRolesContext.Provider value={contextoMisRoles}>
      <TemaAdminContext.Provider value={contextoTema}>
-      <div className="min-h-screen bg-gray-50">
+      {/* CLARO1 (R15 F1): `panel-admin` acota tema-claro.css a este contenedor (el sitio público no cambia aunque la
+          hoja siga cargada después de «Ver sitio»). */}
+      <div className="panel-admin min-h-screen bg-gray-50">
         <AdminHeader
           rolActivo={rolActivo}
           roles={roles}

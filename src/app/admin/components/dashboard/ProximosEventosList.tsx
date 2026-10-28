@@ -61,7 +61,7 @@ export default function ProximosEventosList({
         <h3 className="text-sm font-semibold text-verde-tipografia">
           Próximos eventos
         </h3>
-        <span className="text-[10.5px] text-verde-suave font-normal">
+        <span className="text-[10.5px] text-verde-medio font-normal">
           Siguientes 3 días
         </span>
       </div>
@@ -79,7 +79,7 @@ export default function ProximosEventosList({
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="py-8 text-center text-sm text-verde-suave">
+        <div className="py-8 text-center text-sm text-verde-medio">
           Sin eventos en los próximos días
         </div>
       ) : (
@@ -101,11 +101,11 @@ export default function ProximosEventosList({
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[10.5px] text-verde-suave">{ev.hora}</div>
+                  <div className="text-[10.5px] text-verde-medio">{ev.hora}</div>
                   <div className="text-[12.5px] font-semibold text-verde-tipografia truncate">
                     {ev.experiencia}
                   </div>
-                  <div className="text-[11px] text-verde-suave truncate">
+                  <div className="text-[11px] text-verde-medio truncate">
                     {ev.cliente}
                   </div>
                 </div>

@@ -333,7 +333,7 @@ function ListaEditable({
       <p className="text-xs text-gray-500 mb-2">{ayuda}</p>
       <div className="space-y-2">
         {items.length === 0 && (
-          <p className="text-xs text-gray-400 italic">Sin renglones. Agrega uno abajo.</p>
+          <p className="text-xs text-gray-500 italic">Sin renglones. Agrega uno abajo.</p>
         )}
         {items.map((texto, idx) => (
           <div key={idx} className="flex items-center gap-2">
@@ -351,7 +351,7 @@ function ListaEditable({
               data-testid={`${testid}-quitar-${idx}`}
               onClick={() => onChange(items.filter((_, i) => i !== idx))}
               aria-label={`Quitar ${etiquetaRenglon.toLowerCase()} ${idx + 1}`}
-              className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+              className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
             >
               <Trash2 className="h-4 w-4" aria-hidden="true" />
             </button>
@@ -465,13 +465,13 @@ export default function ExperienciasAdminPage({
 
   const colors = {
     green: {
-      primary: 'bg-green-600 hover:bg-green-700',
+      primary: 'bg-green-700 hover:bg-green-800',
       light: 'bg-green-100 text-green-800',
-      icon: 'text-green-600',
+      icon: 'text-green-700',
       ring: 'focus:ring-green-500',
       badge: 'bg-green-100 text-green-700',
       // TWD1 (R7): clases COMPLETAS (Tailwind no ve `border-${colorTema}-500` y no las generaba)
-      tab: 'border-green-500 text-green-600'
+      tab: 'border-green-500 text-green-700'
     },
     purple: {
       primary: 'bg-purple-600 hover:bg-purple-700',
@@ -1062,7 +1062,7 @@ export default function ExperienciasAdminPage({
               <Eye className="h-5 w-5 text-green-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-green-600">{totalActivas}</p>
+              <p className="text-2xl font-bold text-green-700">{totalActivas}</p>
               <p className="text-xs text-gray-500">Activas</p>
             </div>
           </div>
@@ -1086,7 +1086,7 @@ export default function ExperienciasAdminPage({
               <Users className="h-5 w-5 text-amber-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-amber-600">
+              <p className="text-2xl font-bold text-amber-700">
                 {experiencias.reduce(
                   (sum, e) => sum + (e.capacidad_maxima === CAPACIDAD_SIN_TOPE ? 0 : e.capacidad_maxima),
                   0
@@ -1168,7 +1168,7 @@ export default function ExperienciasAdminPage({
                         disabled={loadingAction === exp.id}
                         className={`p-2 rounded-lg transition-colors ${
                           exp.disponible 
-                            ? 'bg-green-100 text-green-600 hover:bg-green-200' 
+                            ? 'bg-green-100 text-green-700 hover:bg-green-200' 
                             : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
                         } disabled:opacity-50`}
                         title={exp.disponible ? 'Desactivar' : 'Activar'}
@@ -1783,7 +1783,7 @@ export default function ExperienciasAdminPage({
                     <label className="block text-sm font-medium mb-2">Horarios disponibles</label>
                     <div className="space-y-2">
                       {formData.horarios_disponibles.length === 0 && (
-                        <p className="text-xs text-gray-400 italic">
+                        <p className="text-xs text-gray-500 italic">
                           Sin horarios configurados. Agrega uno abajo.
                         </p>
                       )}
@@ -1812,7 +1812,7 @@ export default function ExperienciasAdminPage({
                               }))
                             }
                             aria-label={`Quitar horario ${idx + 1}`}
-                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -1950,7 +1950,7 @@ export default function ExperienciasAdminPage({
                             aria-label={evento.estado === 'activo' ? 'Desactivar esta fecha' : 'Activar esta fecha'}
                             className={`p-1.5 rounded ${
                               evento.estado === 'activo'
-                                ? 'bg-green-100 text-green-600'
+                                ? 'bg-green-100 text-green-700'
                                 : 'bg-gray-100 text-gray-400'
                             }`}
                           >
@@ -2059,7 +2059,7 @@ export default function ExperienciasAdminPage({
                             type="button"
                             onClick={() => handleEliminarEvento(evento.id)}
                             aria-label="Eliminar esta fecha"
-                            className="p-1.5 text-red-500 hover:bg-red-50 rounded"
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -2117,7 +2117,7 @@ export default function ExperienciasAdminPage({
                 <div
                   role="alert"
                   data-testid="exp-eliminar-tiene-futuras"
-                  className="mb-4 p-3 rounded-lg bg-rojo-bg border border-rojo/30 text-sm text-rojo"
+                  className="mb-4 p-3 rounded-lg bg-rojo-bg border border-rojo/30 text-sm text-red-700"
                 >
                   {avisoEliminar.texto}
                 </div>

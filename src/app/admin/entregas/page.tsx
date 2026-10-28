@@ -13,7 +13,7 @@ import { aviso } from '@/components/ui/Avisos'
 
 const ORIGEN_BADGE: Record<string, { bg: string; text: string; label: string }> = {
   suscripcion: { bg: 'bg-[#E4EBE4]', text: 'text-[#33503E]', label: 'Suscripción' },
-  pedido:      { bg: 'bg-[#F6E9E4]', text: 'text-[#B15543]', label: 'Tienda' },
+  pedido:      { bg: 'bg-[#F6E9E4]', text: 'text-terracota-oscuro', label: 'Tienda' },
 }
 
 interface EntregaUsuario {
@@ -357,7 +357,7 @@ export default function AdminEntregasPage() {
           {[
             { title: 'Entregas hoy', value: metricas.entregas_hoy, icon: Truck, color: 'text-[#B15543]', bg: 'bg-orange-50' },
             { title: 'Proximos 7 dias', value: metricas.entregas_proximos_7dias, icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50' },
-            { title: 'Entregadas este mes', value: metricas.entregadas_este_mes, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
+            { title: 'Entregadas este mes', value: metricas.entregadas_este_mes, icon: CheckCircle, color: 'text-green-700', bg: 'bg-green-50' },
             { title: 'Total entregas', value: metricas.total, icon: Package, color: 'text-gray-600', bg: 'bg-gray-50' },
           ].map((kpi, i) => (
             <div key={i} className="bg-white rounded-lg border border-gray-200 p-4">
@@ -495,14 +495,14 @@ export default function AdminEntregasPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-200">
-                      <th className="text-left px-4 py-3 font-medium text-gray-600">Fecha entrega</th>
-                      <th className="text-left px-4 py-3 font-medium text-gray-600">Cliente</th>
-                      <th className="text-left px-4 py-3 font-medium text-gray-600">Origen</th>
-                      <th className="text-left px-4 py-3 font-medium text-gray-600">Colonia</th>
-                      <th className="text-center px-4 py-3 font-medium text-gray-600">Estado</th>
-                      <th className="text-right px-4 py-3 font-medium text-gray-600">Precio</th>
-                      <th className="text-left px-4 py-3 font-medium text-gray-600">Notas</th>
-                      <th className="text-center px-4 py-3 font-medium text-gray-600">Acciones</th>
+                      <th className="text-left px-3 py-3 font-medium text-gray-600">Fecha entrega</th>
+                      <th className="text-left px-3 py-3 font-medium text-gray-600">Cliente</th>
+                      <th className="text-left px-3 py-3 font-medium text-gray-600">Origen</th>
+                      <th className="text-left px-3 py-3 font-medium text-gray-600">Colonia</th>
+                      <th className="text-center px-3 py-3 font-medium text-gray-600">Estado</th>
+                      <th className="text-right px-3 py-3 font-medium text-gray-600">Precio</th>
+                      <th className="text-left px-3 py-3 font-medium text-gray-600">Notas</th>
+                      <th className="text-center px-3 py-3 font-medium text-gray-600">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -516,19 +516,19 @@ export default function AdminEntregasPage() {
                           className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
                           onClick={() => openDetalle(entrega.id)}
                         >
-                          <td className="px-4 py-3">
+                          <td className="px-3 py-3">
                             <div className="font-medium text-gray-900">{formatDate(entrega.fecha_entrega)}</div>
-                            <div className="text-xs text-gray-400 font-mono">
+                            <div className="text-xs text-gray-500 font-mono">
                               {entrega.origen === 'pedido'
                                 ? entrega.folio
                                 : entrega.suscripcion?.nombre || entrega.folio}
                             </div>
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-3 py-3">
                             <div className="font-medium text-gray-900">{entrega.usuario?.nombre || 'Sin nombre'}</div>
-                            <div className="text-xs text-gray-500">{entrega.usuario?.email || '-'}</div>
+                            <div className="text-xs text-gray-500 break-all">{entrega.usuario?.email || '-'}</div>
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-3 py-3">
                             {(() => {
                               const o = ORIGEN_BADGE[entrega.origen] || ORIGEN_BADGE.suscripcion
                               return (
@@ -538,22 +538,22 @@ export default function AdminEntregasPage() {
                               )
                             })()}
                             {entrega.origen === 'pedido' && entrega.estado_origen && (
-                              <div className="text-[11px] text-gray-400 mt-0.5">{entrega.estado_origen}</div>
+                              <div className="text-[11px] text-gray-500 mt-0.5">{entrega.estado_origen}</div>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-gray-700 text-sm">{entrega.suscripcion?.colonia || '-'}</td>
-                          <td className="px-4 py-3 text-center">
+                          <td className="px-3 py-3 text-gray-700 text-sm">{entrega.suscripcion?.colonia || '-'}</td>
+                          <td className="px-3 py-3 text-center">
                             <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}>
                               {badge.label}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-right font-semibold text-gray-900">
+                          <td className="px-3 py-3 text-right font-semibold text-gray-900">
                             {formatMoney(entrega.precio_total)}
                           </td>
-                          <td className="px-4 py-3 text-gray-600 text-sm max-w-[150px] truncate">
+                          <td className="px-3 py-3 text-gray-600 text-sm max-w-[150px] truncate">
                             {entrega.notas || '-'}
                           </td>
-                          <td className="px-4 py-3 text-center">
+                          <td className="px-3 py-3 text-center">
                             <button
                               type="button"
                               onClick={e => { e.stopPropagation(); openDetalle(entrega.id) }}
@@ -765,7 +765,7 @@ export default function AdminEntregasPage() {
                           <div className="font-medium text-gray-900">{entNombre}</div>
                           <div className="text-xs text-gray-500">{entDir}</div>
                           {entTel && (
-                            <div className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                            <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                               <Phone className="h-3 w-3" /> {entTel}
                             </div>
                           )}
@@ -911,7 +911,7 @@ export default function AdminEntregasPage() {
                                   href={`https://wa.me/52${detalle.usuario.telefono.replace(/\D/g, '')}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-green-600"
+                                  className="text-green-700"
                                 >
                                   <Phone className="h-3.5 w-3.5" />
                                 </a>
@@ -1047,8 +1047,8 @@ export default function AdminEntregasPage() {
                               <div key={est} className="flex items-center gap-1">
                                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                                   isCurrent ? `${badge.bg} ${badge.text} ring-2 ring-offset-1 ring-[#33503E]`
-                                  : isPast ? 'bg-green-100 text-green-600'
-                                  : 'bg-gray-100 text-gray-400'
+                                  : isPast ? 'bg-green-100 text-green-700'
+                                  : 'bg-gray-100 text-gray-600'
                                 }`}>
                                   {badge.label}
                                 </span>

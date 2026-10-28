@@ -237,7 +237,7 @@ export default function ModalEventoInterno({
             aria-label="Cerrar modal"
             className="p-2 hover:bg-neutro-light rounded-lg"
           >
-            <X className="h-5 w-5 text-verde-suave" aria-hidden="true" />
+            <X className="h-5 w-5 text-verde-medio" aria-hidden="true" />
           </button>
         </div>
 
@@ -251,7 +251,7 @@ export default function ModalEventoInterno({
           {error && (
             <div
               role="alert"
-              className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-rojo"
+              className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-red-700"
             >
               <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
               <span>{error}</span>

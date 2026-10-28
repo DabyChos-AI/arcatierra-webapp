@@ -105,7 +105,7 @@ interface LeadsStats {
 const ESTADO_BADGE: Record<EstadoLead, { label: string; classes: string }> = {
   nuevo: {
     label: 'Nuevo',
-    classes: 'bg-[#B15543]/10 text-[#B15543] border border-[#B15543]/30',
+    classes: 'bg-[#B15543]/10 text-terracota-oscuro border border-[#B15543]/30',
   },
   en_cotizacion: {
     label: 'En cotización',
@@ -590,7 +590,7 @@ export default function AdminLeadsPage() {
         icon: Mail,
         color: '#F59E0B',
         bgClass: 'bg-amber-50',
-        textClass: 'text-amber-600',
+        textClass: 'text-amber-700',
       },
       {
         title: 'Convertidos este mes',
@@ -815,7 +815,7 @@ export default function AdminLeadsPage() {
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
           <AlertTriangle
-            className="h-5 w-5 text-red-400 mr-2"
+            className="h-5 w-5 text-red-600 mr-2"
             aria-hidden="true"
           />
           <span className="text-red-700">{error}</span>
@@ -920,7 +920,7 @@ export default function AdminLeadsPage() {
                       </td>
                       <td className="px-4 py-3 text-gray-700">
                         {lead.experiencia_nombre || (
-                          <span className="text-gray-400 italic">
+                          <span className="text-gray-500 italic">
                             Sin especificar
                           </span>
                         )}
@@ -928,7 +928,7 @@ export default function AdminLeadsPage() {
                       <td className="px-4 py-3 text-center">
                         {lead.medio_contacto === 'whatsapp' ? (
                           <span
-                            className="inline-flex items-center justify-center text-green-600"
+                            className="inline-flex items-center justify-center text-green-700"
                             title="WhatsApp"
                           >
                             <MessageCircle
@@ -1042,7 +1042,7 @@ export default function AdminLeadsPage() {
               {accionError && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
                   <AlertTriangle
-                    className="h-4 w-4 text-red-500 mt-0.5"
+                    className="h-4 w-4 text-red-600 mt-0.5"
                     aria-hidden="true"
                   />
                   <span className="text-sm text-red-700">{accionError}</span>
@@ -1112,7 +1112,7 @@ export default function AdminLeadsPage() {
                   </label>
                   <div className="bg-[#E3DBCB]/40 border-l-[3px] border-[#CCBB9A] rounded-md p-3 text-sm italic text-gray-700 whitespace-pre-wrap max-h-48 overflow-y-auto leading-relaxed">
                     {leadDetalle.mensaje || (
-                      <span className="text-gray-400 not-italic">
+                      <span className="text-gray-500 not-italic">
                         Sin mensaje
                       </span>
                     )}
@@ -1197,7 +1197,7 @@ export default function AdminLeadsPage() {
                   {leadDetalle.notas_internas ? (
                     leadDetalle.notas_internas
                   ) : (
-                    <span className="text-gray-400 italic">
+                    <span className="text-gray-500 italic">
                       Aun no hay notas. Agrega la primera abajo.
                     </span>
                   )}
@@ -1368,7 +1368,7 @@ export default function AdminLeadsPage() {
                   htmlFor="crear-nombre"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Nombre <span className="text-red-500">*</span>
+                  Nombre <span className="text-red-600">*</span>
                 </label>
                 <input
                   id="crear-nombre"
@@ -1389,7 +1389,7 @@ export default function AdminLeadsPage() {
                   htmlFor="crear-medio"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Medio de contacto <span className="text-red-500">*</span>
+                  Medio de contacto <span className="text-red-600">*</span>
                 </label>
                 <select
                   id="crear-medio"
@@ -1415,7 +1415,7 @@ export default function AdminLeadsPage() {
                   >
                     Telefono
                     {crearForm.medio_contacto === 'whatsapp' && (
-                      <span className="text-red-500"> *</span>
+                      <span className="text-red-600"> *</span>
                     )}
                   </label>
                   <input
@@ -1437,7 +1437,7 @@ export default function AdminLeadsPage() {
                   >
                     Email
                     {crearForm.medio_contacto === 'email' && (
-                      <span className="text-red-500"> *</span>
+                      <span className="text-red-600"> *</span>
                     )}
                   </label>
                   <input

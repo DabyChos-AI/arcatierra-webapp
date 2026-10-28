@@ -105,11 +105,11 @@ export default function TabContacto({ token, mensajeInicial, onMensajeInicialUsa
     <section aria-label="Mensajes de contacto" className="space-y-4">
       <div className="flex flex-wrap items-end gap-3">
         <div className="min-w-0 flex-1 sm:max-w-xs">
-          <label htmlFor="mensajes-buscar" className="block text-xs text-verde-suave">
+          <label htmlFor="mensajes-buscar" className="block text-xs text-verde-medio">
             Buscar
           </label>
           <div className="relative mt-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-verde-suave" aria-hidden="true" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-verde-medio" aria-hidden="true" />
             <input
               id="mensajes-buscar"
               data-testid="mensajes-buscar"
@@ -122,7 +122,7 @@ export default function TabContacto({ token, mensajeInicial, onMensajeInicialUsa
           </div>
         </div>
         <div>
-          <label htmlFor="mensajes-filtro-estado" className="block text-xs text-verde-suave">
+          <label htmlFor="mensajes-filtro-estado" className="block text-xs text-verde-medio">
             Estado
           </label>
           <select
@@ -144,7 +144,7 @@ export default function TabContacto({ token, mensajeInicial, onMensajeInicialUsa
           </select>
         </div>
         {datos && (
-          <p data-testid="mensajes-total" className="pb-3 text-sm text-verde-suave">
+          <p data-testid="mensajes-total" className="pb-3 text-sm text-verde-medio">
             {plural(datos.total, 'mensaje', 'mensajes')} · {plural(datos.nuevos, 'nuevo', 'nuevos')}
           </p>
         )}
@@ -168,13 +168,13 @@ export default function TabContacto({ token, mensajeInicial, onMensajeInicialUsa
       )}
 
       {cargando && !datos ? (
-        <p data-testid="mensajes-cargando" aria-busy="true" className="text-sm text-verde-suave">
+        <p data-testid="mensajes-cargando" aria-busy="true" className="text-sm text-verde-medio">
           Cargando mensajes…
         </p>
       ) : datos && datos.items.length === 0 && !error ? (
         <div
           data-testid="mensajes-vacio"
-          className="flex flex-col items-center gap-2 rounded-xl border border-neutro-borde bg-white p-8 text-center text-verde-suave"
+          className="flex flex-col items-center gap-2 rounded-xl border border-neutro-borde bg-white p-8 text-center text-verde-medio"
         >
           <Inbox className="h-8 w-8" aria-hidden="true" />
           <p>{q || estado ? 'Ningún mensaje coincide con el filtro.' : 'Todavía no hay mensajes de contacto.'}</p>
@@ -196,17 +196,17 @@ export default function TabContacto({ token, mensajeInicial, onMensajeInicialUsa
               >
                 <span className="flex flex-wrap items-center justify-between gap-2">
                   <span className={`min-w-0 truncate text-sm ${m.estado === 'nuevo' ? 'font-semibold text-verde' : 'text-verde-tipografia'}`}>
-                    {m.nombre} <span className="font-normal text-verde-suave">· {m.email}</span>
+                    {m.nombre} <span className="font-normal text-verde-medio">· {m.email}</span>
                   </span>
                   <span className="flex shrink-0 items-center gap-2">
-                    <span className="text-xs text-verde-suave">{fechaHora(m.creado_en)}</span>
+                    <span className="text-xs text-verde-medio">{fechaHora(m.creado_en)}</span>
                     <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${CLASE_ESTADO_MENSAJE[m.estado]}`}>
                       {ETIQUETA_ESTADO_MENSAJE[m.estado]}
                     </span>
                   </span>
                 </span>
                 <span className="mt-1 block truncate text-sm text-verde">{m.asunto ?? '(sin asunto)'}</span>
-                <span className="mt-0.5 block truncate text-xs text-verde-suave">{m.mensaje}</span>
+                <span className="mt-0.5 block truncate text-xs text-verde-medio">{m.mensaje}</span>
               </button>
             </li>
           ))}

@@ -1,0 +1,13 @@
+/* CLARO1 (R15 F1, 28-oct-2026): lo del modo CLARO del panel que no se arregla con clases.
+   Escrito a mano por front-pulido. Todo dentro de @media screen, de .panel-admin (el contenedor de AdminLayoutClient:
+   el sitio público no cambia aunque esta hoja siga cargada después de «Ver sitio») y de html SIN data-tema-admin="oscuro"
+   (en oscuro mandan tema-oscuro.css y tema-oscuro-especiales.css). Contrastes WCAG medidos contra blanco. */
+
+@media screen {
+  /* Placeholders sin clase propia: el preflight de Tailwind los pinta gray-400 #9ca3af (2.54 sobre blanco).
+     gray-500 #6b7280 = 4.83 sobre blanco y 4.63 sobre gray-50. Especificidad (0,0,3): le gana al preflight (0,0,2);
+     una clase placeholder:* (0,1,1) sigue mandando. */
+  :where(html:not([data-tema-admin="oscuro"])) body :where(.panel-admin) :is(input, textarea)::placeholder {
+    color: #6b7280;
+  }
+}

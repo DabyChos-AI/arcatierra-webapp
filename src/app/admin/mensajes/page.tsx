@@ -61,7 +61,7 @@ export default function MensajesPage() {
           </div>
           <div className="min-w-0">
             <h1 className="mb-0 font-display text-3xl text-verde">Mensajes</h1>
-            <p className="text-sm text-verde-suave">
+            <p className="text-sm text-verde-medio">
               Lo que llega del formulario de contacto y los correos del newsletter. Desde aquí no se manda ningún correo.
             </p>
           </div>
@@ -81,7 +81,7 @@ export default function MensajesPage() {
                 className={`-mb-px flex min-h-[44px] items-center gap-2 whitespace-nowrap border-b-2 px-4 text-sm transition-colors ${
                   activa
                     ? 'border-terracota font-semibold text-terracota'
-                    : 'border-transparent text-verde-suave hover:text-verde'
+                    : 'border-transparent text-verde-medio hover:text-verde'
                 }`}
               >
                 <Icono className="h-4 w-4" aria-hidden="true" />
@@ -92,7 +92,7 @@ export default function MensajesPage() {
         </div>
 
         {!token ? (
-          <p className="text-sm text-verde-suave" aria-busy={status === 'loading'}>
+          <p className="text-sm text-verde-medio" aria-busy={status === 'loading'}>
             {status === 'loading' ? 'Cargando…' : 'Tu sesión expiró. Vuelve a iniciar sesión.'}
           </p>
         ) : pestana === 'contacto' ? (

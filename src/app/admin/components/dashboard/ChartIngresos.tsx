@@ -25,9 +25,9 @@ interface ChartIngresosProps {
 const TERRACOTA = '#B15543'
 
 // K2 (DR77): recharts pinta por props, no por clases: los colores salen del tema. `claro` = los valores de
-// siempre (sin cambios); `oscuro` medido sobre la superficie #1C2420 (ejes 6.98, línea 6.47).
+// siempre salvo el eje (CLARO1, R15 F1: #748880 daba 3.77 sobre blanco; #596C64 = verde-medio, 5.59); `oscuro` medido sobre la superficie #1C2420 (ejes 6.98, línea 6.47).
 const COLORES = {
-  claro: { linea: TERRACOTA, rejilla: '#E4D7C3', eje: '#748880', punto: '#fff' },
+  claro: { linea: TERRACOTA, rejilla: '#E4D7C3', eje: '#596C64', punto: '#fff' },
   oscuro: { linea: '#E58F7C', rejilla: '#34413A', eje: '#A2AFA8', punto: '#1C2420' },
 } as const
 
@@ -76,12 +76,12 @@ export default function ChartIngresos({ data, loading }: ChartIngresosProps) {
           <h3 className="text-sm font-semibold text-verde-tipografia">
             Ingresos últimos 6 meses
           </h3>
-          <p className="text-[10.5px] text-verde-suave">
+          <p className="text-[10.5px] text-verde-medio">
             Lo vendido por mes de la experiencia (confirmadas, pagadas y realizadas)
           </p>
         </div>
         {!loading && data.length > 0 && (
-          <span className="text-[10.5px] text-verde-suave font-normal">
+          <span className="text-[10.5px] text-verde-medio font-normal">
             Total: ${totalM.toFixed(2)}M MXN
           </span>
         )}
@@ -90,7 +90,7 @@ export default function ChartIngresos({ data, loading }: ChartIngresosProps) {
       {loading ? (
         <div className="h-[200px] rounded-lg bg-neutral-200 animate-pulse" />
       ) : data.length === 0 ? (
-        <div className="h-[200px] flex items-center justify-center text-sm text-verde-suave">
+        <div className="h-[200px] flex items-center justify-center text-sm text-verde-medio">
           Sin datos de ingresos
         </div>
       ) : (

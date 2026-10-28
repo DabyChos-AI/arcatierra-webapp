@@ -34,6 +34,7 @@ import {
   BookOpen,
   MessageSquare,
   ShoppingBasket,
+  LayoutTemplate,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -120,6 +121,13 @@ const NAV_SECTIONS: NavSection[] = [
         permiso: 'experiencias_privadas',
         permisosAlguno: ['experiencias_publicas', 'experiencias_privadas', 'mi_dia'],
       },
+    ],
+  },
+  {
+    // R15 · F1 (WF7, DR61): lo que el equipo edita del sitio público nuevo. Permiso nuevo `contenido_sitio` (admin y super_admin).
+    label: 'Sitio web',
+    items: [
+      { href: '/admin/contenido-sitio', label: 'Contenido del sitio', icon: LayoutTemplate, permiso: 'contenido_sitio' },
     ],
   },
   {
@@ -305,7 +313,8 @@ export default function AdminSidebar({ isOpen, onClose, permisosActivos }: Admin
         <nav className="py-2">
           {filteredSections.map((section) => (
             <div key={section.label} className="mb-2">
-              <div className="text-xs uppercase tracking-wide text-verde-suave px-4 py-2 font-semibold">
+              {/* CLARO1 (R15 · F1, C19): verde-suave daba 3.77 sobre blanco; verde-medio 5.59. */}
+              <div className="text-xs uppercase tracking-wide text-verde-medio px-4 py-2 font-semibold">
                 {section.label}
               </div>
               <ul>
@@ -322,7 +331,7 @@ export default function AdminSidebar({ isOpen, onClose, permisosActivos }: Admin
                           relative flex items-center gap-3 px-4 py-2.5 text-sm transition-colors
                           ${
                             isActive
-                              ? 'bg-terracota/10 text-terracota border-l-2 border-terracota'
+                              ? 'bg-terracota/10 text-terracota-oscuro border-l-2 border-terracota' // CLARO1: la letra 4.33 → 4.98; el borde igual
                               : 'text-verde hover:bg-neutro-light'
                           }
                         `}

@@ -20,7 +20,7 @@ function etiquetaEstado(estado: string): string {
 function Dato({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wide text-verde-suave">{etiqueta}</dt>
+      <dt className="text-xs uppercase tracking-wide text-verde-medio">{etiqueta}</dt>
       <dd className="text-sm text-verde-tipografia mt-0.5">{children}</dd>
     </div>
   )
@@ -68,7 +68,7 @@ export default function ModalVerEvento({
       >
         <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-3 border-b border-neutro-borde">
           <div>
-            <p className="text-xs uppercase tracking-wide text-verde-suave">
+            <p className="text-xs uppercase tracking-wide text-verde-medio">
               {esPublica ? 'Fecha pública' : esInterno ? 'Evento interno' : evento.tipo_evento}
               {!evento.visible_publico && ' · oculta en la web'}
             </p>
@@ -79,20 +79,20 @@ export default function ModalVerEvento({
               <span
                 data-testid="ver-evento-estado"
                 data-estado={evento.estado}
-                className="inline-block mt-1 rounded-full text-xs font-medium px-2 py-0.5 bg-rojo-bg text-rojo"
+                className="inline-block mt-1 rounded-full text-xs font-medium px-2 py-0.5 bg-rojo-bg text-red-700"
               >
                 {etiquetaEstado(evento.estado)}
               </span>
             )}
             {esInterno && evento.descripcion && (
-              <p className="text-sm text-verde-suave mt-1">{evento.descripcion}</p>
+              <p className="text-sm text-verde-medio mt-1">{evento.descripcion}</p>
             )}
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="p-1.5 rounded-lg text-verde-suave hover:bg-neutro-light"
+            className="p-1.5 rounded-lg text-verde-medio hover:bg-neutro-light"
           >
             <X className="h-5 w-5" />
           </button>
@@ -101,25 +101,25 @@ export default function ModalVerEvento({
         <dl className="grid grid-cols-2 gap-x-6 gap-y-4 px-6 py-5">
           <Dato etiqueta="Fecha">
             <span className="inline-flex items-center gap-1.5">
-              <Calendar className="h-4 w-4 text-verde-suave" aria-hidden="true" />
+              <Calendar className="h-4 w-4 text-verde-medio" aria-hidden="true" />
               {formatFechaMexico(evento.fecha_evento)}
             </span>
           </Dato>
           <Dato etiqueta="Horario">
             <span className="inline-flex items-center gap-1.5">
-              <Clock className="h-4 w-4 text-verde-suave" aria-hidden="true" />
+              <Clock className="h-4 w-4 text-verde-medio" aria-hidden="true" />
               {horario}
             </span>
           </Dato>
           <Dato etiqueta="Chinampa">
             <span className="inline-flex items-center gap-1.5">
-              <MapPin className="h-4 w-4 text-verde-suave" aria-hidden="true" />
+              <MapPin className="h-4 w-4 text-verde-medio" aria-hidden="true" />
               {evento.chinampa || 'Sin asignar'}
             </span>
           </Dato>
           <Dato etiqueta={esPublica ? 'Cupo' : 'Personas'}>
             <span className="inline-flex items-center gap-1.5">
-              <Users className="h-4 w-4 text-verde-suave" aria-hidden="true" />
+              <Users className="h-4 w-4 text-verde-medio" aria-hidden="true" />
               {esPublica ? cupo : evento.personas != null ? evento.personas : 'Sin definir'}
             </span>
           </Dato>
@@ -170,7 +170,7 @@ export default function ModalVerEvento({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-neutro-borde text-verde-suave hover:bg-neutro-light"
+            className="px-4 py-2 rounded-lg border border-neutro-borde text-verde-medio hover:bg-neutro-light"
           >
             Cerrar
           </button>

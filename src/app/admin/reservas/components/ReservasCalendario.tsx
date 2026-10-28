@@ -198,6 +198,15 @@ export default function ReservasCalendario({
         .fc .fc-timegrid-slot-label-cushion {
           color: #111827;
         }
+        /* CLARO1 (R15 F1): días del otro mes. FullCalendar baja su número a opacity .3 (1.95 sobre blanco); se distinguen
+           con gris #6b7280 (4.83) en vez de transparencia. (0,4,0) le gana a la de FullCalendar (0,3,0); en oscuro manda
+           tema-oscuro-especiales.css (0,4,1). */
+        .fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-top {
+          opacity: 1;
+        }
+        .fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-number {
+          color: #6b7280;
+        }
         .fc .fc-button-primary {
           background-color: #33503e !important;
           border-color: #33503e !important;
@@ -218,13 +227,13 @@ export default function ReservasCalendario({
       `}</style>
 
       {error && (
-        <div className="absolute top-2 right-2 z-20 bg-rojo-bg border border-rojo/30 px-3 py-1.5 rounded text-xs text-rojo">
+        <div className="absolute top-2 right-2 z-20 bg-rojo-bg border border-rojo/30 px-3 py-1.5 rounded text-xs text-red-700">
           {error}
         </div>
       )}
 
       {loading && (
-        <div className="absolute top-2 left-2 z-20 inline-flex items-center gap-2 bg-white/90 border border-neutro-borde px-3 py-1.5 rounded text-xs text-verde-suave">
+        <div className="absolute top-2 left-2 z-20 inline-flex items-center gap-2 bg-white/90 border border-neutro-borde px-3 py-1.5 rounded text-xs text-verde-medio">
           <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
           Cargando...
         </div>

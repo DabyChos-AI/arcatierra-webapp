@@ -176,7 +176,7 @@ const ESTADOS_BADGE: Record<string, { bg: string; text: string }> = {
   pendiente: { bg: 'bg-yellow-100', text: 'text-yellow-700' },
   pagado: { bg: 'bg-green-100', text: 'text-green-700' },
   // R2 (STK4): llegó el pago sin stock — alguien tiene que resolverlo (cambio o reembolso)
-  [ESTADO_PAGADO_SIN_STOCK]: { bg: 'bg-orange-600', text: 'text-white' },
+  [ESTADO_PAGADO_SIN_STOCK]: { bg: 'bg-orange-700', text: 'text-white' },
   confirmado: { bg: 'bg-green-100', text: 'text-green-700' },
   preparando: { bg: 'bg-amber-100', text: 'text-amber-700' },
   empacado: { bg: 'bg-indigo-100', text: 'text-indigo-700' },
@@ -519,7 +519,7 @@ export default function AdminPedidosPage() {
         </div>
         <button
           onClick={() => { fetchPedidos(); fetchStats() }}
-          className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          className="flex items-center space-x-2 px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800"
         >
           <RefreshCw className="h-4 w-4" />
           <span>Actualizar</span>
@@ -531,10 +531,10 @@ export default function AdminPedidosPage() {
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           {[
             { title: 'Pedidos hoy', value: stats.total_hoy, icon: Package, color: 'text-blue-600', bg: 'bg-blue-50' },
-            { title: 'Revenue hoy', value: formatMoney(stats.revenue_hoy), icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50' },
+            { title: 'Revenue hoy', value: formatMoney(stats.revenue_hoy), icon: DollarSign, color: 'text-green-700', bg: 'bg-green-50' },
             { title: 'Pedidos semana', value: stats.total_semana, icon: TrendingUp, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-            { title: 'Revenue semana', value: formatMoney(stats.revenue_semana), icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-            { title: 'Activos', value: stats.pendientes_activos, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
+            { title: 'Revenue semana', value: formatMoney(stats.revenue_semana), icon: DollarSign, color: 'text-emerald-700', bg: 'bg-emerald-50' },
+            { title: 'Activos', value: stats.pendientes_activos, icon: Clock, color: 'text-amber-700', bg: 'bg-amber-50' },
           ].map((kpi, i) => (
             <div key={i} className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="flex items-center">
@@ -565,7 +565,7 @@ export default function AdminPedidosPage() {
                 onClick={() => handleFiltroEstado(e)}
                 className={`px-3 py-1.5 text-sm rounded-full transition-colors ${
                   filtroEstado === e
-                    ? 'bg-green-600 text-white'
+                    ? 'bg-green-700 text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -588,7 +588,7 @@ export default function AdminPedidosPage() {
                 className="pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm w-full sm:w-64 focus:ring-2 focus:ring-green-500 focus:border-green-500"
               />
             </div>
-            <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 shrink-0">
+            <button type="submit" className="px-4 py-2 bg-green-700 text-white rounded-lg text-sm hover:bg-green-800 shrink-0">
               Buscar
             </button>
             {busqueda && (
@@ -732,7 +732,7 @@ export default function AdminPedidosPage() {
                             <Ticket className="h-3.5 w-3.5 mr-1" aria-hidden="true" />Experiencia
                           </span>
                         ) : pedido.tipo_entrega === 'recoger_almacen' ? (
-                          <span className="inline-flex items-center text-xs text-orange-600">
+                          <span className="inline-flex items-center text-xs text-orange-700">
                             <Store className="h-3.5 w-3.5 mr-1" />Bodega
                           </span>
                         ) : (
@@ -746,7 +746,7 @@ export default function AdminPedidosPage() {
                           type="button"
                           onClick={e => { e.stopPropagation(); e.preventDefault(); openDetalle(pedido.id) }}
                           aria-label={`Ver pedido ${pedido.numero_pedido}`}
-                          className="p-1.5 rounded-lg hover:bg-green-50 text-green-600"
+                          className="p-1.5 rounded-lg hover:bg-green-50 text-green-700"
                         >
                           <Eye className="h-4 w-4" aria-hidden="true" />
                         </button>
@@ -849,7 +849,7 @@ export default function AdminPedidosPage() {
                         data-testid="pedido-actualizar-estado"
                         onClick={cambiarEstado}
                         disabled={!nuevoEstado || cambiandoEstado}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50"
+                        className="px-4 py-2 bg-green-700 text-white rounded-lg text-sm font-medium hover:bg-green-800 disabled:opacity-50"
                       >
                         {cambiandoEstado ? 'Guardando...' : 'Actualizar'}
                       </button>
@@ -903,7 +903,7 @@ export default function AdminPedidosPage() {
                       data-testid="pedido-causa-arca-tierra"
                       checked={causaArcaTierra}
                       onChange={e => setCausaArcaTierra(e.target.checked)}
-                      className="mt-0.5 h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      className="mt-0.5 h-4 w-4 rounded border-gray-300 text-green-700 focus:ring-green-500"
                     />
                     <span>La cancela Arca Tierra (reembolso del 100 %)</span>
                   </label>

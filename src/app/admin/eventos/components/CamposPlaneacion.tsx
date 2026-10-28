@@ -173,12 +173,12 @@ export function SelectorGuias({
     <fieldset>
       <legend className="flex w-full items-center justify-between text-sm font-medium text-verde mb-1">
         <span>Guías</span>
-        <span className="text-xs font-normal text-verde-suave">
+        <span className="text-xs font-normal text-verde-medio">
           {seleccion.length} {seleccion.length === 1 ? 'seleccionado' : 'seleccionados'}
         </span>
       </legend>
       {opciones.length === 0 ? (
-        <p className="border border-neutro-borde rounded-lg p-3 bg-neutro-light text-sm text-verde-suave">
+        <p className="border border-neutro-borde rounded-lg p-3 bg-neutro-light text-sm text-verde-medio">
           No hay guías activos en Personal.
         </p>
       ) : (
@@ -200,7 +200,7 @@ export function SelectorGuias({
                 onChange={() => toggle(o.id)}
                 className="w-4 h-4 text-terracota border-neutro-borde rounded focus:ring-terracota"
               />
-              <span className={`text-sm ${o.inactivo ? 'text-verde-suave italic' : 'text-verde'}`}>
+              <span className={`text-sm ${o.inactivo ? 'text-verde-medio italic' : 'text-verde'}`}>
                 {o.etiqueta}
               </span>
             </label>

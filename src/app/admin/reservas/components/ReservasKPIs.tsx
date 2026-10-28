@@ -30,9 +30,9 @@ const ACCENT_BORDER: Record<CardAccent, string> = {
 }
 
 const ACCENT_ICON_WRAP: Record<CardAccent, string> = {
-  amarillo: 'bg-amarillo-bg text-amarillo',
+  amarillo: 'bg-amarillo-bg text-amber-700',
   verde: 'bg-verde/10 text-verde',
-  terracota: 'bg-terracota/10 text-terracota',
+  terracota: 'bg-terracota/10 text-terracota-oscuro',
   azul: 'bg-azul-bg text-azul',
 }
 
@@ -46,20 +46,20 @@ function KPICard({ label, value, sub, icon, accent, loading, error }: KPICardPro
           {icon}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-verde-suave">{label}</p>
+          <p className="text-xs font-medium text-verde-medio">{label}</p>
           {loading ? (
             <>
               <div className="mt-1 h-7 w-20 bg-neutro-light rounded animate-pulse" />
               <div className="mt-2 h-3 w-32 bg-neutro-light rounded animate-pulse" />
             </>
           ) : error ? (
-            <p className="mt-1 text-sm text-verde-suave">Error al cargar</p>
+            <p className="mt-1 text-sm text-verde-medio">Error al cargar</p>
           ) : (
             <>
               <p className="mt-1 text-2xl font-display font-semibold text-verde tabular-nums">
                 {value}
               </p>
-              {sub && <div className="mt-1 text-xs text-verde-suave">{sub}</div>}
+              {sub && <div className="mt-1 text-xs text-verde-medio">{sub}</div>}
             </>
           )}
         </div>
@@ -104,7 +104,7 @@ export default function ReservasKPIs({ refreshKey }: ReservasKPIsProps) {
 
   const delta = stats?.delta_pct_confirmadas ?? 0
   const deltaText = `${delta > 0 ? '+' : ''}${delta.toFixed(1)}% vs mes anterior`
-  const deltaClass = delta > 0 ? 'text-verde' : delta < 0 ? 'text-rojo' : 'text-verde-suave'
+  const deltaClass = delta > 0 ? 'text-verde' : delta < 0 ? 'text-rojo' : 'text-verde-medio'
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

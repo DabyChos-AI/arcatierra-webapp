@@ -326,7 +326,7 @@ export default function PersonalPage() {
       {
         title: 'Multi-rol',
         value: kpis?.multirol ?? 0,
-        textClass: 'text-amarillo',
+        textClass: 'text-amber-700',
         subtitle: 'Vendedora + Guía',
       },
     ],
@@ -346,7 +346,7 @@ export default function PersonalPage() {
             </div>
             <div>
               <h1 className="font-display text-3xl text-verde">Personal</h1>
-              <p className="text-sm text-verde-suave mt-1">
+              <p className="text-sm text-verde-medio mt-1">
                 Vendedoras y guías del módulo de reservas
               </p>
             </div>
@@ -366,9 +366,9 @@ export default function PersonalPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {kpiCards.map((kpi) => (
             <div key={kpi.title} className="bg-white rounded-lg border border-neutro-borde p-4">
-              <p className="text-xs font-medium text-verde-suave">{kpi.title}</p>
+              <p className="text-xs font-medium text-verde-medio">{kpi.title}</p>
               <p className={`text-2xl font-bold tabular-nums ${kpi.textClass}`}>{kpi.value}</p>
-              {kpi.subtitle && <p className="text-xs text-verde-suave mt-0.5">{kpi.subtitle}</p>}
+              {kpi.subtitle && <p className="text-xs text-verde-medio mt-0.5">{kpi.subtitle}</p>}
             </div>
           ))}
         </div>
@@ -380,7 +380,7 @@ export default function PersonalPage() {
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
           <div className="relative flex-1">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde-suave"
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde-medio"
               aria-hidden="true"
             />
             <label htmlFor="personal-search" className="sr-only">
@@ -428,7 +428,7 @@ export default function PersonalPage() {
 
         {/* Error */}
         {error && (
-          <div className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex items-center gap-2 text-sm text-rojo">
+          <div className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex items-center gap-2 text-sm text-red-700">
             <AlertTriangle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
             <span>{error}</span>
             <button
@@ -446,10 +446,10 @@ export default function PersonalPage() {
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="h-6 w-6 animate-spin text-terracota" aria-hidden="true" />
-              <span className="ml-3 text-sm text-verde-suave">Cargando personal...</span>
+              <span className="ml-3 text-sm text-verde-medio">Cargando personal...</span>
             </div>
           ) : items.length === 0 ? (
-            <div className="text-center py-16 text-verde-suave">
+            <div className="text-center py-16 text-verde-medio">
               <Users className="h-12 w-12 mx-auto text-neutro-gris mb-3" aria-hidden="true" />
               <p className="font-medium">No hay personal en esta vista</p>
               <p className="text-sm mt-1">Ajusta los filtros o agrega una nueva persona.</p>
@@ -483,35 +483,35 @@ export default function PersonalPage() {
                             {p.apellidos ? ` ${p.apellidos}` : ''}
                           </span>
                           {esPendiente(p) && (
-                            <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-neutro-light text-verde-suave border border-neutro-borde">
+                            <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-neutro-light text-verde-medio border border-neutro-borde">
                               (pdte)
                             </span>
                           )}
                           {!p.activo && (
-                            <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-rojo/10 text-rojo">
+                            <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-rojo/10 text-red-700">
                               Inactiva
                             </span>
                           )}
                         </div>
-                        {p.puesto && <div className="text-xs text-verde-suave mt-0.5">{p.puesto}</div>}
+                        {p.puesto && <div className="text-xs text-verde-medio mt-0.5">{p.puesto}</div>}
                         {(() => {
                           const cuenta = cuentaDe(p)
                           return (
                             <div
                               data-testid={`personal-cuenta-${p.id}`}
                               data-ligada={cuenta ? 'si' : 'no'}
-                              className={`text-xs mt-0.5 ${cuenta ? 'text-verde' : 'italic text-neutro-gris'}`}
+                              className={`text-xs mt-0.5 ${cuenta ? 'text-verde' : 'italic text-verde-medio'}`}
                             >
                               {cuenta ? `Cuenta: ${nombreSinCorreo(cuenta.nombre)}` : 'Sin cuenta'}
                             </div>
                           )
                         })()}
                       </td>
-                      <td className="px-4 py-3 text-verde-suave">
-                        {p.email || <span className="italic text-neutro-gris">—</span>}
+                      <td className="px-4 py-3 text-verde-medio">
+                        {p.email || <span className="italic text-verde-medio">—</span>}
                       </td>
-                      <td className="px-4 py-3 text-verde-suave">
-                        {p.telefono || <span className="italic text-neutro-gris">—</span>}
+                      <td className="px-4 py-3 text-verde-medio">
+                        {p.telefono || <span className="italic text-verde-medio">—</span>}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-1 flex-wrap">
@@ -540,7 +540,7 @@ export default function PersonalPage() {
                               </span>
                             ))
                           ) : (
-                            <span className="italic text-neutro-gris">—</span>
+                            <span className="italic text-verde-medio">—</span>
                           )}
                         </div>
                       </td>
@@ -548,7 +548,7 @@ export default function PersonalPage() {
                         const mes = reservasDelMes(p, tab)
                         return (
                           <td
-                            className="px-4 py-3 text-center tabular-nums text-verde-suave"
+                            className="px-4 py-3 text-center tabular-nums text-verde-medio"
                             data-testid={`personal-reservas-mes-${p.id}`}
                             data-vendedor={mes ? mes.vendedor : undefined}
                             data-guia={mes ? mes.guia : undefined}
@@ -558,7 +558,7 @@ export default function PersonalPage() {
                                 : undefined
                             }
                           >
-                            {mes ? mes.total : <span className="italic text-neutro-gris">—</span>}
+                            {mes ? mes.total : <span className="italic text-verde-medio">—</span>}
                           </td>
                         )
                       })()}
@@ -597,7 +597,7 @@ export default function PersonalPage() {
           {/* Paginacion */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between px-4 py-3 bg-neutro-light border-t border-neutro-borde text-sm">
-              <span className="text-verde-suave">
+              <span className="text-verde-medio">
                 {totalCount} personas · Página {page} de {totalPages}
               </span>
               <div className="flex gap-2">
@@ -648,7 +648,7 @@ export default function PersonalPage() {
                 className="p-2 hover:bg-neutro-light rounded-lg"
                 disabled={saving}
               >
-                <X className="h-5 w-5 text-verde-suave" aria-hidden="true" />
+                <X className="h-5 w-5 text-verde-medio" aria-hidden="true" />
               </button>
             </div>
 
@@ -657,7 +657,7 @@ export default function PersonalPage() {
                 <div
                   role="alert"
                   data-testid="personal-form-error"
-                  className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-rojo"
+                  className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-red-700"
                 >
                   <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
                   <span>{formError}</span>
@@ -797,7 +797,7 @@ export default function PersonalPage() {
                   />
                   Guía externo
                 </label>
-                <p className="text-xs text-verde-suave mt-1">
+                <p className="text-xs text-verde-medio mt-1">
                   No es de planta (en el Sheet sale como «G.E»).
                 </p>
               </div>
@@ -805,7 +805,7 @@ export default function PersonalPage() {
               {/* Idiomas */}
               <div>
                 <p className="block text-sm font-medium text-verde mb-2 flex items-center gap-1">
-                  <Compass className="h-4 w-4 text-verde-suave" aria-hidden="true" /> Idiomas
+                  <Compass className="h-4 w-4 text-verde-medio" aria-hidden="true" /> Idiomas
                 </p>
                 <div className="flex gap-4 flex-wrap">
                   {IDIOMAS.map((idioma) => (

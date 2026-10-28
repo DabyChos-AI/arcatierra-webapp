@@ -205,7 +205,7 @@ export default function ModalCupon({ token, cupon, onClose, onSaved }: Props) {
             aria-label="Cerrar"
             className="p-2 hover:bg-neutro-light rounded-lg shrink-0"
           >
-            <X className="h-5 w-5 text-verde-suave" aria-hidden="true" />
+            <X className="h-5 w-5 text-verde-medio" aria-hidden="true" />
           </button>
         </div>
 
@@ -242,7 +242,7 @@ export default function ModalCupon({ token, cupon, onClose, onSaved }: Props) {
                 aria-describedby="cupon-codigo-ayuda"
                 className={`${inputClase} font-mono uppercase`}
               />
-              <p id="cupon-codigo-ayuda" className="text-xs text-verde-suave mt-1">
+              <p id="cupon-codigo-ayuda" className="text-xs text-verde-medio mt-1">
                 De 3 a 30 letras, números, guion o guion bajo.
               </p>
             </div>
@@ -354,7 +354,7 @@ export default function ModalCupon({ token, cupon, onClose, onSaved }: Props) {
               </label>
               <label
                 className={`flex items-center gap-2 text-sm ${
-                  envioGratis ? 'text-verde-suave cursor-not-allowed' : 'text-verde cursor-pointer'
+                  envioGratis ? 'text-verde-medio cursor-not-allowed' : 'text-verde cursor-pointer'
                 }`}
               >
                 <input
@@ -369,9 +369,9 @@ export default function ModalCupon({ token, cupon, onClose, onSaved }: Props) {
               </label>
             </div>
             {envioGratis && (
-              <p className="text-xs text-verde-suave mt-2">El envío gratis solo aplica a la tienda.</p>
+              <p className="text-xs text-verde-medio mt-2">El envío gratis solo aplica a la tienda.</p>
             )}
-            <p data-testid="cupon-nota-web" className="text-xs text-verde-suave mt-2">
+            <p data-testid="cupon-nota-web" className="text-xs text-verde-medio mt-2">
               {NOTA_WEB}
             </p>
           </fieldset>
@@ -405,7 +405,7 @@ export default function ModalCupon({ token, cupon, onClose, onSaved }: Props) {
                 className={inputClase}
               />
             </div>
-            <p data-testid="cupon-fechas-ayuda" className="text-xs text-verde-suave sm:col-span-2 -mt-2">
+            <p data-testid="cupon-fechas-ayuda" className="text-xs text-verde-medio sm:col-span-2 -mt-2">
               {/* En el alta, «Desde» vacío lo guarda el backend como hoy (C11); al editar, null lo limpia */}
               {cupon
                 ? 'Vacías = sin fecha de inicio o de fin. Las fechas cuentan en hora de México.'
@@ -428,7 +428,7 @@ export default function ModalCupon({ token, cupon, onClose, onSaved }: Props) {
             <p
               data-testid="cupon-error"
               role="alert"
-              className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-rojo"
+              className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-red-700"
             >
               <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" aria-hidden="true" />
               <span>{error}</span>

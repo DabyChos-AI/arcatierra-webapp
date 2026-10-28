@@ -57,7 +57,7 @@ export default function FiltroMultiple({ id, etiqueta, opciones, seleccion, onCh
 
   return (
     <div className="relative" ref={caja}>
-      <span id={`${id}-etiqueta`} className="block text-xs text-verde-suave mb-1">
+      <span id={`${id}-etiqueta`} className="block text-xs text-verde-medio mb-1">
         {etiqueta}
       </span>
       <button

@@ -699,7 +699,7 @@ export default function ProductosPage() {
         </div>
         <button 
           onClick={() => setShowNewProductModal(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          className="flex items-center space-x-2 px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800"
         >
           <Plus className="h-4 w-4" />
           <span>Nuevo Producto</span>
@@ -946,7 +946,7 @@ export default function ProductosPage() {
                     key={page}
                     onClick={() => handlePaginaChange(page)}
                     className={`px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 ${
-                      page === paginacion.pagina ? 'bg-green-500 text-white hover:bg-green-600' : ''
+                      page === paginacion.pagina ? 'bg-green-700 text-white hover:bg-green-800' : ''
                     }`}
                   >
                     {page}
@@ -1097,7 +1097,7 @@ export default function ProductosPage() {
                           setStockAlAbrir(producto.stock)
                           setShowEditModal(true)
                         }}
-                        className="text-green-600 hover:text-green-900 p-1 rounded-lg hover:bg-green-50"
+                        className="text-green-700 hover:text-green-900 p-1 rounded-lg hover:bg-green-50"
                       >
                         <Edit2 className="h-4 w-4" aria-hidden="true" />
                       </button>
@@ -1130,7 +1130,7 @@ export default function ProductosPage() {
                 <h3 className="text-lg font-semibold text-gray-900">Nuevo Producto</h3>
                 <button
                   onClick={() => setShowNewProductModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-500 hover:text-gray-600"
                 >
                   ×
                 </button>
@@ -1161,7 +1161,7 @@ export default function ProductosPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Precio Unitario * <span className="text-red-500">($)</span>
+                        Precio Unitario * <span className="text-red-600">($)</span>
                       </label>
                       <input
                         type="number"
@@ -1175,7 +1175,7 @@ export default function ProductosPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Stock Disponible * <span className="text-green-600">(unidades)</span>
+                        Stock Disponible * <span className="text-green-700">(unidades)</span>
                       </label>
                       <input
                         type="number"
@@ -1228,7 +1228,7 @@ export default function ProductosPage() {
                               setShowNewCategoriaInput(false)
                             }
                           }}
-                          className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                          className="px-3 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800"
                         >
                           ✓
                         </button>
@@ -1403,7 +1403,7 @@ export default function ProductosPage() {
                       />
                       <label
                         htmlFor="image-upload"
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 cursor-pointer"
+                        className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 cursor-pointer"
                       >
                         Seleccionar Imágenes
                       </label>
@@ -1421,7 +1421,7 @@ export default function ProductosPage() {
                           />
                           <button
                             onClick={() => removeImage(index)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                            className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-700"
                           >
                             ×
                           </button>
@@ -1506,7 +1506,7 @@ export default function ProductosPage() {
                             ✓ {caracteristica}
                             <button
                               onClick={() => removeCaracteristica(index)}
-                              className="ml-2 text-green-600 hover:text-green-800"
+                              className="ml-2 text-green-700 hover:text-green-800"
                             >
                               <X className="h-3 w-3" />
                             </button>
@@ -1527,7 +1527,7 @@ export default function ProductosPage() {
                   </button>
                   <button
                     onClick={handleCreateProduct}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800"
                   >
                     Crear Producto
                   </button>
@@ -1547,7 +1547,7 @@ export default function ProductosPage() {
                 <h3 className="text-xl font-bold text-gray-900">Vista Preview - Como se ve en el E-commerce</h3>
                 <button
                   onClick={() => setShowProductPreview(false)}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                  className="text-gray-500 hover:text-gray-600 text-2xl"
                 >
                   ×
                 </button>
@@ -1576,7 +1576,7 @@ export default function ProductosPage() {
                       <div className="text-center">
                         <Package className="h-24 w-24 text-gray-300 mx-auto mb-4" />
                         <p className="text-sm text-gray-500">Imagen del producto</p>
-                        <p className="text-xs text-gray-400">{selectedProductPreview.nombre}</p>
+                        <p className="text-xs text-gray-500">{selectedProductPreview.nombre}</p>
                       </div>
                     </div>
                   </div>
@@ -1603,7 +1603,7 @@ export default function ProductosPage() {
                       {selectedProductPreview.nombre}
                     </h1>
                     <div className="flex items-center space-x-2">
-                      <div className="flex text-yellow-400">
+                      <div className="flex text-yellow-700">
                         {[1,2,3,4,5].map((star) => (
                           <svg key={star} className="w-4 h-4 fill-current" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
@@ -1624,7 +1624,7 @@ export default function ProductosPage() {
 
                   {/* Estado Stock */}
                   <div className="flex items-center space-x-4">
-                    <span className="text-sm font-medium text-green-600">
+                    <span className="text-sm font-medium text-green-700">
                       ● En stock ({selectedProductPreview.stock} disponibles)
                     </span>
                   </div>
@@ -1868,7 +1868,7 @@ export default function ProductosPage() {
                             setShowNewCategoriaInputEdit(false)
                           }
                         }}
-                        className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                        className="px-3 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800"
                       >
                         ✓
                       </button>
@@ -1928,7 +1928,7 @@ export default function ProductosPage() {
                 type="button"
                 data-testid="editar-guardar"
                 onClick={handleUpdateProduct}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800"
               >
                 Guardar Cambios
               </button>

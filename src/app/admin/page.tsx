@@ -262,7 +262,7 @@ export default function AdminDashboardEjecutivo() {
           className="bg-white border border-neutro-borde rounded-lg p-6 flex items-start gap-3 max-w-xl"
         >
           <AlertTriangle
-            className="h-5 w-5 text-amarillo flex-shrink-0 mt-0.5"
+            className="h-5 w-5 text-amber-700 flex-shrink-0 mt-0.5"
             aria-hidden="true"
           />
           <div>
@@ -450,7 +450,7 @@ export default function AdminDashboardEjecutivo() {
       </section>
 
       {kpis && (
-        <p className="text-[11px] text-verde-suave text-right">
+        <p className="text-[11px] text-verde-medio text-right">
           Actualizado: {formatFechaHoraMexico(kpis.generated_at)}
         </p>
       )}

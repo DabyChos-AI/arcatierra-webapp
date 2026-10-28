@@ -352,7 +352,7 @@ export default function ModalDetalleCatering({
     <div>
       <span className={labelCls}>{label}</span>
       <div className="text-sm text-gray-800">
-        {value || <span className="text-gray-400 italic">Sin dato</span>}
+        {value || <span className="text-gray-500 italic">Sin dato</span>}
       </div>
     </div>
   )
@@ -379,7 +379,7 @@ export default function ModalDetalleCatering({
             <h2 className="text-xl font-bold text-gray-900">
               {item.contacto_nombre || 'Solicitud de catering'}
             </h2>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-gray-500">
               {ORIGEN_LABEL[item.origen]}
             </span>
           </div>
@@ -424,7 +424,7 @@ export default function ModalDetalleCatering({
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
               <AlertTriangle
-                className="h-4 w-4 text-red-500 mt-0.5"
+                className="h-4 w-4 text-red-600 mt-0.5"
                 aria-hidden="true"
               />
               <span className="text-sm text-red-700">{error}</span>
@@ -551,7 +551,7 @@ export default function ModalDetalleCatering({
                     <span className={labelCls}>Mensaje / detalles</span>
                     <div className="bg-[#E3DBCB]/40 border-l-[3px] border-[#CCBB9A] rounded-md p-3 text-sm italic text-gray-700 whitespace-pre-wrap max-h-48 overflow-y-auto leading-relaxed">
                       {item.mensaje || (
-                        <span className="text-gray-400 not-italic">
+                        <span className="text-gray-600 not-italic">
                           Sin mensaje
                         </span>
                       )}
@@ -572,7 +572,7 @@ export default function ModalDetalleCatering({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="ed-nombre" className={labelCls}>
-                      Nombre <span className="text-red-500">*</span>
+                      Nombre <span className="text-red-600">*</span>
                     </label>
                     <input
                       id="ed-nombre"
@@ -586,7 +586,7 @@ export default function ModalDetalleCatering({
                   </div>
                   <div>
                     <label htmlFor="ed-email" className={labelCls}>
-                      Email <span className="text-red-500">*</span>
+                      Email <span className="text-red-600">*</span>
                     </label>
                     <input
                       id="ed-email"
@@ -745,7 +745,7 @@ export default function ModalDetalleCatering({
                 Notas internas
               </h3>
               {notasLineas.length === 0 ? (
-                <div className="text-sm text-gray-400 italic bg-gray-50 rounded-lg p-3">
+                <div className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3">
                   Aún no hay notas. Agrega la primera abajo.
                 </div>
               ) : (
@@ -846,7 +846,7 @@ export default function ModalDetalleCatering({
                       <div>
                         <label htmlFor="cat-motivo" className={labelCls}>
                           Motivo de pérdida{' '}
-                          <span className="text-red-500">*</span>
+                          <span className="text-red-600">*</span>
                         </label>
                         <textarea
                           id="cat-motivo"
@@ -906,7 +906,7 @@ export default function ModalDetalleCatering({
                 <label htmlFor="cat-monto" className="text-sm font-semibold text-gray-700 mb-2 block">
                   Monto cotizado (MXN)
                 </label>
-                <p className="text-xs text-gray-400 mb-2">
+                <p className="text-xs text-gray-500 mb-2">
                   Monto total sin desglose por menú. El detalle del menú, si lo
                   hay, va en Notas o Mensaje.
                 </p>

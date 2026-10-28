@@ -20,7 +20,7 @@ export default function TarjetaFechaPublica({ f }: { f: FechaPublicaMiDia }) {
         <p className="flex items-baseline gap-2 text-verde" data-testid={`midia-publica-hora-${f.evento_id}`}>
           <Clock className="h-5 w-5 shrink-0 self-center text-terracota" aria-hidden="true" />
           <span className="text-3xl font-bold leading-none">{inicio || 'Sin hora'}</span>
-          {fin && <span className="text-sm text-verde-suave">a {fin}</span>}
+          {fin && <span className="text-sm text-verde-medio">a {fin}</span>}
         </p>
         <span className="inline-flex items-center gap-1 rounded-full bg-verde/10 px-2.5 py-1 text-xs font-semibold text-verde">
           <Ticket className="h-3.5 w-3.5" aria-hidden="true" />
@@ -31,7 +31,7 @@ export default function TarjetaFechaPublica({ f }: { f: FechaPublicaMiDia }) {
       <h3 className="mb-0 mt-2 font-display text-xl leading-snug text-verde">{f.experiencia_nombre}</h3>
       {f.chinampa && (
         <p className="mt-1 inline-flex items-center gap-1 text-sm text-verde-tipografia">
-          <MapPin className="h-4 w-4 text-verde-suave" aria-hidden="true" />
+          <MapPin className="h-4 w-4 text-verde-medio" aria-hidden="true" />
           {f.chinampa}
         </p>
       )}
@@ -44,13 +44,13 @@ export default function TarjetaFechaPublica({ f }: { f: FechaPublicaMiDia }) {
           <Users className="h-4 w-4" aria-hidden="true" />
           {plural(f.personas, 'persona', 'personas')}
         </span>
-        <span className="text-sm text-verde-suave">
+        <span className="text-sm text-verde-medio">
           {f.cupo !== null ? `de ${plural(f.cupo, 'lugar', 'lugares')}` : 'sin tope de lugares'}
         </span>
       </div>
 
       <p className="mt-3 text-sm text-verde-tipografia" data-testid={`midia-publica-guias-${f.evento_id}`}>
-        <span className="text-verde-suave">Guías: </span>
+        <span className="text-verde-medio">Guías: </span>
         {f.guias.length > 0 ? f.guias.map((g) => g.nombre).join(', ') : 'Sin guía asignado'}
       </p>
     </article>

@@ -163,7 +163,7 @@ export default function DiasSinEntregaPage() {
           </div>
           <div className="min-w-0">
             <h1 className="font-display text-3xl text-verde m-0">Días sin entrega</h1>
-            <p className="text-sm text-verde-suave mt-1">
+            <p className="text-sm text-verde-medio mt-1">
               Feriados de ley y los días que agregue el equipo. Las canastas de suscripción se corren al siguiente
               día hábil; los pedidos de la tienda no se mueven.
             </p>
@@ -220,7 +220,7 @@ export default function DiasSinEntregaPage() {
       {carga.tipo === 'ok' && !puedeEditar && (
         <p
           data-testid="dsn-solo-lectura"
-          className="flex items-start gap-2 text-sm text-verde-suave bg-neutro-light border border-neutro-borde rounded-lg p-3"
+          className="flex items-start gap-2 text-sm text-verde-medio bg-neutro-light border border-neutro-borde rounded-lg p-3"
         >
           <Lock className="h-4 w-4 mt-0.5 shrink-0" aria-hidden="true" />
           Solo un administrador puede agregar o cambiar días sin entrega. Aquí puedes consultarlos.
@@ -233,7 +233,7 @@ export default function DiasSinEntregaPage() {
         <div
           role="alert"
           data-testid="dsn-error-accion"
-          className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex items-start gap-2 text-sm text-rojo"
+          className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex items-start gap-2 text-sm text-red-700"
         >
           <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" aria-hidden="true" />
           <span className="flex-1 min-w-0">{errorAccion}</span>
@@ -252,7 +252,7 @@ export default function DiasSinEntregaPage() {
         <div
           role="alert"
           data-testid="dsn-sin-permiso"
-          className="bg-rojo-bg border border-rojo/30 rounded-lg p-4 flex items-start gap-2 text-sm text-rojo"
+          className="bg-rojo-bg border border-rojo/30 rounded-lg p-4 flex items-start gap-2 text-sm text-red-700"
         >
           <Lock className="h-4 w-4 mt-0.5 shrink-0" aria-hidden="true" />
           <span>
@@ -265,7 +265,7 @@ export default function DiasSinEntregaPage() {
         <div
           role="alert"
           data-testid="dsn-error"
-          className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex flex-wrap items-center gap-2 text-sm text-rojo"
+          className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex flex-wrap items-center gap-2 text-sm text-red-700"
         >
           <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span className="flex-1 min-w-0">No se pudo cargar la lista ({carga.mensaje}).</span>
@@ -285,10 +285,10 @@ export default function DiasSinEntregaPage() {
           {carga.tipo === 'cargando' && !lista ? (
             <div data-testid="dsn-cargando" role="status" className="flex items-center justify-center px-4 py-12">
               <Loader2 className="h-6 w-6 animate-spin text-terracota" aria-hidden="true" />
-              <span className="ml-3 text-sm text-verde-suave">Cargando días sin entrega…</span>
+              <span className="ml-3 text-sm text-verde-medio">Cargando días sin entrega…</span>
             </div>
           ) : visibles.length === 0 ? (
-            <div data-testid="dsn-vacio" className="px-4 py-12 text-center text-verde-suave">
+            <div data-testid="dsn-vacio" className="px-4 py-12 text-center text-verde-medio">
               <CalendarOff className="h-10 w-10 mx-auto text-neutro-gris mb-3" aria-hidden="true" />
               <p className="font-medium">
                 {carga.tipo === 'error'
@@ -333,7 +333,7 @@ export default function DiasSinEntregaPage() {
                           {fechaLarga(dia.fecha)}
                         </span>
                         {pasado && (
-                          <span className="ml-2 inline-block rounded-full text-xs px-2 py-0.5 bg-neutro-borde text-verde-suave">
+                          <span className="ml-2 inline-block rounded-full text-xs px-2 py-0.5 bg-neutro-borde text-verde-claro">
                             Ya pasó
                           </span>
                         )}
@@ -342,7 +342,7 @@ export default function DiasSinEntregaPage() {
                         <span data-testid="dsn-dia">{diaDeLaSemana(dia)}</span>
                       </td>
                       <td className="block md:table-cell md:px-4 md:py-3 text-verde break-words mt-1 md:mt-0">
-                        <span className="md:hidden text-xs text-verde-suave">Motivo: </span>
+                        <span className="md:hidden text-xs text-verde-medio">Motivo: </span>
                         <span data-testid="dsn-motivo">{dia.motivo}</span>
                       </td>
                       <td className="inline-block md:table-cell md:px-4 md:py-3 mt-2 md:mt-0 mr-2 md:mr-0">
@@ -359,20 +359,20 @@ export default function DiasSinEntregaPage() {
                         <span
                           data-testid="dsn-estado"
                           className={`inline-block rounded-full text-xs px-2 py-0.5 whitespace-nowrap ${
-                            dia.activo ? 'bg-rojo-bg text-rojo' : 'bg-verde/10 text-verde'
+                            dia.activo ? 'bg-rojo-bg text-red-700' : 'bg-verde/10 text-verde'
                           }`}
                         >
                           {dia.activo ? 'Activo · no se entrega' : 'Inactivo · sí se entrega'}
                         </span>
                       </td>
-                      <td className="block md:table-cell md:px-4 md:py-3 text-xs text-verde-suave mt-2 md:mt-0">
+                      <td className="block md:table-cell md:px-4 md:py-3 text-xs text-verde-medio mt-2 md:mt-0">
                         <span className="md:hidden">Último cambio: </span>
                         <span data-testid="dsn-ultimo-cambio">{textoUltimoCambio(dia)}</span>
                       </td>
                       {puedeEditar && (
                         <td className="block md:table-cell md:px-4 md:py-3 mt-2 md:mt-0">
                           {pasado ? (
-                            <span className="text-xs text-verde-suave">—</span>
+                            <span className="text-xs text-verde-medio">—</span>
                           ) : (
                             <div className="flex flex-wrap items-center md:justify-end gap-2">
                               <button
@@ -426,7 +426,7 @@ export default function DiasSinEntregaPage() {
           {lista && visibles.length > 0 && (
             <p
               data-testid="dsn-contador"
-              className="px-4 py-3 bg-neutro-light border-t border-neutro-borde text-sm text-verde-suave m-0"
+              className="px-4 py-3 bg-neutro-light border-t border-neutro-borde text-sm text-verde-medio m-0"
             >
               {visibles.length} {visibles.length === 1 ? 'día' : 'días'}
               {filtro === 'proximos' ? ' desde hoy' : ' desde hace un mes'}

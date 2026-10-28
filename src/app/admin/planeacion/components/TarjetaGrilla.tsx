@@ -148,8 +148,8 @@ function Campo({
   return (
     <div className="flex items-start justify-between gap-1">
       <p className="m-0 min-w-0 break-words text-xs text-verde-tipografia">
-        <span className="text-verde-suave">{etiqueta}: </span>
-        <span data-testid={testid} className={valor ? '' : 'text-verde-suave'}>
+        <span className="text-verde-medio">{etiqueta}: </span>
+        <span data-testid={testid} className={valor ? '' : 'text-verde-medio'}>
           {valor || '—'}
         </span>
       </p>
@@ -161,7 +161,7 @@ function Campo({
           disabled={lapizDeshabilitado}
           aria-label={`Editar ${etiqueta.toLowerCase()}`}
           title={`Editar ${etiqueta.toLowerCase()}`}
-          className="shrink-0 rounded p-1 text-verde-suave transition hover:bg-neutro-light hover:text-terracota disabled:opacity-30"
+          className="shrink-0 rounded p-1 text-verde-medio transition hover:bg-neutro-light hover:text-terracota disabled:opacity-30"
         >
           <Pencil className="h-3 w-3" aria-hidden="true" />
         </button>
@@ -322,14 +322,14 @@ export default function TarjetaGrilla({
 
       {(item.folio || item.invitado) && (
         <div className="space-y-0.5 text-xs text-verde-tipografia">
-          {item.folio && <p className="m-0 break-all font-mono text-[11px] text-verde-suave">{item.folio}</p>}
+          {item.folio && <p className="m-0 break-all font-mono text-[11px] text-verde-medio">{item.folio}</p>}
           {item.invitado && <p className="m-0 break-words">{item.invitado}</p>}
         </div>
       )}
 
       <p className="m-0 text-xs text-verde-tipografia">
         {personas}
-        {item.idioma && <span className="text-verde-suave"> · {etiquetaIdioma(item.idioma)}</span>}
+        {item.idioma && <span className="text-verde-medio"> · {etiquetaIdioma(item.idioma)}</span>}
       </p>
 
       <div className="space-y-0.5">
@@ -350,7 +350,7 @@ export default function TarjetaGrilla({
       {(obs || puede('notas')) && (
         <div className="rounded bg-neutro-light px-1.5 py-1">
           <div className="flex items-start justify-between gap-1">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-verde-suave">Observaciones</span>
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-verde-medio">Observaciones</span>
             {puede('notas') && (
               <button
                 type="button"
@@ -359,7 +359,7 @@ export default function TarjetaGrilla({
                 disabled={editor !== null}
                 aria-label="Editar notas internas"
                 title="Editar notas internas"
-                className="shrink-0 rounded p-0.5 text-verde-suave transition hover:bg-white hover:text-terracota disabled:opacity-30"
+                className="shrink-0 rounded p-0.5 text-verde-medio transition hover:bg-white hover:text-terracota disabled:opacity-30"
               >
                 <Pencil className="h-3 w-3" aria-hidden="true" />
               </button>
@@ -369,7 +369,7 @@ export default function TarjetaGrilla({
             data-testid={`planeacion-observaciones-${id}`}
             className={`m-0 whitespace-pre-line break-words text-xs text-verde-tipografia ${
               obsLarga && !obsAbiertas ? 'line-clamp-3' : ''
-            } ${obs ? '' : 'italic text-verde-suave'}`}
+            } ${obs ? '' : 'italic text-verde-medio'}`}
           >
             {obs || 'Sin observaciones'}
           </p>
@@ -411,11 +411,11 @@ export default function TarjetaGrilla({
           className="space-y-0.5 rounded border border-neutro-borde px-1.5 py-1 text-xs tabular-nums text-verde-tipografia"
         >
           <p className="m-0 flex justify-between gap-1">
-            <span className="text-verde-suave">Total</span>
+            <span className="text-verde-medio">Total</span>
             <span>{formatMXN(item.montos.total)}</span>
           </p>
           <p className="m-0 flex justify-between gap-1">
-            <span className="text-verde-suave">Pagado</span>
+            <span className="text-verde-medio">Pagado</span>
             <span>{formatMXN(item.montos.pagado)}</span>
           </p>
           <p className="m-0 text-[11px] font-semibold text-verde">
@@ -458,7 +458,7 @@ export default function TarjetaGrilla({
             </p>
           )}
           {catalogos.cargando && editor.campo !== 'notas' ? (
-            <p className="m-0 inline-flex items-center gap-1 text-xs text-verde-suave">
+            <p className="m-0 inline-flex items-center gap-1 text-xs text-verde-medio">
               <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
               Cargando catálogos…
             </p>
@@ -526,7 +526,7 @@ export default function TarjetaGrilla({
             <p
               role="alert"
               data-testid={`planeacion-aviso-error-${id}`}
-              className="m-0 rounded border border-rojo/30 bg-rojo-bg p-1.5 text-xs text-rojo"
+              className="m-0 rounded border border-rojo/30 bg-rojo-bg p-1.5 text-xs text-red-700"
             >
               {error}
             </p>

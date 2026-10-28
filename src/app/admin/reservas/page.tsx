@@ -37,7 +37,7 @@ function SkeletonBlock({ label }: { label: string }) {
       aria-busy="true"
       aria-label={label}
     >
-      <span className="text-sm text-verde-suave">{label}</span>
+      <span className="text-sm text-verde-medio">{label}</span>
     </div>
   )
 }
@@ -101,7 +101,7 @@ function ReservasPageInner() {
         <header className="flex items-center justify-between">
           <div>
             <h1 className="font-display text-3xl text-verde">Reservas Privadas</h1>
-            <p className="text-sm text-verde-suave mt-1">
+            <p className="text-sm text-verde-medio mt-1">
               Gestion completa de reservas de experiencias privadas.
             </p>
           </div>
@@ -137,7 +137,7 @@ function ReservasPageInner() {
             <button
               type="button"
               onClick={() => setAvisosAlta(null)}
-              className="text-verde-suave hover:text-verde"
+              className="text-verde-medio hover:text-verde"
               aria-label="Cerrar aviso"
             >
               <X className="h-4 w-4" />
@@ -247,7 +247,7 @@ function TabButton({
       className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
         active
           ? 'border-terracota text-terracota'
-          : 'border-transparent text-verde-suave hover:text-verde'
+          : 'border-transparent text-verde-medio hover:text-verde'
       }`}
     >
       {icon}

@@ -105,7 +105,7 @@ export default function FichaComisiones({ token, resellerId }: Props) {
             Comisiones
           </p>
           {datos && (
-            <p data-testid="comisiones-actual" className="text-xs text-verde-suave">
+            <p data-testid="comisiones-actual" className="text-xs text-verde-medio">
               {pctActual != null
                 ? `Comisión actual: ${formatoPct.format(pctActual)} % (se guarda en sus reservas nuevas)`
                 : 'Sin comisión configurada: sus reservas nuevas no generan comisión.'}
@@ -114,7 +114,7 @@ export default function FichaComisiones({ token, resellerId }: Props) {
         </div>
         <div className="flex flex-wrap items-end gap-2">
           <div>
-            <label htmlFor={`comisiones-anio-${resellerId}`} className="block text-xs text-verde-suave mb-1">
+            <label htmlFor={`comisiones-anio-${resellerId}`} className="block text-xs text-verde-medio mb-1">
               Año
             </label>
             <select
@@ -148,7 +148,7 @@ export default function FichaComisiones({ token, resellerId }: Props) {
         </div>
       </div>
 
-      <p data-testid="comisiones-nota" className="text-xs text-verde-suave">
+      <p data-testid="comisiones-nota" className="text-xs text-verde-medio">
         Cuentan las reservas Confirmadas, Pagadas y Realizadas, por mes de la experiencia; la comisión es sobre el
         total sin propina.
       </p>
@@ -157,7 +157,7 @@ export default function FichaComisiones({ token, resellerId }: Props) {
         <p
           data-testid="comisiones-error"
           role="alert"
-          className="flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg p-2 text-xs text-rojo"
+          className="flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg p-2 text-xs text-red-700"
         >
           <AlertTriangle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
           <span>{error}</span>
@@ -165,7 +165,7 @@ export default function FichaComisiones({ token, resellerId }: Props) {
       )}
 
       {cargando ? (
-        <div className="flex items-center gap-2 text-sm text-verde-suave">
+        <div className="flex items-center gap-2 text-sm text-verde-medio">
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
           Cargando comisiones...
         </div>
@@ -173,7 +173,7 @@ export default function FichaComisiones({ token, resellerId }: Props) {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-xs">
             <thead>
-              <tr className="text-left text-verde-suave">
+              <tr className="text-left text-verde-medio">
                 <th className="px-2 py-1 font-medium">Mes</th>
                 <th className="px-2 py-1 font-medium text-right">Reservas</th>
                 <th className="px-2 py-1 font-medium text-right">Personas</th>
@@ -187,7 +187,7 @@ export default function FichaComisiones({ token, resellerId }: Props) {
                 <tr
                   key={m.mes}
                   data-testid={`comisiones-mes-${m.mes}`}
-                  className={`border-t border-neutro-borde ${m.reservas === 0 ? 'text-verde-suave' : 'text-verde'}`}
+                  className={`border-t border-neutro-borde ${m.reservas === 0 ? 'text-verde-medio' : 'text-verde'}`}
                 >
                   <td className="px-2 py-1">{nombreMes(m.mes)}</td>
                   <td className="px-2 py-1 text-right tabular-nums">{m.reservas}</td>

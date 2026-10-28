@@ -192,7 +192,7 @@ export default function CatalogosPage() {
             </div>
             <div>
               <h1 className="font-display text-3xl text-verde">Catálogos de reservas</h1>
-              <p className="text-sm text-verde-suave mt-1">
+              <p className="text-sm text-verde-medio mt-1">
                 Fuentes, chinampas y cocinas que se eligen al capturar una reserva
               </p>
             </div>
@@ -223,7 +223,7 @@ export default function CatalogosPage() {
                 className={`px-4 py-3 text-sm border-b-2 -mb-px whitespace-nowrap transition-colors ${
                   activa
                     ? 'border-terracota text-terracota font-semibold'
-                    : 'border-transparent text-verde-suave hover:text-verde'
+                    : 'border-transparent text-verde-medio hover:text-verde'
                 }`}
               >
                 {c.label}
@@ -281,7 +281,7 @@ export default function CatalogosPage() {
           <div
             role="alert"
             data-testid="catalogos-error"
-            className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex items-center gap-2 text-sm text-rojo"
+            className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 flex items-center gap-2 text-sm text-red-700"
           >
             <AlertTriangle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
             <span>{error}</span>
@@ -334,7 +334,7 @@ export default function CatalogosPage() {
                     <td colSpan={columnas} className="px-4 py-12">
                       <div className="flex items-center justify-center">
                         <Loader2 className="h-6 w-6 animate-spin text-terracota" aria-hidden="true" />
-                        <span className="ml-3 text-sm text-verde-suave">
+                        <span className="ml-3 text-sm text-verde-medio">
                           Cargando {etiquetaCatalogo.toLowerCase()}...
                         </span>
                       </div>
@@ -344,7 +344,7 @@ export default function CatalogosPage() {
                   <tr>
                     <td
                       colSpan={columnas}
-                      className="px-4 py-12 text-center text-verde-suave"
+                      className="px-4 py-12 text-center text-verde-medio"
                       data-testid="catalogos-vacio"
                     >
                       <Tags className="h-10 w-10 mx-auto text-neutro-gris mb-3" aria-hidden="true" />
@@ -376,11 +376,11 @@ export default function CatalogosPage() {
                       }`}
                     >
                       <td className="px-4 py-3">
-                        <span className={`font-medium ${item.activo ? 'text-verde' : 'text-verde-suave'}`}>
+                        <span className={`font-medium ${item.activo ? 'text-verde' : 'text-verde-medio'}`}>
                           {item.nombre}
                         </span>
                         {!item.activo && (
-                          <span className="ml-2 inline-block rounded-full text-xs px-2 py-0.5 bg-neutro-borde text-verde-suave">
+                          <span className="ml-2 inline-block rounded-full text-xs px-2 py-0.5 bg-neutro-borde text-verde-claro">
                             Archivado
                           </span>
                         )}
@@ -389,7 +389,7 @@ export default function CatalogosPage() {
                         <td className="px-4 py-3 text-verde">{etiquetaTipo(tipo, item.tipo)}</td>
                       )}
                       {conPersona && (
-                        <td className="px-4 py-3 text-verde-suave">
+                        <td className="px-4 py-3 text-verde-medio">
                           {item.tipo === 'persona'
                             ? item.personal_nombre ?? <span className="italic">Sin ligar</span>
                             : '—'}
@@ -413,7 +413,7 @@ export default function CatalogosPage() {
                           className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs disabled:opacity-50 ${
                             item.activo
                               ? 'bg-verde/10 text-verde hover:bg-verde/20'
-                              : 'bg-neutro-light text-verde-suave hover:bg-neutro-borde/40'
+                              : 'bg-neutro-light text-verde-medio hover:bg-neutro-borde/40'
                           }`}
                         >
                           {toggling === item.id ? (
@@ -426,7 +426,7 @@ export default function CatalogosPage() {
                           {item.activo ? 'Activo' : 'Archivado'}
                         </button>
                       </td>
-                      <td className="px-4 py-3 text-center tabular-nums text-verde-suave">
+                      <td className="px-4 py-3 text-center tabular-nums text-verde-medio">
                         {item.orden}
                       </td>
                       <td className="px-4 py-3">
@@ -456,7 +456,7 @@ export default function CatalogosPage() {
             </table>
           </div>
           {!loading && items.length > 0 && (
-            <div className="px-4 py-3 bg-neutro-light border-t border-neutro-borde text-sm text-verde-suave">
+            <div className="px-4 py-3 bg-neutro-light border-t border-neutro-borde text-sm text-verde-medio">
               {items.length} {items.length === 1 ? singular : etiquetaCatalogo.toLowerCase()}
               {mostrarArchivados ? ' (incluye archivadas)' : ''}
             </div>
@@ -505,7 +505,7 @@ export default function CatalogosPage() {
                 aria-label="Cerrar confirmación"
                 className="p-2 hover:bg-neutro-light rounded-lg"
               >
-                <X className="h-5 w-5 text-verde-suave" aria-hidden="true" />
+                <X className="h-5 w-5 text-verde-medio" aria-hidden="true" />
               </button>
             </div>
             <div className="p-6 space-y-3">
@@ -517,7 +517,7 @@ export default function CatalogosPage() {
               {errorBorrar && (
                 <div
                   role="alert"
-                  className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-rojo"
+                  className="flex items-start gap-2 p-3 bg-rojo-bg border border-rojo/30 rounded-lg text-sm text-red-700"
                 >
                   <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
                   <span>{errorBorrar}</span>

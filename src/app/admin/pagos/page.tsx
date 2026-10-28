@@ -153,7 +153,7 @@ export default function AdminPagosPage() {
         </div>
         <button
           onClick={() => { fetchPagos(); fetchStats() }}
-          className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          className="flex items-center space-x-2 px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800"
         >
           <RefreshCw className="h-4 w-4" />
           <span>Actualizar</span>
@@ -164,9 +164,9 @@ export default function AdminPagosPage() {
       {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { title: 'Total recaudado', value: formatMoney(stats.total_recaudado), sub: `${stats.cantidad_aprobados} aprobados`, icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50' },
-            { title: 'Pendientes', value: formatMoney(stats.total_pendientes), sub: `${stats.cantidad_pendientes} pagos`, icon: Clock, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-            { title: 'Rechazados', value: formatMoney(stats.total_rechazados), sub: `${stats.cantidad_rechazados} pagos`, icon: XCircle, color: 'text-red-600', bg: 'bg-red-50' },
+            { title: 'Total recaudado', value: formatMoney(stats.total_recaudado), sub: `${stats.cantidad_aprobados} aprobados`, icon: DollarSign, color: 'text-green-700', bg: 'bg-green-50' },
+            { title: 'Pendientes', value: formatMoney(stats.total_pendientes), sub: `${stats.cantidad_pendientes} pagos`, icon: Clock, color: 'text-yellow-700', bg: 'bg-yellow-50' },
+            { title: 'Rechazados', value: formatMoney(stats.total_rechazados), sub: `${stats.cantidad_rechazados} pagos`, icon: XCircle, color: 'text-red-700', bg: 'bg-red-50' },
             { title: 'Comisiones MP', value: formatMoney(stats.comisiones_mp_total), sub: 'Total cobrado', icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50' },
           ].map((kpi, i) => (
             <div key={i} className="bg-white rounded-lg border border-gray-200 p-4">
@@ -177,7 +177,7 @@ export default function AdminPagosPage() {
                 <div className="ml-3">
                   <p className="text-xs font-medium text-gray-500">{kpi.title}</p>
                   <p className="text-lg font-bold text-gray-900">{kpi.value}</p>
-                  <p className="text-xs text-gray-400">{kpi.sub}</p>
+                  <p className="text-xs text-gray-500">{kpi.sub}</p>
                 </div>
               </div>
             </div>
@@ -216,7 +216,7 @@ export default function AdminPagosPage() {
                 className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
               />
             </div>
-            <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
+            <button type="submit" className="px-4 py-2 bg-green-700 text-white rounded-lg text-sm hover:bg-green-800">
               Buscar
             </button>
             {busqueda && (
@@ -323,7 +323,7 @@ export default function AdminPagosPage() {
                         <button
                           type="button"
                           onClick={e => { e.stopPropagation(); e.preventDefault(); openDetalle(pago.id) }}
-                          className="p-1.5 rounded-lg hover:bg-green-50 text-green-600"
+                          className="p-1.5 rounded-lg hover:bg-green-50 text-green-700"
                         >
                           <Eye className="h-4 w-4" />
                         </button>

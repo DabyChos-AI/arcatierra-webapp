@@ -194,7 +194,7 @@ export default function CalendarioPage() {
             Fechas públicas y eventos internos de hoy a {DIAS_CALENDARIO} días
           </p>
           {error && (
-            <p className="text-orange-600 text-sm mt-1" role="alert">
+            <p className="text-orange-700 text-sm mt-1" role="alert">
               {error}{' '}
               <button type="button" onClick={() => fetchEventos()} className="underline hover:no-underline">
                 Reintentar
@@ -322,7 +322,7 @@ export default function CalendarioPage() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Eventos activos</span>
-                <span className="font-semibold text-green-600">
+                <span className="font-semibold text-green-700">
                   {eventos.filter((e) => e.estado === 'activo').length}
                 </span>
               </div>

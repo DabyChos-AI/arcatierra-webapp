@@ -38,10 +38,10 @@ interface KpiCardProps {
 const COLOR_MAP: Record<KpiColor, { text: string; bg: string }> = {
   terracota: { text: 'text-terracota', bg: 'bg-terracota/5' },
   verde: { text: 'text-verde', bg: 'bg-verde/5' },
-  amarillo: { text: 'text-amarillo', bg: 'bg-amarillo-bg' },
+  amarillo: { text: 'text-amber-700', bg: 'bg-amarillo-bg' },
   azul: { text: 'text-azul', bg: 'bg-azul-bg' },
   morado: { text: 'text-morado', bg: 'bg-morado-bg' },
-  rosa: { text: 'text-rosa', bg: 'bg-rosa-bg' },
+  rosa: { text: 'text-pink-700', bg: 'bg-rosa-bg' },
 }
 
 export default function KpiCard({
@@ -67,20 +67,20 @@ export default function KpiCard({
       >
         <Icon className={`h-4 w-4 ${colors.text}`} aria-hidden="true" />
       </div>
-      <p className="text-[10.5px] font-semibold uppercase tracking-wider text-verde-suave mb-1">
+      <p className="text-[10.5px] font-semibold uppercase tracking-wider text-verde-medio mb-1">
         {title}
       </p>
       <p className="text-[27px] leading-none font-bold text-verde mb-1.5">
         {value}
       </p>
       {(hasTrend || detail) && (
-        <div className="text-[11.5px] text-verde-suave flex items-center gap-1.5 flex-wrap">
+        <div className="text-[11.5px] text-verde-medio flex items-center gap-1.5 flex-wrap">
           {hasTrend && (
             <span
               className={`text-[10.5px] font-semibold px-1.5 py-0.5 rounded ${
                 trendUp
                   ? 'bg-verde/10 text-verde'
-                  : 'bg-rojo-bg text-rojo'
+                  : 'bg-rojo-bg text-red-700'
               }`}
             >
               {trendUp ? '▲' : '▼'} {Math.abs(trend as number)}%
@@ -90,7 +90,7 @@ export default function KpiCard({
         </div>
       )}
       {leyenda && (
-        <p className="mt-2 pt-2 border-t border-neutro-borde text-[10.5px] leading-snug text-verde-suave">
+        <p className="mt-2 pt-2 border-t border-neutro-borde text-[10.5px] leading-snug text-verde-medio">
           {leyenda}
         </p>
       )}

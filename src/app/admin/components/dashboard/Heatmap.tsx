@@ -64,7 +64,7 @@ export default function Heatmap({ data, mes }: HeatmapProps) {
         <h3 className="mb-0 text-sm font-semibold text-verde-tipografia">
           Densidad del mes — {tituloMes}
         </h3>
-        <span className="text-[10.5px] text-verde-suave font-normal">
+        <span className="text-[10.5px] text-verde-medio font-normal">
           {tema === 'oscuro'
             ? 'Cada cuadro = 1 día · más claro = más reservas'
             : 'Cada cuadro = 1 día · más oscuro = más reservas'}
@@ -72,7 +72,7 @@ export default function Heatmap({ data, mes }: HeatmapProps) {
       </div>
 
       {data.length === 0 ? (
-        <div className="py-8 text-center text-sm text-verde-suave">
+        <div className="py-8 text-center text-sm text-verde-medio">
           Sin datos de densidad para este mes
         </div>
       ) : (
@@ -88,7 +88,7 @@ export default function Heatmap({ data, mes }: HeatmapProps) {
             {data.map((d) => (
               <div
                 key={`lbl-${d.dia}`}
-                className="text-[8.5px] text-verde-suave text-center leading-none"
+                className="text-[8.5px] text-verde-medio text-center leading-none"
               >
                 {d.dia}
               </div>
@@ -113,7 +113,7 @@ export default function Heatmap({ data, mes }: HeatmapProps) {
           </div>
           </div>
           </div>
-          <div className="flex items-center gap-1 mt-3 text-[10.5px] text-verde-suave">
+          <div className="flex items-center gap-1 mt-3 text-[10.5px] text-verde-medio">
             <span>Menos</span>
             {LEYENDA_NIVELES.map((c) => (
               <span

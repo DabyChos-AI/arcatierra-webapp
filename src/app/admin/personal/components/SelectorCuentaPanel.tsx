@@ -167,7 +167,7 @@ export default function SelectorCuentaPanel({ token, personalId, valor, cuentaAc
           )}
         </select>
         {cargando && (
-          <span data-testid="personal-cuenta-cargando" className="inline-flex items-center gap-1 text-xs text-verde-suave shrink-0">
+          <span data-testid="personal-cuenta-cargando" className="inline-flex items-center gap-1 text-xs text-verde-medio shrink-0">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             Cargando…
           </span>
@@ -190,7 +190,7 @@ export default function SelectorCuentaPanel({ token, personalId, valor, cuentaAc
           </button>
         </div>
       )}
-      <p id="per-cuenta-ayuda" className="text-xs text-verde-suave mt-1">
+      <p id="per-cuenta-ayuda" className="text-xs text-verde-medio mt-1">
         {TEXTO_AYUDA}
       </p>
     </div>

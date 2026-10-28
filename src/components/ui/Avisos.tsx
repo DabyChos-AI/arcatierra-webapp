@@ -185,7 +185,7 @@ function TarjetaAviso({ a }: { a: AvisoVivo }) {
           data-testid="aviso-cerrar"
           aria-label="Cerrar aviso"
           onClick={() => cerrarAviso(a.id)}
-          className="-mr-1 shrink-0 rounded p-1 text-verde-suave hover:bg-neutro-light hover:text-verde"
+          className="-mr-1 shrink-0 rounded p-1 text-verde-medio hover:bg-neutro-light hover:text-verde"
         >
           <span aria-hidden="true" className="block text-lg leading-none">×</span>
         </button>

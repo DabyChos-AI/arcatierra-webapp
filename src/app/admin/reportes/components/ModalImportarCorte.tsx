@@ -77,7 +77,7 @@ export default function ModalImportarCorte({ fechaEntrega, onCerrar, onImportado
 
         <div className="space-y-4 px-5 py-5">
           <div className="flex flex-col gap-1">
-            <label htmlFor="fecha-import" className="text-xs font-semibold text-verde-suave">
+            <label htmlFor="fecha-import" className="text-xs font-semibold text-verde-medio">
               Día de entrega al que corresponde el archivo
             </label>
             <input
@@ -89,7 +89,7 @@ export default function ModalImportarCorte({ fechaEntrega, onCerrar, onImportado
             />
           </div>
 
-          <p className="text-xs text-verde-suave">
+          <p className="text-xs text-verde-medio">
             Sube el export de tu sistema actual (CSV o Excel). Si ese día ya tenía un corte
             cargado, se reemplaza por el nuevo.
           </p>
@@ -112,7 +112,7 @@ export default function ModalImportarCorte({ fechaEntrega, onCerrar, onImportado
             className={`flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed px-6 py-10 transition ${
               arrastrando
                 ? 'border-terracota bg-terracota/5 text-terracota'
-                : 'border-neutro-borde bg-neutro-light text-verde-suave hover:border-terracota hover:text-terracota'
+                : 'border-neutro-borde bg-neutro-light text-verde-medio hover:border-terracota hover:text-terracota'
             } disabled:opacity-60`}
           >
             {subiendo ? (
@@ -144,7 +144,7 @@ export default function ModalImportarCorte({ fechaEntrega, onCerrar, onImportado
           />
 
           {error && (
-            <div className="flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg px-4 py-3 text-sm text-rojo">
+            <div className="flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg px-4 py-3 text-sm text-red-700">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
               <span>{error}</span>
             </div>
@@ -171,7 +171,7 @@ export default function ModalImportarCorte({ fechaEntrega, onCerrar, onImportado
                   tienen cuenta en la plataforma.
                 </li>
                 {resultado.avisos.length > 0 && (
-                  <li className="text-amarillo">
+                  <li className="text-amber-700">
                     {resultado.avisos.length} avisos de normalización (C.P. o canasta corregidos).
                   </li>
                 )}
@@ -182,7 +182,7 @@ export default function ModalImportarCorte({ fechaEntrega, onCerrar, onImportado
                   <p className="mb-1 text-xs font-semibold text-verde-tipografia">
                     {resultado.filas_error} filas no se pudieron leer:
                   </p>
-                  <ul className="max-h-28 space-y-0.5 overflow-auto text-xs text-verde-suave">
+                  <ul className="max-h-28 space-y-0.5 overflow-auto text-xs text-verde-medio">
                     {resultado.errores.map((e) => (
                       <li key={e.fila}>
                         fila {e.fila}: {e.motivo}
@@ -198,7 +198,7 @@ export default function ModalImportarCorte({ fechaEntrega, onCerrar, onImportado
         <div className="flex justify-end gap-3 border-t border-neutro-borde bg-neutro-light px-5 py-3">
           <button
             onClick={onCerrar}
-            className="rounded-lg border border-neutro-borde px-4 py-2 text-sm text-verde-suave transition hover:bg-white"
+            className="rounded-lg border border-neutro-borde px-4 py-2 text-sm text-verde-medio transition hover:bg-white"
           >
             {resultado ? 'Listo' : 'Cerrar'}
           </button>

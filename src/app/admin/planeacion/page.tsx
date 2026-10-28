@@ -221,7 +221,7 @@ export default function PlaneacionPage() {
             </div>
             <div>
               <h1 className="font-display text-3xl text-verde">Planeación semanal</h1>
-              <p className="mt-1 text-sm text-verde-suave">
+              <p className="mt-1 text-sm text-verde-medio">
                 Experiencias privadas, fechas públicas y eventos internos de lunes a domingo.
               </p>
             </div>
@@ -272,7 +272,7 @@ export default function PlaneacionPage() {
           <div className="flex flex-col gap-1">
             <label
               htmlFor="planeacion-fecha"
-              className="text-xs font-semibold uppercase tracking-wide text-verde-suave"
+              className="text-xs font-semibold uppercase tracking-wide text-verde-medio"
             >
               Ir a la semana del día
             </label>
@@ -288,7 +288,7 @@ export default function PlaneacionPage() {
             />
           </div>
           {cargando && semana && (
-            <span className="inline-flex items-center gap-1 pb-2 text-xs text-verde-suave">
+            <span className="inline-flex items-center gap-1 pb-2 text-xs text-verde-medio">
               <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
               Cargando…
             </span>
@@ -296,7 +296,7 @@ export default function PlaneacionPage() {
         </div>
 
         {cargando && !semana ? (
-          <div className="flex items-center justify-center gap-2 py-16 text-verde-suave">
+          <div className="flex items-center justify-center gap-2 py-16 text-verde-medio">
             <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
             Cargando la semana…
           </div>
@@ -305,7 +305,7 @@ export default function PlaneacionPage() {
             data-testid="planeacion-error"
             className="flex flex-col items-center gap-3 rounded-xl border border-rojo/30 bg-rojo-bg px-4 py-10"
           >
-            <p className="text-center text-sm text-rojo">
+            <p className="text-center text-sm text-red-700">
               No se pudo cargar la planeación: {error ?? 'error desconocido'}
             </p>
             <button
@@ -322,7 +322,7 @@ export default function PlaneacionPage() {
             {error && (
               <div
                 data-testid="planeacion-error"
-                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rojo/30 bg-rojo-bg px-4 py-3 text-sm text-rojo"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rojo/30 bg-rojo-bg px-4 py-3 text-sm text-red-700"
               >
                 <span>
                   No se pudo cargar la semana pedida: {error}. Se sigue mostrando la anterior.
@@ -350,7 +350,7 @@ export default function PlaneacionPage() {
                   Semana del {formatFechaMexico(semana.lunes)} al{' '}
                   {formatFechaMexico(semana.domingo)}
                 </h2>
-                <p data-testid="planeacion-totales" className="mt-1 text-sm text-verde-suave">
+                <p data-testid="planeacion-totales" className="mt-1 text-sm text-verde-medio">
                   <strong className="text-verde">{semana.totales.eventos}</strong>{' '}
                   {semana.totales.eventos === 1 ? 'evento' : 'eventos'} ·{' '}
                   <strong className="text-verde">{semana.totales.pax}</strong> personas ·{' '}
@@ -430,7 +430,7 @@ export default function PlaneacionPage() {
                   </span>
                 </button>
                 {soloHuecos && conHuecosTotal === 0 && (
-                  <span data-testid="planeacion-sin-huecos" className="text-sm text-verde-suave">
+                  <span data-testid="planeacion-sin-huecos" className="text-sm text-verde-medio">
                     Ninguna privada de esta semana tiene datos pendientes.
                   </span>
                 )}
@@ -440,7 +440,7 @@ export default function PlaneacionPage() {
             {errorDescarga && (
               <p
                 data-testid="planeacion-descarga-error"
-                className="rounded-lg border border-rojo/30 bg-rojo-bg px-4 py-2 text-sm text-rojo"
+                className="rounded-lg border border-rojo/30 bg-rojo-bg px-4 py-2 text-sm text-red-700"
               >
                 No se pudo descargar: {errorDescarga}
               </p>
@@ -449,7 +449,7 @@ export default function PlaneacionPage() {
             {semanaVacia && (
               <p
                 data-testid="planeacion-vacia"
-                className="rounded-lg border border-neutro-borde bg-neutro-light px-4 py-3 text-sm text-verde-suave"
+                className="rounded-lg border border-neutro-borde bg-neutro-light px-4 py-3 text-sm text-verde-medio"
               >
                 No hay experiencias ni eventos esta semana.
               </p>

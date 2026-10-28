@@ -16,10 +16,10 @@ export const ESTADO_CUPON_LABEL: Record<EstadoCupon, string> = {
 
 /** Clases completas (Tailwind no ve las armadas con plantillas). */
 export const ESTADO_CUPON_CLASE: Record<EstadoCupon, string> = {
-  inactivo: 'bg-neutro-light text-verde-suave',
+  inactivo: 'bg-neutro-light text-verde-medio',
   vigente: 'bg-verde/10 text-verde',
   agotado: 'bg-amarillo-bg text-terracota-oscuro',
-  vencido: 'bg-rojo-bg text-rojo',
+  vencido: 'bg-rojo-bg text-red-700',
   programado: 'bg-neutro-crema text-verde-claro',
 }
 

@@ -161,7 +161,7 @@ export default function ReportesPage() {
           <Icono className="h-5 w-5" />
         </div>
         <h3 className="text-sm font-bold text-verde-tipografia">{reporte.nombre}</h3>
-        <p className="flex-1 text-xs leading-relaxed text-verde-suave">{reporte.descripcion}</p>
+        <p className="flex-1 text-xs leading-relaxed text-verde-medio">{reporte.descripcion}</p>
         <div className="mt-2 flex items-center gap-2">
           <button
             onClick={() => setReporteAbierto(reporte)}
@@ -170,7 +170,7 @@ export default function ReportesPage() {
             <Eye className="h-3.5 w-3.5" />
             Vista previa
           </button>
-          <span className="flex items-center gap-1 rounded-md border border-neutro-borde px-2 py-1.5 text-[11px] text-verde-suave">
+          <span className="flex items-center gap-1 rounded-md border border-neutro-borde px-2 py-1.5 text-[11px] text-verde-medio">
             {reporte.formatos.includes('xlsx') && <FileSpreadsheet className="h-3 w-3" />}
             {reporte.formatos.includes('pdf') && <FileText className="h-3 w-3" />}
             {reporte.formatos.map((f) => f.toUpperCase()).join(' · ')}
@@ -183,7 +183,7 @@ export default function ReportesPage() {
   return (
     <div className="mx-auto max-w-7xl px-6 py-8">
       <h1 className="font-heading text-2xl font-bold text-verde">Reportes</h1>
-      <p className="mt-1 text-sm text-verde-suave">
+      <p className="mt-1 text-sm text-verde-medio">
         Genera, previsualiza y exporta los reportes de logística y de dirección.
       </p>
 
@@ -192,7 +192,7 @@ export default function ReportesPage() {
         <div className="flex flex-col gap-1">
           <label
             htmlFor="f-dia"
-            className="text-xs font-semibold uppercase tracking-wide text-verde-suave"
+            className="text-xs font-semibold uppercase tracking-wide text-verde-medio"
           >
             Día de entrega
           </label>
@@ -208,7 +208,7 @@ export default function ReportesPage() {
         <div className="flex flex-col gap-1">
           <label
             htmlFor="f-origen"
-            className="text-xs font-semibold uppercase tracking-wide text-verde-suave"
+            className="text-xs font-semibold uppercase tracking-wide text-verde-medio"
           >
             Origen
           </label>
@@ -230,7 +230,7 @@ export default function ReportesPage() {
         <div className="flex flex-col gap-1">
           <label
             htmlFor="f-desde"
-            className="text-xs font-semibold uppercase tracking-wide text-verde-suave"
+            className="text-xs font-semibold uppercase tracking-wide text-verde-medio"
           >
             Desde
           </label>
@@ -246,7 +246,7 @@ export default function ReportesPage() {
         <div className="flex flex-col gap-1">
           <label
             htmlFor="f-hasta"
-            className="text-xs font-semibold uppercase tracking-wide text-verde-suave"
+            className="text-xs font-semibold uppercase tracking-wide text-verde-medio"
           >
             Hasta
           </label>
@@ -269,7 +269,7 @@ export default function ReportesPage() {
       </div>
 
       {estadoImport && (
-        <p className="mt-2 text-xs text-verde-suave">
+        <p className="mt-2 text-xs text-verde-medio">
           {(estadoImport.total_entregas ?? estadoImport.filas) > 0 ? (
             <>
               El {estadoImport.fecha_entrega} tiene{' '}
@@ -297,14 +297,14 @@ export default function ReportesPage() {
       )}
 
       {error && (
-        <div className="mt-6 flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg px-4 py-3 text-sm text-rojo">
+        <div className="mt-6 flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg px-4 py-3 text-sm text-red-700">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {cargando ? (
-        <div className="flex items-center justify-center gap-2 py-20 text-verde-suave">
+        <div className="flex items-center justify-center gap-2 py-20 text-verde-medio">
           <Loader2 className="h-5 w-5 animate-spin" />
           Cargando reportes…
         </div>
@@ -318,7 +318,7 @@ export default function ReportesPage() {
                 <span className="rounded-full bg-terracota px-2.5 py-0.5 text-[10px] font-extrabold tracking-wide text-white">
                   NUEVO
                 </span>
-                <span className="ml-auto text-xs text-verde-suave">
+                <span className="ml-auto text-xs text-verde-medio">
                   Corte Lun–Vie · entrega del próximo día hábil
                 </span>
               </div>
@@ -334,7 +334,7 @@ export default function ReportesPage() {
                     <Upload className="h-5 w-5" />
                   </div>
                   <span className="text-sm font-bold text-verde-tipografia">¿Aún sin migrar?</span>
-                  <span className="text-xs text-verde-suave">
+                  <span className="text-xs text-verde-medio">
                     Sube el export de tu sistema actual y genera el corte igual.
                   </span>
                 </button>
@@ -347,7 +347,7 @@ export default function ReportesPage() {
             <section className="mt-10">
               <div className="mb-4 flex items-center gap-3">
                 <h2 className="text-base font-bold text-verde">Reportes ejecutivos</h2>
-                <span className="ml-auto text-xs text-verde-suave">
+                <span className="ml-auto text-xs text-verde-medio">
                   Experiencias · reservas · pagos
                 </span>
               </div>
@@ -363,7 +363,7 @@ export default function ReportesPage() {
           <section className="mt-10">
             <div className="mb-4 flex items-center gap-3">
               <h2 className="text-base font-bold text-verde">Historial de exports</h2>
-              <span className="ml-auto text-xs text-verde-suave">
+              <span className="ml-auto text-xs text-verde-medio">
                 {historial?.total_count ?? 0} exports en total
               </span>
             </div>
@@ -392,7 +392,7 @@ export default function ReportesPage() {
                 <tbody>
                   {!historial || historial.items.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-8 text-center text-verde-suave">
+                      <td colSpan={7} className="px-4 py-8 text-center text-verde-medio">
                         Todavía no se ha generado ningún reporte.
                       </td>
                     </tr>
@@ -408,25 +408,25 @@ export default function ReportesPage() {
                             className={`rounded px-2 py-0.5 text-[10px] font-bold ${
                               h.formato === 'xlsx'
                                 ? 'bg-verde/10 text-verde'
-                                : 'bg-terracota/10 text-terracota'
+                                : 'bg-terracota/10 text-terracota-oscuro'
                             }`}
                           >
                             {h.formato.toUpperCase()}
                           </span>
                         </td>
-                        <td className="px-4 py-2.5 text-verde-suave">
+                        <td className="px-4 py-2.5 text-verde-medio">
                           {Object.entries(h.filtros || {})
                             .map(([k, v]) => `${k}: ${v}`)
                             .join(' · ') || '—'}
                         </td>
-                        <td className="px-4 py-2.5 text-verde-suave">{h.generado_por_nombre}</td>
-                        <td className="whitespace-nowrap px-4 py-2.5 text-verde-suave">
+                        <td className="px-4 py-2.5 text-verde-medio">{h.generado_por_nombre}</td>
+                        <td className="whitespace-nowrap px-4 py-2.5 text-verde-medio">
                           {new Date(h.fecha_creacion).toLocaleString('es-MX', {
                             dateStyle: 'medium',
                             timeStyle: 'short',
                           })}
                         </td>
-                        <td className="px-4 py-2.5 text-verde-suave">
+                        <td className="px-4 py-2.5 text-verde-medio">
                           {pesoLegible(h.tamano_bytes)}
                         </td>
                         <td className="px-4 py-2.5">
@@ -435,8 +435,8 @@ export default function ReportesPage() {
                               h.estado === 'completado'
                                 ? 'bg-verde/10 text-verde'
                                 : h.estado === 'fallido'
-                                  ? 'bg-rojo-bg text-rojo'
-                                  : 'bg-amarillo-bg text-amarillo'
+                                  ? 'bg-rojo-bg text-red-700'
+                                  : 'bg-amarillo-bg text-amber-700'
                             }`}
                             title={h.error_mensaje || undefined}
                           >

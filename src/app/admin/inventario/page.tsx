@@ -247,7 +247,7 @@ export default function AdminInventarioPage() {
             </div>
             <div>
               <p className="text-sm text-gray-500">Stock Bajo</p>
-              <p className="text-2xl font-bold text-yellow-600">
+              <p className="text-2xl font-bold text-yellow-700">
                 {metricas ? metricas.stock_bajo.toLocaleString('es-MX') : '-'}
               </p>
             </div>
@@ -482,7 +482,7 @@ export default function AdminInventarioPage() {
                     {/* Motivo */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Motivo <span className="text-red-500">*</span>
+                        Motivo <span className="text-red-600">*</span>
                       </label>
                       <textarea
                         rows={3}
@@ -553,10 +553,10 @@ export default function AdminInventarioPage() {
                               className="p-3 border border-gray-200 rounded-lg"
                             >
                               <div className="flex items-center justify-between mb-1">
-                                <span className={`text-sm font-bold ${diff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                <span className={`text-sm font-bold ${diff >= 0 ? 'text-green-700' : 'text-red-600'}`}>
                                   {diff >= 0 ? '+' : ''}{diff}
                                 </span>
-                                <span className="text-xs text-gray-400">
+                                <span className="text-xs text-gray-500">
                                   {formatFechaHoraMexico(mov.created_at)}
                                 </span>
                               </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { ChevronDown, Search, MapPin, Bike, Heart, Store } from 'lucide-react'
 import { API_URL } from '@/lib/api'
 // BOD1: la dirección de la bodega, una sola fuente (antes aquí había otra dirección, que no era la bodega)
@@ -37,23 +37,39 @@ export default function PostalCodeSelector({ value, onChange, onRecogerEnMatriz 
   const dropdownRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Cargar todas las zonas al inicio
+  // UIX2 (R15 · F1): las zonas se piden cuando la persona VA A USAR el selector (al acercar el puntero, al enfocarlo o al
+  // abrirlo), no al montarse. El checkout lo deja montado y oculto cuando se elige «Recoger en almacén» o una dirección
+  // guardada, y antes pedía /api/zonas-entrega/todas aunque nadie lo abriera. Una sola petición por selector; si falla o
+  // no responde 200, se vuelve a intentar en el siguiente uso.
+  const zonasRef = useRef<'sin-pedir' | 'pidiendo' | 'listas'>('sin-pedir')
+  const montadoRef = useRef(false)
   useEffect(() => {
-    const fetchZonas = async () => {
-      try {
-        // Cargar zonas populares (por ahora todas, después ordenadas por ventas)
-        const response = await fetch(`${API_URL}/api/zonas-entrega/todas`)
-        if (response.ok) {
-          const data = await response.json()
-          setZonas(data.zonas || [])
-        }
-      } catch (err) {
-        console.error('Error cargando zonas:', err)
-      } finally {
-        setLoading(false)
-      }
+    montadoRef.current = true
+    return () => {
+      montadoRef.current = false
     }
-    fetchZonas()
+  }, [])
+
+  const cargarZonas = useCallback(async () => {
+    if (zonasRef.current !== 'sin-pedir') return
+    zonasRef.current = 'pidiendo'
+    setLoading(true)
+    try {
+      // Zonas populares (por ahora todas, después ordenadas por ventas)
+      const response = await fetch(`${API_URL}/api/zonas-entrega/todas`)
+      if (response.ok) {
+        const data = await response.json()
+        if (montadoRef.current) setZonas(data.zonas || [])
+        zonasRef.current = 'listas'
+      } else {
+        zonasRef.current = 'sin-pedir'
+      }
+    } catch (err) {
+      console.error('Error cargando zonas:', err)
+      zonasRef.current = 'sin-pedir'
+    } finally {
+      if (montadoRef.current) setLoading(false)
+    }
   }, [])
 
   // Cerrar dropdown al hacer clic fuera
@@ -107,6 +123,7 @@ export default function PostalCodeSelector({ value, onChange, onRecogerEnMatriz 
   }
 
   const handleOpen = () => {
+    void cargarZonas()
     setIsOpen(true)
     setTimeout(() => inputRef.current?.focus(), 100)
   }
@@ -130,6 +147,8 @@ export default function PostalCodeSelector({ value, onChange, onRecogerEnMatriz 
       <button
         type="button"
         onClick={handleOpen}
+        onPointerEnter={() => void cargarZonas()}
+        onFocus={() => void cargarZonas()}
         className={`
           w-full flex items-center justify-between gap-3 px-4 py-3
           bg-white border-2 rounded-xl transition-all duration-200

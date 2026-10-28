@@ -191,7 +191,7 @@ export default function ModalNuevaSolicitud({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="cat-nombre" className={labelCls}>
-                Nombre del contacto <span className="text-red-500">*</span>
+                Nombre del contacto <span className="text-red-600">*</span>
               </label>
               <input
                 id="cat-nombre"
@@ -206,7 +206,7 @@ export default function ModalNuevaSolicitud({
             </div>
             <div>
               <label htmlFor="cat-email" className={labelCls}>
-                Email <span className="text-red-500">*</span>
+                Email <span className="text-red-600">*</span>
               </label>
               <input
                 id="cat-email"

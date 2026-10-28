@@ -1023,7 +1023,7 @@ export default function ModalNuevaReserva({
             type="button"
             onClick={onClose}
             aria-label="Cerrar modal nueva reserva"
-            className="p-1 rounded hover:bg-neutro-light text-verde-suave"
+            className="p-1 rounded hover:bg-neutro-light text-verde-medio"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -1046,7 +1046,7 @@ export default function ModalNuevaReserva({
             <p
               data-testid="wiz-lead-cargando"
               role="status"
-              className="mb-4 inline-flex items-center gap-2 text-sm text-verde-suave"
+              className="mb-4 inline-flex items-center gap-2 text-sm text-verde-medio"
             >
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               Cargando el lead…
@@ -1065,7 +1065,7 @@ export default function ModalNuevaReserva({
             <p
               data-testid="wiz-lead-error"
               role="alert"
-              className="mb-4 bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo"
+              className="mb-4 bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-red-700"
             >
               {leadInicial.mensaje}
             </p>
@@ -1082,7 +1082,7 @@ export default function ModalNuevaReserva({
             <div
               data-testid="wiz-error"
               role="alert"
-              className="mb-4 bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo"
+              className="mb-4 bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-red-700"
             >
               {error}
             </div>
@@ -1312,7 +1312,7 @@ function Paso1Cliente({
               <p
                 data-testid="wiz-resellers-cargando"
                 role="status"
-                className="inline-flex items-center gap-1 text-verde-suave"
+                className="inline-flex items-center gap-1 text-verde-medio"
               >
                 <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
                 Cargando resellers…
@@ -1322,7 +1322,7 @@ function Paso1Cliente({
               <div
                 data-testid="wiz-resellers-error"
                 role="alert"
-                className="flex flex-wrap items-center gap-2 bg-rojo-bg border border-rojo/30 rounded-lg p-2 text-rojo"
+                className="flex flex-wrap items-center gap-2 bg-rojo-bg border border-rojo/30 rounded-lg p-2 text-red-700"
               >
                 <span className="flex-1 min-w-0">
                   No se pudo cargar la lista de resellers ({estadoResellers.mensaje}). Sin la lista no
@@ -1339,7 +1339,7 @@ function Paso1Cliente({
               </div>
             )}
             {estadoResellers.tipo === 'ok' && resellers.length === 0 && (
-              <p data-testid="wiz-resellers-vacio" className="text-verde-suave">
+              <p data-testid="wiz-resellers-vacio" className="text-verde-medio">
                 No hay resellers activos. Dalos de alta en Resellers / B2B o registra la reserva como
                 cliente directo.
               </p>
@@ -1362,14 +1362,14 @@ function Paso1Cliente({
             aria-describedby="cliente-nombre-reseller-ayuda"
             className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
           />
-          <p id="cliente-nombre-reseller-ayuda" className="mt-1 text-xs text-verde-suave">
+          <p id="cliente-nombre-reseller-ayuda" className="mt-1 text-xs text-verde-medio">
             Solo identifica la reserva. No se le mandan correos: el cliente es del reseller.
           </p>
         </div>
       ) : (
         <>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-verde-suave">
+            <p className="text-sm text-verde-medio">
               Datos del cliente
               {wiz.leadId && (
                 <>
@@ -1379,7 +1379,7 @@ function Paso1Cliente({
                     type="button"
                     data-testid="wiz-quitar-lead"
                     onClick={() => dispatch({ type: 'SET_FIELD', field: 'leadId', value: undefined })}
-                    className="ml-2 text-xs text-verde-suave underline hover:text-verde"
+                    className="ml-2 text-xs text-verde-medio underline hover:text-verde"
                   >
                     Quitar lead
                   </button>
@@ -1510,7 +1510,7 @@ function Paso1Cliente({
             <option value="es">Español</option>
             <option value="en">Inglés</option>
           </select>
-          <p id="cliente-idioma-ayuda" className="mt-1 text-xs text-verde-suave">
+          <p id="cliente-idioma-ayuda" className="mt-1 text-xs text-verde-medio">
             Lo leen los guías en la Junta Turismo.
           </p>
         </div>
@@ -1531,7 +1531,7 @@ function Paso1Cliente({
             aria-describedby="wiz-contacto-ayuda"
             className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
           />
-          <p id="wiz-contacto-ayuda" className="mt-1 text-xs text-verde-suave">
+          <p id="wiz-contacto-ayuda" className="mt-1 text-xs text-verde-medio">
             Texto libre: con quién se coordina la reserva.
           </p>
         </div>
@@ -1605,14 +1605,14 @@ function SelectCatalogo({
         })}
         {sueltos.map(opcion)}
       </select>
-      {cargando && <p className="mt-1 text-xs text-verde-suave">Cargando {nombreCatalogo}…</p>}
+      {cargando && <p className="mt-1 text-xs text-verde-medio">Cargando {nombreCatalogo}…</p>}
       {error && (
         <p data-testid={`${id}-aviso`} className="mt-1 text-xs text-terracota-dark">
           No se pudo cargar el catálogo de {nombreCatalogo} ({error}). Puedes seguir sin elegir.
         </p>
       )}
       {!cargando && !error && items.length === 0 && (
-        <p className="mt-1 text-xs text-verde-suave">
+        <p className="mt-1 text-xs text-verde-medio">
           El catálogo de {nombreCatalogo} está vacío.
         </p>
       )}
@@ -1665,7 +1665,7 @@ function Paso2Experiencia({
           ))}
         </select>
         {wiz.experienciaId && (
-          <p className="mt-1 text-xs text-verde-suave">
+          <p className="mt-1 text-xs text-verde-medio">
             Precio base 1-{wiz.personasIncluidas} personas: {formatMXN(wiz.precioBase)} · Adicional:{' '}
             {formatMXN(wiz.precioAdicional)}/persona
           </p>
@@ -1679,7 +1679,7 @@ function Paso2Experiencia({
           <p
             data-testid="wiz-precios-cargando"
             role="status"
-            className="mt-1 inline-flex items-center gap-1 text-xs text-verde-suave"
+            className="mt-1 inline-flex items-center gap-1 text-xs text-verde-medio"
           >
             <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
             Actualizando precios…
@@ -1765,7 +1765,7 @@ function Paso2Experiencia({
             aria-describedby="exp-inv-min-help"
             className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
           />
-          <p id="exp-inv-min-help" className="mt-1 text-xs text-verde-suave">
+          <p id="exp-inv-min-help" className="mt-1 text-xs text-verde-medio">
             {wiz.invMin < wiz.personasIncluidas
               ? `Menos de las ${wiz.personasIncluidas} incluidas: se cobra el precio base completo.`
               : `El precio base incluye hasta ${wiz.personasIncluidas} personas; cada persona extra se cobra aparte.`}
@@ -1793,7 +1793,7 @@ function Paso2Experiencia({
             aria-describedby="wiz-ninos-ayuda"
             className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
           />
-          <p id="wiz-ninos-ayuda" data-testid="wiz-ninos-ayuda" className="mt-1 text-xs text-verde-suave">
+          <p id="wiz-ninos-ayuda" data-testid="wiz-ninos-ayuda" className="mt-1 text-xs text-verde-medio">
             {textoNinosAyuda(wiz, precios.tipo === 'ok')}
           </p>
         </div>
@@ -1818,7 +1818,7 @@ function Paso2Experiencia({
             aria-describedby="wiz-staff-ayuda"
             className="w-full border border-neutro-borde rounded-lg px-3 py-2 text-sm tabular-nums focus:ring-2 focus:ring-terracota/30 focus:border-terracota"
           />
-          <p id="wiz-staff-ayuda" className="mt-1 text-xs text-verde-suave">
+          <p id="wiz-staff-ayuda" className="mt-1 text-xs text-verde-medio">
             Aparte: no se cobra ni suma platos ni sillas.
           </p>
         </div>
@@ -1882,7 +1882,7 @@ function Paso3Addons({
 }) {
   if (addonsCat.length === 0) {
     return (
-      <div className="text-sm text-verde-suave italic">
+      <div className="text-sm text-verde-medio italic">
         No hay add-ons disponibles en el catalogo. Continua al siguiente paso.
       </div>
     )
@@ -1890,7 +1890,7 @@ function Paso3Addons({
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-verde-suave">
+      <p className="text-sm text-verde-medio">
         Selecciona los add-ons que se incluiran en la reserva.
       </p>
       <div className="grid grid-cols-2 gap-3">
@@ -1921,7 +1921,7 @@ function Paso3Addons({
                 />
                 <div className="flex-1">
                   <p className="text-sm text-verde font-medium">{a.nombre}</p>
-                  <p className="text-xs text-verde-suave">
+                  <p className="text-xs text-verde-medio">
                     {formatMXN(Number(a.precio_por_persona ?? 0))}
                   </p>
                 </div>
@@ -1930,7 +1930,7 @@ function Paso3Addons({
                 <div className="mt-2 flex items-center gap-2">
                   <label
                     htmlFor={`addon-cant-${a.id}`}
-                    className="text-xs text-verde-suave"
+                    className="text-xs text-verde-medio"
                   >
                     Cantidad:
                   </label>
@@ -1993,7 +1993,7 @@ function Paso4Cotizacion({
       {/* F1: desglose del precio de GRUPO (C02 + NI1), todo de calcularCotizacion(wiz) */}
       <div className="border-b border-neutro-borde pb-2 space-y-1">
         <p className="font-medium text-verde">{wiz.experienciaNombre ?? 'Experiencia'}</p>
-        <p className="text-xs text-verde-suave">
+        <p className="text-xs text-verde-medio">
           {wiz.invMin} invitados ({cot.adicionales} adicionales sobre {wiz.personasIncluidas})
           {wiz.ninos > 0 && ` · ${wiz.ninos} ${wiz.ninos === 1 ? 'niño' : 'niños'}`}
         </p>
@@ -2003,7 +2003,7 @@ function Paso4Cotizacion({
           monto={wiz.precioBase}
         />
         {tarifa && (
-          <p data-testid="wiz-tarifa-reseller" className="text-xs font-medium text-verde-suave">
+          <p data-testid="wiz-tarifa-reseller" className="text-xs font-medium text-verde-medio">
             {tarifa}
           </p>
         )}
@@ -2043,7 +2043,7 @@ function Paso4Cotizacion({
             data-testid="addons-detalle"
             className="bg-neutro-light rounded-lg p-3 space-y-1 text-sm"
           >
-            <p className="text-xs font-semibold text-verde-suave uppercase mb-1">
+            <p className="text-xs font-semibold text-verde-medio uppercase mb-1">
               Detalle add-ons:
             </p>
             {wiz.addons.map((a) => (
@@ -2117,7 +2117,7 @@ function Paso4Cotizacion({
           {revisionCupon.tipo === 'revisando' ? (
             <p
               data-testid="wiz-cupon-revisando"
-              className="inline-flex items-center gap-1 text-verde-suave"
+              className="inline-flex items-center gap-1 text-verde-medio"
             >
               <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
               Revisando el código…
@@ -2130,12 +2130,12 @@ function Paso4Cotizacion({
           ) : estadoCupon ? (
             <p
               data-testid="wiz-cupon-estado"
-              className={wiz.cuponEvaluado?.aplicado ? 'font-medium text-verde' : 'text-verde-suave'}
+              className={wiz.cuponEvaluado?.aplicado ? 'font-medium text-verde' : 'text-verde-medio'}
             >
               {estadoCupon}
             </p>
           ) : (
-            <p className="text-verde-suave">
+            <p className="text-verde-medio">
               Si es un cupón activo, descuenta y se suma al descuento manual. Si no, se guarda como
               referencia.
             </p>
@@ -2156,7 +2156,7 @@ function Paso4Cotizacion({
         <label htmlFor="wiz-cortesia" className="text-sm text-verde font-medium cursor-pointer">
           Cortesía
         </label>
-        <span id="wiz-cortesia-ayuda" className="text-xs text-verde-suave">
+        <span id="wiz-cortesia-ayuda" className="text-xs text-verde-medio">
           (total $0: sin propina, anticipo, link de pago ni cotización)
         </span>
       </div>
@@ -2280,7 +2280,7 @@ function Paso4Cotizacion({
               Sugerencia 50%
             </button>
           </div>
-          <div className="flex justify-between text-sm text-verde-suave">
+          <div className="flex justify-between text-sm text-verde-medio">
             <span>Balance pendiente:</span>
             <span className="tabular-nums">{formatMXN(cot.balance)}</span>
           </div>
@@ -2335,7 +2335,7 @@ function Paso5Asignaciones({
           ))}
         </select>
         {vendedorasCargando && (
-          <p className="mt-1 text-xs text-verde-suave">Cargando vendedoras…</p>
+          <p className="mt-1 text-xs text-verde-medio">Cargando vendedoras…</p>
         )}
         {vendedorasError && (
           <p data-testid="vendedoras-error" className="mt-1 text-xs text-terracota-dark">
@@ -2524,11 +2524,11 @@ function Paso6Confirmacion({
         </p>
         <p>
           Niños: <strong data-testid="wiz-resumen-ninos">{wiz.ninos}</strong>{' '}
-          <span className="text-verde-suave">(de los invitados)</span>
+          <span className="text-verde-medio">(de los invitados)</span>
         </p>
         <p>
           Staff: <strong data-testid="wiz-resumen-staff">{wiz.staff}</strong>{' '}
-          <span className="text-verde-suave">(aparte, no se cobra)</span>
+          <span className="text-verde-medio">(aparte, no se cobra)</span>
         </p>
         <p>
           Chinampa: <strong data-testid="wiz-resumen-chinampa">{wiz.chinampa || '—'}</strong>
@@ -2561,7 +2561,7 @@ function Paso6Confirmacion({
           <strong className="tabular-nums">{formatMXN(cot.subtotal_experiencia)}</strong>
         </p>
         {tarifa && (
-          <p data-testid="wiz-resumen-tarifa" className="text-verde-suave">
+          <p data-testid="wiz-resumen-tarifa" className="text-verde-medio">
             {tarifa}
           </p>
         )}
@@ -2586,7 +2586,7 @@ function Paso6Confirmacion({
         {wiz.codigoPromocional.trim() && (
           <p
             data-testid="wiz-resumen-cupon"
-            className={wiz.cuponEvaluado?.aplicado ? 'font-medium' : 'text-verde-suave'}
+            className={wiz.cuponEvaluado?.aplicado ? 'font-medium' : 'text-verde-medio'}
           >
             {textoCupon(wiz.cuponEvaluado, cot.monto_cupon) ||
               'Código sin revisar: el servidor lo revisa al crear la reserva.'}
@@ -2644,10 +2644,10 @@ function Paso6Confirmacion({
           />
           Generar link de pago MercadoPago automaticamente
           {wiz.cortesia ? (
-            <span className="text-xs text-verde-suave">(no aplica: es cortesía)</span>
+            <span className="text-xs text-verde-medio">(no aplica: es cortesía)</span>
           ) : (
             sinCobroReserva && (
-              <span className="text-xs text-verde-suave">(no aplica: el total es $0)</span>
+              <span className="text-xs text-verde-medio">(no aplica: el total es $0)</span>
             )
           )}
         </label>
@@ -2672,7 +2672,7 @@ function Paso6Confirmacion({
           />
           Enviar cotización PDF por email al cliente
           {wiz.cortesia && (
-            <span className="text-xs text-verde-suave">
+            <span className="text-xs text-verde-medio">
               (no aplica: las cortesías no se cotizan)
             </span>
           )}
@@ -2691,7 +2691,7 @@ function ResumenSeccion({
 }) {
   return (
     <div className="border border-neutro-borde rounded-lg p-3 bg-neutro-light/40">
-      <h3 className="text-xs font-semibold text-verde-suave uppercase mb-1">{titulo}</h3>
+      <h3 className="text-xs font-semibold text-verde-medio uppercase mb-1">{titulo}</h3>
       <div className="text-sm text-verde space-y-0.5">{children}</div>
     </div>
   )
@@ -2729,7 +2729,7 @@ function LeadPickerModal({
             type="button"
             onClick={onClose}
             aria-label="Cerrar buscador de leads"
-            className="p-1 rounded hover:bg-neutro-light text-verde-suave"
+            className="p-1 rounded hover:bg-neutro-light text-verde-medio"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -2737,7 +2737,7 @@ function LeadPickerModal({
         <div className="shrink-0 p-4 border-b border-neutro-borde">
           <div className="relative">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde-suave"
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-verde-medio"
               aria-hidden="true"
             />
             <input
@@ -2753,9 +2753,9 @@ function LeadPickerModal({
         </div>
         <div className="flex-1 overflow-auto p-2">
           {loading ? (
-            <p className="text-sm text-verde-suave text-center py-4">Cargando leads...</p>
+            <p className="text-sm text-verde-medio text-center py-4">Cargando leads...</p>
           ) : leads.length === 0 ? (
-            <p className="text-sm text-verde-suave text-center py-4">
+            <p className="text-sm text-verde-medio text-center py-4">
               No hay leads disponibles.
             </p>
           ) : (
@@ -2769,7 +2769,7 @@ function LeadPickerModal({
                     className="w-full text-left px-3 py-2 rounded hover:bg-neutro-light"
                   >
                     <p className="text-sm font-medium text-verde">{l.nombre || 'Sin nombre'}</p>
-                    <p className="text-xs text-verde-suave">
+                    <p className="text-xs text-verde-medio">
                       {l.email ?? 'sin email'}
                       {l.telefono ? ` · ${l.telefono}` : ''}
                       {l.estado_lead

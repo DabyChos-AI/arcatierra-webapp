@@ -37,14 +37,14 @@ export default function TabsPersonal({
             className={`flex items-center gap-2 px-4 py-3 text-sm border-b-2 -mb-px whitespace-nowrap transition-colors ${
               active
                 ? 'border-terracota text-terracota font-semibold'
-                : 'border-transparent text-verde-suave hover:text-verde'
+                : 'border-transparent text-verde-medio hover:text-verde'
             }`}
           >
             {t.label}
             {count !== null && (
               <span
                 className={`inline-flex items-center justify-center min-w-[1.25rem] px-1.5 rounded-full text-xs tabular-nums ${
-                  active ? 'bg-terracota/10 text-terracota' : 'bg-neutro-light text-verde-suave'
+                  active ? 'bg-terracota/10 text-terracota-oscuro' : 'bg-neutro-light text-verde-medio'
                 }`}
               >
                 {count}

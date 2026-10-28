@@ -8,7 +8,7 @@ import { CAPACIDAD_SIN_TOPE } from '@/types/catalogos'
  */
 export default function DisplayCapacidad({ valor }: { valor: number }) {
   if (valor === CAPACIDAD_SIN_TOPE) {
-    return <span className="text-verde-suave italic">sin tope</span>
+    return <span className="text-verde-medio italic">sin tope</span>
   }
   return <span className="tabular-nums">{valor}</span>
 }

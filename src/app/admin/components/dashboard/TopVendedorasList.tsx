@@ -14,8 +14,9 @@ interface TopVendedorasListProps {
   loading?: boolean
 }
 
-// Paleta de avatares (cicla por índice), coherente con el demo.
-const AVATAR_COLORS = ['#B15543', '#33503E', '#7C3AED', '#F59E0B', '#DB2777']
+// Paleta de avatares (cicla por índice), coherente con el demo. CLARO1 (R15 F1): el ámbar pasa de #F59E0B (2.15 con las
+// iniciales blancas) a #B45309 (amber-700, 5.02); los otros cuatro ya pasaban 4.5.
+const AVATAR_COLORS = ['#B15543', '#33503E', '#7C3AED', '#B45309', '#DB2777']
 // K2 (DR77): en oscuro, los mismos tonos más profundos para que las iniciales blancas se lean (≥ 5.9:1;
 // el ámbar claro da 2.15 con blanco). El claro no cambia.
 const AVATAR_COLORS_OSCURO = ['#A04A3A', '#3D6B50', '#6D28D9', '#92400E', '#BE185D']
@@ -43,7 +44,7 @@ export default function TopVendedorasList({ items, loading }: TopVendedorasListP
         <h3 className="text-sm font-semibold text-verde-tipografia">
           Top vendedoras del mes
         </h3>
-        <span className="text-[10.5px] text-verde-suave font-normal">
+        <span className="text-[10.5px] text-verde-medio font-normal">
           Lo vendido este mes por cada vendedora
         </span>
       </div>
@@ -61,7 +62,7 @@ export default function TopVendedorasList({ items, loading }: TopVendedorasListP
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="py-8 text-center text-sm text-verde-suave">
+        <div className="py-8 text-center text-sm text-verde-medio">
           Aún sin ventas este mes
         </div>
       ) : (

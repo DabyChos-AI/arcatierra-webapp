@@ -1494,7 +1494,7 @@ export default function ModalDetalleReserva({
     return (
       <div className="fixed inset-0 bg-black/50 z-[60] flex items-start justify-center px-4 pt-10 sm:pt-16 pb-4 overflow-y-auto">
         <div className="bg-white rounded-lg shadow-medium max-w-md w-full p-6">
-          <div className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo mb-4">
+          <div className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-red-700 mb-4">
             {error ?? 'No se pudo cargar la reserva.'}
           </div>
           <button
@@ -1527,7 +1527,7 @@ export default function ModalDetalleReserva({
               <BadgeEstado estado={reserva.estado} />
               <BadgeEstadoPago estado={reserva.estado_pago} />
             </div>
-            <p className="text-xs text-verde-suave mt-1">
+            <p className="text-xs text-verde-medio mt-1">
               {reserva.experiencia_nombre} · {formatFechaMexico(reserva.fecha_experiencia)} ·{' '}
               {reserva.hora_inicio?.slice(0, 5)} ·{' '}
               {reserva.numero_invitados_min} invitados
@@ -1540,7 +1540,7 @@ export default function ModalDetalleReserva({
                 data-testid="detalle-huecos"
                 className="flex flex-wrap items-center gap-1 mt-1.5"
               >
-                <span className="text-xs text-verde-suave">Le falta:</span>
+                <span className="text-xs text-verde-medio">Le falta:</span>
                 {(reserva.huecos ?? []).map((codigo) => (
                   <span
                     key={codigo}
@@ -1557,7 +1557,7 @@ export default function ModalDetalleReserva({
             type="button"
             onClick={onClose}
             aria-label="Cerrar modal detalle reserva"
-            className="p-1 rounded hover:bg-neutro-light text-verde-suave"
+            className="p-1 rounded hover:bg-neutro-light text-verde-medio"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -1576,7 +1576,7 @@ export default function ModalDetalleReserva({
                 className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors -mb-px whitespace-nowrap ${
                   tab === t.key
                     ? 'border-terracota text-terracota'
-                    : 'border-transparent text-verde-suave hover:text-verde'
+                    : 'border-transparent text-verde-medio hover:text-verde'
                 }`}
               >
                 {t.label}
@@ -1592,7 +1592,7 @@ export default function ModalDetalleReserva({
             className={`mx-6 mt-4 rounded-lg p-3 text-sm ${
               toast.type === 'success'
                 ? 'bg-verde/10 text-verde border border-verde/30'
-                : 'bg-rojo-bg text-rojo border border-rojo/30'
+                : 'bg-rojo-bg text-red-700 border border-rojo/30'
             }`}
           >
             {toast.msg}
@@ -2030,13 +2030,13 @@ function TabDatos({
           SIN cambio y el backend las ignora si son iguales (400 si llegaran distintas). */}
       <div className="flex flex-wrap items-end gap-3">
         <div className="min-w-[10rem]">
-          <p className="text-xs text-verde-suave">Fecha</p>
+          <p className="text-xs text-verde-medio">Fecha</p>
           <p data-testid="detalle-fecha" className="text-sm text-verde font-medium">
             {formatFechaMexico(reserva.fecha_experiencia)}
           </p>
         </div>
         <div className="min-w-[8rem]">
-          <p className="text-xs text-verde-suave">Horario</p>
+          <p className="text-xs text-verde-medio">Horario</p>
           <p data-testid="detalle-horario" className="text-sm text-verde font-medium tabular-nums">
             {reserva.hora_inicio
               ? reserva.hora_fin
@@ -2075,7 +2075,7 @@ function TabDatos({
           role="note"
           className="bg-neutro-light/60 border border-neutro-borde rounded-lg p-3 text-sm text-verde flex gap-2"
         >
-          <Info className="h-4 w-4 flex-shrink-0 mt-0.5 text-verde-suave" aria-hidden="true" />
+          <Info className="h-4 w-4 flex-shrink-0 mt-0.5 text-verde-medio" aria-hidden="true" />
           <span>{TEXTO_SIN_REPRECIO}</span>
         </p>
       )}
@@ -2117,7 +2117,7 @@ function TabDatos({
           <p
             id="d-ninos-ayuda"
             data-testid="detalle-ninos-ayuda"
-            className={`text-xs mt-1 ${ninosExcede ? 'text-rojo' : 'text-verde-suave'}`}
+            className={`text-xs mt-1 ${ninosExcede ? 'text-rojo' : 'text-verde-medio'}`}
           >
             {ninosExcede ? `Máximo ${form.invMin} (los invitados)` : textoNinosDetalle(reserva)}
           </p>
@@ -2133,7 +2133,7 @@ function TabDatos({
             data-testid="detalle-staff"
             className={`${inputClass} tabular-nums`}
           />
-          <p id="d-staff-ayuda" className="text-xs mt-1 text-verde-suave">
+          <p id="d-staff-ayuda" className="text-xs mt-1 text-verde-medio">
             Aparte: no se cobra ni suma platos/sillas
           </p>
         </Field>
@@ -2259,7 +2259,7 @@ function TabDatos({
               data-testid="detalle-cupon-estado"
               role="status"
               className={`text-xs mt-1 ${
-                cuponGuardadoAplicado ? 'font-medium text-verde' : 'text-verde-suave'
+                cuponGuardadoAplicado ? 'font-medium text-verde' : 'text-verde-medio'
               }`}
             >
               {textoCuponGuardado}
@@ -2282,7 +2282,7 @@ function TabDatos({
             <Gift className="h-4 w-4 text-morado" aria-hidden="true" />
             Cortesía (no se cobra)
           </label>
-          <p className="text-xs text-verde-suave mt-1">
+          <p className="text-xs text-verde-medio mt-1">
             {form.cortesia
               ? 'Total $0: sin anticipo ni link de pago. Al guardar se recalculan los montos.'
               : tienePagosAprobados
@@ -2378,7 +2378,7 @@ function Field({
 function ReadOnly({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs text-verde-suave">{label}</p>
+      <p className="text-xs text-verde-medio">{label}</p>
       <p className="text-sm text-verde font-medium truncate" title={value}>
         {value}
       </p>
@@ -2450,7 +2450,7 @@ function TabAddons({
           <tbody>
             {addons.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-3 py-6 text-center text-verde-suave">
+                <td colSpan={5} className="px-3 py-6 text-center text-verde-medio">
                   No hay add-ons asignados a esta reserva.
                 </td>
               </tr>
@@ -2459,7 +2459,7 @@ function TabAddons({
                 <tr key={a.id} className="border-b border-neutro-borde">
                   <td data-testid="detalle-addon-nombre" className="px-3 py-2 text-verde">
                     {a.addon_nombre ?? (
-                      <span className="italic text-verde-suave">Add-on eliminado</span>
+                      <span className="italic text-verde-medio">Add-on eliminado</span>
                     )}
                   </td>
                   <td className="px-3 py-2 text-center text-verde tabular-nums">
@@ -2487,7 +2487,7 @@ function TabAddons({
           </tbody>
           <tfoot className="bg-neutro-light/40">
             <tr>
-              <td colSpan={3} className="px-3 py-2 text-right text-verde-suave">
+              <td colSpan={3} className="px-3 py-2 text-right text-verde-medio">
                 Subtotal experiencia
               </td>
               <td className="px-3 py-2 text-right text-verde tabular-nums">
@@ -2496,7 +2496,7 @@ function TabAddons({
               <td />
             </tr>
             <tr>
-              <td colSpan={3} className="px-3 py-2 text-right text-verde-suave">
+              <td colSpan={3} className="px-3 py-2 text-right text-verde-medio">
                 Add-ons
               </td>
               <td className="px-3 py-2 text-right text-verde tabular-nums">
@@ -2505,7 +2505,7 @@ function TabAddons({
               <td />
             </tr>
             <tr>
-              <td colSpan={3} className="px-3 py-2 text-right text-verde-suave">
+              <td colSpan={3} className="px-3 py-2 text-right text-verde-medio">
                 Propina ({Number(reserva.propina_pct).toFixed(1)}%)
               </td>
               <td className="px-3 py-2 text-right text-verde tabular-nums">
@@ -2515,7 +2515,7 @@ function TabAddons({
             </tr>
             {Number(reserva.monto_descuento) > 0 && (
               <tr>
-                <td colSpan={3} className="px-3 py-2 text-right text-verde-suave">
+                <td colSpan={3} className="px-3 py-2 text-right text-verde-medio">
                   Descuento
                 </td>
                 <td className="px-3 py-2 text-right text-rojo tabular-nums">
@@ -2526,7 +2526,7 @@ function TabAddons({
             )}
             {montoCupon > 0 && (
               <tr data-testid="detalle-addons-cupon">
-                <td colSpan={3} className="px-3 py-2 text-right text-verde-suave">
+                <td colSpan={3} className="px-3 py-2 text-right text-verde-medio">
                   Cupón {codigoCupon}
                 </td>
                 <td className="px-3 py-2 text-right text-rojo tabular-nums">
@@ -2565,7 +2565,7 @@ function TabAddons({
           <div className="flex-1">
             <label
               htmlFor="addon-select"
-              className="block text-xs text-verde-suave mb-1"
+              className="block text-xs text-verde-medio mb-1"
             >
               Add-on del catalogo
             </label>
@@ -2586,7 +2586,7 @@ function TabAddons({
           <div>
             <label
               htmlFor="addon-cantidad"
-              className="block text-xs text-verde-suave mb-1"
+              className="block text-xs text-verde-medio mb-1"
             >
               Cantidad
             </label>
@@ -2648,7 +2648,7 @@ function ManifestRow({
   return (
     <tr className="border-b border-neutro-borde">
       <td className="px-3 py-2">
-        <span className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-full bg-terracota/10 text-terracota text-xs font-semibold tabular-nums">
+        <span className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-full bg-terracota/10 text-terracota-oscuro text-xs font-semibold tabular-nums">
           {idx + 1}
         </span>
       </td>
@@ -2663,7 +2663,7 @@ function ManifestRow({
             if (trimmed !== (inv.nombre ?? '')) onUpdate(idx, 'nombre', trimmed)
           }}
           className={`${inputClass} text-verde ${
-            esPlaceholder ? 'italic text-verde-suave' : ''
+            esPlaceholder ? 'italic text-verde-medio' : ''
           }`}
         />
       </td>
@@ -2827,10 +2827,10 @@ function TabManifest({
               aria-hidden="true"
             />
             <div className="flex-1">
-              <span className="inline-block bg-terracota/10 text-terracota text-xs font-medium px-2 py-0.5 rounded-full">
+              <span className="inline-block bg-terracota/10 text-terracota-oscuro text-xs font-medium px-2 py-0.5 rounded-full">
                 Excede cotización ({manifestCount} invitados vs {cotizados} cotizados)
               </span>
-              <p className="text-xs text-verde-suave mt-1">
+              <p className="text-xs text-verde-medio mt-1">
                 El manifest tiene más invitados que los cotizados. Puedes actualizar la
                 cotización para recalcular el precio.
               </p>
@@ -2858,7 +2858,7 @@ function TabManifest({
                 (para {manifestCount} invitados). ¿Continuar?
               </p>
               {cot && !cot.se_reprecia && (
-                <p className="text-xs text-verde-suave">{TEXTO_SIN_REPRECIO}.</p>
+                <p className="text-xs text-verde-medio">{TEXTO_SIN_REPRECIO}.</p>
               )}
               <div className="flex gap-2">
                 <button
@@ -2924,7 +2924,7 @@ function TabManifest({
           </tbody>
         </table>
         {esPlaceholder && (
-          <p className="px-3 py-2 text-xs text-verde-suave bg-neutro-light/40 border-t border-neutro-borde italic">
+          <p className="px-3 py-2 text-xs text-verde-medio bg-neutro-light/40 border-t border-neutro-borde italic">
             Guest 1 — Guest {reserva.numero_invitados_min} auto-generados. Edita
             los nombres directamente o agrega invitados adicionales abajo.
           </p>
@@ -3048,7 +3048,7 @@ function TabPagos({
           <Gift className="h-5 w-5 text-morado flex-shrink-0 mt-0.5" aria-hidden="true" />
           <div className="flex-1">
             <p className="text-sm font-semibold text-morado">Cortesía: no se cobra</p>
-            <p className="text-xs text-verde-suave mt-0.5">
+            <p className="text-xs text-verde-medio mt-0.5">
               Sin anticipo ni link de pago. Para cobrarla, quita la casilla «Cortesía» en la
               pestaña Datos.
             </p>
@@ -3060,12 +3060,12 @@ function TabPagos({
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-verde-suave">Valor de la cortesía</p>
+            <p className="text-xs text-verde-medio">Valor de la cortesía</p>
             <p className="text-base font-display font-semibold text-verde tabular-nums">
               {formatMXN(valorCortesia)}
             </p>
             {Number(reserva.monto_addons) > 0 && (
-              <p className="text-xs text-verde-suave tabular-nums">
+              <p className="text-xs text-verde-medio tabular-nums">
                 Experiencia {formatMXN(Number(reserva.precio_base))} · Add-ons{' '}
                 {formatMXN(Number(reserva.monto_addons))}
               </p>
@@ -3076,20 +3076,20 @@ function TabPagos({
 
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-verde/10 border border-verde/30 rounded-lg p-3">
-          <p className="text-xs text-verde-suave">Total pagado</p>
+          <p className="text-xs text-verde-medio">Total pagado</p>
           <p className="text-lg font-display font-semibold text-verde tabular-nums">
             {formatMXN(totalPagado)}
           </p>
         </div>
         <div className="bg-terracota/5 border border-terracota/20 rounded-lg p-3">
-          <p className="text-xs text-verde-suave">Total reserva</p>
+          <p className="text-xs text-verde-medio">Total reserva</p>
           <p className="text-lg font-display font-semibold text-verde tabular-nums">
             {formatMXN(total)}
           </p>
         </div>
         <div className="bg-amarillo-bg border border-amarillo/30 rounded-lg p-3">
-          <p className="text-xs text-verde-suave">Saldo pendiente</p>
-          <p className="text-lg font-display font-semibold text-amarillo tabular-nums">
+          <p className="text-xs text-verde-medio">Saldo pendiente</p>
+          <p className="text-lg font-display font-semibold text-amber-700 tabular-nums">
             {formatMXN(saldoPendiente)}
           </p>
         </div>
@@ -3097,7 +3097,7 @@ function TabPagos({
 
       {!cortesia && (
         <div className="bg-white border border-neutro-borde rounded-lg p-3">
-          <div className="flex items-center justify-between text-xs text-verde-suave mb-1">
+          <div className="flex items-center justify-between text-xs text-verde-medio mb-1">
             <span>Progreso de pago</span>
             <span className="tabular-nums">{porcentaje.toFixed(1)}%</span>
           </div>
@@ -3147,7 +3147,7 @@ function TabPagos({
           <tbody>
             {pagos.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-3 py-6 text-center text-verde-suave">
+                <td colSpan={7} className="px-3 py-6 text-center text-verde-medio">
                   No hay pagos registrados.
                 </td>
               </tr>
@@ -3169,7 +3169,7 @@ function TabPagos({
                       // LNK1 (R5): el link pasó su fecha sin cobrarse
                       <span
                         data-testid={`pago-vencido-${p.id}`}
-                        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-neutro-light text-verde-suave border border-neutro-borde"
+                        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-neutro-light text-verde-medio border border-neutro-borde"
                       >
                         Vencido
                       </span>
@@ -3179,7 +3179,7 @@ function TabPagos({
                           p.mp_status === 'approved'
                             ? 'bg-verde/10 text-verde border border-verde/30'
                             : p.mp_status === 'cancelled'
-                              ? 'bg-neutro-light text-verde-suave border border-neutro-borde'
+                              ? 'bg-neutro-light text-verde-medio border border-neutro-borde'
                               : 'bg-amarillo-bg text-verde border border-amarillo/30'
                         }`}
                       >
@@ -3187,7 +3187,7 @@ function TabPagos({
                       </span>
                     )}
                     {estadoPagoTexto(p) && (
-                      <p className="text-xs text-verde-suave mt-0.5">{estadoPagoTexto(p)}</p>
+                      <p className="text-xs text-verde-medio mt-0.5">{estadoPagoTexto(p)}</p>
                     )}
                     {/* RE1 (R5): el reembolso de este pago, y reintentar si quedó en error o rechazado */}
                     {p.reembolso && (
@@ -3206,7 +3206,7 @@ function TabPagos({
                       </p>
                     )}
                     {p.reembolso?.error && (
-                      <p data-testid={`pago-reembolso-error-${p.id}`} className="text-xs text-verde-suave">
+                      <p data-testid={`pago-reembolso-error-${p.id}`} className="text-xs text-verde-medio">
                         {p.reembolso.error}
                       </p>
                     )}
@@ -3245,7 +3245,7 @@ function TabPagos({
                         Abrir link
                       </a>
                     ) : (
-                      <span className="text-verde-suave">
+                      <span className="text-verde-medio">
                         {p.mp_payment_id ?? p.mp_preference_id ?? '—'}
                       </span>
                     )}
@@ -3268,7 +3268,7 @@ function TabPagos({
               ? 'bg-verde/10 border-verde/30 text-verde'
               : avisoReembolso.codigo === 'en_proceso' || avisoReembolso.codigo === 'ya_reembolsado'
                 ? 'bg-amarillo-bg border-amarillo/40 text-verde'
-                : 'bg-rojo-bg border-rojo/30 text-rojo'
+                : 'bg-rojo-bg border-rojo/30 text-red-700'
           }`}
         >
           {avisoReembolso.message}
@@ -3282,7 +3282,7 @@ function TabPagos({
           role="note"
           className="bg-neutro-light/60 border border-neutro-borde rounded-lg p-3 text-sm text-verde flex gap-2"
         >
-          <Info className="h-4 w-4 flex-shrink-0 mt-0.5 text-verde-suave" aria-hidden="true" />
+          <Info className="h-4 w-4 flex-shrink-0 mt-0.5 text-verde-medio" aria-hidden="true" />
           <span>Reserva cancelada: ya no recibe pagos ni links.</span>
         </p>
       )}
@@ -3342,7 +3342,7 @@ function TabPagos({
         <p
           data-testid="detalle-cotizacion-error"
           role="alert"
-          className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo"
+          className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-red-700"
         >
           No se pudo reenviar la cotización: {reenvioCotizacion.mensaje}
         </p>
@@ -3471,7 +3471,7 @@ function DesgloseCotizacion({ reserva }: { reserva: Reserva }) {
         <LineaCotizacion testid="detalle-total" etiqueta="Total" monto={cot.monto_total} fuerte />
       </div>
       {comision != null && (
-        <p data-testid="detalle-comision" className="text-xs text-verde-suave pt-1">
+        <p data-testid="detalle-comision" className="text-xs text-verde-medio pt-1">
           Comisión del reseller: {textoPorcentaje(comision)}
         </p>
       )}
@@ -3588,7 +3588,7 @@ function etiquetaComunicacion(c: Comunicacion): string {
 
 const ESTADO_CORREO: Record<string, { label: string; clase: string }> = {
   enviado: { label: 'Enviado', clase: 'bg-verde/10 text-verde border border-verde/30' },
-  fallido: { label: 'No se envió', clase: 'bg-rojo-bg text-rojo border border-rojo/30' },
+  fallido: { label: 'No se envió', clase: 'bg-rojo-bg text-red-700 border border-rojo/30' },
 }
 
 function TabComunicaciones({ estado }: { estado: EstadoComunicaciones }) {
@@ -3599,7 +3599,7 @@ function TabComunicaciones({ estado }: { estado: EstadoComunicaciones }) {
     return (
       <div
         data-testid="comunicaciones-cargando"
-        className="flex items-center gap-2 text-sm text-verde-suave py-6 justify-center"
+        className="flex items-center gap-2 text-sm text-verde-medio py-6 justify-center"
       >
         <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
         Cargando correos…
@@ -3612,7 +3612,7 @@ function TabComunicaciones({ estado }: { estado: EstadoComunicaciones }) {
       <div
         data-testid="comunicaciones-error"
         role="alert"
-        className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-rojo flex items-start gap-2"
+        className="bg-rojo-bg border border-rojo/30 rounded-lg p-3 text-sm text-red-700 flex items-start gap-2"
       >
         <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
         <p className="flex-1">No se pudieron cargar los correos: {error}</p>
@@ -3634,9 +3634,9 @@ function TabComunicaciones({ estado }: { estado: EstadoComunicaciones }) {
         data-testid="comunicaciones-vacio"
         className="bg-neutro-light/40 border border-neutro-borde rounded-lg p-6 text-center"
       >
-        <Info className="h-8 w-8 mx-auto text-verde-suave mb-2" aria-hidden="true" />
+        <Info className="h-8 w-8 mx-auto text-verde-medio mb-2" aria-hidden="true" />
         <p className="text-sm text-verde">Sin correos registrados</p>
-        <p className="text-xs text-verde-suave mt-1">
+        <p className="text-xs text-verde-medio mt-1">
           Aquí aparecen la confirmación, el recordatorio, la cotización, el reagendamiento, la
           cancelación, el link de pago, los avisos a guías y los avisos internos que el sistema
           mande para esta reserva.
@@ -3647,7 +3647,7 @@ function TabComunicaciones({ estado }: { estado: EstadoComunicaciones }) {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-verde-suave">
+      <p className="text-xs text-verde-medio">
         {lista.length} {lista.length === 1 ? 'correo' : 'correos'} (enviados o intentados), del
         más reciente al más antiguo.
       </p>
@@ -3944,14 +3944,14 @@ function TabAuditoria({
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-verde-suave">
+      <p className="text-xs text-verde-medio">
         {/* FMT1 (R7): sin punto final; la hora ya termina en «a.m.»/«p.m.» y salía «a.m..» */}
         Del más reciente al más antiguo. Último cambio guardado:{' '}
         {formatFechaHoraMexico(reserva.fecha_actualizacion)}
       </p>
 
       {items === null && !error && (
-        <p className="text-xs text-verde-suave flex items-center gap-2">
+        <p className="text-xs text-verde-medio flex items-center gap-2">
           <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
           Cargando los correos…
         </p>
@@ -3959,7 +3959,7 @@ function TabAuditoria({
       {error && (
         <div
           role="alert"
-          className="bg-rojo-bg border border-rojo/30 rounded-lg p-2 text-xs text-rojo flex items-start gap-2"
+          className="bg-rojo-bg border border-rojo/30 rounded-lg p-2 text-xs text-red-700 flex items-start gap-2"
         >
           <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" aria-hidden="true" />
           <p className="flex-1">No se pudieron cargar los correos (faltan en la lista): {error}</p>
@@ -3972,7 +3972,7 @@ function TabAuditoria({
       {itemsCambios === null && !cambios.error && (
         <p
           data-testid="auditoria-cambios-cargando"
-          className="text-xs text-verde-suave flex items-center gap-2"
+          className="text-xs text-verde-medio flex items-center gap-2"
         >
           <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
           Cargando los cambios…
@@ -3999,7 +3999,7 @@ function TabAuditoria({
       )}
 
       {itemsCambios !== null && cambios.total > itemsCambios.length && (
-        <p data-testid="auditoria-cambios-recortados" className="text-xs text-verde-suave">
+        <p data-testid="auditoria-cambios-recortados" className="text-xs text-verde-medio">
           Se muestran los {itemsCambios.length} cambios de campos más recientes de {cambios.total}.
         </p>
       )}
@@ -4015,10 +4015,10 @@ function TabAuditoria({
               data-lote={ev.lote}
               className="border border-neutro-borde rounded-lg p-3 bg-white flex gap-3"
             >
-              <Icono className="h-5 w-5 text-verde-suave flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <Icono className="h-5 w-5 text-verde-medio flex-shrink-0 mt-0.5" aria-hidden="true" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-verde">{ev.titulo}</p>
-                <p className="text-xs text-verde-suave">
+                <p className="text-xs text-verde-medio">
                   {pintarClave(ev)}
                   {ev.quien ? ` · ${ev.quien}` : ''}
                 </p>
@@ -4043,7 +4043,7 @@ function TabAuditoria({
         })}
       </ol>
 
-      <p data-testid="auditoria-pie" className="text-xs text-verde-suave italic">
+      <p data-testid="auditoria-pie" className="text-xs text-verde-medio italic">
         Aquí sale lo que queda registrado con fecha: el alta, cada cambio de campos guardado (qué
         cambió, de qué a qué, quién y desde dónde), las notas fechadas (cancelar, reagendar, avisos
         del sistema), los pagos y links, los correos y los guías asignados. Los cambios de campos se
@@ -4133,7 +4133,7 @@ function TabAcciones({
           </h3>
           {tentativa && (
             <>
-              <p className="text-sm text-verde-suave mb-2">
+              <p className="text-sm text-verde-medio mb-2">
                 Pasa la reserva de Tentativa a Confirmada (sale en el Manifest del día). Si la plantilla de
                 confirmación está activa y el cliente tiene correo real, se le manda el correo de confirmación.
               </p>
@@ -4167,7 +4167,7 @@ function TabAcciones({
               <p
                 data-testid="accion-confirmar-error"
                 role="alert"
-                className="mt-2 flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg p-3 text-sm text-rojo"
+                className="mt-2 flex items-start gap-2 rounded-lg border border-rojo/30 bg-rojo-bg p-3 text-sm text-red-700"
               >
                 <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
                 <span>{resultadoConfirmar.texto}</span>
@@ -4181,7 +4181,7 @@ function TabAcciones({
           <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
           Marcar como realizada
         </h3>
-        <p className="text-sm text-verde-suave mb-2">
+        <p className="text-sm text-verde-medio mb-2">
           Cuando la experiencia ya ocurrió. Solo desde Confirmada o Pagada, el día de la experiencia o
           después.
         </p>
@@ -4204,7 +4204,7 @@ function TabAcciones({
           <p
             id="accion-realizada-motivo"
             data-testid="accion-realizada-motivo"
-            className="mt-2 text-xs text-verde-suave"
+            className="mt-2 text-xs text-verde-medio"
           >
             {realizada.motivo}
           </p>
@@ -4225,7 +4225,7 @@ function TabAcciones({
         <div className="flex flex-wrap items-center gap-2">
           <label
             htmlFor="sap-ov"
-            className="text-sm text-verde-suave whitespace-nowrap"
+            className="text-sm text-verde-medio whitespace-nowrap"
           >
             Numero OV SAP:
           </label>
@@ -4249,7 +4249,7 @@ function TabAcciones({
 
       <div className="border border-azul/30 rounded-lg p-4 bg-azul-bg">
         <h3 className="text-sm font-semibold text-azul mb-2">Reagendar</h3>
-        <p className="text-sm text-verde-suave mb-2">
+        <p className="text-sm text-verde-medio mb-2">
           {cancelada
             ? 'Una reserva cancelada no se puede reagendar.'
             : 'Cambia la fecha y la hora de inicio; la hora de término se mueve igual. Al reagendar eliges si se avisa por correo al cliente (con la plantilla Reagendamiento, cuando esté activa) y a los guías asignados que tengan correo.'}
@@ -4276,7 +4276,7 @@ function TabAcciones({
           <>
             <label
               htmlFor="cancel-motivo"
-              className="block text-sm text-verde-suave mb-1"
+              className="block text-sm text-verde-medio mb-1"
             >
               Motivo
             </label>
@@ -4305,7 +4305,7 @@ function TabAcciones({
                   <span
                     id="cancel-reembolso-resumen"
                     data-testid="cancel-reembolso-resumen"
-                    className="block text-xs text-verde-suave"
+                    className="block text-xs text-verde-medio"
                   >
                     {resumenReembolso.nMP > 0
                       ? `Se devuelven ${formatMXN(resumenReembolso.montoMP)} de ${resumenReembolso.nMP} ${
@@ -4328,7 +4328,7 @@ function TabAcciones({
               />
               <span>
                 Avisar al cliente por correo
-                <span className="block text-xs text-verde-suave">
+                <span className="block text-xs text-verde-medio">
                   Con la plantilla Cancelación, solo si está activa en su idioma y el cliente tiene
                   correo real (las reservas del Sheet y de reseller no reciben correos).
                 </span>
@@ -4344,7 +4344,7 @@ function TabAcciones({
                     className="bg-amarillo-bg border border-amarillo/30 rounded-lg p-3 text-sm text-verde flex gap-2"
                   >
                     <AlertTriangle
-                      className="h-4 w-4 flex-shrink-0 mt-0.5 text-amarillo"
+                      className="h-4 w-4 flex-shrink-0 mt-0.5 text-amber-700"
                       aria-hidden="true"
                     />
                     <span>{AVISO_PAGO_EN_CAMINO}</span>
@@ -4390,7 +4390,7 @@ function TabAcciones({
           >
             <p className="font-medium text-verde">Reembolsos de la cancelación</p>
             {resultadoCancelar.reembolsos.length === 0 && resultadoCancelar.manuales === 0 && (
-              <p className="text-verde-suave">No había pagos de MercadoPago acreditados que devolver.</p>
+              <p className="text-verde-medio">No había pagos de MercadoPago acreditados que devolver.</p>
             )}
             {resultadoCancelar.reembolsos.map((r) => (
               <p
