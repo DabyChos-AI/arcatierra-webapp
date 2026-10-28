@@ -108,6 +108,7 @@ COLORES.update({
     'terracota-oscuro': '#975543', 'terracota-dark': '#8A3F30',
     'verde': '#33503E', 'verde-tipografia': '#3A4741', 'verde-principal': '#33503E', 'verde-claro': '#475A52',
     'verde-suave': '#748880', 'verde-dark': '#1F3024',
+    'verde-medio': '#596C64',  # CLARO1 (R15 F1): el verde-suave legible del panel en claro (5.59 sobre blanco)
     'neutro-crema': '#E3DBCB', 'neutro-beige': '#CCBB9A', 'neutro-calido': '#DCB584', 'neutro-gris': '#C1CCCE',
     'neutro-light': '#F5F1EA', 'neutro-borde': '#E5E0D6',
     'amarillo': '#F59E0B', 'amarillo-bg': '#FEF3C7', 'azul': '#0369A1', 'azul-bg': '#F0F9FF',
@@ -641,6 +642,11 @@ def bloque_base() -> list[str]:
         f'  {w} body :is(input, textarea){FUERA_CLARO}::placeholder {{ color: var(--k2-texto-4); }}',  # > preflight (0,0,2)
         f'  {w} body :where(option, optgroup) {{ background-color: var(--k2-superficie); color: var(--k2-texto); }}',
         f'  {w} body hr{FUERA_CLARO} {{ border-color: var(--k2-borde); }}',
+        # K2B (R15 F1): el preflight de Tailwind (globals.css) deja los botones transparentes; si un instante esa hoja no
+        # está y esta sí (23-oct, /admin/empleados: «Buscar» #a2afa8 sobre #6b6b6b), Chrome los pinta ButtonFace oscuro.
+        # Esta hoja repite lo mismo para no depender de la otra. (0,0,1): cualquier clase bg-* le gana.
+        f'  {w} body :where(button, [type="button"], [type="reset"], [type="submit"]){FUERA_CLARO} '
+        '{ background-color: transparent; background-image: none; }',
     ]
 
 
