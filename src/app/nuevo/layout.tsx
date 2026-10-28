@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import { connection } from 'next/server'
 import Cabecera from '@/components/sitio-nuevo/Cabecera'
-import Cinta from '@/components/sitio-nuevo/Cinta'
 import Pie from '@/components/sitio-nuevo/Pie'
 import AnuncioEmergente from '@/components/sitio-nuevo/AnuncioEmergente'
 import { leerContenidoSitio } from '@/lib/sitio-nuevo-contenido'
@@ -21,6 +20,9 @@ import './sitio-nuevo.css'
 //
 // Regla para F1–F4: aquí dentro no se decide nada visible con usePathname() en el primer render (el servidor ve /nuevo y el
 // navegador /); el enlace activo del menú sale de useSelectedLayoutSegments() o de un efecto.
+//
+// F2 (sesión 55, P1): la cinta sale del layout y la pinta la portada en su lugar de la maqueta (2.º, debajo del hero): en la
+// maqueta la cinta y la frase de arriba solo viven en la home (`data-page="home"`). Una sola cinta, ninguna página la duplica.
 
 const titulos = localFont({
   src: [
@@ -73,7 +75,6 @@ export default async function SitioNuevoLayout({ children }: { children: React.R
         Saltar al contenido
       </a>
       <Cabecera />
-      <Cinta elementos={contenido.cinta} />
       <div id="sn-contenido" className="flex-1">
         {children}
       </div>

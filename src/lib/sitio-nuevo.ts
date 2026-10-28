@@ -11,9 +11,10 @@
 /** Carpeta de `src/app/` donde viven las páginas nuevas (= el segmento que ve `useSelectedLayoutSegment()` en el layout raíz). */
 export const SEGMENTO_SITIO_NUEVO = 'nuevo'
 
-/** Dirección pública → ruta interna del sitio nuevo. F0: solo la portada (página de muestra). */
+/** Dirección pública → ruta interna del sitio nuevo. F0: la portada · F2 (WF3, sesión 55): la tienda. */
 export const RUTAS_SITIO_NUEVO: Readonly<Record<string, string>> = Object.freeze({
   '/': '/nuevo',
+  '/tienda': '/nuevo/tienda',
 })
 
 /** La ruta interna para una dirección pública, o null si esa dirección sigue con la página de hoy. */

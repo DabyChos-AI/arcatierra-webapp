@@ -55,3 +55,33 @@ export const ENLACES_LEGALES: readonly Enlace[] = [
   { texto: 'Privacidad', href: '/privacidad' },
   { texto: 'Términos', href: '/terminos' },
 ]
+
+// ─── Portada (R15 · F2, WF2, sesión 55) ──────────────────────────────────────────────────────────────────────
+// Ligas a la tienda nueva: contrato con front-tienda (C24). Lo demás va a páginas que YA existen hoy; ningún destino se
+// inventa (P4). Eventos y Chinampas siguen en la dirección de la cabecera hasta que F3–F4 hagan sus páginas.
+
+/** Las tres puertas, «Ver toda la tienda», el validador de colonia y «Quiero mi canasta» del hero. */
+export const ENLACES_TIENDA = {
+  suelto: '/tienda?pestana=suelto',
+  canasta: '/tienda?pestana=canasta',
+  extras: '/tienda?pestana=extras',
+  toda: '/tienda',
+  colonia: '/tienda#colonia',
+} as const
+
+export const ENLACES_PORTADA = {
+  /** Hero «Vive Arca» y «Ver todas las experiencias». */
+  experiencias: '/experiencias',
+  /** «Contacto →» de la franja de restaurantes: el formulario de hoy (POST /api/restaurantes/solicitud), nunca un wa.me. */
+  restaurantes: '/restaurantes',
+  /** «Conoce la chinampa →» (= «Chinampas» de la cabecera). */
+  chinampas: '/xochimilco',
+  /** «Cotizar mi visita →»: las privadas de hoy, cada una con su solicitud (= «Eventos» de la cabecera). */
+  eventos: '/experiencias?tipo=privada',
+  /** «Cotizar catering →»: el formulario de la página de Catering de hoy. */
+  catering: '/catering#contacto',
+  /** «Conoce Arca Tierra →». */
+  nosotros: '/nosotros',
+  /** «Ver todos →» de prensa: la página de hoy. */
+  prensa: '/prensa',
+} as const
