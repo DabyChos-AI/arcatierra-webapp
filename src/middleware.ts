@@ -12,15 +12,18 @@ function urlDeLaApi(): string {
   return process.env.INTERNAL_API_URL || API_URL
 }
 
-// R15 · F0 (sesión 53, 28-oct-2026), interruptor del sitio nuevo (R15-CONTRATO §3.2). Se lee en cada petición, como MW1.
-// Sin la variable (producción) ninguna dirección se reescribe: todo se comporta como antes.
+// R15 · F0 (sesión 53, 28-oct-2026; revisado en F0 v2, sesión 57, 29-oct), interruptor del sitio nuevo (R15-CONTRATO-V2 §7).
+// Se lee en cada petición, como MW1. Sin la variable (producción) ninguna dirección se reescribe: todo se comporta como antes.
 function sitioNuevoEncendido(): boolean {
   return process.env.ARCA_SITIO_NUEVO === '1'
 }
 
 // Con ARCA_SITIO_NUEVO=1, la dirección pública que está en RUTAS_SITIO_NUEVO se sirve con su página de src/app/nuevo/…
-// (la barra de direcciones no cambia). null = sigue la página de hoy. Una ruta protegida que entre a la lista (Mi cuenta, F3)
+// (la barra de direcciones no cambia). null = sigue la página de hoy. Una ruta protegida que entre a la lista (Mi cuenta)
 // pasa por aquí solo DESPUÉS de que withAuth la dejó pasar (ver `conSesion`).
+// La URL de la reescritura sale de req.nextUrl: Next la trata como interna solo si su origen coincide con el del servidor. En
+// Docker (HOSTNAME=0.0.0.0) coincide; con HOSTNAME=127.0.0.1 NextURL la cambia a «localhost» y Next la manda como proxy externo
+// (medido, REVISION-CODIGO-F0.md H3): un arnés usa HOSTNAME=localhost.
 function reescrituraSitioNuevo(req: NextRequest): NextResponse | null {
   if (!sitioNuevoEncendido()) return null
   const destino = rutaInternaSitioNuevo(req.nextUrl.pathname)
@@ -32,7 +35,12 @@ function reescrituraSitioNuevo(req: NextRequest): NextResponse | null {
 
 // `/nuevo` y `/nuevo/*` pedidos directo: 404 en los dos contenedores. Se reescribe a una ruta que no puede existir (en el App
 // Router una carpeta con «_» es privada y nunca es ruta), así sale la misma página 404 de cualquier dirección inexistente.
-const RUTA_SIN_PAGINA = '/_sitio-nuevo-sin-ruta'
+// F0 v2 (29-oct, P2 aprobada por el líder 04:46 UTC): nombre neutro. Toda reescritura de Next deja la cabecera
+// `x-middleware-rewrite: <destino>` en la respuesta (resolve-routes.js:434, no se puede quitar), así que el destino no dice
+// «sitio-nuevo». No se usa notFound() en src/app/nuevo/layout.tsx: esa 404 sale del render dinámico y cambia otras cabeceras
+// (sin x-nextjs-cache/x-nextjs-prerender) frente a la 404 de cualquier dirección inexistente, y obliga a marcar en una cabecera
+// de la petición qué se reescribió (falsificable si el middleware no la limpia). Medido en REVISION-CODIGO-F0.md (H1).
+const RUTA_SIN_PAGINA = '/_no-existe'
 
 function decodificada(pathname: string): string {
   try {
@@ -163,13 +171,20 @@ export default async function middleware(req: NextRequest, event: NextFetchEvent
     return conSesion(req as NextRequestWithAuth, event)
   }
 
-  // Todo lo demás: la página de hoy, salvo que el interruptor esté encendido y la dirección esté en la lista.
+  // Lo demás que casa el matcher (solo las direcciones de RUTAS_SITIO_NUEVO): la página de hoy, salvo que el interruptor esté
+  // encendido.
   return reescrituraSitioNuevo(req) ?? NextResponse.next()
 }
 
+// F0 v2 (29-oct, P1 aprobada por el líder 04:46 UTC): el middleware corre SOLO donde tiene algo que hacer. La F0 vieja traía un
+// matcher general ('/((?!api/|_next/|.*\\..*).*)') que lo corría en toda página de producción con el interruptor apagado:
+// +1.1 a +1.7 ms de mediana por página, medido (REVISION-CODIGO-F0.md, H4). Con esta lista, toda dirección que no esté aquí
+// responde igual que antes de R15 (8235d9e^).
+// Next exige literales estáticos (no se puede importar RUTAS_SITIO_NUEVO): **cada dirección que se agregue a RUTAS_SITIO_NUEVO
+// se agrega también aquí.** Lo vigila comprobar-matcher-sitio-nuevo.mjs (qa) contra .next/server/middleware-manifest.json.
 export const config = {
   matcher: [
-    // Las protegidas de siempre (mismo texto que antes del 28-oct: casan también la ruta sin subruta, .json y .rsc)
+    // Las protegidas de siempre (el mismo texto que antes de R15: casan también la ruta sin subruta, .json y .rsc)
     '/dashboard/:path*',
     '/ordenes/:path*',
     '/perfil/:path*',
@@ -177,8 +192,7 @@ export const config = {
     '/usuario/:path*',
     // R15: /nuevo directo (también /nuevo.rsc y /nuevo.json) → 404
     '/nuevo/:path*',
-    // R15: el resto de las páginas, para la reescritura del link de revisión. Fuera /_next/, /api/ y todo archivo con
-    // extensión (imágenes, manifest.json, sw.js, robots.txt, sitemap.xml).
-    '/((?!api/|_next/|.*\\..*).*)',
+    // R15: las direcciones públicas de RUTAS_SITIO_NUEVO (src/lib/sitio-nuevo.ts), una por una
+    '/',
   ],
 }

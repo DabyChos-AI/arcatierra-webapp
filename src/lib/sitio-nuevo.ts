@@ -1,4 +1,4 @@
-// R15 · F0 (sesión 53, 28-oct-2026): el interruptor del sitio nuevo (R15-CONTRATO §3).
+// R15 · F0 (sesión 53, 28-oct-2026; revisado en F0 v2, sesión 57, 29-oct): el interruptor del sitio nuevo (R15-CONTRATO-V2 §7).
 //
 // Las páginas nuevas viven en `src/app/nuevo/…` y se ven en su dirección pública de siempre (`/`, `/tienda`, …) solo en el
 // link de revisión (contenedor con ARCA_SITIO_NUEVO=1): `src/middleware.ts` reescribe la dirección pública a la ruta interna.
@@ -7,6 +7,9 @@
 // Sin imports: lo usan el middleware (Edge), `SoloSitioActual` (cliente) y el conteo de qa (`~/arcatierra-qa/r15-faltantes.mjs`,
 // que lee las direcciones de esta lista). Cada fase agrega aquí sus direcciones; una que no está sigue mostrando la página de hoy,
 // también en el link de revisión.
+// **Cada dirección nueva va TAMBIÉN en `config.matcher` de `src/middleware.ts`** (Next exige ahí un literal estático): sin eso
+// el middleware no corre en esa dirección y el link sigue mostrando la página de hoy. Lo vigila
+// `comprobar-matcher-sitio-nuevo.mjs` (qa) contra `.next/server/middleware-manifest.json` de la build.
 
 /** Carpeta de `src/app/` donde viven las páginas nuevas (= el segmento que ve `useSelectedLayoutSegment()` en el layout raíz). */
 export const SEGMENTO_SITIO_NUEVO = 'nuevo'
