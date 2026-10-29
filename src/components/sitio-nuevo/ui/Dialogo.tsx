@@ -4,36 +4,39 @@ import { useEffect, useId, useRef } from 'react'
 import { X } from 'lucide-react'
 import { FOCO_BOTON, unirClases } from './clases'
 
-// R15 · F1 v2 (CONTRATO-BASE-F1 §4; C32): ventana modal del sitio nuevo (la usa el popup del armazón). Medido en la maqueta: velo ink al
-// 30 % con 24 px de margen (`#arca-popup`), panel warm de hasta 760 px con radio 14 y sombra (`div.popup`), relleno 36/32 en escritorio y
-// 28/24 en el celular (`.popup-content`), ✕ en un círculo de 32 px ink al 15 % a 14 px de la esquina (`.popup-close`).
-// Cerrado NO está en el DOM (C32). Abierto: role="dialog" + aria-modal, foco dentro (Tab da la vuelta), Escape cierra, el clic en el velo
-// cierra (no el 2.º clic de un doble clic, como Avisos.tsx), el foco regresa a donde estaba y la página de atrás no se desplaza.
-// El scroll va en un hijo del panel y no en el panel: así el ✕ (absoluto en el panel) no se va con el contenido en el celular. Al abrir, el
-// foco va a ese hijo, para que las flechas lo desplacen. Panel e hijo llevan `focus:outline-none`: el `*:focus` de globals.css le gana a
-// `outline-none` y pintaba el contorno terracota de hoy alrededor de todo el panel (medido por armazon, 12:37).
-// El foco se queda dentro con dos guardas (C45): un elemento enfocable vacío al principio y otro al final del panel. Cuando Tab o Shift+Tab
-// llegan a una guarda, ella pasa el foco al otro extremo de los controles del panel; no se escucha el teclado para Tab. Escape se atiende en el
-// propio velo (`onKeyDown`), porque el foco siempre está dentro.
+// R15 · F1 v2 (CONTRATO-BASE-F1 §4; C32, C45, C47): ventana modal del sitio nuevo; la usa el popup del armazón.
+//
+// Diseño medido en la maqueta: velo ink al 30 % con 24 px de margen (`#arca-popup`); panel warm de hasta 760 px, radio 14 y sombra
+// (`div.popup`); relleno 28/24 en el celular y 36/32 desde 861 px (`.popup-content`); ✕ en un círculo de 32 px ink al 15 % (`.popup-close`).
+//
+// Conducta:
+// - Cerrado no está en el DOM (C32). Abierto: role="dialog" + aria-modal y la página de atrás no se desplaza.
+// - El scroll va en un hijo del panel (`-contenido`), así el ✕, que está fijo en el panel, no se va con el contenido.
+// - Al abrir, el foco entra a `-contenido` (las flechas lo desplazan). Al cerrar, regresa a donde estaba.
+// - Tab: dos guardas vacías en las orillas del panel pasan el foco a la otra punta (C45).
+// - El foco no se queda fuera mientras está abierto (C47): si se va del panel —porque se desmonta, se oculta o se deshabilita el control que
+//   lo tenía, o porque algo lo mueve afuera— vuelve a `-contenido`. Lo vigila un MutationObserver sobre el panel y `focusin` en el documento.
+// - Escape cierra esté donde esté el foco (C47): se oye en `window`, también cuando el foco cayó en <body>.
+// - El clic en el velo cierra (no el 2.º clic de un doble clic, como Avisos.tsx).
+// - Panel y `-contenido` llevan `focus:outline-none`: el `*:focus` de globals.css pintaba el contorno terracota de hoy (armazon, 12:37).
 // Sin texto propio: el título (o el id del título que pinte quien lo usa) y la etiqueta del ✕ los pasa quien lo usa.
 
-const CANDIDATOS = 'a[href], button, input, select, textarea, [tabindex]'
+const SELECTOR_CONTROLES = 'a[href], button, input, select, textarea, [tabindex]'
 
-// Los controles a los que llega Tab dentro del panel, en orden del documento: con tabIndex ≥ 0, sin deshabilitar, pintados y sin las guardas.
-function controles(panel: HTMLElement): HTMLElement[] {
-  return Array.from(panel.querySelectorAll<HTMLElement>(CANDIDATOS)).filter(
+/** Lo que alcanza Tab dentro del panel, en orden del documento (sin las guardas). */
+function alcanzables(panel: HTMLElement): HTMLElement[] {
+  return Array.from(panel.querySelectorAll<HTMLElement>(SELECTOR_CONTROLES)).filter(
     (el) => el.tabIndex >= 0 && !el.matches(':disabled') && !el.hasAttribute('data-guarda') && el.getClientRects().length > 0,
   )
 }
 
-/** Elemento vacío que solo existe para recibir el foco en una orilla del panel y mandarlo a la otra. Va en la esquina de arriba, dentro de
- * la caja del panel (sin el margen negativo de `sr-only`), para que enfocarlo no desplace el panel ni mueva el ✕. */
-function Guarda({ alRecibirFoco }: { alRecibirFoco: () => void }) {
+/** Orilla enfocable y vacía: al recibir el foco lo manda a la otra punta. En la esquina de arriba, dentro de la caja del panel. */
+function Guarda({ enviar }: { enviar: () => void }) {
   return (
     <span
       data-guarda=""
       tabIndex={0}
-      onFocus={alRecibirFoco}
+      onFocus={enviar}
       className="pointer-events-none absolute left-0 top-0 h-px w-px overflow-hidden opacity-0 focus:outline-none"
     />
   )
@@ -75,25 +78,58 @@ function DialogoAbierto({
 }: DialogoProps) {
   const idTitulo = `${useId()}-titulo`
   const panelRef = useRef<HTMLDivElement>(null)
-  const desplazableRef = useRef<HTMLDivElement>(null)
+  const contenidoRef = useRef<HTMLDivElement>(null)
+  // Escape se oye fuera de React: el oyente lee siempre el onCerrar más reciente sin volver a montarse.
+  const cerrarVigente = useRef(onCerrar)
+  useEffect(() => {
+    cerrarVigente.current = onCerrar
+  }, [onCerrar])
 
   useEffect(() => {
-    const antes = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    const raiz = document.documentElement
-    const desbordeAntes = raiz.style.overflow
-    raiz.style.overflow = 'hidden'
-    desplazableRef.current?.focus()
+    const panel = panelRef.current
+    const contenido = contenidoRef.current
+    if (!panel || !contenido) return
+    const dondeEstaba = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const html = document.documentElement
+    const desbordeOriginal = html.style.overflow
+    html.style.overflow = 'hidden'
+    contenido.focus()
+
+    // Regresa el foco a `-contenido` si no está dentro del panel.
+    const reubicar = () => {
+      if (!panel.contains(document.activeElement)) contenido.focus({ preventScroll: true })
+    }
+    // Quitar el control enfocado deja el foco en <body> en el acto; ocultarlo o deshabilitarlo lo deja ahí al siguiente cuadro.
+    const vigia = new MutationObserver(() => {
+      reubicar()
+      requestAnimationFrame(() => setTimeout(reubicar, 0))
+    })
+    vigia.observe(panel, { subtree: true, childList: true, attributes: true })
+
+    const oyentes = new AbortController()
+    document.addEventListener('focusin', reubicar, { signal: oyentes.signal })
+    window.addEventListener(
+      'keydown',
+      (evento) => {
+        if (evento.key !== 'Escape' || evento.isComposing || evento.defaultPrevented) return
+        cerrarVigente.current()
+      },
+      { signal: oyentes.signal },
+    )
+
     return () => {
-      raiz.style.overflow = desbordeAntes
-      if (antes && antes.isConnected) antes.focus()
+      oyentes.abort()
+      vigia.disconnect()
+      html.style.overflow = desbordeOriginal
+      if (dondeEstaba?.isConnected) dondeEstaba.focus()
     }
   }, [])
 
-  // La guarda de arriba recibe el foco con Shift+Tab desde el primer control: lo manda al último. La de abajo, al revés.
-  const irA = (orilla: 'principio' | 'final') => {
-    const lista = panelRef.current ? controles(panelRef.current) : []
-    const destino = orilla === 'principio' ? lista[0] : lista[lista.length - 1]
-    ;(destino ?? desplazableRef.current)?.focus()
+  // Guarda de arriba (Shift+Tab desde el primero) → al último; guarda de abajo (Tab desde el último) → al primero.
+  const mandarA = (punta: 'primero' | 'ultimo') => {
+    const lista = panelRef.current ? alcanzables(panelRef.current) : []
+    const elegido = punta === 'primero' ? lista[0] : lista[lista.length - 1]
+    ;(elegido ?? contenidoRef.current)?.focus()
   }
 
   const etiquetadoPor = 'etiquetadoPor' in resto && resto.etiquetadoPor ? resto.etiquetadoPor : idTitulo
@@ -106,11 +142,6 @@ function DialogoAbierto({
       className="fixed inset-0 z-[950] flex items-center justify-center bg-sn-ink/30 p-6"
       onMouseDown={(e) => {
         if (cerrarConFondo && e.target === e.currentTarget && e.detail <= 1) onCerrar()
-      }}
-      onKeyDown={(e) => {
-        if (e.key !== 'Escape') return
-        e.stopPropagation()
-        onCerrar()
       }}
     >
       <div
@@ -127,9 +158,9 @@ function DialogoAbierto({
           className,
         )}
       >
-        <Guarda alRecibirFoco={() => irA('final')} />
+        <Guarda enviar={() => mandarA('ultimo')} />
         <div
-          ref={desplazableRef}
+          ref={contenidoRef}
           tabIndex={-1}
           data-testid={`${testId}-contenido`}
           className={unirClases(
@@ -159,7 +190,7 @@ function DialogoAbierto({
             <X className="h-4 w-4" strokeWidth={1.75} focusable="false" />
           </span>
         </button>
-        <Guarda alRecibirFoco={() => irA('principio')} />
+        <Guarda enviar={() => mandarA('primero')} />
       </div>
     </div>
   )
