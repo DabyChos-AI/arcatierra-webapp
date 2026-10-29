@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Cabecera from '@/components/sitio-nuevo/armazon/Cabecera'
-import Cinta from '@/components/sitio-nuevo/armazon/Cinta'
 import Pie from '@/components/sitio-nuevo/armazon/Pie'
 import Anuncio from '@/components/sitio-nuevo/armazon/Anuncio'
 import { E } from '@/components/sitio-nuevo/armazon/estilos'
@@ -32,7 +31,6 @@ export default function SitioNuevoLayout({ children }: { children: React.ReactNo
         Saltar al contenido
       </a>
       <Cabecera />
-      <Cinta />
       <div id="sn-contenido" tabIndex={-1} className="flex-1 outline-none">
         {children}
       </div>
