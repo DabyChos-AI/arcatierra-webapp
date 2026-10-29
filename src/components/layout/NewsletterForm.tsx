@@ -29,7 +29,7 @@ function detalleLegible(detail: unknown): string {
 }
 
 interface Props {
-  origen: Extract<OrigenNewsletter, 'pie' | 'prensa'>
+  origen: OrigenNewsletter
 }
 
 export default function NewsletterForm({ origen }: Props) {
@@ -44,6 +44,9 @@ export default function NewsletterForm({ origen }: Props) {
   const aceptoRef = useRef<HTMLInputElement>(null)
 
   const oscuro = origen === 'prensa'
+  // R15 v2 · F1 (C31): el popup del sitio nuevo va sobre fondo claro (`sn-warm`), con los tokens y pares AA de CONTRATO-BASE-F1 §2.2.
+  // 'pie' y 'prensa' pintan exactamente lo de antes.
+  const claro = origen === 'popup'
 
   // El botón se puede pulsar siempre: si falta algo, dice qué y enfoca el campo (s46). Candado: un solo POST.
   const enviar = async (e: React.FormEvent) => {
@@ -100,7 +103,7 @@ export default function NewsletterForm({ origen }: Props) {
       data-origen={origen}
       className="space-y-3"
     >
-      <div className={oscuro ? 'flex flex-wrap gap-4 sm:flex-nowrap' : 'flex flex-col gap-2 sm:flex-row'}>
+      <div className={oscuro ? 'flex flex-wrap gap-4 sm:flex-nowrap' : claro ? 'flex flex-col gap-2' : 'flex flex-col gap-2 sm:flex-row'}>
         <label htmlFor={`${id}-email`} className="sr-only">
           Tu correo
         </label>
@@ -120,7 +123,9 @@ export default function NewsletterForm({ origen }: Props) {
           className={
             oscuro
               ? 'w-full rounded-lg bg-gray-700 px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-terracota sm:flex-grow'
-              : 'min-w-0 flex-1 rounded-md border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50'
+              : claro
+                ? 'min-w-0 flex-1 rounded-sn-campo border border-sn-muted bg-white px-3.5 py-3 font-sn-texto text-sn-cuerpo-sm text-sn-ink placeholder:text-sn-ink/70 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sn-terra'
+                : 'min-w-0 flex-1 rounded-md border border-white/20 bg-white/10 px-3 py-2 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50'
           }
         />
         <button
@@ -130,7 +135,9 @@ export default function NewsletterForm({ origen }: Props) {
           className={
             oscuro
               ? 'w-full rounded-lg bg-terracota px-6 py-3 font-medium text-white transition-colors hover:bg-opacity-90 disabled:opacity-60 sm:w-auto'
-              : 'rounded-md bg-white px-4 py-2 font-semibold text-terracota transition-colors hover:bg-white/90 disabled:opacity-60'
+              : claro
+                ? 'min-h-11 rounded-sn-pildora bg-sn-terra px-6 py-3 font-sn-mono text-sn-boton font-medium uppercase text-white transition-colors hover:bg-sn-ink disabled:opacity-60 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sn-terra'
+                : 'rounded-md bg-white px-4 py-2 font-semibold text-terracota transition-colors hover:bg-white/90 disabled:opacity-60'
           }
         >
           {enviando ? 'Enviando…' : 'Suscribirse'}
@@ -148,11 +155,15 @@ export default function NewsletterForm({ origen }: Props) {
             setAcepto(e.target.checked)
             if (resultado?.tipo === 'error') setResultado(null)
           }}
-          className="mt-0.5 h-4 w-4 shrink-0 accent-terracota"
+          className={
+            claro
+              ? 'mt-0.5 h-4 w-4 shrink-0 accent-sn-terra focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sn-terra'
+              : 'mt-0.5 h-4 w-4 shrink-0 accent-terracota'
+          }
         />
-        <label htmlFor={`${id}-acepto`} className={`text-xs ${oscuro ? 'text-gray-300' : 'text-white/90'}`}>
+        <label htmlFor={`${id}-acepto`} className={`text-xs ${oscuro ? 'text-gray-300' : claro ? 'text-sn-ink' : 'text-white/90'}`}>
           {TEXTO_CONSENTIMIENTO_NEWSLETTER}{' '}
-          <Link href="/privacidad" className="underline">
+          <Link href="/privacidad" className={claro ? 'text-sn-ink underline hover:text-sn-terra' : 'underline'}>
             Aviso de privacidad
           </Link>
         </label>
@@ -182,10 +193,14 @@ export default function NewsletterForm({ origen }: Props) {
             resultado.tipo === 'error'
               ? oscuro
                 ? 'text-red-300'
-                : 'font-semibold text-white'
+                : claro
+                  ? 'font-semibold text-sn-terra'
+                  : 'font-semibold text-white'
               : oscuro
                 ? 'text-green-300'
-                : 'text-white'
+                : claro
+                  ? 'text-sn-green'
+                  : 'text-white'
           }`}
         >
           {resultado.texto}

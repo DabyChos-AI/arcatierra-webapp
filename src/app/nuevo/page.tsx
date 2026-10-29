@@ -15,14 +15,14 @@ export const metadata: Metadata = {
 export default function SitioNuevoMuestra() {
   return (
     <main data-testid="sitio-nuevo-muestra" className="mx-auto w-full max-w-3xl px-4 py-12 sm:py-16">
-      <h1 className="font-mendoza text-3xl text-verde sm:text-4xl">Sitio nuevo de Arca Tierra · link de revisión</h1>
+      <h1 className="font-sn-titulos text-3xl font-normal text-sn-ink sm:text-4xl">Sitio nuevo de Arca Tierra · link de revisión</h1>
 
       <p className="mt-4 text-base leading-relaxed">
         Aquí se va armando el sitio nuevo con el diseño de la maqueta de la diseñadora. Los textos, las fotos y los precios salen
         del sitio de hoy y de la base. Las direcciones que todavía no se rehacen siguen mostrando la página de hoy.
       </p>
 
-      <h2 className="mb-0 mt-10 font-mendoza text-2xl text-verde">Lo que todavía falta</h2>
+      <h2 className="mb-0 mt-10 font-sn-titulos text-2xl font-normal text-sn-ink">Lo que todavía falta</h2>
 
       <ul data-testid="sitio-nuevo-faltantes" className="mt-4 list-disc space-y-3 pl-5 leading-relaxed">
         <li>
