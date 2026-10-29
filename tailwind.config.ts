@@ -54,6 +54,26 @@ const config: Config = {
           DEFAULT: '#DB2777',
           'bg': '#FCE7F3',
         },
+        // R15 · F1 v2 (contrato v2 §9 C16; cadena-v2/f1/CONTRATO-BASE-F1.md §2): colores del sitio nuevo = los valores del `:root`
+        // de la maqueta, medidos con Playwright, con su mismo nombre (--teal = --muted y --cafe = --ink no se repiten). Solo los usan
+        // src/app/nuevo/** y src/components/sitio-nuevo/**: el sitio de hoy y el panel no cambian.
+        'sn': {
+          'ink': '#3D2A1A',
+          'terra': '#975543',
+          'rust': '#BA6440',
+          'sand': '#CCBB9A',
+          'cream': '#E3DBCB',
+          'warm': '#F0EBE2',
+          'muted': '#748880',
+          'border': '#D8D0C0',
+          'green': '#475A52',
+          'gold': '#DCB584',
+          'blue': '#C1CCCE',
+          'forest': '#3F5A4D',
+          'amber': '#D4A24C',
+          'peach': '#F2D4A8',
+          'rust-bright': '#C66B3A',
+        },
         // VARIABLES SHADCN/UI PERSONALIZADAS
         background: 'var(--background)',
         foreground: 'var(--foreground)',
@@ -107,16 +127,61 @@ const config: Config = {
         // Aliases directos
         'mendoza': ['var(--font-mendoza)', 'Georgia', 'serif'],
         'akkurat': ['var(--font-akkurat)', 'Inter', 'sans-serif'],
+        // R15 · F1 v2 (C14, C15): letras del sitio nuevo; las variables las pone src/components/sitio-nuevo/fuentes.ts en el envoltorio
+        // [data-sitio-nuevo]. Respaldos del hand-off §4.
+        'sn-titulos': ['var(--sn-fuente-titulos)', 'Georgia', 'serif'],
+        'sn-texto': ['var(--sn-fuente-texto)', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+        'sn-mono': ['var(--sn-fuente-mono)', 'ui-monospace', 'monospace'],
       },
       fontSize: {
         'hero': ['3.5rem', { lineHeight: '1.1', fontWeight: '700' }],
         'section': ['2.25rem', { lineHeight: '1.2', fontWeight: '600' }],
+        // R15 · F1 v2 (C16; CONTRATO-BASE-F1 §3.1): escala del sitio nuevo, de las reglas declaradas de la maqueta.
+        'sn-hero-xl': ['clamp(56px, 6vw, 96px)', { lineHeight: '1', letterSpacing: '-1.5px' }],
+        'sn-hero': ['clamp(48px, 5.5vw, 84px)', { lineHeight: '0.98', letterSpacing: '-1.5px' }],
+        'sn-h2': ['clamp(36px, 4vw, 56px)', { lineHeight: '1.05', letterSpacing: '-0.8px' }],
+        'sn-h3': ['clamp(28px, 3vw, 40px)', { lineHeight: '1.12', letterSpacing: '-0.4px' }],
+        'sn-h4': ['28px', { lineHeight: '1.1', letterSpacing: '-0.3px' }],
+        'sn-h5': ['22px', { lineHeight: '1.15', letterSpacing: '-0.3px' }],
+        'sn-h6': ['20px', { lineHeight: '1.2', letterSpacing: '-0.3px' }],
+        'sn-cuerpo-lg': ['17px', { lineHeight: '1.6', letterSpacing: '-0.3px' }],
+        'sn-cuerpo': ['16px', { lineHeight: '1.55', letterSpacing: '-0.3px' }],
+        'sn-cuerpo-sm': ['14px', { lineHeight: '1.55', letterSpacing: '-0.3px' }],
+        'sn-cuerpo-xs': ['13px', { lineHeight: '1.5', letterSpacing: '-0.3px' }],
+        'sn-eyebrow': ['11px', { lineHeight: '1.55', letterSpacing: '1.8px' }],
+        'sn-etiqueta': ['11px', { lineHeight: '1.55', letterSpacing: '1.2px' }],
+        'sn-etiqueta-sm': ['10px', { lineHeight: '1.55', letterSpacing: '1.1px' }],
+        'sn-micro': ['9px', { lineHeight: '1.55', letterSpacing: '1.2px' }],
+        'sn-boton': ['12px', { lineHeight: '1.55', letterSpacing: '1.4px' }],
+        'sn-boton-sm': ['11px', { lineHeight: '1.55', letterSpacing: '1.2px' }],
       },
       spacing: {
         '18': '4.5rem',
         '88': '22rem',
+        // R15 · F1 v2 (C16; CONTRATO-BASE-F1 §3.2): ritmo del sitio nuevo (hand-off §4 y la maqueta medida a 1440 y 390).
+        'sn-seccion': '80px',
+        'sn-seccion-lg': '96px',
+        'sn-seccion-xl': '120px',
+        'sn-seccion-movil': '56px',
+        'sn-seccion-lg-movil': '72px',
+        'sn-lateral': '40px',
+        'sn-lateral-movil': '24px',
+      },
+      // R15 · F1 v2 (C16; CONTRATO-BASE-F1 §3.5): anchos máximos de los contenedores de la maqueta.
+      maxWidth: {
+        'sn-contenido': '1280px',
+        'sn-medio': '1200px',
+        'sn-angosto': '1100px',
+        'sn-titulo': '880px',
+        'sn-parrafo': '620px',
       },
       borderRadius: {
+        // R15 · F1 v2 (C16; CONTRATO-BASE-F1 §3.3): radios de la maqueta (hand-off §4 y medidos).
+        'sn-pildora': '999px',
+        'sn-boton': '6px',
+        'sn-campo': '8px',
+        'sn-tarjeta': '14px',
+        'sn-panel': '18px',
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)'
