@@ -9,6 +9,9 @@ import { FOCO_BOTON, unirClases } from './clases'
 // 28/24 en el celular (`.popup-content`), ✕ en un círculo de 32 px ink al 15 % a 14 px de la esquina (`.popup-close`).
 // Cerrado NO está en el DOM (C32). Abierto: role="dialog" + aria-modal, foco dentro (Tab da la vuelta), Escape cierra, el clic en el velo
 // cierra (no el 2.º clic de un doble clic, como Avisos.tsx), el foco regresa a donde estaba y la página de atrás no se desplaza.
+// El scroll va en un hijo del panel y no en el panel: así el ✕ (absoluto en el panel) no se va con el contenido en el celular. Al abrir, el
+// foco va a ese hijo, para que las flechas lo desplacen. Panel e hijo llevan `focus:outline-none`: el `*:focus` de globals.css le gana a
+// `outline-none` y pintaba el contorno terracota de hoy alrededor de todo el panel (medido por armazon, 12:37).
 // Sin texto propio: el título (o el id del título que pinte quien lo usa) y la etiqueta del ✕ los pasa quien lo usa.
 
 const ENFOCABLES =
@@ -20,7 +23,7 @@ type Comun = {
   /** `aria-label` del botón ✕. */
   etiquetaCerrar: string
   cerrarConFondo?: boolean
-  /** Relleno de la maqueta (28/24 → 36/32 desde 860 px). Sin relleno, el contenido llega a las orillas (la foto del popup). */
+  /** Relleno de la maqueta (28/24 → 36/32 desde 861 px). Sin relleno, el contenido llega a las orillas (la foto del popup). */
   relleno?: boolean
   testId?: string
   className?: string
@@ -50,6 +53,7 @@ function DialogoAbierto({
 }: DialogoProps) {
   const idTitulo = `${useId()}-titulo`
   const panelRef = useRef<HTMLDivElement>(null)
+  const desplazableRef = useRef<HTMLDivElement>(null)
   const cerrarRef = useRef(onCerrar)
   cerrarRef.current = onCerrar
 
@@ -58,7 +62,7 @@ function DialogoAbierto({
     const raiz = document.documentElement
     const desbordeAntes = raiz.style.overflow
     raiz.style.overflow = 'hidden'
-    panelRef.current?.focus()
+    desplazableRef.current?.focus()
 
     const alTeclear = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -75,10 +79,12 @@ function DialogoAbierto({
       const primero = enfocables[0]
       const ultimo = enfocables[enfocables.length - 1]
       const activo = document.activeElement
-      if (e.shiftKey && (activo === primero || activo === panelRef.current)) {
+      // Con el foco en el panel o en su hijo desplazable (no están en la lista), Tab va al primero y Shift+Tab al último.
+      const fuera = !(activo instanceof HTMLElement) || !enfocables.includes(activo)
+      if (e.shiftKey && (fuera || activo === primero)) {
         e.preventDefault()
         ultimo.focus()
-      } else if (!e.shiftKey && activo === ultimo) {
+      } else if (!e.shiftKey && (fuera || activo === ultimo)) {
         e.preventDefault()
         primero.focus()
       }
@@ -113,11 +119,19 @@ function DialogoAbierto({
         className={unirClases(
           // La sombra medida de `div.popup` va como propiedad arbitraria y no como utilidad de sombra: una utilidad de sombra nueva hace
           // que el minificador reagrupe las reglas de sombra de hoy (cambia su texto, C16; CONTRATO-BASE-F1 §3.4).
-          'relative max-h-[calc(100dvh-48px)] w-full max-w-[760px] overflow-y-auto rounded-sn-tarjeta bg-sn-warm text-sn-ink outline-none [box-shadow:0_12px_32px_rgba(0,0,0,0.18)]',
+          'relative w-full max-w-[760px] overflow-hidden rounded-sn-tarjeta bg-sn-warm text-sn-ink focus:outline-none [box-shadow:0_12px_32px_rgba(0,0,0,0.18)]',
           className,
         )}
       >
-        <div className={relleno ? 'px-6 py-7 min-[860px]:px-8 min-[860px]:py-9' : undefined}>
+        <div
+          ref={desplazableRef}
+          tabIndex={-1}
+          data-testid={`${testId}-contenido`}
+          className={unirClases(
+            'max-h-[calc(100dvh-48px)] overflow-y-auto overscroll-contain focus:outline-none',
+            relleno && 'px-6 py-7 min-[861px]:px-8 min-[861px]:py-9',
+          )}
+        >
           {titulo !== undefined && (
             <h2
               id={idTitulo}

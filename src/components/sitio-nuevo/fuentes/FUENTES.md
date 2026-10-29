@@ -47,9 +47,13 @@ Las tres son **SIL Open Font License 1.1** (`OFL-*.txt`, copiadas sin cambios de
 reserva «Source» (de Adobe), que no es su nombre; Inter y DM Mono no reservan ninguno. Se pueden usar, incrustar y redistribuir con el sitio;
 no se venden solas.
 
-## Qué pesos y por qué (medido en la maqueta)
+## Qué pesos y por qué (medido en la maqueta; C36, 13:20 UTC: solo pesos que existen, sin engrosado ni itálica sintéticos)
 
-- DM Serif Display 400 normal e itálica (la maqueta usa 400 normal e itálica; sus 500/700 los engruesa el navegador: la letra no trae más).
-- Inter variable 100–900 (la maqueta usa 300, 400, 500 y 700; la itálica de 300 aparece 4 veces y sale oblicua sintética).
-- DM Mono 400 y 500 (la maqueta usa 400–700; DM Mono solo llega a 500 y los 600/700 los engruesa el navegador). Sin Light ni itálicas: la
-  maqueta no las usa.
+Elegir qué pesos se sirven no es un subconjunto: cada archivo que se sirve va con todos sus glifos.
+
+- DM Serif Display 400 normal e itálica. La maqueta pide también 500 y 700: aquí salen en 400 (los componentes ponen `font-normal`).
+- Inter variable 100–900, **sin itálica**. La maqueta tiene 4 usos de itálica de 300, pero ninguna pieza de F1 la usa, así que no se sirve
+  `InterVariable-Italic.woff2`. Si una fase la necesita, se sirve la oficial de la misma v4.1 (misma etiqueta y commit de arriba).
+- DM Mono 400 y 500. La maqueta pide 600 y 700 (eyebrows, resultado del validador): aquí salen en 500. Sin Light ni itálicas.
+- Medido en Chrome (`probar-base.mjs`, B14; la tinta de la misma palabra en un canvas): DM Serif 400/500/600/700 = 5460 · 5460 · 7080 · 7080 px
+  y DM Mono = 4030 · 4980 · 6440 · 6440. Desde 600 el navegador engruesa de forma sintética; 500 sobre una letra que solo trae 400 sale en 400.

@@ -7,6 +7,8 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  // R15 · C41: la regla de hoy `.font-display,.font-heading,.font-mendoza` sale igual aunque ya nadie use la clase (la muestra de C40).
+  safelist: ['font-mendoza'],
   theme: {
     extend: {
       colors: {

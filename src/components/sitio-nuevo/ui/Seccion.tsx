@@ -1,7 +1,7 @@
 import { unirClases } from './clases'
 
 // R15 · F1 v2 (CONTRATO-BASE-F1 §3.2, §4): una sección del sitio nuevo con el ritmo y los fondos de la maqueta. Ritmo medido: `normal`
-// 56 px en el celular (`.simple-hero` a 390) y 80 px desde 860 px (hand-off §4); `grande` 72 → 96 px (`.chinampa-break`); `enfasis` 120 px
+// 56 px en el celular (`.simple-hero` a 390) y 80 px desde 861 px (hand-off §4; la maqueta corta con max-width 860px); `grande` 72 → 96 px (`.chinampa-break`); `enfasis` 120 px
 // (`.qs-manifesto`). Cada fondo trae su color de texto que pasa AA (§2.2); quien la usa no tiene que acordarse.
 
 const FONDOS = {
@@ -17,8 +17,8 @@ const FONDOS = {
 } as const
 
 const ESPACIOS = {
-  normal: 'py-sn-seccion-movil min-[860px]:py-sn-seccion',
-  grande: 'py-sn-seccion-lg-movil min-[860px]:py-sn-seccion-lg',
+  normal: 'py-sn-seccion-movil min-[861px]:py-sn-seccion',
+  grande: 'py-sn-seccion-lg-movil min-[861px]:py-sn-seccion-lg',
   enfasis: 'py-sn-seccion-xl',
   ninguno: '',
 } as const
