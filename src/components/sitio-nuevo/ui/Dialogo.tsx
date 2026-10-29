@@ -12,10 +12,32 @@ import { FOCO_BOTON, unirClases } from './clases'
 // El scroll va en un hijo del panel y no en el panel: así el ✕ (absoluto en el panel) no se va con el contenido en el celular. Al abrir, el
 // foco va a ese hijo, para que las flechas lo desplacen. Panel e hijo llevan `focus:outline-none`: el `*:focus` de globals.css le gana a
 // `outline-none` y pintaba el contorno terracota de hoy alrededor de todo el panel (medido por armazon, 12:37).
+// El foco se queda dentro con dos guardas (C45): un elemento enfocable vacío al principio y otro al final del panel. Cuando Tab o Shift+Tab
+// llegan a una guarda, ella pasa el foco al otro extremo de los controles del panel; no se escucha el teclado para Tab. Escape se atiende en el
+// propio velo (`onKeyDown`), porque el foco siempre está dentro.
 // Sin texto propio: el título (o el id del título que pinte quien lo usa) y la etiqueta del ✕ los pasa quien lo usa.
 
-const ENFOCABLES =
-  'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+const CANDIDATOS = 'a[href], button, input, select, textarea, [tabindex]'
+
+// Los controles a los que llega Tab dentro del panel, en orden del documento: con tabIndex ≥ 0, sin deshabilitar, pintados y sin las guardas.
+function controles(panel: HTMLElement): HTMLElement[] {
+  return Array.from(panel.querySelectorAll<HTMLElement>(CANDIDATOS)).filter(
+    (el) => el.tabIndex >= 0 && !el.matches(':disabled') && !el.hasAttribute('data-guarda') && el.getClientRects().length > 0,
+  )
+}
+
+/** Elemento vacío que solo existe para recibir el foco en una orilla del panel y mandarlo a la otra. Va en la esquina de arriba, dentro de
+ * la caja del panel (sin el margen negativo de `sr-only`), para que enfocarlo no desplace el panel ni mueva el ✕. */
+function Guarda({ alRecibirFoco }: { alRecibirFoco: () => void }) {
+  return (
+    <span
+      data-guarda=""
+      tabIndex={0}
+      onFocus={alRecibirFoco}
+      className="pointer-events-none absolute left-0 top-0 h-px w-px overflow-hidden opacity-0 focus:outline-none"
+    />
+  )
+}
 
 type Comun = {
   abierto: boolean
@@ -54,8 +76,6 @@ function DialogoAbierto({
   const idTitulo = `${useId()}-titulo`
   const panelRef = useRef<HTMLDivElement>(null)
   const desplazableRef = useRef<HTMLDivElement>(null)
-  const cerrarRef = useRef(onCerrar)
-  cerrarRef.current = onCerrar
 
   useEffect(() => {
     const antes = document.activeElement instanceof HTMLElement ? document.activeElement : null
@@ -63,39 +83,18 @@ function DialogoAbierto({
     const desbordeAntes = raiz.style.overflow
     raiz.style.overflow = 'hidden'
     desplazableRef.current?.focus()
-
-    const alTeclear = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation()
-        cerrarRef.current()
-        return
-      }
-      if (e.key !== 'Tab' || !panelRef.current) return
-      const enfocables = [...panelRef.current.querySelectorAll<HTMLElement>(ENFOCABLES)].filter((el) => el.offsetParent !== null)
-      if (!enfocables.length) {
-        e.preventDefault()
-        return
-      }
-      const primero = enfocables[0]
-      const ultimo = enfocables[enfocables.length - 1]
-      const activo = document.activeElement
-      // Con el foco en el panel o en su hijo desplazable (no están en la lista), Tab va al primero y Shift+Tab al último.
-      const fuera = !(activo instanceof HTMLElement) || !enfocables.includes(activo)
-      if (e.shiftKey && (fuera || activo === primero)) {
-        e.preventDefault()
-        ultimo.focus()
-      } else if (!e.shiftKey && (fuera || activo === ultimo)) {
-        e.preventDefault()
-        primero.focus()
-      }
-    }
-    document.addEventListener('keydown', alTeclear)
     return () => {
-      document.removeEventListener('keydown', alTeclear)
       raiz.style.overflow = desbordeAntes
       if (antes && antes.isConnected) antes.focus()
     }
   }, [])
+
+  // La guarda de arriba recibe el foco con Shift+Tab desde el primer control: lo manda al último. La de abajo, al revés.
+  const irA = (orilla: 'principio' | 'final') => {
+    const lista = panelRef.current ? controles(panelRef.current) : []
+    const destino = orilla === 'principio' ? lista[0] : lista[lista.length - 1]
+    ;(destino ?? desplazableRef.current)?.focus()
+  }
 
   const etiquetadoPor = 'etiquetadoPor' in resto && resto.etiquetadoPor ? resto.etiquetadoPor : idTitulo
   const titulo = 'titulo' in resto ? resto.titulo : undefined
@@ -107,6 +106,11 @@ function DialogoAbierto({
       className="fixed inset-0 z-[950] flex items-center justify-center bg-sn-ink/30 p-6"
       onMouseDown={(e) => {
         if (cerrarConFondo && e.target === e.currentTarget && e.detail <= 1) onCerrar()
+      }}
+      onKeyDown={(e) => {
+        if (e.key !== 'Escape') return
+        e.stopPropagation()
+        onCerrar()
       }}
     >
       <div
@@ -123,6 +127,7 @@ function DialogoAbierto({
           className,
         )}
       >
+        <Guarda alRecibirFoco={() => irA('final')} />
         <div
           ref={desplazableRef}
           tabIndex={-1}
@@ -154,6 +159,7 @@ function DialogoAbierto({
             <X className="h-4 w-4" strokeWidth={1.75} focusable="false" />
           </span>
         </button>
+        <Guarda alRecibirFoco={() => irA('principio')} />
       </div>
     </div>
   )
