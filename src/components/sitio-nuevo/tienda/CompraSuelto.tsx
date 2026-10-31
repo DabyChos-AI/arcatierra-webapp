@@ -51,7 +51,12 @@ export default function CompraSuelto({ productos, categoriaInicial, reintentar }
   const [busqueda, setBusqueda] = useState('')
   const [categoria, setCategoria] = useState<string>(categoriaInicial ?? TODAS)
   const [orden, setOrden] = useState<Orden>('mas-recientes')
-  const [columnas, setColumnas] = useState<Columnas>(4)
+  // D-F3-36 (qa T728): la vista marcada es la que se ve. Mientras el cliente no elige, 2 hasta 860 y 4 desde 861; «4 columnas» solo existe
+  // desde 861. El servidor no sabe el ancho: pinta la de 4 (ancho = false) y el ancho real se lee DESPUÉS de montar con matchMedia (sin
+  // desajuste de hidratación); también si cambia (girar el teléfono). Si eligió 4 y la pantalla baja a ≤ 860, se ve y se marca la de 2.
+  const [elegida, setElegida] = useState<Columnas | null>(null)
+  const [angosto, setAngosto] = useState(false)
+  const columnas: Columnas = elegida === null ? (angosto ? 2 : 4) : elegida === 4 && angosto ? 2 : elegida
   const [soloFavoritos, setSoloFavoritos] = useState(false)
   const [sugerencias, setSugerencias] = useState<Sugerencia[] | null>(null)
   const [buscandoSugerencias, setBuscandoSugerencias] = useState(false)
@@ -62,6 +67,14 @@ export default function CompraSuelto({ productos, categoriaInicial, reintentar }
   useEffect(() => {
     if (categoriaInicial) setCategoria(categoriaInicial)
   }, [categoriaInicial])
+
+  useEffect(() => {
+    const consulta = window.matchMedia('(max-width: 860px)')
+    const leer = () => setAngosto(consulta.matches)
+    leer()
+    consulta.addEventListener('change', leer)
+    return () => consulta.removeEventListener('change', leer)
+  }, [])
 
   // Búsqueda por voz de hoy (importada): al terminar, busca lo dicho.
   const voz = useVoiceSearch((texto: string) => {
@@ -285,9 +298,11 @@ export default function CompraSuelto({ productos, categoriaInicial, reintentar }
                 aria-pressed={columnas === n}
                 // Hoy son solo íconos sin nombre (tienda/page.tsx:1242-1265); aquí el nombre se lee completo (no se pinta).
                 aria-label={n === 1 ? '1 columna' : `${n} columnas`}
-                onClick={() => setColumnas(n)}
+                onClick={() => setElegida(n)}
                 className={unirClases(
-                  'flex h-10 w-10 items-center justify-center rounded-sn-boton border border-solid',
+                  // D-F3-36: «4 columnas» solo desde 861 (a ≤ 860 quedan 1 · 2).
+                  n === 4 ? 'hidden min-[861px]:flex' : 'flex',
+                  'h-10 w-10 items-center justify-center rounded-sn-boton border border-solid',
                   columnas === n ? 'border-sn-terra bg-sn-terra text-white' : 'border-sn-muted bg-white text-sn-ink',
                   FOCO,
                 )}

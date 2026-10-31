@@ -48,7 +48,10 @@ export default function HeroeTienda() {
           <span>Cancela cuando quieras</span>
         </p>
       </div>
-      <div className="relative min-h-[320px]">
+      {/* D-F3-38: a ≤ 860 la foto (4/3 con alto 320) le pedía a la columna 320 × 4/3 = 427 px y la página desbordaba a 390, y a 860 crecía a
+          860 × 645. Ahora la columna no tiene ancho mínimo y mide 320 de alto hasta 860: la foto ocupa su ancho con el alto de la maqueta
+          (390 × 320). Desde 861 el alto vuelve a ser el de su contenido, como antes: ahí la foto no lleva proporción. */}
+      <div className="relative h-[320px] min-h-[320px] min-w-0 min-[861px]:h-auto">
         <Foto
           src={SLIDE_SUSCRIPCION.image}
           alt={SLIDE_SUSCRIPCION.title}
