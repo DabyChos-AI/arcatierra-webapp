@@ -38,7 +38,7 @@ export default function EventosCatering() {
         <Texto tono="white" testId="sn-portada-eventos-texto" className="mb-3 max-w-[420px]">
           Momentos exclusivos diseñados especialmente para ti y tus seres queridos
         </Texto>
-        <Texto tono="white" testId="sn-portada-eventos-anticipacion" className="mb-4 max-w-[420px]">
+        <Texto tono="white" testId="sn-portada-eventos-anticipacion" className="mb-6 max-w-[420px]">
           De <Falta que="rango de personas de las visitas privadas" quien="Encargadas de Experiencias" /> personas, con 72 horas de
           anticipación.
         </Texto>
