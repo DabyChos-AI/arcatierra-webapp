@@ -8,7 +8,7 @@
 //   (PrecioCanastaLista); «Más popular» no tiene dato de ventas → marca (C23) con el estilo destacado de la maqueta (ilustración en terra).
 // - 03 «Agrega extras a tu canasta» (C12): su texto no existe (marca, C41); sin precio (DR-12).
 // - Las 3 ilustraciones no existen (C26): marca a la diseñadora. Metas: solo el número de la puerta (D-F2-09 P-6).
-// - Destinos (D-F2-09 P-7): las páginas de hoy que hacen eso (F3 los cambia a sus pestañas).
+// - Destinos: las pestañas de la tienda nueva (D-F3-05, D-F3-11, D-F3-22 P-5).
 // Diseño medido en la maqueta: fondo warm, 96 px, filetes; cabeza en dos columnas desde 861 px; tarjetas blancas que son ligas, radio 14,
 // caja 16/9 de color, nombre DM Serif terra, texto al 70 %, pie con filete. Componente de servidor (el precio es una isla de cliente).
 import Falta from '@/components/sitio-nuevo/Falta'
@@ -38,7 +38,7 @@ type Puerta = {
 const PUERTAS: readonly Puerta[] = [
   {
     numero: '01',
-    href: '/tienda',
+    href: '/tienda?pestana=compra-suelto',
     nombre: 'Compra suelto',
     caja: 'bg-sn-blue',
     ilustracion: 'ilustración de la puerta de compra suelta',
@@ -46,7 +46,7 @@ const PUERTAS: readonly Puerta[] = [
   },
   {
     numero: '02',
-    href: '/suscripciones',
+    href: '/tienda?pestana=canasta-lista',
     nombre: 'Canasta lista',
     caja: 'bg-sn-terra',
     ilustracion: 'ilustración de la puerta de la canasta lista',
@@ -54,7 +54,7 @@ const PUERTAS: readonly Puerta[] = [
   },
   {
     numero: '03',
-    href: '/tienda',
+    href: '/tienda?pestana=extras',
     nombre: 'Agrega extras a tu canasta',
     caja: 'bg-sn-peach',
     ilustracion: 'ilustración de la puerta de los extras con la canasta',

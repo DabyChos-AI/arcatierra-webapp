@@ -2,6 +2,7 @@
 
 // R15 v2 · F1: el menú del celular del sitio nuevo (maqueta `#burger-drawer`). Un cajón a la derecha con las ligas, «Quiero canasta»
 // (con la marca: pregunta C41), «Mi cuenta» y «Carrito» (el texto de hoy; la maqueta dice «Tu canasta»). Contrato v2 §9 C20, C24, C32.
+// F3 (D-F3-05, D-F3-13): «Carrito» es la liga a la página del carrito; el carrito lateral de hoy ya no se abre desde aquí.
 // - Cerrado, el velo lleva `hidden` (display:none): nada de adentro se ve ni se enfoca, y la marca no cuenta como visible (C32).
 // - Abierto: el foco pasa al cajón (role="dialog"); dos guardas, antes y después del cajón, mandan el Tab de vuelta al otro extremo.
 //   Escape (keydown del propio velo), un clic en el velo y el ✕ lo cierran; quien lo abre (Cabecera) le devuelve el foco a su botón.
@@ -12,7 +13,6 @@
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { X } from 'lucide-react'
-import { abrirCarrito } from '@/lib/carrito'
 import Falta from '@/components/sitio-nuevo/Falta'
 import { ENLACE_MI_CUENTA, HREF_TIENDA, ligasDe, type Enlace } from './enlaces'
 import { CORTE_ESCRITORIO, E } from './estilos'
@@ -112,18 +112,9 @@ export default function MenuCelular({ id, abierto, alCerrar }: Props) {
           <Link href={ENLACE_MI_CUENTA.href} onClick={alCerrar} className={E.menu.secundario} data-testid="sn-menu-cuenta">
             {ENLACE_MI_CUENTA.texto}
           </Link>
-          {/* Primero se cierra (el foco va al botón del menú) y luego se abre el carrito lateral de siempre. */}
-          <button
-            type="button"
-            onClick={() => {
-              alCerrar()
-              abrirCarrito()
-            }}
-            className={E.menu.secundario}
-            data-testid="sn-menu-carrito"
-          >
+          <Link href="/carrito" onClick={alCerrar} className={E.menu.secundario} data-testid="sn-menu-carrito">
             Carrito
-          </button>
+          </Link>
         </div>
       </div>
 

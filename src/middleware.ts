@@ -171,8 +171,8 @@ export default async function middleware(req: NextRequest, event: NextFetchEvent
     return conSesion(req as NextRequestWithAuth, event)
   }
 
-  // Lo demás que casa el matcher (solo las direcciones de RUTAS_SITIO_NUEVO): la página de hoy, salvo que el interruptor esté
-  // encendido.
+  // Lo demás que casa el matcher (solo las direcciones de RUTAS_SITIO_NUEVO y de PREFIJOS_SITIO_NUEVO): la página de hoy, salvo que el
+  // interruptor esté encendido.
   return reescrituraSitioNuevo(req) ?? NextResponse.next()
 }
 
@@ -194,5 +194,22 @@ export const config = {
     '/nuevo/:path*',
     // R15: las direcciones públicas de RUTAS_SITIO_NUEVO (src/lib/sitio-nuevo.ts), una por una
     '/',
+    // R15 v2 · F3 (D-F3-04, D-F3-22): la tienda, la ficha (UN segmento: no corre en /producto, /productos ni /producto/a/b), el carrito,
+    // el checkout y su resultado (las 4 por separado: /checkout/<otra> sigue sin middleware y 404) y la confirmación de la suscripción.
+    // D-F3-39: se decide con el camino CRUDO, y el único lugar donde Next lo tiene es aquí: corre los matchers sobre el camino tal como
+    // llegó y sobre su versión decodificada (resolve-routes.js), pero al middleware le da req.url y nextUrl ya normalizados (sin el
+    // sufijo .rsc y con %2E%2E resuelto: /producto/%2E%2E llega como /) y sin la cabecera RSC ni ?_rsc= (web/adapter.js). Por eso:
+    // - cada dirección exacta es su texto con «(?![.])»: Next agrega a todo matcher (\.json|\.rsc|\.segments/…)?, y con «no sigue un
+    //   punto» /tienda.rsc y /tienda.json no corren el middleware y responden como hoy;
+    // - la ficha es UN segmento sin puntos ni barra invertida (\x5C) y sin . / \ codificados (%2E, %2F, %5C), tampoco al decodificarlo.
+    // La navegación del cliente (cabecera RSC, ?_rsc=) pide el camino limpio y sí casa.
+    '/:exacta(tienda(?![.]))',
+    '/producto/:id((?![^/]*%(?:2[eEfF]|5[cC]))[^/.#?\\x5C]+(?![.]))',
+    '/:exacta(carrito(?![.]))',
+    '/:exacta(checkout(?![.]))',
+    '/checkout/:exacta(success(?![.]))',
+    '/checkout/:exacta(pending(?![.]))',
+    '/checkout/:exacta(failure(?![.]))',
+    '/suscripciones/:exacta(confirmacion(?![.]))',
   ],
 }

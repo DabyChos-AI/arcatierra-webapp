@@ -2,16 +2,18 @@
 
 // R15 v2 · F1: la cabecera del sitio nuevo (maqueta `.topbar`). De izquierda a derecha: logo, ligas (desde 1100 px), cuenta, carrito con
 // su contador, «Quiero canasta» (desde 1100 px, con la marca: pregunta C41) y el botón del menú del celular (debajo de 1100 px).
-// Originales: TransparentHeader.tsx (logo, ligas, cuenta, carrito) y enlaces.ts (contrato v2 §9 C20). El carrito es el de siempre
-// (src/lib/carrito.ts → CartSidebar); su botón se ve también a 390, porque ahí es la única forma de abrirlo (Z_INDEX_HIERARCHY.md).
+// Originales: TransparentHeader.tsx (logo, ligas, cuenta, carrito) y enlaces.ts (contrato v2 §9 C20). F3 (D-F3-05, D-F3-13, D-F3-22 P-6):
+// el carrito es la liga a la página del carrito (se ve también a 390); el carrito lateral de hoy ya no se abre desde aquí. Cuando el
+// conteo SUBE, el contador da el salto de la maqueta (`bumpCart()`: escala 1 → 1.4 → 1, medido) con la Web Animations API, sin reglas
+// nuevas en el CSS de hoy y sin animación con «reducir movimiento»; el cambio de color de la maqueta no va (el texto blanco sobre ese
+// color queda en 3.77, no pasa AA).
 // Hidratación (contrato v1 §3.3): el primer render es igual en servidor y navegador. La liga actual sale de los segmentos
 // (ligaActual.ts); el contador, `data-pegada` y la sesión llegan después de hidratar.
 // Textos de los controles: los de hoy, tal cual (C24): «Carrito» (TransparentHeader.tsx:833), «Abrir menú» / «Cerrar menú» (:956).
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type RefObject } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Menu, ShoppingCart } from 'lucide-react'
-import { abrirCarrito } from '@/lib/carrito'
 import Falta from '@/components/sitio-nuevo/Falta'
 import { HREF_TIENDA, ligasDe, type Enlace } from './enlaces'
 import { E } from './estilos'
@@ -41,12 +43,42 @@ function useFueraDeVista(objetivo: RefObject<HTMLElement | null>): boolean {
   return fuera
 }
 
+const sinAvisos = () => () => {}
+
+/** false en el servidor y al hidratar; true desde el render que sigue a la hidratación (el mismo en que llega el conteo del navegador). */
+function useYaHidratada(): boolean {
+  return useSyncExternalStore(sinAvisos, () => true, () => false)
+}
+
+/**
+ * El salto del contador cuando el conteo sube (no al cargar la página ni al bajar). Al hidratar, `useConteoCarrito` da 0 (lo del
+ * servidor) y en el render siguiente las piezas del navegador: esa primera lectura no es una subida, solo fija desde dónde se cuenta.
+ */
+function useSaltoAlSubir(conteo: number): RefObject<HTMLSpanElement> {
+  const contador = useRef<HTMLSpanElement>(null)
+  const yaHidratada = useYaHidratada()
+  const anterior = useRef<number | null>(null)
+  useEffect(() => {
+    if (!yaHidratada) return
+    const antes = anterior.current
+    anterior.current = conteo
+    const el = contador.current
+    if (antes === null || conteo <= antes || !el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    el.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.4)' }, { transform: 'scale(1)' }], {
+      duration: 500,
+      easing: 'cubic-bezier(.34,1.56,.64,1)',
+    })
+  }, [conteo, yaHidratada])
+  return contador
+}
+
 export default function Cabecera() {
   const centinela = useRef<HTMLSpanElement>(null)
   const botonMenu = useRef<HTMLButtonElement>(null)
   const pegada = useFueraDeVista(centinela)
   const [menuAbierto, setMenuAbierto] = useState(false)
   const conteo = useConteoCarrito()
+  const contador = useSaltoAlSubir(conteo)
   const publica = useDireccionPublica()
 
   // Al cerrar, el foco vuelve al botón que abrió el menú (si ya no se ve, porque la ventana pasó el corte, no pasa nada).
@@ -79,20 +111,14 @@ export default function Cabecera() {
           {/* Sin sesión, «Iniciar Sesión»; con sesión, el menú de la persona (MenuCuenta.tsx). */}
           <MenuCuenta claseBoton={E.iconoBoton} clasePanel={E.cuentaPanel} claseEnlace={E.cuentaEnlace} />
 
-          <button
-            type="button"
-            onClick={() => abrirCarrito()}
-            aria-label="Carrito"
-            className={`relative ${E.iconoBoton}`}
-            data-testid="sn-cabecera-carrito"
-          >
+          <Link href="/carrito" aria-label="Carrito" className={`relative ${E.iconoBoton}`} data-testid="sn-cabecera-carrito">
             <ShoppingCart size={18} aria-hidden="true" focusable="false" />
             {conteo > 0 ? (
-              <span aria-hidden="true" className={E.carritoConteo} data-testid="sn-cabecera-carrito-conteo">
+              <span ref={contador} aria-hidden="true" className={E.carritoConteo} data-testid="sn-cabecera-carrito-conteo">
                 {conteo > 9 ? '9+' : conteo}
               </span>
             ) : null}
-          </button>
+          </Link>
 
           <Link href={HREF_TIENDA} className={E.tiendaEscritorio} data-testid="sn-cabecera-tienda">
             <Falta que="texto del botón a la tienda" quien="Lucio y Pablo" />
