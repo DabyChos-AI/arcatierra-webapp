@@ -16,7 +16,7 @@ export default function TiposEvento() {
   return (
     <Seccion testId={T} espacio="normal" etiquetadaPor={`${T}-encabezado`}>
       <Contenedor>
-        <h2 id={`${T}-encabezado`} className="sr-only">
+        <h2 id={`${T}-encabezado`} className="sr-only font-sn-titulos font-normal">
           Tipos de evento
         </h2>
         <ul data-testid={`${T}-lista`} className="m-0 grid list-none grid-cols-1 gap-4 p-0 min-[861px]:grid-cols-5 min-[861px]:gap-5">

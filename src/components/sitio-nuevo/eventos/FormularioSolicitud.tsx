@@ -8,12 +8,14 @@
 // - Lo único nuevo es elegir la experiencia en /eventos (P-9): «Experiencia» · «Selecciona una experiencia» · «Elige una experiencia».
 // - Nombre y correo de la sesión, como hoy (`[slug]/page.tsx:268-274`). El candado contra doble clic va antes del `await`.
 // - Testids: `<testId>-…` (por omisión `sn-eventos-solicitud`); en la ficha, la base la pasa su dueño (D-F4-08).
+// - `sinPanel` (D-F4-19): dentro de un diálogo que ya trae relleno (la ficha de experiencias), el formulario va sin su panel (fondo, radio
+//   y relleno propios); en /eventos no se pasa y nada cambia.
 import { useEffect, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { API_URL } from '@/lib/api'
 import { hoyMexico } from '@/lib/dates'
 import { formatPrice } from '@/utils/formatters'
-import { textoAdicionalPrivada, textoGrupoPrivada } from '@/app/experiencias/[slug]/precio-privada'
+import { personasIncluidasValidas, textoAdicionalPrivada, textoGrupoPrivada } from '@/app/experiencias/[slug]/precio-privada'
 import { enOracion } from '@/components/sitio-nuevo/tienda/oracion'
 import Falta from '@/components/sitio-nuevo/Falta'
 import AvisoEnLinea from '@/components/sitio-nuevo/ui/AvisoEnLinea'
@@ -56,6 +58,8 @@ type Props = {
   onEnviada?: () => void
   /** Si se pasa, pinta «Cancelar» (`[slug]/page.tsx:949-954`). */
   onCancelar?: () => void
+  /** Sin el panel propio (fondo warm, radio y relleno): para un contenedor que ya los trae, como `ui/Dialogo` (D-F4-19). */
+  sinPanel?: boolean
   className?: string
 }
 
@@ -70,6 +74,7 @@ export default function FormularioSolicitud({
   onElegir,
   onEnviada,
   onCancelar,
+  sinPanel = false,
   className,
 }: Props) {
   const { data: session } = useSession()
@@ -140,10 +145,11 @@ export default function FormularioSolicitud({
     onEnviada?.()
   }
 
+  // La pista de hoy (`[slug]/page.tsx:341, :845-848`): solo con un número real de la API (`personasIncluidasValidas`: entero > 0);
+  // con 0, negativo o sin dato, «Un aproximado basta…» (D-F4-20).
+  const incluidas = elegida ? personasIncluidasValidas(elegida.personas_incluidas) : null
   const pista =
-    elegida && elegida.personas_incluidas !== null
-      ? `Incluye ${elegida.personas_incluidas} personas; puedes pedir más o menos`
-      : 'Un aproximado basta; lo confirmamos contigo'
+    incluidas !== null ? `Incluye ${incluidas} personas; puedes pedir más o menos` : 'Un aproximado basta; lo confirmamos contigo'
   const adicional = elegida ? textoAdicionalPrivada(elegida.precio_persona_adicional) : null
 
   return (
@@ -151,7 +157,12 @@ export default function FormularioSolicitud({
       data-testid={`${testId}-formulario`}
       noValidate
       onSubmit={(e) => e.preventDefault()}
-      className={unirClases('flex flex-col gap-5 rounded-sn-panel bg-sn-warm px-6 py-7 text-sn-ink min-[861px]:px-11 min-[861px]:py-12', className)}
+      className={unirClases(
+        sinPanel
+          ? 'flex flex-col gap-5 text-sn-ink'
+          : 'flex flex-col gap-5 rounded-sn-panel bg-sn-warm px-6 py-7 text-sn-ink min-[861px]:px-11 min-[861px]:py-12',
+        className,
+      )}
     >
       {!experiencia && (
         <Campo

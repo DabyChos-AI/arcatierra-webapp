@@ -11,7 +11,7 @@ export default function GaleriaEventos() {
   return (
     <Seccion testId={G} fondo="cream" borde="ambos" espacio="normal" etiquetadaPor={`${G}-encabezado`}>
       <Contenedor>
-        <h2 id={`${G}-encabezado`} className="sr-only">
+        <h2 id={`${G}-encabezado`} className="sr-only font-sn-titulos font-normal">
           Eventos pasados
         </h2>
         <Falta que="fotos de eventos pasados" quien="Encargadas de Experiencias" como="bloque" />

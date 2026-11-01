@@ -11,7 +11,7 @@ export default function ProcesoEventos() {
   return (
     <Seccion testId={R} espacio="normal" etiquetadaPor={`${R}-encabezado`}>
       <Contenedor>
-        <h2 id={`${R}-encabezado`} className="sr-only">
+        <h2 id={`${R}-encabezado`} className="sr-only font-sn-titulos font-normal">
           Cómo trabajamos juntos
         </h2>
         <div className="flex flex-col gap-4">
