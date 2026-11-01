@@ -19,6 +19,10 @@
 // direcciones exactas (`/catering/contacto` sigue con su página de hoy); la ficha de cada experiencia (`/experiencias/<slug>`) es un prefijo de
 // UN segmento, salvo `faq` y `testimonios`, que son páginas de hoy y se quedan (C44, DR-7): van en los excluidos de abajo y también fuera
 // del matcher de `src/middleware.ts`.
+//
+// R15 v2 · F5 (sesión 63, 1-nov; contrato v2 §9-F5 D-F5-03): chinampas (hoy 404; `/xochimilco` sigue con su página de hoy hasta F7, DR-7),
+// nosotros, recetas (`/receta/<id>` sigue con su página de hoy, C44), la FAQ (hoy 404; `/experiencias/faq` sigue como hoy, C44), contacto,
+// privacidad y términos: siete direcciones exactas, sin prefijos ni excluidos nuevos.
 
 /** Carpeta de `src/app/` donde viven las páginas nuevas (= el segmento que ve `useSelectedLayoutSegment()` en el layout raíz). */
 export const SEGMENTO_SITIO_NUEVO = 'nuevo'
@@ -36,6 +40,13 @@ export const RUTAS_SITIO_NUEVO: Readonly<Record<string, string>> = Object.freeze
   '/experiencias': '/nuevo/experiencias',
   '/eventos': '/nuevo/eventos',
   '/catering': '/nuevo/catering',
+  '/chinampas': '/nuevo/chinampas',
+  '/nosotros': '/nuevo/nosotros',
+  '/recetas': '/nuevo/recetas',
+  '/faq': '/nuevo/faq',
+  '/contacto': '/nuevo/contacto',
+  '/privacidad': '/nuevo/privacidad',
+  '/terminos': '/nuevo/terminos',
 })
 
 /**

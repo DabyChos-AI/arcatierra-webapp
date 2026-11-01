@@ -4,7 +4,8 @@
 // Las direcciones son las de HOY: el sitio nuevo todavía no tiene más página que la portada (RUTAS_SITIO_NUEVO), así que cada liga
 // lleva a la página de hoy que hace esa función. Cuando una fase haga la página nueva, cambia aquí su dirección.
 // - Nada a páginas que se ocultan (DR-7: /xochimilco, /impacto, /blog, /calendario, /experiencias/testimonios) ni a /prensa (pregunta C44).
-// - «Chinampas» (cabecera y celular) y «Las chinampas» (pie) NO se pintan hasta F5: la página es nueva y la de hoy, /xochimilco, se oculta.
+// - F5 (D-F5-03, D-F5-13 P-12): «Chinampas» (cabecera y celular) y «Las chinampas» (pie) llevan a /chinampas, la página nueva (C20/C49);
+//   /xochimilco sigue con su página de hoy hasta F7 y nada del sitio nuevo liga a ella.
 // - «Cookies» (pie) no se pinta: no hay página ni banner (DR76, pregunta C46).
 // Textos: los de hoy (TransparentHeader.tsx, Footer.tsx); «Eventos» y «Eventos privados» son los nombres de la página de eventos (F4).
 // Sin imports: lo usan componentes de cliente y de servidor.
@@ -24,13 +25,14 @@ export const ENLACE_MI_CUENTA: Enlace = { texto: 'Mi cuenta', href: '/usuario/da
 export const HREF_TIENDA = '/tienda'
 
 // Texto por lugar. Eventos: la página de eventos de F4, con las privadas y su solicitud (D-F4-12 P-1b).
-// Canastas → /tienda (MAPA-CONTENIDO B §0.5). La maqueta pone Chinampas entre Catering y Nosotros (espera a F5).
+// Canastas → /tienda (MAPA-CONTENIDO B §0.5). Chinampas va entre Catering y Nosotros, como en la maqueta (cabecera y pie).
 const TABLA: ReadonlyArray<{ href: string; en: Partial<Record<Lugar, string>> }> = [
   { href: '/tienda', en: { cabecera: 'Tienda', celular: 'Tienda', 'pie-tienda': 'Tienda' } },
   { href: '/tienda', en: { 'pie-tienda': 'Canastas' } },
   { href: '/experiencias', en: { cabecera: 'Experiencias', celular: 'Experiencias', 'pie-experiencias': 'Experiencias' } },
   { href: '/eventos', en: { cabecera: 'Eventos', celular: 'Eventos', 'pie-experiencias': 'Eventos privados' } },
   { href: '/catering', en: { cabecera: 'Catering', celular: 'Catering', 'pie-experiencias': 'Catering' } },
+  { href: '/chinampas', en: { cabecera: 'Chinampas', celular: 'Chinampas', 'pie-experiencias': 'Las chinampas' } },
   { href: '/nosotros', en: { cabecera: 'Nosotros', celular: 'Nosotros', 'pie-experiencias': 'Nosotros' } },
   { href: '/recetas', en: { celular: 'Recetas', 'pie-tienda': 'Recetas' } },
   { href: '/contacto', en: { celular: 'Contacto', 'pie-experiencias': 'Contacto' } },

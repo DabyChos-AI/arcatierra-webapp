@@ -218,5 +218,14 @@ export const config = {
     '/experiencias/:slug((?!(?:faq|testimonios)(?:[/.#?]|$))(?![^/]*%(?:2[eEfF]|5[cC]))[^/.#?\\x5C]+(?![.]))',
     '/:exacta(eventos(?![.]))',
     '/:exacta(catering(?![.]))',
+    // R15 v2 · F5 (D-F5-03), con la misma forma de D-F3-39/D-F3-40: siete exactas (chinampas y FAQ hoy no existen). Siguen sin middleware
+    // /xochimilco (DR-7, hasta F7), /receta/<id> (C44) y, desde F4, /experiencias/faq y /catering/contacto.
+    '/:exacta(chinampas(?![.]))',
+    '/:exacta(nosotros(?![.]))',
+    '/:exacta(recetas(?![.]))',
+    '/:exacta(faq(?![.]))',
+    '/:exacta(contacto(?![.]))',
+    '/:exacta(privacidad(?![.]))',
+    '/:exacta(terminos(?![.]))',
   ],
 }

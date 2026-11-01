@@ -5,10 +5,13 @@
 //   Serif solo trae 400: no se engruesa de forma sintética, C36).
 // - La foto es la de hoy (public/images/home/chinampas_xochimilco.png, 12.6 MB) por Foto → next/image, con su alt de hoy
 //   (src/app/components/HomePage.tsx:19).
-// - «Conoce la chinampa» no se pinta: la página Chinampas llega en F5 y /xochimilco se oculta (D-F2-08 b, C20).
+// - F5 (D-F5-03, D-F5-13 P-3, P-12): el botón de la maqueta («Conoce la chinampa →») lleva a /chinampas con el nombre de la liga del menú,
+//   «Chinampas» (armazon/enlaces.ts; D-F2-08 b: la única etiqueta de hoy, «Conocer Chinampas», está oculta «por solicitud»). Medido en la maqueta:
+//   liga mono terra en mayúsculas con flecha, 22 px debajo de la cita.
 // Medido en la maqueta: fondo warm, relleno 72 → 96 px; dos columnas desde 861 px (texto y foto de 520 × 460, separación 72) y una sola
 // en el celular (separación 36, foto 334 × 240); comillas de 96 → 140 px en terra al 22 % (decoración); cita en serif de 26 → 34 px.
 import Falta from '@/components/sitio-nuevo/Falta'
+import Boton from '@/components/sitio-nuevo/ui/Boton'
 import Foto from '@/components/sitio-nuevo/ui/Foto'
 import Seccion from '@/components/sitio-nuevo/ui/Seccion'
 
@@ -39,6 +42,11 @@ export default function PausaChinampa() {
             <span className="font-sn-texto">
               <Falta que="cita de la pausa de la chinampa" quien="Lucio y Pablo" />
             </span>
+          </div>
+          <div className="relative mt-[22px]">
+            <Boton variante="texto" tamano="chico" flecha href="/chinampas" testId="sn-portada-chinampa-boton">
+              Chinampas
+            </Boton>
           </div>
         </div>
 
