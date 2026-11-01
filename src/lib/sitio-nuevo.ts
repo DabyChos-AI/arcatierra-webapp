@@ -14,6 +14,11 @@
 // R15 v2 · F3 (sesión 61, 31-oct; contrato v2 §9-F3 D-F3-04, D-F3-15, D-F3-22): la tienda, el carrito, el checkout y su resultado y la
 // confirmación de la suscripción son direcciones exactas; la ficha de producto (`/producto/<itemcode>`) tiene un segmento que cambia y
 // va aparte, en los prefijos de abajo. `/suscripciones` sigue con su página de hoy.
+//
+// R15 v2 · F4 (sesión 62, 1-nov; contrato v2 §9-F4 D-F4-03, D-F4-11 P-3): la lista de experiencias, eventos privados y catering son
+// direcciones exactas (`/catering/contacto` sigue con su página de hoy); la ficha de cada experiencia (`/experiencias/<slug>`) es un prefijo de
+// UN segmento, salvo `faq` y `testimonios`, que son páginas de hoy y se quedan (C44, DR-7): van en los excluidos de abajo y también fuera
+// del matcher de `src/middleware.ts`.
 
 /** Carpeta de `src/app/` donde viven las páginas nuevas (= el segmento que ve `useSelectedLayoutSegment()` en el layout raíz). */
 export const SEGMENTO_SITIO_NUEVO = 'nuevo'
@@ -28,14 +33,26 @@ export const RUTAS_SITIO_NUEVO: Readonly<Record<string, string>> = Object.freeze
   '/checkout/pending': '/nuevo/checkout/pending',
   '/checkout/failure': '/nuevo/checkout/failure',
   '/suscripciones/confirmacion': '/nuevo/suscripciones/confirmacion',
+  '/experiencias': '/nuevo/experiencias',
+  '/eventos': '/nuevo/eventos',
+  '/catering': '/nuevo/catering',
 })
 
 /**
- * Dirección pública que termina en UN segmento que cambia → la ruta interna con el mismo segmento. F3: la ficha de producto.
- * `/producto`, `/producto/`, `/productos` y `/producto/a/b` no casan (siguen con lo de hoy).
+ * Dirección pública que termina en UN segmento que cambia → la ruta interna con el mismo segmento. F3: la ficha de producto; F4: la ficha
+ * de una experiencia. `/producto`, `/producto/`, `/productos` y `/producto/a/b` no casan (siguen con lo de hoy); lo mismo con experiencias.
  */
 export const PREFIJOS_SITIO_NUEVO: Readonly<Record<string, string>> = Object.freeze({
   '/producto/': '/nuevo/producto/',
+  '/experiencias/': '/nuevo/experiencias/',
+})
+
+/**
+ * Segmentos que, debajo de un prefijo, son páginas de hoy y NO pasan al sitio nuevo (se comparan con el segmento ya decodificado, así
+ * `/experiencias/%66aq` también sigue con lo de hoy). F4: `/experiencias/faq` y `/experiencias/testimonios` (C44, DR-7).
+ */
+export const EXCLUIDOS_SITIO_NUEVO: Readonly<Record<string, readonly string[]>> = Object.freeze({
+  '/experiencias/': Object.freeze(['faq', 'testimonios']),
 })
 
 /** Un solo segmento: no vacío, sin «/» ni «\» y que no sea «.» ni «..», tampoco una vez decodificado (y que se pueda decodificar). */
@@ -56,8 +73,11 @@ export function rutaInternaSitioNuevo(pathname: string): string | null {
   for (const [publico, interno] of Object.entries(PREFIJOS_SITIO_NUEVO)) {
     if (!pathname.startsWith(publico)) continue
     const resto = pathname.slice(publico.length)
+    if (!esUnSegmento(resto)) return null
+    // Una página de hoy debajo del prefijo (F4): sigue con lo de hoy. esUnSegmento ya comprobó que se puede decodificar.
+    if ((EXCLUIDOS_SITIO_NUEVO[publico] ?? []).includes(decodeURIComponent(resto))) return null
     // El segmento pasa tal como llegó (sin volver a codificarlo): Next lo decodifica al dárselo a la página.
-    return esUnSegmento(resto) ? interno + resto : null
+    return interno + resto
   }
   return null
 }

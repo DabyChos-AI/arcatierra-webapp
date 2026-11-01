@@ -6,7 +6,7 @@
 // - Nada a páginas que se ocultan (DR-7: /xochimilco, /impacto, /blog, /calendario, /experiencias/testimonios) ni a /prensa (pregunta C44).
 // - «Chinampas» (cabecera y celular) y «Las chinampas» (pie) NO se pintan hasta F5: la página es nueva y la de hoy, /xochimilco, se oculta.
 // - «Cookies» (pie) no se pinta: no hay página ni banner (DR76, pregunta C46).
-// Textos: los de hoy (TransparentHeader.tsx, Footer.tsx); «Eventos» y «Eventos privados» son los nombres de la página nueva de la maqueta.
+// Textos: los de hoy (TransparentHeader.tsx, Footer.tsx); «Eventos» y «Eventos privados» son los nombres de la página de eventos (F4).
 // Sin imports: lo usan componentes de cliente y de servidor.
 
 export interface Enlace {
@@ -23,13 +23,13 @@ export const ENLACE_MI_CUENTA: Enlace = { texto: 'Mi cuenta', href: '/usuario/da
 /** «Quiero canasta» de la maqueta: lleva a la tienda; su texto no existe hoy (pregunta C41) y va con la marca. */
 export const HREF_TIENDA = '/tienda'
 
-// Texto por lugar. Eventos: las privadas de hoy (/experiencias lee ?tipo=privada, filtra y baja a la lista); F4 hace su página.
+// Texto por lugar. Eventos: la página de eventos de F4, con las privadas y su solicitud (D-F4-12 P-1b).
 // Canastas → /tienda (MAPA-CONTENIDO B §0.5). La maqueta pone Chinampas entre Catering y Nosotros (espera a F5).
 const TABLA: ReadonlyArray<{ href: string; en: Partial<Record<Lugar, string>> }> = [
   { href: '/tienda', en: { cabecera: 'Tienda', celular: 'Tienda', 'pie-tienda': 'Tienda' } },
   { href: '/tienda', en: { 'pie-tienda': 'Canastas' } },
   { href: '/experiencias', en: { cabecera: 'Experiencias', celular: 'Experiencias', 'pie-experiencias': 'Experiencias' } },
-  { href: '/experiencias?tipo=privada', en: { cabecera: 'Eventos', celular: 'Eventos', 'pie-experiencias': 'Eventos privados' } },
+  { href: '/eventos', en: { cabecera: 'Eventos', celular: 'Eventos', 'pie-experiencias': 'Eventos privados' } },
   { href: '/catering', en: { cabecera: 'Catering', celular: 'Catering', 'pie-experiencias': 'Catering' } },
   { href: '/nosotros', en: { cabecera: 'Nosotros', celular: 'Nosotros', 'pie-experiencias': 'Nosotros' } },
   { href: '/recetas', en: { celular: 'Recetas', 'pie-tienda': 'Recetas' } },

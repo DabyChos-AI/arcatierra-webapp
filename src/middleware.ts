@@ -211,5 +211,12 @@ export const config = {
     '/checkout/:exacta(pending(?![.]))',
     '/checkout/:exacta(failure(?![.]))',
     '/suscripciones/:exacta(confirmacion(?![.]))',
+    // R15 v2 · F4 (D-F4-03, D-F4-11 P-3), con la misma forma de D-F3-39/D-F3-40: la lista de experiencias, eventos privados y catering
+    // (exactas: /catering/contacto sigue sin middleware) y la ficha de una experiencia como UN segmento, sin faq ni testimonios (páginas de
+    // hoy que se quedan; también van en EXCLUIDOS_SITIO_NUEVO, comparados ya decodificados).
+    '/:exacta(experiencias(?![.]))',
+    '/experiencias/:slug((?!(?:faq|testimonios)(?:[/.#?]|$))(?![^/]*%(?:2[eEfF]|5[cC]))[^/.#?\\x5C]+(?![.]))',
+    '/:exacta(eventos(?![.]))',
+    '/:exacta(catering(?![.]))',
   ],
 }

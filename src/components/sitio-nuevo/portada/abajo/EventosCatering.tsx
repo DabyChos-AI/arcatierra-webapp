@@ -5,7 +5,7 @@
 //   privadas (src/app/experiencias/page.tsx:301, :304).
 // - 72 horas de anticipación: regla firmada (Word P2, REGLAS-DEL-NEGOCIO §6); el rango de personas espera la pregunta C25 (marca).
 // - La marca de los 5 tipos de evento salió con DR-23 (C11 contestada, D-F3-03).
-// - Botón a /experiencias?tipo=privada (C20) con la etiqueta que hoy lleva a ese destino (src/components/HeroCarousel.tsx:169-173).
+// - Botón a /eventos (F4, D-F4-12 P-1b) con la etiqueta que hoy lleva a las privadas (src/components/HeroCarousel.tsx:169-173).
 // Catering (cream):
 // - «Catering» = el menú de hoy (armazon/enlaces.ts:33); título y texto de hoy (src/components/catering/About.tsx:24-25, :28-29; sin la
 //   oración de «100 por ciento orgánicos», cifra sin fuente: D-F2-13 P-6).
@@ -43,7 +43,7 @@ export default function EventosCatering() {
           anticipación.
         </Texto>
         <div>
-          <Boton sobreOscuro flecha href="/experiencias?tipo=privada" testId="sn-portada-eventos-boton">
+          <Boton sobreOscuro flecha href="/eventos" testId="sn-portada-eventos-boton">
             Experiencias Privadas
           </Boton>
         </div>
