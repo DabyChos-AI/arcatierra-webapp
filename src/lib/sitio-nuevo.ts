@@ -23,6 +23,11 @@
 // R15 v2 · F5 (sesión 63, 1-nov; contrato v2 §9-F5 D-F5-03): chinampas (hoy 404; `/xochimilco` sigue con su página de hoy hasta F7, DR-7),
 // nosotros, recetas (`/receta/<id>` sigue con su página de hoy, C44), la FAQ (hoy 404; `/experiencias/faq` sigue como hoy, C44), contacto,
 // privacidad y términos: siete direcciones exactas, sin prefijos ni excluidos nuevos.
+//
+// R15 v2 · F6 (sesión 64, 2-nov; contrato v2 §9-F6 D-F6-03): Mi cuenta. Sin sesión, tres exactas públicas (`/auth/signin`, `/auth/recuperar`,
+// `/auth/restablecer`). Con sesión, las de `/usuario/…`: ya corren el middleware por el matcher de las protegidas de siempre ('/usuario/:path*',
+// que no cambia) y se reescriben solo DESPUÉS de que `withAuth` las deja pasar (src/middleware.ts); el detalle de un pedido es un prefijo de UN
+// segmento. Siguen con su página de hoy `/usuario/reservas`, `/usuario/favoritos`, `/crear-cuenta`, `/dashboard`, `/perfil` y `/ordenes`.
 
 /** Carpeta de `src/app/` donde viven las páginas nuevas (= el segmento que ve `useSelectedLayoutSegment()` en el layout raíz). */
 export const SEGMENTO_SITIO_NUEVO = 'nuevo'
@@ -47,15 +52,25 @@ export const RUTAS_SITIO_NUEVO: Readonly<Record<string, string>> = Object.freeze
   '/contacto': '/nuevo/contacto',
   '/privacidad': '/nuevo/privacidad',
   '/terminos': '/nuevo/terminos',
+  '/auth/signin': '/nuevo/auth/signin',
+  '/auth/recuperar': '/nuevo/auth/recuperar',
+  '/auth/restablecer': '/nuevo/auth/restablecer',
+  '/usuario/dashboard': '/nuevo/usuario/dashboard',
+  '/usuario/suscripciones': '/nuevo/usuario/suscripciones',
+  '/usuario/pedidos': '/nuevo/usuario/pedidos',
+  '/usuario/direcciones': '/nuevo/usuario/direcciones',
+  '/usuario/perfil': '/nuevo/usuario/perfil',
 })
 
 /**
  * Dirección pública que termina en UN segmento que cambia → la ruta interna con el mismo segmento. F3: la ficha de producto; F4: la ficha
  * de una experiencia. `/producto`, `/producto/`, `/productos` y `/producto/a/b` no casan (siguen con lo de hoy); lo mismo con experiencias.
+ * F6: el detalle de un pedido de Mi cuenta (`/usuario/pedidos/<id>`; `/usuario/pedidos` es exacta y `/usuario/pedidos/a/b` sigue con lo de hoy).
  */
 export const PREFIJOS_SITIO_NUEVO: Readonly<Record<string, string>> = Object.freeze({
   '/producto/': '/nuevo/producto/',
   '/experiencias/': '/nuevo/experiencias/',
+  '/usuario/pedidos/': '/nuevo/usuario/pedidos/',
 })
 
 /**

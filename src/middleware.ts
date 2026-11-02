@@ -227,5 +227,10 @@ export const config = {
     '/:exacta(contacto(?![.]))',
     '/:exacta(privacidad(?![.]))',
     '/:exacta(terminos(?![.]))',
+    // R15 v2 · F6 (D-F6-03), con la misma forma de D-F3-39/D-F3-40: las tres de entrar sin sesión. Las de Mi cuenta con sesión (`/usuario/…`) no
+    // necesitan matcher nuevo: ya las casa '/usuario/:path*' de arriba (las protegidas no cambian) y se reescriben solo después de withAuth.
+    '/auth/:exacta(signin(?![.]))',
+    '/auth/:exacta(recuperar(?![.]))',
+    '/auth/:exacta(restablecer(?![.]))',
   ],
 }
