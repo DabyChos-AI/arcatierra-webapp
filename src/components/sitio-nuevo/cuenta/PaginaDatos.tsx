@@ -5,10 +5,14 @@
 // etiqueta/valor en dos columnas y el botón abajo):
 // - `/api/auth/me` lo pide el marco una vez (`contexto.ts`) y aquí se lee; después, como hoy, `GET /api/direcciones/` (`perfil:104-111`) para
 //   calcular `direccion_principal`, que el PATCH manda igual que hoy aunque ya no sea un campo.
-// - País se ve de solo lectura, con el respaldo de hoy «+52» (D-F6-11 P-11, D-F6-14 (e)); «Zona de entrega», «Dirección (calle y número)» y «Día favorito de entrega» no se pintan como
-//   campos (hoy se cambian y no se guardan donde se leen: defecto de hoy a TASK-LIST).
+// - País (D-F6-23, DR-25): se edita con el `CountryCodeSelector` de hoy importado tal cual (D-F3-20 P-7; hoy `perfil:396-400`) y SE GUARDA:
+//   el PATCH manda `codigo_pais`; el respaldo sigue siendo el de hoy, «+52» (D-F6-14 (e)). «Dirección (calle y número)» no se pinta (hoy se
+//   cambia y no se guarda donde se lee: defecto de hoy a TASK-LIST).
+// - Zona y día favorito (D-F6-24, DR-26): dos renglones de SOLO lectura con los de la dirección principal (el mismo `GET /api/direcciones/`)
+//   y la liga «Cambiar en Mis Direcciones» → `/usuario/direcciones`: un solo lugar que guarda (la dirección); el PATCH no manda
+//   `preferencias_entrega`.
 // - No pasan: «{n} pedidos realizados» (D-14, siempre 0), el botón de cámara sin función, «Experiencia favorita» (nunca se llena), la bandera
-//   de flagcdn.com y los `console.log`.
+//   de flagcdn.com en el modo «ver» (al editar, el selector de hoy trae las suyas) y los `console.log`.
 // - Guardar: el PATCH de hoy (`cuerpoPatch`, `perfil:160-226`), sus avisos y sus textos; candado contra el doble clic; al salir bien, el
 //   nombre del marco cambia (`actualizarMe`). Cancelar vuelve a lo de antes (`perfil:228-231`).
 
@@ -23,12 +27,24 @@ import Texto from '@/components/sitio-nuevo/ui/Texto'
 import AvisoEnLinea from '@/components/sitio-nuevo/ui/AvisoEnLinea'
 import { aviso } from '@/components/ui/Avisos'
 import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
+import CountryCodeSelector from '@/components/ui/CountryCodeSelector'
 import { useCuenta } from './contexto'
 import PestanaCuenta from './PestanaCuenta'
+import Link from 'next/link'
+import { FOCO, unirClases } from '@/components/sitio-nuevo/ui/clases'
 import CasillaFija from './CasillaFija'
 import { enlaceDeHoy } from './pestanas'
-import { RESTRICCIONES, cuerpoPatch, fechaNacimientoDe, miembroDesdeDe, perfilDe, type LlaveRestriccion, type PerfilCuenta } from './perfil'
-import { TEXTO_REINTENTAR } from './textos'
+import {
+  RESTRICCIONES,
+  cuerpoPatch,
+  entregaPrincipalDe,
+  fechaNacimientoDe,
+  miembroDesdeDe,
+  perfilDe,
+  type LlaveRestriccion,
+  type PerfilCuenta,
+} from './perfil'
+import { TEXTO_MIS_DIRECCIONES, TEXTO_REINTENTAR } from './textos'
 
 const B = 'sn-mi-cuenta-datos'
 const NO_ESPECIFICADO = 'No especificado'
@@ -157,6 +173,7 @@ export default function PaginaDatos() {
         apellidos: cuerpo.apellidos,
         nombre_completo: cuerpo.nombre_completo,
         telefono: cuerpo.telefono,
+        codigo_pais: cuerpo.codigo_pais,
         fecha_nacimiento: cuerpo.fecha_nacimiento,
         preferencias: cuerpo.preferencias,
       })
@@ -202,6 +219,7 @@ export default function PaginaDatos() {
   }
 
   const visto = editando ? editado : perfil
+  const entrega = entregaPrincipalDe(direcciones)
 
   const tarjetas = (
     <>
@@ -230,9 +248,17 @@ export default function PaginaDatos() {
               El email no se puede modificar
             </Texto>
           </Dato>
-          <Dato etiqueta="País" testId={`${B}-pais`}>
-            {visto.codigoPais}
-          </Dato>
+          {editando ? (
+            // La etiqueta como la del checkout nuevo (F3, `carrito/PaginaCheckout.tsx:770-773`); el texto, el de hoy (`perfil:394`).
+            <div data-testid={`${B}-formulario-pais`} className="flex flex-col gap-1.5">
+              <p className="m-0 font-sn-mono text-sn-etiqueta-sm font-medium uppercase text-sn-ink">País</p>
+              <CountryCodeSelector value={editado.codigoPais || ''} onChange={(code) => cambiar('codigoPais', code)} />
+            </div>
+          ) : (
+            <Dato etiqueta="País" testId={`${B}-pais`}>
+              {visto.codigoPais}
+            </Dato>
+          )}
           {editando ? (
             <Campo
               etiqueta="Teléfono"
@@ -263,6 +289,24 @@ export default function PaginaDatos() {
           <Dato etiqueta="Miembro desde" testId={`${B}-miembro`}>
             {miembroDesdeDe(visto.memberSince)}
           </Dato>
+          <Dato etiqueta="Zona de entrega" testId={`${B}-zona`}>
+            {entrega.zona ?? NO_ESPECIFICADO}
+          </Dato>
+          <Dato etiqueta="Día favorito de entrega" testId={`${B}-dia`}>
+            {entrega.dia ?? NO_ESPECIFICADO}
+          </Dato>
+          <p className="m-0 sm:col-span-2">
+            <Link
+              href="/usuario/direcciones"
+              data-testid={`${B}-cambiar-direcciones`}
+              className={unirClases(
+                'font-sn-mono text-sn-boton-sm font-medium uppercase text-sn-terra underline-offset-4 hover:text-sn-ink hover:underline',
+                FOCO,
+              )}
+            >
+              Cambiar en {TEXTO_MIS_DIRECCIONES}
+            </Link>
+          </p>
         </div>
       </Tarjeta>
 
