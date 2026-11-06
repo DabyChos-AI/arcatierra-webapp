@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 // R15 v2 · F5 (contacto): la `metadata` de /contacto de hoy (`src/app/contacto/layout.tsx:5-18`, que no la exporta), para la página nueva.
 // D-F5-11 P-15. `f5-contacto/pruebas/metadatos-contra-hoy.mjs` la compara con la de hoy, llave por llave. El layout raíz agrega
-// « | ArcaTierra» al título; el `robots: noindex` de `src/app/nuevo/layout.tsx` se queda (Next une las dos).
+// « | ArcaTierra» al título; el `robots` es el del layout raíz, como hoy (desde F7 `src/app/nuevo/layout.tsx` ya no lo baja, D-F7-16).
 const DESCRIPCION =
   'Escríbenos o llámanos: dudas sobre pedidos, canastas, suscripciones y experiencias en las chinampas de Xochimilco. ' +
   'También por WhatsApp, Instagram, Facebook y TikTok.'
