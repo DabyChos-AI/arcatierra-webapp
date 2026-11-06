@@ -25,6 +25,7 @@ import Texto from '@/components/sitio-nuevo/ui/Texto'
 import Titulo from '@/components/sitio-nuevo/ui/Titulo'
 import EncabezadoAcceso from './EncabezadoAcceso'
 import IconoGoogle from './IconoGoogle'
+import { HREF_SUSCRIBIRSE } from '@/components/sitio-nuevo/compras/compras'
 import {
   DATOS_VACIOS,
   DESTINO_POR_OMISION,
@@ -202,6 +203,11 @@ export default function Entrar() {
                     onChange={escribir('password')}
                     testId="sn-acceso-entrar-password"
                   />
+                  <Boton type="submit" anchoCompleto cargando={cargando} textoCargando="Entrando…" testId="sn-acceso-entrar-enviar">
+                    Iniciar sesión
+                  </Boton>
+                  {/* T-14 (F7, D-F7-14): los avisos van DEBAJO del botón; arriba, al quitarse con el reenvío, el botón subía y el 2.º clic de
+                      un doble clic caía en «¿Olvidaste tu contraseña?». */}
                   {exito && (
                     <AvisoEnLinea tono="exito" testId="sn-acceso-entrar-exito">
                       {exito}
@@ -212,9 +218,6 @@ export default function Entrar() {
                       {errorEntrar}
                     </AvisoEnLinea>
                   )}
-                  <Boton type="submit" anchoCompleto cargando={cargando} textoCargando="Entrando…" testId="sn-acceso-entrar-enviar">
-                    Iniciar sesión
-                  </Boton>
                   <div className="text-center">
                     <Boton variante="texto" tamano="chico" href="/auth/recuperar" testId="sn-acceso-entrar-olvide">
                       ¿Olvidaste tu contraseña?
@@ -273,14 +276,15 @@ export default function Entrar() {
                     onChange={escribir('confirmPassword')}
                     testId="sn-acceso-crear-confirmar"
                   />
+                  <Boton type="submit" anchoCompleto cargando={cargando} testId="sn-acceso-crear-enviar">
+                    Crear Cuenta
+                  </Boton>
+                  {/* T-14 (F7, D-F7-14): el aviso va DEBAJO del botón (no lo mueve al quitarse). */}
                   {errorCrear && (
                     <AvisoEnLinea tono="error" testId="sn-acceso-crear-error">
                       {errorCrear}
                     </AvisoEnLinea>
                   )}
-                  <Boton type="submit" anchoCompleto cargando={cargando} testId="sn-acceso-crear-enviar">
-                    Crear Cuenta
-                  </Boton>
                 </form>
               </Tarjeta>
             )}
@@ -329,7 +333,8 @@ export default function Entrar() {
               />
             </Texto>
             <div className="text-center">
-              <Boton variante="texto" href="/suscripciones" deshabilitado={cargando} testId="sn-acceso-otras-invitado">
+              {/* D-F7-15: `/suscripciones` lleva encendido a la pestaña «Canasta lista» de la tienda nueva; la liga va directo ahí. */}
+              <Boton variante="texto" href={HREF_SUSCRIBIRSE} deshabilitado={cargando} testId="sn-acceso-otras-invitado">
                 Continuar sin cuenta
               </Boton>
             </div>

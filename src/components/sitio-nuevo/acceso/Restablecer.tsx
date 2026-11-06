@@ -152,6 +152,11 @@ export default function Restablecer() {
                     }}
                     testId="sn-acceso-restablecer-confirmar"
                   />
+                  <Boton type="submit" anchoCompleto cargando={enviando} textoCargando="Guardando…" testId="sn-acceso-restablecer-enviar">
+                    Guardar contraseña
+                  </Boton>
+                  {/* T-14 (F7, D-F7-14): el aviso va DEBAJO del botón; arriba, al quitarse con el reenvío, el botón subía hacia «Volver a
+                      iniciar sesión». */}
                   {error && (
                     <div data-testid="sn-acceso-restablecer-error" data-codigo={error.codigo}>
                       <AvisoEnLinea tono="error" as="div">
@@ -166,9 +171,6 @@ export default function Restablecer() {
                       </AvisoEnLinea>
                     </div>
                   )}
-                  <Boton type="submit" anchoCompleto cargando={enviando} textoCargando="Guardando…" testId="sn-acceso-restablecer-enviar">
-                    Guardar contraseña
-                  </Boton>
                 </form>
               )}
 

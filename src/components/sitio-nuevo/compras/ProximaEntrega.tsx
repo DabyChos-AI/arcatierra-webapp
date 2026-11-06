@@ -4,13 +4,14 @@
 // (`abierta: false`), el texto de hoy de ese caso (`ui/ConMiCanasta.tsx:83-84`) y el botón desactivado. El descuento del envío de la canasta
 // (−$100) no existe en la API: marca C51 a David, letra por letra la de `sitio-nuevo/tienda/AgregaExtras.tsx:153`, una por bloque abierto.
 // La usa Mis suscripciones y la importa el Resumen de cuenta con su propia base de testids (`sn-mi-cuenta-entrega`).
+// F7 (arreglos, CHKX1, D-F7-14): el botón recuerda su canasta en `sessionStorage` para que el checkout nuevo la preseleccione.
 import type { CanastaExtras } from '@/components/ui/ConMiCanasta'
 import { fechaLarga } from '@/app/usuario/suscripciones/normalizar'
 import Falta from '@/components/sitio-nuevo/Falta'
 import Boton from '@/components/sitio-nuevo/ui/Boton'
 import Texto from '@/components/sitio-nuevo/ui/Texto'
 import AvisoEnLinea from '@/components/sitio-nuevo/ui/AvisoEnLinea'
-import { HREF_AGREGAR_EXTRAS } from './compras'
+import { HREF_AGREGAR_EXTRAS, recordarCanastaDeExtras } from './compras'
 
 /** Lo que se sabe de la próxima canasta de UNA suscripción activa. */
 export type EstadoEntrega =
@@ -68,7 +69,15 @@ export default function ProximaEntrega({ suscripcionId, estado, onReintentar, te
           comprar con envío normal.
         </Texto>
       )}
-      <Boton href={HREF_AGREGAR_EXTRAS} deshabilitado={!entrega.abierta} variante="contorno" tamano="chico" testId={`${testId}-agregar`}>
+      {/* CHKX1 (D-F7-14): el clic recuerda ESTA canasta para que el checkout nuevo la preseleccione; desactivado (`<span>`) no recuerda nada. */}
+      <Boton
+        href={HREF_AGREGAR_EXTRAS}
+        deshabilitado={!entrega.abierta}
+        onClick={() => recordarCanastaDeExtras(entrega.entrega_id)}
+        variante="contorno"
+        tamano="chico"
+        testId={`${testId}-agregar`}
+      >
         Agregar productos a esta entrega
       </Boton>
       {entrega.abierta && (

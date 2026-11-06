@@ -99,3 +99,38 @@ export const HREF_SUSCRIBIRSE = `${HREF_TIENDA}${direccionDePestana('canasta-lis
 export function hrefIniciarSesion(destino: string): string {
   return `${HREF_INICIAR_SESION}?callbackUrl=${encodeURIComponent(destino)}`
 }
+
+// ─── CHKX1 (R15 v2 · F7, arreglos; contrato v2 D-F7-05, D-F7-14; D-F6-08 P-12) ────────────────────────────────────────────
+// «Agregar productos a esta entrega» (DR-18) deja en `sessionStorage` la entrega de ESA canasta y el checkout nuevo la preselecciona UNA vez
+// («Entregar con mi canasta del {fecha}»), solo si la API todavía la da como abierta y el carrito no trae experiencias. Sin la llave, el checkout
+// empieza como hoy en «Comprar con envío normal» (D-F3-32). Precedentes de `sessionStorage` en el sitio: el apartado (`arcaTierraApartado`,
+// `lib/carrito.ts`) y el popup (`armazon/Anuncio.tsx`). Si el navegador bloquea el almacenamiento, no pasa nada (como `lib/carrito.ts:96-98`).
+
+/** Llave de `sessionStorage` con el `entrega_id` de la canasta a la que el cliente quiso agregar productos. */
+export const CLAVE_CANASTA_DE_EXTRAS = 'arcaTierraCanastaDeExtras'
+
+/** La guarda el botón «Agregar productos a esta entrega» en su clic (en el mismo bloque síncrono, antes de navegar). */
+export function recordarCanastaDeExtras(entregaId: string): void {
+  try {
+    window.sessionStorage.setItem(CLAVE_CANASTA_DE_EXTRAS, entregaId)
+  } catch {
+    /* sessionStorage bloqueado: el checkout empezará como hoy */
+  }
+}
+
+/** La lee el checkout UNA vez y la borra (se consume): null si no hay o si el almacenamiento está bloqueado. */
+export function tomarCanastaDeExtras(): string | null {
+  try {
+    const entregaId = window.sessionStorage.getItem(CLAVE_CANASTA_DE_EXTRAS)
+    window.sessionStorage.removeItem(CLAVE_CANASTA_DE_EXTRAS)
+    return entregaId || null
+  } catch {
+    return null
+  }
+}
+
+/** La canasta a preseleccionar: la de ese `entrega_id` solo si la API la trae ABIERTA; si no (cerrada, otra, sin llave), null. */
+export function canastaParaPreseleccionar(canastas: readonly CanastaExtras[], entregaId: string | null): CanastaExtras | null {
+  if (!entregaId) return null
+  return canastas.find((c) => c.abierta && c.entrega_id === entregaId) ?? null
+}

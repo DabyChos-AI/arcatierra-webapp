@@ -83,6 +83,14 @@ export default function FormularioSolicitud({
   const [error, setError] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
   const enviandoRef = useRef(false)
+  // MINF1 (R15 v2 · F7, arreglos; D-F7-05, D-F7-14; REVISION-CODIGO-F4 §3.1): el `min` de «Fecha deseada» es el «hoy» de México del
+  // NAVEGADOR, puesto después de montar. Antes era `min={hoyMexico()}` en el render y /eventos es estática (○): el HTML guardaba el día del
+  // build y React no corrige un atributo al hidratar. Así el HTML sale sin `min` (nada horneado) y no hay diferencia de hidratación.
+  const [fechaMinima, setFechaMinima] = useState<string | undefined>(undefined)
+
+  useEffect(() => {
+    setFechaMinima(hoyMexico())
+  }, [])
 
   const idElegida = elegidaId ?? elegidaPropia
   const elegida = experiencia ?? (experiencias ?? []).find((e) => e.id === idElegida) ?? null
@@ -232,7 +240,7 @@ export default function FormularioSolicitud({
           testId={`${testId}-fecha`}
           tipo="date"
           etiqueta="Fecha deseada"
-          min={hoyMexico()}
+          min={fechaMinima}
           value={datos.fecha}
           onChange={(e) => cambiar('fecha', e.target.value)}
         />

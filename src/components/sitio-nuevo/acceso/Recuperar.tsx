@@ -4,6 +4,7 @@
 // D-F6-04, D-F6-09, D-F6-10 P-5; cadena-v2/f6/acceso-F6.md §4.1. Original = `src/app/auth/recuperar/page.tsx` (R), R11b · ACC1: POST público
 // `${API_URL}/api/auth/recuperar` {email}, directo (el límite por IP necesita la IP real del cliente). El backend responde SIEMPRE lo mismo: se
 // muestra su `message` tal cual y el formulario se va (no revela quién tiene cuenta). Textos importados de `src/app/auth/recuperar/textos.ts`.
+// F7 (arreglos, T-14, D-F7-14): el aviso de error va debajo del botón de enviar, para que no lo mueva al quitarse.
 import { useRef, useState } from 'react'
 import { HREF_INICIAR_SESION } from '@/components/sitio-nuevo/armazon/enlaces'
 import AvisoEnLinea from '@/components/sitio-nuevo/ui/AvisoEnLinea'
@@ -102,14 +103,16 @@ export default function Recuperar() {
                     error={errorCorreo ?? undefined}
                     testId="sn-acceso-recuperar-correo"
                   />
+                  <Boton type="submit" anchoCompleto cargando={enviando} textoCargando="Enviando…" testId="sn-acceso-recuperar-enviar">
+                    Mandarme el enlace
+                  </Boton>
+                  {/* T-14 (F7, D-F7-14): el aviso va DEBAJO del botón; si fuera arriba, al quitarse con el reenvío el botón subiría y el
+                      2.º clic de un doble clic caería en «Volver a iniciar sesión». */}
                   {error && (
                     <AvisoEnLinea tono="error" testId="sn-acceso-recuperar-error">
                       {error}
                     </AvisoEnLinea>
                   )}
-                  <Boton type="submit" anchoCompleto cargando={enviando} textoCargando="Enviando…" testId="sn-acceso-recuperar-enviar">
-                    Mandarme el enlace
-                  </Boton>
                 </form>
               )}
               <div className="mt-6 text-center">

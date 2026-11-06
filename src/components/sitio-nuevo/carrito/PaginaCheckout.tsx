@@ -84,6 +84,7 @@ import Calendario from './Calendario'
 import BloqueDireccion from './BloqueDireccion'
 import { Bloque, BloqueCanasta, BloqueEntrega, Reloj, TuPedido } from './PiezasCheckout'
 import { useCarritoLocal } from './useCarritoLocal'
+import { canastaParaPreseleccionar, tomarCanastaDeExtras } from '@/components/sitio-nuevo/compras/compras'
 import {
   CP_RECOGER,
   DATOS_VACIOS,
@@ -160,6 +161,9 @@ export default function PaginaCheckout() {
   const [tipoEntrega, setTipoEntrega] = useState<TipoEntrega>('envio_domicilio')
   const [canastas, setCanastas] = useState<CanastaExtras[]>([])
   const [conCanasta, setConCanasta] = useState<CanastaExtras | null>(null)
+  // CHKX1 (D-F7-14): ya respondió `extras-disponibles` (aunque sea vacío o con error) y ya se miró la canasta que dejó Mi cuenta.
+  const [canastasLeidas, setCanastasLeidas] = useState(false)
+  const canastaRecordadaVista = useRef(false)
 
   // ─── CheckoutFormSingleStep.tsx ─────────────────────────────────────────────────────────────────────────────────────
   const [cargandoDatos, setCargandoDatos] = useState(true)
@@ -253,6 +257,9 @@ export default function PaginaCheckout() {
       .catch(() => {
         if (vigente) setCanastas([])
       })
+      .finally(() => {
+        if (vigente) setCanastasLeidas(true)
+      })
     return () => {
       vigente = false
     }
@@ -262,6 +269,16 @@ export default function PaginaCheckout() {
   useEffect(() => {
     if (hayExperiencias) setConCanasta(null)
   }, [hayExperiencias])
+
+  // CHKX1 (D-F7-14; D-F6-08 P-12): si el cliente llegó desde «Agregar productos a esta entrega» de Mi cuenta, esa canasta empieza elegida.
+  // UNA vez por montaje, cuando ya se leyeron el carrito y `extras-disponibles`; solo si la entrega sigue abierta y sin experiencias (con
+  // experiencias la llave no se toma). Después el cliente cambia como hoy (D-F3-32). Sin la llave, todo empieza como hoy (`null`).
+  useEffect(() => {
+    if (canastaRecordadaVista.current || !canastasLeidas || items === null || hayExperiencias) return
+    canastaRecordadaVista.current = true
+    const elegida = canastaParaPreseleccionar(canastas, tomarCanastaDeExtras())
+    if (elegida) setConCanasta(elegida)
+  }, [canastasLeidas, canastas, items, hayExperiencias])
 
   // Experiencias de antes de la Fase 4: fuera, con aviso (`checkout/page.tsx:97-106`).
   useEffect(() => {
