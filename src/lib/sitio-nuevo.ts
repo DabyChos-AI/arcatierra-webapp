@@ -28,6 +28,12 @@
 // `/auth/restablecer`). Con sesión, las de `/usuario/…`: ya corren el middleware por el matcher de las protegidas de siempre ('/usuario/:path*',
 // que no cambia) y se reescriben solo DESPUÉS de que `withAuth` las deja pasar (src/middleware.ts); el detalle de un pedido es un prefijo de UN
 // segmento. Siguen con su página de hoy `/usuario/reservas`, `/usuario/favoritos`, `/crear-cuenta`, `/dashboard`, `/perfil` y `/ordenes`.
+//
+// R15 v2 · F7 (sesión 65, 5-nov; contrato v2 §9-F7 D-F7-03, D-F7-11, D-F7-15, D-F7-19): lo que se oculta (DR-7: «sale del menú y de Google, la
+// dirección vieja lleva a la equivalente o no se muestra, y el código se queda»), SOLO con el interruptor encendido. Tres piezas nuevas, todas por
+// clave exacta (una forma codificada sigue como hoy): el sitemap del sitio nuevo (un archivo, no una página), tres direcciones de hoy que llevan a su
+// equivalente y las páginas de hoy que siguen respondiendo con `X-Robots-Tag: noindex`. Ninguna página se borra (`cadena/OCULTAS.md` dice cómo
+// regresar cada una). Siguen como hoy, sin middleware, las de C44 (`/prensa`, `/entregas`, `/experiencias/faq`, `/catering/contacto`, `/receta/<id>`).
 
 /** Carpeta de `src/app/` donde viven las páginas nuevas (= el segmento que ve `useSelectedLayoutSegment()` en el layout raíz). */
 export const SEGMENTO_SITIO_NUEVO = 'nuevo'
@@ -81,6 +87,45 @@ export const EXCLUIDOS_SITIO_NUEVO: Readonly<Record<string, readonly string[]>> 
   '/experiencias/': Object.freeze(['faq', 'testimonios']),
 })
 
+/**
+ * F7 (D-F7-03 a, D-F7-11, D-F7-15 P-7): archivos del sitio nuevo que se sirven en su dirección pública solo encendido. No son páginas: van aparte de
+ * RUTAS_SITIO_NUEVO para que quien recorre las páginas (`armazon/ligaActual.ts`, los conteos de qa) no los lea como tales. Hoy `/sitemap.xml` lo sirve
+ * `public/sitemap.xml`; el middleware corre antes que `public/`.
+ */
+export const ARCHIVOS_SITIO_NUEVO: Readonly<Record<string, string>> = Object.freeze({
+  '/sitemap.xml': '/nuevo/sitemap.xml',
+})
+
+/**
+ * F7 (DR-7, D-F7-03 b, D-F7-15): dirección de hoy que el sitio nuevo no trae → su equivalente (redirección temporal del middleware, solo encendido).
+ * `/xochimilco` → Chinampas (D-F5-03); `/calendario` → Experiencias (misma compra de fechas y mismo feed, D-F4-12 P-3); `/suscripciones` → el alta de la
+ * tienda (D-F3-04, D-F3-22 P-5). `/suscripciones/confirmacion` es otra dirección (RUTAS_SITIO_NUEVO) y no cambia.
+ */
+export const REDIRECCIONES_SITIO_NUEVO: Readonly<Record<string, string>> = Object.freeze({
+  '/xochimilco': '/chinampas',
+  '/calendario': '/experiencias',
+  '/suscripciones': '/tienda?pestana=canasta-lista',
+})
+
+/**
+ * F7 (DR-7, C13, D-F4-03, D-F7-15 P-6): páginas de hoy que el sitio nuevo no trae y siguen respondiendo igual, fuera del menú y del sitemap nuevo, con
+ * `X-Robots-Tag: noindex` (solo encendido). El Baldío y Restaurantes se siguen alcanzando por «Hacer reservación» (externa) y «Contacto →» de la portada.
+ */
+export const OCULTAS_SITIO_NUEVO: readonly string[] = Object.freeze([
+  '/baldio',
+  '/baldio/reservas',
+  '/baldio/menu',
+  '/baldio/equipo',
+  '/baldio/chinampas',
+  '/baldio/sostenibilidad',
+  '/restaurantes',
+  '/blog',
+  '/impacto',
+  '/experiencias/testimonios',
+  '/examples/hero-parallax',
+  '/test-responsive',
+])
+
 /** Un solo segmento: no vacío, sin «/» ni «\» y que no sea «.» ni «..», tampoco una vez decodificado (y que se pueda decodificar). */
 function esUnSegmento(resto: string): boolean {
   if (resto === '' || resto.includes('/')) return false
@@ -96,6 +141,7 @@ function esUnSegmento(resto: string): boolean {
 /** La ruta interna para una dirección pública, o null si esa dirección sigue con la página de hoy. */
 export function rutaInternaSitioNuevo(pathname: string): string | null {
   if (Object.prototype.hasOwnProperty.call(RUTAS_SITIO_NUEVO, pathname)) return RUTAS_SITIO_NUEVO[pathname]
+  if (Object.prototype.hasOwnProperty.call(ARCHIVOS_SITIO_NUEVO, pathname)) return ARCHIVOS_SITIO_NUEVO[pathname]
   for (const [publico, interno] of Object.entries(PREFIJOS_SITIO_NUEVO)) {
     if (!pathname.startsWith(publico)) continue
     const resto = pathname.slice(publico.length)
@@ -106,6 +152,16 @@ export function rutaInternaSitioNuevo(pathname: string): string | null {
     return interno + resto
   }
   return null
+}
+
+/** F7: el destino de una dirección de hoy que lleva a su equivalente (con la búsqueda del destino, si la trae), o null. Solo la clave exacta. */
+export function redireccionSitioNuevo(pathname: string): string | null {
+  return Object.prototype.hasOwnProperty.call(REDIRECCIONES_SITIO_NUEVO, pathname) ? REDIRECCIONES_SITIO_NUEVO[pathname] : null
+}
+
+/** F7: la página de hoy sigue respondiendo pero sale de Google (`noindex`). Solo la clave exacta. */
+export function esOcultaSitioNuevo(pathname: string): boolean {
+  return OCULTAS_SITIO_NUEVO.includes(pathname)
 }
 
 /** `/nuevo`, `/nuevo/…` (y `/nuevo.algo`) pedidos directo: nunca se sirven (404). */

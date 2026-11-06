@@ -2,7 +2,7 @@ import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server
 import { withAuth, type NextRequestWithAuth } from 'next-auth/middleware'
 import { API_URL } from '@/lib/api'
 import { cabecerasDelCliente } from '@/lib/ip-cliente'
-import { esRutaInternaSitioNuevo, rutaInternaSitioNuevo } from '@/lib/sitio-nuevo'
+import { esOcultaSitioNuevo, esRutaInternaSitioNuevo, redireccionSitioNuevo, rutaInternaSitioNuevo } from '@/lib/sitio-nuevo'
 
 // MW1 (R3, 1-oct-2026): check-employee sale por la red interna (http://arca-api:8000), no por la URL
 // pública que cruza Cloudflare. Se lee en cada petición: el middleware corre en el sandbox Edge de
@@ -31,6 +31,28 @@ function reescrituraSitioNuevo(req: NextRequest): NextResponse | null {
   const url = req.nextUrl.clone()
   url.pathname = destino
   return NextResponse.rewrite(url)
+}
+
+// R15 v2 · F7 (D-F7-03, D-F7-15): lo que se oculta, solo encendido. Una dirección de hoy con equivalente lleva a ella (307 mientras la rama no se
+// lance; la búsqueda que trae se conserva, salvo que el destino traiga la suya); una página de hoy que se queda sigue respondiendo igual, con
+// `X-Robots-Tag: noindex` (sale de Google; nunca un `Disallow` sobre ella). null = sigue como hoy.
+function ocultaSitioNuevo(req: NextRequest): NextResponse | null {
+  if (!sitioNuevoEncendido()) return null
+  const { pathname } = req.nextUrl
+  const destino = redireccionSitioNuevo(pathname)
+  if (destino) {
+    const url = req.nextUrl.clone()
+    const corte = destino.indexOf('?')
+    url.pathname = corte < 0 ? destino : destino.slice(0, corte)
+    if (corte >= 0) url.search = destino.slice(corte)
+    return NextResponse.redirect(url, 307)
+  }
+  if (esOcultaSitioNuevo(pathname)) {
+    const respuesta = NextResponse.next()
+    respuesta.headers.set('X-Robots-Tag', 'noindex')
+    return respuesta
+  }
+  return null
 }
 
 // `/nuevo` y `/nuevo/*` pedidos directo: 404 en los dos contenedores. Se reescribe a una ruta que no puede existir (en el App
@@ -171,9 +193,9 @@ export default async function middleware(req: NextRequest, event: NextFetchEvent
     return conSesion(req as NextRequestWithAuth, event)
   }
 
-  // Lo demás que casa el matcher (solo las direcciones de RUTAS_SITIO_NUEVO y de PREFIJOS_SITIO_NUEVO): la página de hoy, salvo que el
-  // interruptor esté encendido.
-  return reescrituraSitioNuevo(req) ?? NextResponse.next()
+  // Lo demás que casa el matcher (las direcciones de RUTAS_SITIO_NUEVO, PREFIJOS_SITIO_NUEVO y, desde F7, ARCHIVOS_, REDIRECCIONES_ y
+  // OCULTAS_SITIO_NUEVO): la página de hoy, salvo que el interruptor esté encendido.
+  return reescrituraSitioNuevo(req) ?? ocultaSitioNuevo(req) ?? NextResponse.next()
 }
 
 // F0 v2 (29-oct, P1 aprobada por el líder 04:46 UTC): el middleware corre SOLO donde tiene algo que hacer. La F0 vieja traía un
@@ -232,5 +254,23 @@ export const config = {
     '/auth/:exacta(signin(?![.]))',
     '/auth/:exacta(recuperar(?![.]))',
     '/auth/:exacta(restablecer(?![.]))',
+    // R15 v2 · F7 (D-F7-03, D-F7-15), con la misma forma de D-F3-39/D-F3-40: el sitemap del sitio nuevo (ARCHIVOS_SITIO_NUEVO), las 3 que llevan a su
+    // equivalente (REDIRECCIONES_) y las 12 que siguen con `noindex` (OCULTAS_). Siguen sin middleware las de C44 y /favoritos, /dashboard (next.config.js).
+    '/:exacta(sitemap[.]xml(?![.]))',
+    '/:exacta(xochimilco(?![.]))',
+    '/:exacta(calendario(?![.]))',
+    '/:exacta(suscripciones(?![.]))',
+    '/:exacta(baldio(?![.]))',
+    '/baldio/:exacta(reservas(?![.]))',
+    '/baldio/:exacta(menu(?![.]))',
+    '/baldio/:exacta(equipo(?![.]))',
+    '/baldio/:exacta(chinampas(?![.]))',
+    '/baldio/:exacta(sostenibilidad(?![.]))',
+    '/:exacta(restaurantes(?![.]))',
+    '/:exacta(blog(?![.]))',
+    '/:exacta(impacto(?![.]))',
+    '/experiencias/:exacta(testimonios(?![.]))',
+    '/examples/:exacta(hero-parallax(?![.]))',
+    '/:exacta(test-responsive(?![.]))',
   ],
 }
