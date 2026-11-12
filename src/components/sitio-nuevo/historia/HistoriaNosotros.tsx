@@ -11,6 +11,8 @@
 // - La foto «2009 vs hoy» no existe (MAPA-CONTENIDO B §11 #3): marca a Lucio y Pablo. El título no tiene equivalente (el de hoy ya es el
 //   `h1`): `h2` oculto con etiqueta neutra (C24). El eyebrow no se pinta.
 // Medido en la maqueta: warm, 80/40, columna de 900; dos columnas iguales con 48 entre ellas (texto · foto 4:5 de radio 16); 18 entre párrafos.
+// F8 (pulido, D-F8-23 H-3): el texto real mide unos 1,500 px y la foto unos 290; desde 861 px la foto se queda a la vista mientras se lee
+// la historia, a 100 px del borde de arriba (la cabecera de 64 más 36: lo mismo que la columna de fotos de las fichas). Hasta 860 px, igual que antes.
 import Falta, { type QuienFalta } from '@/components/sitio-nuevo/Falta'
 import Contenedor from '@/components/sitio-nuevo/ui/Contenedor'
 import Foto from '@/components/sitio-nuevo/ui/Foto'
@@ -112,6 +114,7 @@ export default function HistoriaNosotros() {
             testId={`${H}-foto`}
             falta={{ que: 'foto de la chinampa de Arca Tierra al empezar y hoy', quien: 'Lucio y Pablo' }}
             redondeo="panel"
+            className="min-[861px]:sticky min-[861px]:top-[100px]"
           />
         </div>
         </div>

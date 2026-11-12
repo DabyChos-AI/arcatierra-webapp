@@ -4,6 +4,9 @@
 // hoy (`src/app/checkout/{success,pending,failure}/page.tsx`): los parámetros que MercadoPago pone en la dirección de regreso, el carrito y el
 // apartado. Textos de hoy salvo «Tiempo estimado de entrega: 24-48 horas» (`success/page.tsx:141`, D-7: contradice el día que eligió el cliente).
 // En el link de revisión solo se llega entrando directo: las direcciones de regreso de MercadoPago son las de producción (D-F3-04).
+// F8 (pulido, D-F8-31, hallazgo H-13): la columna de 760 px va en un envoltorio propio dentro del contenedor (como la historia de /nosotros,
+// historia/HistoriaNosotros.tsx). Antes ese ancho se pedía en el mismo contenedor y perdía contra el suyo (dos anchos máximos en un elemento:
+// gana el que el CSS escribe después), así que la columna medía 1020 px.
 
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
@@ -138,7 +141,8 @@ function Exito() {
   return (
     <>
       <Encabezado titulo="¡Pago Exitoso!" texto="Tu orden ha sido confirmada y está siendo procesada" />
-      <Contenedor ancho="angosto" className="flex max-w-[760px] flex-col gap-6 py-8 min-[861px]:py-12">
+      <Contenedor ancho="angosto" className="py-8 min-[861px]:py-12">
+        <div className="mx-auto flex w-full max-w-[760px] flex-col gap-6">
         <Tarjeta titulo="Detalles del Pago" idTitulo="sn-checkout-exito-detalles-titulo" testId="sn-checkout-exito-detalles">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {pago && (
@@ -190,6 +194,7 @@ function Exito() {
             {correo}
           </a>
         </p>
+        </div>
       </Contenedor>
     </>
   )
@@ -208,7 +213,8 @@ function Pendiente() {
   return (
     <>
       <Encabezado titulo="Pago Pendiente" texto="Tu pago está siendo procesado" />
-      <Contenedor ancho="angosto" className="flex max-w-[760px] flex-col gap-6 py-8 min-[861px]:py-12">
+      <Contenedor ancho="angosto" className="py-8 min-[861px]:py-12">
+        <div className="mx-auto flex w-full max-w-[760px] flex-col gap-6">
         {fecha !== null && (
           <Tarjeta titulo="Detalles del Pago" idTitulo="sn-checkout-pendiente-detalles-titulo" testId="sn-checkout-pendiente-detalles">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -266,6 +272,7 @@ function Pendiente() {
           mensajeWhatsApp="Hola, tengo una pregunta sobre mi pago pendiente en la página de Arca Tierra"
           testIdWhatsApp="sn-checkout-pendiente-whatsapp"
         />
+        </div>
       </Contenedor>
     </>
   )
@@ -284,7 +291,8 @@ function Fallo() {
   return (
     <>
       <Encabezado titulo="Pago No Procesado" texto="Hubo un problema al procesar tu pago" />
-      <Contenedor ancho="angosto" className="flex max-w-[760px] flex-col gap-6 py-8 min-[861px]:py-12">
+      <Contenedor ancho="angosto" className="py-8 min-[861px]:py-12">
+        <div className="mx-auto flex w-full max-w-[760px] flex-col gap-6">
         {fecha !== null && (
           <Tarjeta titulo="Detalles del Error" idTitulo="sn-checkout-fallo-detalles-titulo">
             {estado && detalle && (
@@ -333,6 +341,7 @@ function Fallo() {
           mensajeWhatsApp="Hola, tuve un problema al pagar en la página de Arca Tierra"
           testIdWhatsApp="sn-checkout-fallo-whatsapp"
         />
+        </div>
       </Contenedor>
     </>
   )

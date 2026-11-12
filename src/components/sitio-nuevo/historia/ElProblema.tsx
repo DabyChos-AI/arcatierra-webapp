@@ -10,6 +10,8 @@
 //   porque `ui/Cifra` no pasa atributos `data-*` (como `ui/Boton` y `ui/Tarjeta`, D-F2-15): qa la lee con `closest('[data-cifra]')` (D-F5-14).
 // Medido en la maqueta: cream con borde arriba y abajo, 80/40, columna de 1100; 3 tarjetas warm de radio 14, borde, 36/24, centradas, 18 entre
 // ellas y 32 abajo; el número de 72 px en terra (`Cifra grande`); el párrafo de 680.
+// F8 (pulido, D-F8-25, hallazgo H-9): el relleno lateral va en la sección y el contenedor va sin el suyo, como en
+// contacto/EncabezadoContacto.tsx: el contenido mide los 1100 px de la maqueta y a 1440 arranca a 170 px (antes 1020 y 210).
 import Falta from '@/components/sitio-nuevo/Falta'
 import Cifra from '@/components/sitio-nuevo/ui/Cifra'
 import Contenedor from '@/components/sitio-nuevo/ui/Contenedor'
@@ -25,8 +27,8 @@ const CIFRAS = [
 
 export default function ElProblema() {
   return (
-    <Seccion testId={H} fondo="cream" espacio="normal" borde="ambos" etiquetadaPor={`${H}-titulo`}>
-      <Contenedor ancho="angosto">
+    <Seccion testId={H} fondo="cream" espacio="normal" borde="ambos" etiquetadaPor={`${H}-titulo`} className="px-sn-lateral-movil min-[861px]:px-sn-lateral">
+      <Contenedor ancho="angosto" relleno={false}>
         <h2 id={`${H}-titulo`} data-testid={`${H}-titulo`} className="sr-only font-sn-titulos font-normal">
           Cifras de las chinampas
         </h2>

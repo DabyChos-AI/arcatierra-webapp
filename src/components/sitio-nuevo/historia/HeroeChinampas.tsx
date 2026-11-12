@@ -7,6 +7,9 @@
 //   (D-F5-13 P-1 a). Los de la maqueta son genéricos (DR-17).
 // Medido en la maqueta (f5-historia/maqueta/medidas): cream, 80/40, borde abajo; columna de 1100; migas a 24; foto 21:9 desde 861 px (16:9 en el
 // celular: `ui/Foto` no trae 21:9), radio 18, 48 abajo; título 6vw (`hero-xl`), 32 abajo; párrafos de 17 px ligera, 680 de ancho, 18 entre ellos.
+// F8 (pulido, D-F8-25, hallazgo H-9): el relleno lateral va en la sección y el contenedor va sin el suyo, como en
+// contacto/EncabezadoContacto.tsx: el contenido mide los 1100 px de la maqueta y a 1440 arranca a 170 px (antes 1020 y 210).
+// La foto pasa de 1020 a 1100 px de ancho, lo que ya decía su `sizes`.
 import Contenedor from '@/components/sitio-nuevo/ui/Contenedor'
 import Foto from '@/components/sitio-nuevo/ui/Foto'
 import Migas from '@/components/sitio-nuevo/ui/Migas'
@@ -18,8 +21,8 @@ const H = 'sn-chinampas-heroe'
 
 export default function HeroeChinampas() {
   return (
-    <Seccion testId={H} fondo="cream" espacio="normal" borde="abajo" etiquetadaPor={`${H}-titulo`}>
-      <Contenedor ancho="angosto">
+    <Seccion testId={H} fondo="cream" espacio="normal" borde="abajo" etiquetadaPor={`${H}-titulo`} className="px-sn-lateral-movil min-[861px]:px-sn-lateral">
+      <Contenedor ancho="angosto" relleno={false}>
         <Migas
           testId={`${H}-migas`}
           etiqueta="Ruta de navegación"

@@ -7,7 +7,8 @@
 // - El titular de la maqueta no tiene equivalente hoy: marca a Lucio y Pablo (C41, D-F2-08 a), en la letra de texto (C36) y con el tamaño
 //   del texto, como el título del súper de la portada (`portada/arriba/Super.tsx:20-24`).
 // Medido en la maqueta: fondo cream con borde arriba; 5 tarjetas de 242 con hueco de 18, fondo warm, borde 1 px, radio 14, relleno 24/18,
-// centradas; título serif de 20 px. Hasta 860 en dos columnas.
+// centradas; título serif de 20 px. Hasta 860 en una columna, como los tipos de /eventos (F8, D-F8-23 H-2: con dos, el quinto tipo
+// quedaba solo a media anchura).
 import Falta from '@/components/sitio-nuevo/Falta'
 import Contenedor from '@/components/sitio-nuevo/ui/Contenedor'
 import Etiqueta from '@/components/sitio-nuevo/ui/Etiqueta'
@@ -28,7 +29,7 @@ export default function TiposCatering() {
             <Falta que="titular de los tipos de evento de catering" quien="Lucio y Pablo" />
           </span>
         </h2>
-        <ul data-testid="sn-catering-tipos-lista" className="m-0 grid list-none grid-cols-2 gap-[18px] p-0 min-[861px]:grid-cols-5">
+        <ul data-testid="sn-catering-tipos-lista" className="m-0 grid list-none grid-cols-1 gap-[18px] p-0 min-[861px]:grid-cols-5">
           {TIPOS.map((tipo) => (
             <li
               key={tipo}

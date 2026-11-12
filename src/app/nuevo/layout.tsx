@@ -1,6 +1,7 @@
 import Cabecera from '@/components/sitio-nuevo/armazon/Cabecera'
 import Pie from '@/components/sitio-nuevo/armazon/Pie'
 import Anuncio from '@/components/sitio-nuevo/armazon/Anuncio'
+import Entradas from '@/components/sitio-nuevo/armazon/Entradas'
 import { E } from '@/components/sitio-nuevo/armazon/estilos'
 import { clasesFuentesSitioNuevo } from '@/components/sitio-nuevo/fuentes'
 
@@ -30,6 +31,7 @@ export default function SitioNuevoLayout({ children }: { children: React.ReactNo
       </div>
       <Pie />
       <Anuncio />
+      <Entradas />
     </div>
   )
 }

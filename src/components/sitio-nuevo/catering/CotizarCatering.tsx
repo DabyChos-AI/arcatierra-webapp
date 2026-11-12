@@ -11,6 +11,8 @@
 // - Un solo envío aunque se pulse dos veces (candado antes del await); el error no borra lo escrito; el éxito pinta el mensaje de la API.
 // Medido en la maqueta: fondo warm; rejilla 494/642 con hueco de 64; el panel de la maqueta es cream, aquí blanco (las piezas de formulario
 // van sobre warm o blanco, CONTRATO-BASE §5.8; D-F4-09 P-9); campos de dos en dos; botón recto a todo el ancho. Hasta 860 apilado.
+// F8 (pulido, D-F8-32, hallazgo H-17): el título de «gracias» va dentro de un `span` (el que recibe el foco) y la hoja de estilos de hoy le pone
+// la letra de texto a todo `span`: lleva la letra de títulos, como su `h3`.
 import { useRef, useState } from 'react'
 import Falta from '@/components/sitio-nuevo/Falta'
 import AvisoEnLinea from '@/components/sitio-nuevo/ui/AvisoEnLinea'
@@ -103,7 +105,7 @@ export default function CotizarCatering() {
             {exito !== null ? (
               <div data-testid="sn-catering-cotizar-exito" role="status" className="flex flex-col items-start gap-4">
                 <Titulo nivel={3} tamano="h5" testId="sn-catering-cotizar-exito-titulo">
-                  <span ref={exitoRef} tabIndex={-1} className="outline-none">
+                  <span ref={exitoRef} tabIndex={-1} className="font-sn-titulos outline-none">
                     ¡Gracias por contactarnos!
                   </span>
                 </Titulo>

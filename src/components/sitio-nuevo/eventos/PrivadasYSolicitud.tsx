@@ -5,6 +5,8 @@
 // la página sigue estática. Textos de hoy: título y texto de la lista (`src/app/experiencias/page.tsx:301, :304`), «Cargando experiencias...»
 // (:254), el error (:262) y «Reintentar» (`[slug]/page.tsx:431`). Con 0 privadas no se pinta la rejilla (P-8). El formulario va en la sección
 // terra del cotizador de la maqueta, con el título de hoy de ese formulario (`[slug]/page.tsx:720`) y el ancla `#solicitud`.
+// F8 (pulido, D-F8-31, hallazgo H-12): en la franja del formulario el relleno lateral va en la sección y el contenedor va sin el suyo, como en
+// contacto/EncabezadoContacto.tsx: la rejilla recibe los 1100 px de la maqueta (450 + 64 + 586) y a 1440 va de 170 a 1270 (antes, de 211 a 1229).
 import { useCallback, useEffect, useState } from 'react'
 import Falta from '@/components/sitio-nuevo/Falta'
 import Boton from '@/components/sitio-nuevo/ui/Boton'
@@ -91,8 +93,8 @@ export default function PrivadasYSolicitud() {
         </Contenedor>
       </Seccion>
 
-      <Seccion testId={S} id="solicitud" fondo="terra" borde="arriba" espacio="normal" etiquetadaPor={`${S}-titulo`}>
-        <Contenedor ancho="angosto">
+      <Seccion testId={S} id="solicitud" fondo="terra" borde="arriba" espacio="normal" etiquetadaPor={`${S}-titulo`} className="px-sn-lateral-movil min-[861px]:px-sn-lateral">
+        <Contenedor ancho="angosto" relleno={false}>
           <div className="grid grid-cols-1 gap-10 min-[861px]:grid-cols-[450fr_586fr] min-[861px]:gap-16">
             <Titulo nivel={2} tono="warm" id={`${S}-titulo`} testId={`${S}-titulo`}>
               Solicitar Experiencia Privada

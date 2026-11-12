@@ -7,6 +7,8 @@ import Texto from '@/components/sitio-nuevo/ui/Texto'
 // maqueta (medido por file://, f3/carrito-F3.md §1): fondo cream con filete abajo, relleno 80/40/60 (56/24/40 hasta 860 px), contenido de
 // 1100 px, título serif 79.2 px (48 px a 390) y texto de 17 px. En cream el título terra pasa como texto grande (4.13 ≥ 3) y el texto va en
 // ink (ink al 70 % no llega a 4.5 en cream, CONTRATO-BASE-F1 §2.2). Sin eyebrow: la maqueta lo trae y no tiene original (D-F3-20 P-1).
+// F8 (pulido, D-F8-25, hallazgo H-9): el relleno lateral va en la sección y el contenedor va sin el suyo, como en
+// contacto/EncabezadoContacto.tsx: el contenido mide los 1100 px de la maqueta y a 1440 arranca a 170 px (antes 1020 y 210).
 
 type Props = {
   titulo: string
@@ -22,9 +24,9 @@ export default function Encabezado({ titulo, texto, testId, children }: Props) {
       borde="abajo"
       espacio="ninguno"
       testId={testId}
-      className="pb-10 pt-sn-seccion-movil min-[861px]:pb-[60px] min-[861px]:pt-sn-seccion"
+      className="px-sn-lateral-movil pb-10 pt-sn-seccion-movil min-[861px]:px-sn-lateral min-[861px]:pb-[60px] min-[861px]:pt-sn-seccion"
     >
-      <Contenedor ancho="angosto">
+      <Contenedor ancho="angosto" relleno={false}>
         <Titulo nivel={1} tamano="hero" tono="terra" className="max-w-sn-titulo">
           {titulo}
         </Titulo>

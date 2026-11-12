@@ -4,6 +4,8 @@
 // - eyebrow «Recetas» = el nombre del destino (`armazon/enlaces.ts:35`); en cream va en ink (terra no llega a 4.5, CONTRATO-BASE-F1 §2.2);
 // - `<h1>` y texto = `src/app/recetas/client-page.tsx:266-271`; «Probadas en cocina de Baldío» de la maqueta no tiene fuente: no va;
 // - los dos párrafos de hoy (`:278-288`) letra por letra sin emojis; «6,000», «30,000» y «60%» están en la lista corta (D-F5-12 P-1).
+// F8 (pulido, D-F8-25, hallazgo H-9): el relleno lateral va en la sección y el contenedor va sin el suyo, como en
+// contacto/EncabezadoContacto.tsx: el contenido mide los 1100 px de la maqueta y a 1440 arranca a 170 px (antes 1020 y 210).
 import Contenedor from '@/components/sitio-nuevo/ui/Contenedor'
 import Etiqueta from '@/components/sitio-nuevo/ui/Etiqueta'
 import Seccion from '@/components/sitio-nuevo/ui/Seccion'
@@ -20,9 +22,9 @@ export default function HeroeRecetas() {
       borde="abajo"
       espacio="ninguno"
       etiquetadaPor={`${H}-h1`}
-      className="pb-10 pt-sn-seccion-movil min-[861px]:pb-[60px] min-[861px]:pt-sn-seccion"
+      className="px-sn-lateral-movil pb-10 pt-sn-seccion-movil min-[861px]:px-sn-lateral min-[861px]:pb-[60px] min-[861px]:pt-sn-seccion"
     >
-      <Contenedor ancho="angosto">
+      <Contenedor ancho="angosto" relleno={false}>
         <Etiqueta tamano="eyebrow" tono="ink" testId={`${H}-etiqueta`} className="mb-4">
           Recetas
         </Etiqueta>
