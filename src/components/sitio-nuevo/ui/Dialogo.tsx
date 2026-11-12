@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useId, useRef } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef } from 'react'
 import { X } from 'lucide-react'
+import { CURVA_SUAVE, OPACIDAD_DE_ENTRADA, animar } from '@/components/sitio-nuevo/movimiento'
 import { FOCO_BOTON, unirClases } from './clases'
 
 // R15 · F1 v2 (CONTRATO-BASE-F1 §4; C32, C45, C47): ventana modal del sitio nuevo; la usa el popup del armazón.
@@ -19,9 +20,15 @@ import { FOCO_BOTON, unirClases } from './clases'
 // - Escape cierra esté donde esté el foco (C47): se oye en `window`, también cuando el foco cayó en <body>.
 // - El clic en el velo cierra (no el 2.º clic de un doble clic, como Avisos.tsx).
 // - Panel y `-contenido` llevan `focus:outline-none`: el `*:focus` de globals.css pintaba el contorno terracota de hoy (armazon, 12:37).
+// - F8 (D-F8-16, P-8): al abrir entra como el popup de la maqueta: el velo con un fundido de .3 s (`popupFadeIn`) y el panel subiendo 20 px
+//   con un fundido de .35 s (`popupRise`), los dos con su curva. Con la Web Animations API (movimiento.ts): sin reglas de CSS y sin animación
+//   con «reducir movimiento». Cerrar sigue siendo inmediato (C32) y el foco, Escape y el velo no cambian.
 // Sin texto propio: el título (o el id del título que pinte quien lo usa) y la etiqueta del ✕ los pasa quien lo usa.
 
 const SELECTOR_CONTROLES = 'a[href], button, input, select, textarea, [tabindex]'
+
+/** Antes de pintar en el navegador (sin un cuadro de más); en el servidor, un efecto normal (cerrado no se pinta: no hay nada que animar). */
+const useEfectoAntesDePintar = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 /** Lo que alcanza Tab dentro del panel, en orden del documento (sin las guardas). */
 function alcanzables(panel: HTMLElement): HTMLElement[] {
@@ -77,6 +84,7 @@ function DialogoAbierto({
   ...resto
 }: DialogoProps) {
   const idTitulo = `${useId()}-titulo`
+  const veloRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const contenidoRef = useRef<HTMLDivElement>(null)
   // Escape se oye fuera de React: el oyente lee siempre el onCerrar más reciente sin volver a montarse.
@@ -84,6 +92,15 @@ function DialogoAbierto({
   useEffect(() => {
     cerrarVigente.current = onCerrar
   }, [onCerrar])
+
+  // La entrada (P-8): solo al montarse, que es cuando se abre.
+  useEfectoAntesDePintar(() => {
+    animar(veloRef.current, [{ opacity: OPACIDAD_DE_ENTRADA }, { opacity: 1 }], { duration: 300, easing: CURVA_SUAVE })
+    animar(panelRef.current, [{ opacity: OPACIDAD_DE_ENTRADA, transform: 'translateY(20px)' }, { opacity: 1, transform: 'none' }], {
+      duration: 350,
+      easing: CURVA_SUAVE,
+    })
+  }, [])
 
   useEffect(() => {
     const panel = panelRef.current
@@ -138,6 +155,7 @@ function DialogoAbierto({
 
   return (
     <div
+      ref={veloRef}
       data-testid={`${testId}-fondo`}
       className="fixed inset-0 z-[950] flex items-center justify-center bg-sn-ink/30 p-6"
       onMouseDown={(e) => {

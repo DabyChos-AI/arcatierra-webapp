@@ -13,7 +13,10 @@
 // - El título de la maqueta no tiene equivalente: `h2` oculto con etiqueta neutra (C24, P-7). El eyebrow no se pinta.
 // Medido en la maqueta: cream con borde arriba y abajo, 80/40, columna de 1280; 4 tarjetas warm de radio 14, borde, 32/24, 14 entre piezas y
 // 18 entre tarjetas; número serif terra, título de 22 px, texto de 14 px ligera, liga mono terra.
+// F8 (D-F8-16, D-F8-23, P-7): la tarjeta sube 4 px al pasar el ratón (maqueta `.banner-3p-v7-card:hover`; movimiento.ts); la flecha de cada
+// liga avanza al pasar por esa liga (ui/Boton).
 import Falta from '@/components/sitio-nuevo/Falta'
+import { LEVANTA } from '@/components/sitio-nuevo/movimiento'
 import Boton from '@/components/sitio-nuevo/ui/Boton'
 import Contenedor from '@/components/sitio-nuevo/ui/Contenedor'
 import Insignia from '@/components/sitio-nuevo/ui/Insignia'
@@ -76,7 +79,7 @@ export default function CuatroCaminos() {
         </h2>
         <ul className="m-0 grid list-none grid-cols-1 gap-[18px] p-0 sm:grid-cols-2 min-[861px]:grid-cols-4">
           {CAMINOS.map(({ camino, numero, titulo, textos, ligas, michelin }) => (
-            <li key={camino} data-testid={C} data-camino={camino} className="flex flex-col gap-3.5 rounded-sn-tarjeta border border-solid border-sn-border bg-sn-warm px-6 py-8">
+            <li key={camino} data-testid={C} data-camino={camino} className={`flex flex-col gap-3.5 rounded-sn-tarjeta border border-solid border-sn-border bg-sn-warm px-6 py-8 ${LEVANTA}`}>
               <span data-testid={`${C}-numero`} className="font-sn-titulos text-sn-h4 font-normal text-sn-terra">
                 {numero}
               </span>

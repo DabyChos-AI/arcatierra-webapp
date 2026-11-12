@@ -5,11 +5,13 @@
 // nombre (liga a la ficha nueva `/producto/{id}`), `precioLegible` + « / unidad» (D-F3-24 T-20), «Vista rápida», `TEXTO_AGOTADO`,
 // «¡Solo quedan {n} disponibles!» y el corazón con «Agregar a favoritos»/«Quitar de favoritos». Al agregar: el aviso
 // «{nombre} agregado al carrito» con role="status" (D-F3-22 P-13) y nunca el carrito lateral (D-F3-13).
+// F8 (D-F8-16, P-7): la tarjeta sube 4 px al pasar el ratón (maqueta `.product-card:hover`), solo donde hay ratón (movimiento.ts).
 import { useState } from 'react'
 import Link from 'next/link'
 import { Heart, Plus } from 'lucide-react'
 import { esGratuito, precioLegible } from '@/lib/precio'
 import { TEXTO_AGOTADO } from '@/types/tienda'
+import { LEVANTA } from '@/components/sitio-nuevo/movimiento'
 import Foto from '@/components/sitio-nuevo/ui/Foto'
 import { FOCO, unirClases } from '@/components/sitio-nuevo/ui/clases'
 import { SIN_CATEGORIA, quedanPocos, type ProductoTienda } from './catalogo'
@@ -34,7 +36,7 @@ export default function TarjetaProducto({ producto: p, favorito, alAlternarFavor
       data-testid="sn-tienda-catalogo-producto"
       data-itemcode={p.id}
       data-en-venta={p.enVenta ? 'true' : 'false'}
-      className="flex flex-col gap-3 rounded-sn-tarjeta bg-white p-[22px] pb-[26px] text-sn-ink"
+      className={`flex flex-col gap-3 rounded-sn-tarjeta bg-white p-[22px] pb-[26px] text-sn-ink ${LEVANTA}`}
     >
       <div className="relative">
         <Foto

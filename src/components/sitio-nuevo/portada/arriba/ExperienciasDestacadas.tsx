@@ -92,7 +92,9 @@ export default function ExperienciasDestacadas() {
             {estado.experiencias.map((experiencia) => (
               <TarjetaExperiencia key={experiencia.id} experiencia={experiencia} />
             ))}
-            <li className="flex w-[300px] max-w-full shrink-0 snap-start items-center justify-center px-8 py-10">
+            {/* F8 (D-F8-28, H-10): desde 861 px este final de la fila no se pinta (quedaba partido por el borde del bloque); el mismo botón ya
+                está arriba, junto al título. Hasta 860 px, igual que antes: es el final de la fila que se desliza. */}
+            <li className="flex w-[300px] max-w-full shrink-0 snap-start items-center justify-center px-8 py-10 min-[861px]:hidden">
               <Boton href={HREF_TODAS} variante="contorno" sobreCrema flecha testId="sn-portada-experiencias-todas-fin">
                 Ver todas las experiencias
               </Boton>

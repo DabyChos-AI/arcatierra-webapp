@@ -5,7 +5,9 @@
 //   suman» (DR-23: «en lugar de»).
 // - Encabezado sin original: `<h2>` solo para lectores de pantalla con una etiqueta neutra (C24).
 // Medido: relleno 80/40; tarjetas de 285 con 20 de separación, relleno 28, radio 14. Aquí 5 columnas desde 861 y una hasta 860.
+// F8 (D-F8-16, P-7): la tarjeta sube 4 px al pasar el ratón (maqueta `.tipo-card:hover`), solo donde hay ratón (movimiento.ts).
 import Falta from '@/components/sitio-nuevo/Falta'
+import { LEVANTA } from '@/components/sitio-nuevo/movimiento'
 import Contenedor from '@/components/sitio-nuevo/ui/Contenedor'
 import Seccion from '@/components/sitio-nuevo/ui/Seccion'
 import { TIPOS_EVENTO, claveTipo } from './tipos'
@@ -25,7 +27,7 @@ export default function TiposEvento() {
               key={nombre}
               data-testid={`${T}-tipo`}
               data-tipo={claveTipo(nombre)}
-              className="rounded-sn-tarjeta border border-solid border-sn-border bg-sn-warm p-7"
+              className={`rounded-sn-tarjeta border border-solid border-sn-border bg-sn-warm p-7 ${LEVANTA}`}
             >
               <h3 className="m-0 font-sn-titulos text-sn-h5 font-normal text-sn-ink">{nombre}</h3>
             </li>

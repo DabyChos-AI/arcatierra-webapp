@@ -5,6 +5,8 @@ import { FOCO, FOCO_BOTON, FOCO_SOBRE_OSCURO as FOCO_OSCURO } from '@/components
 // - `globals.css` pone `a` en terracota y `*:focus` con contorno también con el ratón: cada liga lleva su color y su `hover:`, y el foco es
 //   `focus:outline-none` + `focus-visible:` (contrato base §5.1, §5.2; C18: 2 px `sn-terra`, separación 3 px y 4 px en botones; sobre
 //   fondo oscuro, `sn-warm`).
+// - F8 (D-F8-16, P-3): las ligas y los botones redondos cambian de color en 200 ms (maqueta `.topbar-nav a`, `.f-v7-col-list a`), con dos
+//   clases que ya están en el CSS de hoy; es color, no movimiento: sigue igual con «reducir movimiento».
 // - Cortes con variantes arbitrarias (sin `screens` nuevos, C16): la barra de escritorio desde CORTE_ESCRITORIO (C38); el resto, desde
 //   861 px, el corte de la maqueta que midió base (a 860 todavía es celular; Contenedor, Seccion y Dialogo cortan igual).
 
@@ -27,13 +29,16 @@ export const E = {
   acciones: 'flex shrink-0 items-center gap-2 min-[1100px]:gap-3',
   navEscritorio: 'hidden min-[1100px]:block min-[1100px]:pr-2',
   navLista: 'flex items-center gap-6',
-  navEnlace: `font-sn-mono text-sn-boton font-medium uppercase text-sn-ink hover:text-sn-terra aria-[current=page]:text-sn-terra ${FOCO}`,
-  iconoBoton: `inline-flex h-11 w-11 items-center justify-center rounded-sn-pildora border border-sn-border bg-transparent text-sn-ink hover:border-sn-terra hover:text-sn-terra ${FOCO_BOTON}`,
+  // F8 (D-F8-19, P-10): la raya de la maqueta bajo la liga (`.topbar-nav a::after`: 2 px terra sobre el borde de la cabecera, crece de izquierda
+  // a derecha en .25 s al pasar el ratón y se queda en la página actual, que así ya no se distingue solo por el color). Reglas nuevas, todas
+  // del pseudo-elemento de esta liga; crece solo donde hay ratón y sin animación con «reducir movimiento».
+  navEnlace: `relative font-sn-mono text-sn-boton font-medium uppercase text-sn-ink transition-colors duration-200 hover:text-sn-terra aria-[current=page]:text-sn-terra after:absolute after:inset-x-0 after:bottom-[-22px] after:h-0.5 after:origin-left after:scale-x-0 after:bg-sn-terra motion-safe:after:[transition:transform_.25s_ease] [@media(hover:hover)]:hover:after:scale-x-100 aria-[current=page]:after:scale-x-100 ${FOCO}`,
+  iconoBoton: `inline-flex h-11 w-11 items-center justify-center rounded-sn-pildora border border-sn-border bg-transparent text-sn-ink transition-colors duration-200 hover:border-sn-terra hover:text-sn-terra ${FOCO_BOTON}`,
   carritoConteo:
     'absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-sn-pildora bg-sn-green px-1 font-sn-mono text-[10px] font-medium text-white',
   // La maqueta no tiene menú de cuenta: sin sombra (nada sin medir), solo el borde.
   cuentaPanel: 'absolute right-0 top-full z-[945] mt-2 min-w-56 rounded-sn-tarjeta border border-sn-border bg-white py-2',
-  cuentaEnlace: `block px-4 py-2 font-sn-texto text-sn-cuerpo-sm text-sn-ink hover:bg-sn-warm hover:text-sn-ink ${FOCO}`,
+  cuentaEnlace: `block px-4 py-2 font-sn-texto text-sn-cuerpo-sm text-sn-ink transition-colors duration-200 hover:bg-sn-warm hover:text-sn-ink ${FOCO}`,
   tiendaEscritorio: `hidden min-h-11 max-w-[260px] items-center rounded-sn-pildora min-[1100px]:inline-flex ${FOCO_BOTON}`,
   soloCelular: 'min-[1100px]:hidden',
   // Menú del celular (maqueta `.burger-overlay` y `.burger-drawer`): velo ink al 55 % con 2 px de desenfoque; cajón de 84 % hasta 380 px,
@@ -42,11 +47,11 @@ export const E = {
     velo: 'fixed inset-0 z-[950] bg-sn-ink/55 [backdrop-filter:blur(2px)]',
     cajon:
       'absolute inset-y-0 right-0 w-[84%] max-w-[380px] overflow-y-auto bg-sn-warm px-8 pb-8 pt-[76px] [box-shadow:-12px_0_60px_rgba(0,0,0,0.18)] focus:outline-none',
-    cerrar: `absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-sn-pildora text-sn-ink hover:text-sn-terra ${FOCO_BOTON}`,
+    cerrar: `absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-sn-pildora text-sn-ink transition-colors duration-200 hover:text-sn-terra ${FOCO_BOTON}`,
     acciones: 'mt-6 flex flex-col gap-3',
-    enlace: `block border-b border-sn-border py-3 font-sn-titulos text-sn-h4 text-sn-ink hover:text-sn-terra ${FOCO}`,
+    enlace: `block border-b border-sn-border py-3 font-sn-titulos text-sn-h4 text-sn-ink transition-colors duration-200 hover:text-sn-terra ${FOCO}`,
     tienda: `flex min-h-11 items-center justify-center rounded-sn-pildora px-4 py-2 text-center ${FOCO_BOTON}`,
-    secundario: `flex min-h-11 items-center justify-center rounded-sn-pildora border border-sn-ink px-4 py-2 font-sn-mono text-sn-boton font-medium uppercase text-sn-ink hover:border-sn-terra hover:text-sn-terra ${FOCO_BOTON}`,
+    secundario: `flex min-h-11 items-center justify-center rounded-sn-pildora border border-sn-ink px-4 py-2 font-sn-mono text-sn-boton font-medium uppercase text-sn-ink transition-colors duration-200 hover:border-sn-terra hover:text-sn-terra ${FOCO_BOTON}`,
   },
   cinta: 'flex min-h-11 items-center justify-center border-b border-sn-border bg-sn-cream px-sn-lateral-movil py-2 text-center min-[861px]:px-sn-lateral',
   anuncio: {
@@ -58,7 +63,10 @@ export const E = {
   },
 
   pie: {
-    raiz: 'bg-sn-forest font-sn-texto text-sn-cream',
+    // F8 (D-F8-22, hallazgo H-8 de capturas): el pie va en el verde de la maqueta vigente (#475A52, su `--green`), no en el de la tabla del
+    // hand-off de la v7.2 (#3F5A4D). Medido antes de cambiarlo: cada par de texto, control y foco del pie que pasaba AA lo sigue pasando
+    // (crema 5.35, durazno 5.17, blanco 7.36, foco 6.20; cadena-v2/f8/pulido-F8.md §10.7).
+    raiz: 'bg-sn-green font-sn-texto text-sn-cream',
     arriba: 'grid grid-cols-1 gap-8 border-b border-sn-cream/15 px-sn-lateral-movil py-10 sm:px-14 md:grid-cols-2 md:py-14',
     marca: 'flex items-center',
     logo: 'h-12 w-auto',
@@ -69,14 +77,14 @@ export const E = {
     titulo: 'mb-4 mt-0 font-sn-mono text-sn-etiqueta font-medium uppercase text-sn-peach',
     tituloMarca: 'mb-4 mt-0 text-sn-cuerpo-xs',
     lista: 'flex flex-col gap-3',
-    enlace: `font-sn-mono text-sn-cuerpo-xs text-sn-cream hover:text-white ${FOCO_OSCURO}`,
+    enlace: `font-sn-mono text-sn-cuerpo-xs text-sn-cream transition-colors duration-200 hover:text-white ${FOCO_OSCURO}`,
     direccion: 'flex flex-col gap-2 font-sn-mono text-sn-cuerpo-xs not-italic',
     abajo: 'flex flex-col gap-4 px-sn-lateral-movil py-6 sm:px-14 md:flex-row md:items-center md:justify-between',
     copy: 'm-0 font-sn-mono text-sn-etiqueta-sm uppercase text-sn-cream',
     abajoDerecha: 'flex flex-wrap items-center gap-4',
     legales: 'flex flex-wrap items-center gap-4',
-    legal: `font-sn-mono text-sn-etiqueta-sm uppercase text-sn-cream hover:text-white ${FOCO_OSCURO}`,
+    legal: `font-sn-mono text-sn-etiqueta-sm uppercase text-sn-cream transition-colors duration-200 hover:text-white ${FOCO_OSCURO}`,
     redes: 'flex items-center gap-2',
-    red: `flex h-11 w-11 items-center justify-center rounded-sn-pildora border border-sn-cream/30 text-sn-cream hover:border-sn-peach hover:text-sn-peach ${FOCO_OSCURO}`,
+    red: `flex h-11 w-11 items-center justify-center rounded-sn-pildora border border-sn-cream/30 text-sn-cream transition-colors duration-200 hover:border-sn-peach hover:text-sn-peach ${FOCO_OSCURO}`,
   },
 } as const

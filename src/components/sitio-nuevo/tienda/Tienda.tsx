@@ -5,9 +5,13 @@
 // Orden: héroe · «¿Llegamos a tu colonia?» · pestañas (D-F3-11) · el panel de la pestaña · «¿Por qué comprar…?» (D-F3-24 T-14).
 // Datos desde el navegador con las llamadas de hoy: GET /api/products?limit=200 (tienda/page.tsx:514) y GET /api/subscriptions/planes
 // (la misma de la portada, C46). La pestaña y la categoría se leen en un hijo dentro de <Suspense> (D-F3-24 T-19): la página es estática.
+// F8 (D-F8-16, P-6): al ELEGIR otra pestaña, el panel entra con el fundido de los paneles de la maqueta (`fadeIn`, .25 s; movimiento.ts). No
+// en la primera carga ni al leer la dirección; sin reglas de CSS y sin animación con «reducir movimiento».
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { useSearchParams } from 'next/navigation'
 import { API_URL } from '@/lib/api'
+import { CUADROS_PANEL, TIEMPO_PANEL, animar } from '@/components/sitio-nuevo/movimiento'
 import HeroeTienda from './HeroeTienda'
 import ValidadorColonia from './ValidadorColonia'
 import BarraPestanas from './BarraPestanas'
@@ -52,6 +56,7 @@ export default function Tienda() {
   const [productos, setProductos] = useState<Carga<DatosTienda>>({ fase: 'cargando' })
   const [planes, setPlanes] = useState<Carga<PlanApi[]>>({ fase: 'cargando' })
   const barraRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
 
   const alLeer = useCallback((l: Lectura) => {
     setPestana(l.pestana)
@@ -94,9 +99,13 @@ export default function Tienda() {
   }, [cargarProductos, cargarPlanes])
 
   const elegir = useCallback((id: IdPestana) => {
-    setPestana(id)
+    // ¿Cambia de pestaña? (lo dice el propio panel: `aria-labelledby` nombra la pestaña pintada).
+    const cambia = panelRef.current?.getAttribute('aria-labelledby') !== `sn-tienda-pestana-${id}`
+    // Con el panel nuevo ya en el DOM (flushSync), para que el fundido arranque sin un cuadro pintado antes.
+    flushSync(() => setPestana(id))
     // Sin navegar ni sumar historial: la dirección dice la pestaña (D-F3-22 (1)).
     window.history.replaceState(window.history.state, '', direccionDePestana(id, window.location.search))
+    if (cambia) animar(panelRef.current, CUADROS_PANEL, TIEMPO_PANEL)
   }, [])
 
   const conteos: Partial<Record<IdPestana, number>> = {}
@@ -117,6 +126,7 @@ export default function Tienda() {
         <BarraPestanas pestanas={PESTANAS} activa={pestana} conteos={conteos} alElegir={elegir} />
       </div>
       <div
+        ref={panelRef}
         role="tabpanel"
         id="sn-tienda-panel"
         aria-labelledby={pestana ? `sn-tienda-pestana-${pestana}` : undefined}

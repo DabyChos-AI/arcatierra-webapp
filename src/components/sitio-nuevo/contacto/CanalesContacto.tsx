@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import Falta from '@/components/sitio-nuevo/Falta'
+import { FLECHA_AVANZA, GRUPO_BOTON, LEVANTA } from '@/components/sitio-nuevo/movimiento'
 import { FOCO, unirClases } from '@/components/sitio-nuevo/ui/clases'
 import Contenedor from '@/components/sitio-nuevo/ui/Contenedor'
 import Seccion from '@/components/sitio-nuevo/ui/Seccion'
@@ -17,18 +18,20 @@ import { CONTACTO, CORREO_EXPERIENCIAS, CORREO_GENERAL } from '@/lib/contacto'
 //   (`experiencias/VentaCruzada.tsx:41-42`, `catering/HeroeCatering.tsx:38-39`).
 // Diseño de la maqueta (medido): tarjeta blanca con borde, relleno 32 y 14 entre piezas; nombre mono en terra, frase serif de 28, liga mono de 13 con
 // flecha; rejilla de 1200 con 64/40 de relleno (40 a 390), 2 columnas desde 861 con 40 de hueco y 1 hasta 860 con 18.
+// F8 (D-F8-16, D-F8-23, P-7): la tarjeta sube 4 px al pasar el ratón (maqueta `.contact-channel:hover`) y la flecha de cada liga avanza al
+// pasar por ESA liga (movimiento.ts).
 
 const ID_TITULO = 'sn-contacto-canales-titulo'
-const TARJETA = 'flex flex-col gap-3.5 rounded-sn-tarjeta border border-solid border-sn-border bg-white p-8'
+const TARJETA = unirClases('flex flex-col gap-3.5 rounded-sn-tarjeta border border-solid border-sn-border bg-white p-8', LEVANTA)
 const NOMBRE = 'm-0 font-sn-mono text-sn-eyebrow font-medium uppercase text-sn-terra'
 const LINEA = 'm-0 break-words font-sn-titulos text-sn-h4 font-normal text-sn-ink'
 const DETALLE = 'm-0 font-sn-texto text-sn-cuerpo-sm font-light text-sn-ink'
-const LIGA = unirClases('inline-flex items-center gap-1.5 font-sn-mono text-sn-cuerpo-xs font-medium text-sn-terra no-underline hover:text-sn-ink', FOCO)
+const LIGA = unirClases(GRUPO_BOTON, 'inline-flex items-center gap-1.5 font-sn-mono text-sn-cuerpo-xs font-medium text-sn-terra no-underline hover:text-sn-ink', FOCO)
 // La liga lleva su letra: `globals.css` le pone a todo `a` la letra de texto (`--font-body`) y no hereda la serif del párrafo.
 const LIGA_GRANDE = unirClases('font-sn-titulos font-normal text-sn-ink no-underline hover:text-sn-terra', FOCO)
 
 function Flecha() {
-  return <ArrowRight aria-hidden="true" focusable="false" className="h-[1.15em] w-[1.15em] shrink-0" strokeWidth={1.75} />
+  return <ArrowRight aria-hidden="true" focusable="false" className={unirClases('h-[1.15em] w-[1.15em] shrink-0', FLECHA_AVANZA)} strokeWidth={1.75} />
 }
 
 export default function CanalesContacto() {

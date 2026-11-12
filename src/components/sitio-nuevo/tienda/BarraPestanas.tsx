@@ -61,6 +61,8 @@ export default function BarraPestanas({ pestanas, activa, conteos, alElegir }: P
               }}
               className={unirClases(
                 'relative inline-flex items-center gap-2 border-0 border-b-2 border-solid px-6 pb-4 pt-[18px] font-sn-mono text-sn-eyebrow font-medium uppercase tracking-[1.4px]',
+                // F8 (D-F8-16, P-3): el color de la pestaña cambia en 200 ms (maqueta `.tabs-bar .tab`), con clases que ya están en el CSS de hoy.
+                'transition-colors duration-200',
                 // La maqueta pinta la activa con texto terra; sobre terra al 8 % da 4.32:1 (< 4.5:1 a 11 px), así que el texto va en ink
                 // (10.35:1) y la activa se marca con la raya terra de 2 px y el fondo terra al 8 % (s61, medido con la fórmula de WCAG).
                 elegida ? 'border-sn-terra bg-sn-terra/[0.08] text-sn-ink' : 'border-transparent bg-transparent text-sn-ink hover:text-sn-terra',

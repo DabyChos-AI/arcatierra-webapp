@@ -14,12 +14,16 @@
 // `GET /api/auth/me` UNA vez al tener sesión (hoy `perfil` la vuelve a pedir cada vez que NextAuth relee la sesión al volver a la ventana y
 // borra lo que se estaba editando: defecto de hoy que no se copia). La pestaña actual sale de `useSelectedLayoutSegments()`: igual en el
 // servidor y en el navegador (nada visible sale de `usePathname()`, `src/app/nuevo/layout.tsx`). 0 llamadas en el servidor (D-F6-10 P-5).
+//
+// F8 (D-F8-16, P-6): al cambiar de pestaña con el marco ya montado, el contenido entra con el fundido de los paneles de la maqueta
+// (`.cuenta-pane.is-active`: `fadeIn`, .25 s; movimiento.ts). No en la primera carga; sin reglas de CSS y sin animación con «reducir movimiento».
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSelectedLayoutSegments } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import Contenedor from '@/components/sitio-nuevo/ui/Contenedor'
+import { CUADROS_PANEL, TIEMPO_PANEL, animar } from '@/components/sitio-nuevo/movimiento'
 import { FOCO, unirClases } from '@/components/sitio-nuevo/ui/clases'
 import { ENLACE_MI_CUENTA } from '@/components/sitio-nuevo/armazon/enlaces'
 import { ContextoCuenta, type Cuenta, type EstadoMe, type MeCuenta } from './contexto'
@@ -32,6 +36,9 @@ const CLASE_ENLACE =
 // La maqueta pinta las no elegidas en ink al 70 % (5.24 sobre blanco) y, al pasar el ratón, fondo cream con ink entero (13.6 · 11.9).
 const CLASE_NO_ELEGIDA = 'bg-transparent text-sn-ink/70 hover:bg-sn-cream hover:text-sn-ink'
 const CLASE_ELEGIDA = 'bg-sn-terra text-white hover:text-white'
+
+/** Antes de pintar en el navegador (sin un cuadro de más); en el servidor, un efecto normal (no hay nada que animar). */
+const useEfectoAntesDePintar = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 export default function MarcoCuenta({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
@@ -102,6 +109,15 @@ export default function MarcoCuenta({ children }: { children: React.ReactNode })
 
   const pestanaActual = segmentos[0] ?? null
   const enDetalle = segmentos.length > 1
+
+  const contenido = useRef<HTMLDivElement>(null)
+  const pintada = useRef<string | null>(null)
+  const clavePestana = segmentos.join('/')
+  useEfectoAntesDePintar(() => {
+    const antes = pintada.current
+    pintada.current = clavePestana
+    if (antes !== null && antes !== clavePestana) animar(contenido.current, CUADROS_PANEL, TIEMPO_PANEL)
+  }, [clavePestana])
 
   return (
     <ContextoCuenta.Provider value={cuenta}>
@@ -176,7 +192,9 @@ export default function MarcoCuenta({ children }: { children: React.ReactNode })
                 </ul>
               </nav>
             </div>
-            <div className="flex min-w-0 flex-col gap-[22px]">{children}</div>
+            <div ref={contenido} className="flex min-w-0 flex-col gap-[22px]">
+              {children}
+            </div>
           </div>
         </Contenedor>
       </main>

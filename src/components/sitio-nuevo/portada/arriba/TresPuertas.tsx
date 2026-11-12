@@ -11,7 +11,9 @@
 // - Destinos: las pestañas de la tienda nueva (D-F3-05, D-F3-11, D-F3-22 P-5).
 // Diseño medido en la maqueta: fondo warm, 96 px, filetes; cabeza en dos columnas desde 861 px; tarjetas blancas que son ligas, radio 14,
 // caja 16/9 de color, nombre DM Serif terra, texto al 70 %, pie con filete. Componente de servidor (el precio es una isla de cliente).
+// F8 (D-F8-16, P-1): al pasar el ratón por la puerta, la tarjeta sube (ui/Tarjeta) y su flecha avanza (maqueta `.banner-3p-v7-arrow`).
 import Falta from '@/components/sitio-nuevo/Falta'
+import { FLECHA_DE_TARJETA } from '@/components/sitio-nuevo/movimiento'
 import { ligasDe } from '@/components/sitio-nuevo/armazon/enlaces'
 import Contenedor from '@/components/sitio-nuevo/ui/Contenedor'
 import Etiqueta from '@/components/sitio-nuevo/ui/Etiqueta'
@@ -122,7 +124,7 @@ export default function TresPuertas() {
                         </p>
                       )}
                       {puerta.numero === '02' && <PrecioCanastaLista />}
-                      <span aria-hidden="true" className="ml-auto font-sn-mono text-[18px] font-medium text-sn-terra">
+                      <span aria-hidden="true" className={`ml-auto font-sn-mono text-[18px] font-medium text-sn-terra ${FLECHA_DE_TARJETA}`}>
                         →
                       </span>
                     </div>

@@ -5,8 +5,11 @@
 // Diseño medido en la maqueta: dos lados 1.5fr / 1fr desde 861 px y 84 vh; foto que cubre con el degradado de abajo; contenido abajo a
 // 56 px (40/28 en el celular, una columna); título DM Serif blanco; botón recto. Sin la animación de columnas al pasar el ratón.
 // Los títulos son h2: el h1 de la portada es el de page.tsx (D-F2-09, P-1). Componente de servidor.
+// F8 (D-F8-16, P-4): al pasar el ratón por un lado, su foto crece despacio dentro del lado, que ya la recorta (maqueta `.hero-side:hover
+// .hero-photo`: 1.04 en 1.1 s; aquí 1.05 en 1 s, solo donde hay ratón: movimiento.ts). El degradado de D-F2-17 queda encima igual.
 import { heroSlides, type HeroSlide } from '@/data/heroSlides'
 import { ligasDe } from '@/components/sitio-nuevo/armazon/enlaces'
+import { FOTO_CRECE, GRUPO_FOTO } from '@/components/sitio-nuevo/movimiento'
 import Boton from '@/components/sitio-nuevo/ui/Boton'
 import Etiqueta from '@/components/sitio-nuevo/ui/Etiqueta'
 import Foto from '@/components/sitio-nuevo/ui/Foto'
@@ -64,9 +67,9 @@ function Lado({
   return (
     <div
       data-testid={`sn-portada-heroe-${clave}`}
-      className="relative flex min-h-[56vh] items-end overflow-hidden bg-sn-ink px-7 py-10 min-[861px]:min-h-0 min-[861px]:p-14"
+      className={`${GRUPO_FOTO} relative flex min-h-[56vh] items-end overflow-hidden bg-sn-ink px-7 py-10 min-[861px]:min-h-0 min-[861px]:p-14`}
     >
-      <div className="absolute inset-0">
+      <div className={`absolute inset-0 duration-1000 ${FOTO_CRECE}`}>
         <Foto src={slide.image} alt={slide.title} sizes={sizes} prioridad testId={`sn-portada-heroe-${clave}-foto`} className="h-full" />
       </div>
       <div aria-hidden="true" className={`absolute inset-0 ${DEGRADADO}`} />

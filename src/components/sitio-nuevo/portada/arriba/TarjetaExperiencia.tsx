@@ -8,6 +8,8 @@
 //   …», «Sin fechas próximas», «Consulta fechas», «Cargando...»); sin marca con 0 fechas (D-F2-08 g). Lugares solo con fechas (la regla de
 //   ExperienceCard.tsx:34-41 con `esVendible` de hoy): nunca un número inventado.
 // - «Más Detalles» → la ficha con `rutaExperiencia` (ExperienceCard.tsx:213-216); nunca /calendario (se oculta).
+// F8 (D-F8-16, D-F8-23, P-7): al pasar el ratón por la tarjeta, su foto crece despacio dentro de su marco; la flecha de «Más Detalles» avanza
+// al pasar por su botón (maqueta `.exp-float-card`, `.banner-3p-v7-img img`). No sube: la fila que la contiene hace scroll y le recortaría el borde de arriba.
 import { useEffect, useState } from 'react'
 import { API_URL } from '@/lib/api'
 import { formatFechaMexico } from '@/lib/dates'
@@ -15,6 +17,7 @@ import { formatPrice } from '@/utils/formatters'
 import { rutaExperiencia } from '@/app/experiencias/[slug]/slug'
 import { esVendible } from '@/components/experiencias/SelectorFecha'
 import type { FechaPublica } from '@/types/compra-experiencias'
+import { FOTO_CRECE, GRUPO_FOTO } from '@/components/sitio-nuevo/movimiento'
 import Boton from '@/components/sitio-nuevo/ui/Boton'
 import Etiqueta from '@/components/sitio-nuevo/ui/Etiqueta'
 import Foto from '@/components/sitio-nuevo/ui/Foto'
@@ -97,17 +100,17 @@ export default function TarjetaExperiencia({ experiencia }: { experiencia: Exper
       data-testid="sn-portada-experiencias-tarjeta"
       data-experiencia-id={experiencia.id}
       data-slug={experiencia.slug}
-      className="w-[340px] max-w-full shrink-0 snap-start"
+      className={`${GRUPO_FOTO} w-[340px] max-w-full shrink-0 snap-start`}
     >
       <Tarjeta as="article" fondo="warm" className="h-full">
         <div className="flex h-full flex-col">
-          <div className="relative h-[280px] bg-sn-green">
+          <div className="relative h-[280px] overflow-hidden bg-sn-green">
             <Foto
               src={experiencia.imagen_principal || FOTO_RESPALDO}
               alt={experiencia.nombre}
               sizes="340px"
               testId="sn-portada-experiencias-tarjeta-foto"
-              className="h-full"
+              className={`h-full duration-700 ${FOTO_CRECE}`}
             />
             {lugares && (
               <span data-testid="sn-portada-experiencias-tarjeta-lugares" className="absolute bottom-[18px] left-[18px]">

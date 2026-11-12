@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+import { FLECHA_AVANZA, GRUPO_BOTON } from '@/components/sitio-nuevo/movimiento'
 import { FOCO_BOTON, FOCO_BOTON_SOBRE_OSCURO, unirClases } from './clases'
 
 // R15 · F1 v2 (CONTRATO-BASE-F1 §4): botón y botón-liga del sitio nuevo. Sin texto propio: todo lo pinta `children` (y `textoCargando`
@@ -8,6 +9,8 @@ import { FOCO_BOTON, FOCO_BOTON_SOBRE_OSCURO, unirClases } from './clases'
 // medido en el arnés): el primario pasa a fondo ink (`.colonia-validator-form button:hover`; el `.btn-terra:hover` de opacidad 0.85 baja a
 // 4.21 y no se usa), el contorno se llena (`.qs-cta-outline:hover`), el suave pasa a terra (`.btn-ghost-dark:hover`), sobre oscuro el
 // contorno sube a 60 % y el texto a blanco (`.btn-canasta-ghost:hover`). Sobre cream, terra da 4.13: el contorno y la liga van en ink.
+// F8 (D-F8-16, D-F8-23, P-2): con `flecha`, la flecha avanza 4 px al pasar el ratón por ESTE botón (grupo con nombre: no por su contenedor) (maqueta `.f-v7-news-form button:hover`,
+// `.banner-3p-v7-arrow`), sin cambiar su ancho; no cuando está deshabilitado o cargando. Solo donde hay ratón (movimiento.ts).
 
 type Variante = 'primario' | 'contorno' | 'suave' | 'texto'
 
@@ -93,6 +96,7 @@ export default function Boton(props: BotonProps) {
     deshabilitado = false,
   } = props
   const esTexto = variante === 'texto'
+  const quieto = deshabilitado || (props.href === undefined && props.cargando === true)
 
   const clases = unirClases(
     'inline-flex items-center justify-center gap-2 font-sn-mono font-medium uppercase no-underline',
@@ -106,6 +110,7 @@ export default function Boton(props: BotonProps) {
     sobreOscuro ? COLORES[variante].oscuro : sobreCrema ? COLORES[variante].crema : COLORES[variante].claro,
     sobreOscuro ? FOCO_BOTON_SOBRE_OSCURO : FOCO_BOTON,
     anchoCompleto && 'w-full',
+    flecha && !quieto && GRUPO_BOTON,
     deshabilitado && 'cursor-not-allowed opacity-60',
     className,
   )
@@ -113,7 +118,7 @@ export default function Boton(props: BotonProps) {
   const contenido = (texto: React.ReactNode) => (
     <>
       <span>{texto}</span>
-      {flecha && <ArrowRight aria-hidden="true" focusable="false" className="h-[1.15em] w-[1.15em] shrink-0" strokeWidth={1.75} />}
+      {flecha && <ArrowRight aria-hidden="true" focusable="false" className={unirClases('h-[1.15em] w-[1.15em] shrink-0', FLECHA_AVANZA)} strokeWidth={1.75} />}
     </>
   )
 
