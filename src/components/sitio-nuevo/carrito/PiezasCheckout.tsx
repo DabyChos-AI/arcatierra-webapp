@@ -136,7 +136,7 @@ export function BloqueEntrega({
             etiqueta: (
               <span className="flex items-center justify-between gap-3">
                 <span>Envío a domicilio</span>
-                {domicilio && <span>{envioGratis ? 'Gratis' : `+$${COSTO_ENVIO}`}</span>}
+                {domicilio && <span>{envioGratis ? 'Gratis' : `+${dinero(COSTO_ENVIO)}`}</span>}
               </span>
             ),
             detalle: domicilio ? (
@@ -144,8 +144,13 @@ export function BloqueEntrega({
                 <span className="font-medium">¡Envío GRATIS!</span>
               ) : (
                 <>
-                  Envío: ${COSTO_ENVIO}
-                  {falta > 0 && <span className="ml-2">(Agrega ${falta.toFixed(0)} más para envío gratis)</span>}
+                  {/* ENVG1 (S68): con centavos, como `:257` y el carrito (`toFixed(0)` decía «Agrega $99» cuando faltaban $99.40) */}
+                  <span data-testid="sn-checkout-envio" data-monto={COSTO_ENVIO}>Envío: {dinero(COSTO_ENVIO)}</span>
+                  {falta > 0 && (
+                    <span className="ml-2" data-testid="sn-checkout-falta-gratis" data-monto={Math.round(falta * 100) / 100}>
+                      (Agrega {dinero(falta)} más para envío gratis)
+                    </span>
+                  )}
                 </>
               )
             ) : undefined,
