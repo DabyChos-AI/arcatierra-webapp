@@ -19,6 +19,30 @@ function urlBackend(): string {
   return process.env.INTERNAL_API_URL || API_URL
 }
 
+/** CHKE1/OAU2 (S68): el secreto interno va SOLO en esta cabecera (nunca en la URL), a check-email y a oauth-token. */
+function cabeceraInterna(): Record<string, string> {
+  return { 'X-Internal-Api-Secret': process.env.INTERNAL_API_SECRET || '' }
+}
+
+/**
+ * OAU2 (S68): el JWT de un usuario de Google que ya existe. El correo va en el CUERPO (`{"email"}`), no en la URL, que el access
+ * log escribe en claro. La API de antes de S68 solo leía `?email=` y responde 422 a una petición sin él; la nueva no da 422 con el
+ * cuerpo bien puesto (api, S68). Por eso, ante un 422, UN reintento con el correo también en la URL: el login con Google no se rompe
+ * entre el despliegue de la webapp y el de la API, y con la API nueva el correo ya no toca la URL. Cuando las dos estén desplegadas,
+ * el reintento se puede quitar.
+ */
+async function pedirTokenOAuth(backendUrl: string, email: string): Promise<Response> {
+  const pedir = (url: string) =>
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...cabeceraInterna() },
+      body: JSON.stringify({ email }),
+    })
+  const res = await pedir(`${backendUrl}/api/auth/oauth-token`)
+  if (res.status !== 422) return res
+  return pedir(`${backendUrl}/api/auth/oauth-token?email=${encodeURIComponent(email)}`)
+}
+
 // Función para renovar tokens usando el refresh_token
 async function refreshAccessToken(token: any) {
   try {
@@ -158,9 +182,12 @@ export const authOptions: NextAuthOptions = {
           const backendUrl = urlBackend()
           const delCliente = await cabecerasDelClienteActual()
           
-          // Verificar si el usuario ya existe
-          const checkResponse = await fetch(`${backendUrl}/api/auth/check-email?email=${encodeURIComponent(user.email)}`)
-          
+          // Verificar si el usuario ya existe. CHKE1 (S68): con el secreto interno en la cabecera; sin él la API nueva responde 401
+          // (nunca 404), que abajo NO se trata como «no existe». La API vieja ignora la cabecera.
+          const checkResponse = await fetch(`${backendUrl}/api/auth/check-email?email=${encodeURIComponent(user.email)}`, {
+            headers: cabeceraInterna(),
+          })
+
           if (checkResponse.status === 404) {
             // Usuario no existe, crearlo
             const registerResponse = await fetch(`${backendUrl}/api/auth/register`, {
@@ -200,16 +227,10 @@ export const authOptions: NextAuthOptions = {
             
             // ✅ NUEVO: Obtener JWT para usuario OAuth existente
             try {
-              // El secreto va en cabecera: en la URL el access log del backend
-              // lo escribía en claro en cada login con Google (A13, 2026-09-27).
-              const tokenResponse = await fetch(`${backendUrl}/api/auth/oauth-token?email=${encodeURIComponent(user.email)}`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'X-Internal-Api-Secret': process.env.INTERNAL_API_SECRET || '',
-                },
-              })
-              
+              // El secreto va en cabecera (A13, 2026-09-27) y el correo en el cuerpo (OAU2, S68): en la URL el access log
+              // del backend los escribía en claro en cada login con Google.
+              const tokenResponse = await pedirTokenOAuth(backendUrl, user.email)
+
               if (tokenResponse.ok) {
                 const tokenData = await tokenResponse.json()
                 Object.assign(user, {
@@ -223,6 +244,10 @@ export const authOptions: NextAuthOptions = {
             } catch (error) {
               console.error('Error obteniendo JWT para OAuth:', error)
             }
+          } else {
+            // CHKE1 (S68): 401 (secreto que falta o no coincide), 429, 5xx… No es «no existe»: no se registra a nadie.
+            // Solo el status, sin el correo (CONS1).
+            console.error('⚠️ check-email no respondió bien:', checkResponse.status)
           }
         } catch (error) {
           console.error('Error guardando usuario de Google:', error)

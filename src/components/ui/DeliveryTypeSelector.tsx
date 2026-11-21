@@ -4,6 +4,9 @@ import { useState } from 'react'
 import { Truck, Store, CheckCircle } from 'lucide-react'
 // BOD1: dirección y horario de la bodega, una sola fuente (gemela del backend: services/bodega.py)
 import { BODEGA } from '@/lib/bodega'
+// ENVG1 (S68): los montos con sus centavos, el formato de la tienda. `toFixed(0)` decía «Agrega $99» cuando faltaban $99.40 y quien
+// agregaba $99 seguía pagando el envío.
+import { precioLegible } from '@/lib/precio'
 
 interface DeliveryTypeSelectorProps {
   value: 'envio_domicilio' | 'recoger_almacen'
@@ -74,11 +77,11 @@ export default function DeliveryTypeSelector({
                   <CheckCircle className="w-4 h-4" /> ¡Envío GRATIS!
                 </span>
               ) : (
-                <span className="text-gray-600">
-                  Envío: ${costoEnvio} 
+                <span className="text-gray-600" data-testid="entrega-envio" data-monto={costoEnvio}>
+                  Envío: {precioLegible(costoEnvio)}
                   {faltaParaGratis > 0 && (
-                    <span className="text-amber-600 ml-2">
-                      (Agrega ${faltaParaGratis.toFixed(0)} más para envío gratis)
+                    <span className="text-amber-600 ml-2" data-testid="entrega-falta-gratis" data-monto={Math.round(faltaParaGratis * 100) / 100}>
+                      (Agrega {precioLegible(faltaParaGratis)} más para envío gratis)
                     </span>
                   )}
                 </span>
@@ -88,7 +91,7 @@ export default function DeliveryTypeSelector({
         </div>
         
         <span className={`font-semibold ${envioGratis ? 'text-green-600' : 'text-gray-900'}`}>
-          {value === 'envio_domicilio' ? (envioGratis ? 'Gratis' : `+$${costoEnvio}`) : ''}
+          {value === 'envio_domicilio' ? (envioGratis ? 'Gratis' : `+${precioLegible(costoEnvio)}`) : ''}
         </span>
       </label>
 

@@ -60,7 +60,7 @@ export default function CateringContact() {
   ];
 
   return (
-    <section className="py-20 bg-neutral-light">
+    <section className="py-20 bg-neutro-crema">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
@@ -68,7 +68,7 @@ export default function CateringContact() {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
-            className="text-verde-medium text-lg mb-4 font-medium"
+            className="text-verde-tipografia text-lg mb-4 font-medium"
           >
             Planifica tu evento
           </motion.p>
@@ -85,7 +85,7 @@ export default function CateringContact() {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl text-verde-medium max-w-3xl mx-auto"
+            className="text-xl text-verde-tipografia max-w-3xl mx-auto"
           >
             Contáctanos y diseñemos juntos la experiencia gastronómica perfecta para tu evento
           </motion.p>
@@ -103,20 +103,20 @@ export default function CateringContact() {
             </h3>
             <div className="space-y-6">
               {team.map((member, index) => (
-                <div key={index} className="bg-white rounded-xl p-6 shadow-lg border border-neutral-light">
+                <div key={index} className="bg-white rounded-xl p-6 shadow-lg border border-verde-tipografia">
                   <h4 className="text-xl font-bold text-verde-dark mb-2">{member.name}</h4>
-                  <p className="text-verde-medium mb-4">{member.role}</p>
+                  <p className="text-verde-tipografia mb-4">{member.role}</p>
                   <div className="space-y-2">
                     <button
                       onClick={() => openEmail(member.email)}
-                      className="flex items-center gap-2 text-verde-medium hover:text-terracota-primary transition-colors"
+                      className="flex items-center gap-2 text-verde-tipografia hover:text-terracota transition-colors"
                     >
                       <Mail className="w-4 h-4" />
                       {member.email}
                     </button>
                     <button
                       onClick={() => window.open(`https://wa.me/${member.phone.replace(/[^0-9]/g, '')}`, '_blank')}
-                      className="flex items-center gap-2 text-verde-medium hover:text-terracota-primary transition-colors"
+                      className="flex items-center gap-2 text-verde-tipografia hover:text-terracota transition-colors"
                     >
                       <Phone className="w-4 h-4" />
                       {member.phone}
@@ -135,19 +135,19 @@ export default function CateringContact() {
             <h3 className="text-2xl font-bold text-verde-dark mb-8">
               Síguenos en redes sociales
             </h3>
-            <div className="bg-white rounded-xl p-6 shadow-lg border border-neutral-light mb-8">
+            <div className="bg-white rounded-xl p-6 shadow-lg border border-verde-tipografia mb-8">
               <button
                 onClick={openQuoteModal}
-                className="flex items-center gap-2 text-verde-medium hover:text-terracota-primary transition-colors"
+                className="flex items-center gap-2 text-verde-tipografia hover:text-terracota transition-colors"
               >
                 <Instagram className="w-6 h-6" />
                 <span className="text-lg">@arca.tierra</span>
               </button>
             </div>
 
-            <div className="bg-terracota-primary rounded-xl p-6 text-white">
-              <h4 className="text-xl font-bold mb-4">Respuesta rápida garantizada</h4>
-              <p className="text-white/90">
+            <div className="bg-terracota rounded-xl p-6 text-white">
+              <h4 className="text-xl font-bold mb-4 text-white">Respuesta rápida garantizada</h4>
+              <p className="text-white">
                 Nos comprometemos a responder todas las consultas en menos de 24 horas.
               </p>
             </div>
@@ -161,25 +161,25 @@ export default function CateringContact() {
           transition={{ duration: 0.6, delay: 0.7 }}
           className="text-center mb-16"
         >
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-neutral-light max-w-4xl mx-auto">
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-verde-tipografia max-w-4xl mx-auto">
             <h3 className="text-3xl font-bold text-verde-dark mb-4">
               ¿Listo para comenzar?
             </h3>
-            <p className="text-xl text-verde-medium mb-8">
+            <p className="text-xl text-verde-tipografia mb-8">
               Obtén tu cotización personalizada y descubre cómo podemos hacer de tu evento una experiencia inolvidable
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="flex items-center gap-3 text-verde-medium">
-                <Calendar className="w-6 h-6 text-terracota-primary" />
+              <div className="flex items-center gap-3 text-verde-tipografia">
+                <Calendar className="w-6 h-6 text-verde-tipografia" />
                 <span>Cotización gratuita en 24 horas</span>
               </div>
-              <div className="flex items-center gap-3 text-verde-medium">
-                <Users className="w-6 h-6 text-terracota-primary" />
+              <div className="flex items-center gap-3 text-verde-tipografia">
+                <Users className="w-6 h-6 text-verde-tipografia" />
                 <span>Menús personalizados</span>
               </div>
-              <div className="flex items-center gap-3 text-verde-medium">
-                <CheckCircle className="w-6 h-6 text-terracota-primary" />
+              <div className="flex items-center gap-3 text-verde-tipografia">
+                <CheckCircle className="w-6 h-6 text-verde-tipografia" />
                 <span>Ingredientes 100% orgánicos</span>
               </div>
             </div>
@@ -241,19 +241,19 @@ export default function CateringContact() {
           transition={{ duration: 0.6, delay: 0.9 }}
           className="text-center"
         >
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-neutral-light max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-verde-tipografia max-w-2xl mx-auto">
             <div className="flex items-center justify-center gap-3 mb-4">
-              <MapPin className="w-8 h-8 text-terracota-primary" />
+              <MapPin className="w-8 h-8 text-verde-tipografia" />
               <h3 className="text-2xl font-bold text-verde-dark">
                 Servicio en CDMX y área metropolitana
               </h3>
             </div>
-            <p className="text-verde-medium mb-6">
+            <p className="text-verde-tipografia mb-6">
               Especialistas en eventos dentro y fuera de las chinampas de Xochimilco
             </p>
             <button
               onClick={openGoogleMaps}
-              className="text-terracota-primary hover:text-terracota-dark font-semibold transition-colors underline"
+              className="text-verde-tipografia hover:text-terracota-dark font-semibold transition-colors underline"
             >
               Haz clic para ver ubicación en Google Maps
             </button>
