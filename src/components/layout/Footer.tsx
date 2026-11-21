@@ -76,7 +76,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <Link 
-                  href="/sustentabilidad" 
+                  href="/impacto" 
                   className="footer-section a hover:text-white transition-colors"
                 >
                   Sustentabilidad
