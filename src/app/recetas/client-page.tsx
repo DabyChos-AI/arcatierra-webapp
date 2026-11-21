@@ -316,34 +316,20 @@ export default function ClientRecetasPage() {
             { key: 'consejos', label: 'ArcaTips', icon: Lightbulb },
             { key: 'comunidad', label: 'Comunidad', icon: Users }
           ].map(({ key, label, icon: Icon }) => (
+            // RTAB1 (S68): el hover va en clases. Antes `onMouseEnter` escribía `color: white` en línea, React solo manejaba
+            // `backgroundColor` y, al cambiar de pestaña, la anterior quedaba blanco sobre blanco. Además `e.target` podía ser el
+            // ícono y no el botón. Se ve igual: activa terracota con texto blanco; inactiva blanca con gris 700 y, con el ratón,
+            // terracota con texto blanco y sombra.
             <button
               key={key}
               onClick={() => setActiveView(key as any)}
+              data-testid={`recetas-pestana-${key}`}
+              data-activa={activeView === key ? '1' : '0'}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
                 activeView === key
-                  ? 'text-white'
-                  : 'text-gray-700 hover:text-white hover:shadow-lg'
+                  ? 'bg-terracota text-white'
+                  : 'bg-white text-gray-700 hover:bg-terracota hover:text-white hover:shadow-lg'
               }`}
-              style={{
-                backgroundColor: activeView === key ? '#B15543' : 'white',
-                ...(activeView !== key && {
-                  ':hover': { backgroundColor: '#B15543' }
-                })
-              }}
-              onMouseEnter={(e) => {
-                if (activeView !== key) {
-                  const target = e.target as HTMLElement;
-                  target.style.backgroundColor = '#B15543';
-                  target.style.color = 'white';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeView !== key) {
-                  const target = e.target as HTMLElement;
-                  target.style.backgroundColor = 'white';
-                  target.style.color = '#374151';
-                }
-              }}
             >
               <Icon className="w-5 h-5" />
               {label}
