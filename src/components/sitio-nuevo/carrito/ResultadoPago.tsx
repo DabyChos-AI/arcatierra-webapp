@@ -10,6 +10,8 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 import Boton from '@/components/sitio-nuevo/ui/Boton'
 import Contenedor from '@/components/sitio-nuevo/ui/Contenedor'
 import AvisoEnLinea from '@/components/sitio-nuevo/ui/AvisoEnLinea'
@@ -108,6 +110,9 @@ function Botones({ reintentar }: { reintentar?: boolean }) {
 // ─── Éxito (`success/page.tsx:23-196`) ─────────────────────────────────────────────────────────────────────────────────────
 function Exito() {
   const parametros = useSearchParams()
+  // GST3 (S68): el «Inicia sesión» ya no sale al escribir el correo (no debe delatar quién tiene cuenta); se le ofrece a todo el
+  // que pagó sin sesión, con el mismo texto que la página de hoy (`src/app/checkout/success/page.tsx`).
+  const { status: estadoSesion } = useSession()
   const [listo, setListo] = useState(false)
   const [conExperiencias, setConExperiencias] = useState(false)
   const [conProductos, setConProductos] = useState(false)
@@ -183,6 +188,17 @@ function Exito() {
             ]}
           />
         </Tarjeta>
+        {estadoSesion === 'unauthenticated' && (
+          <AvisoEnLinea tono="info" as="div" testId="sn-checkout-exito-entrar" className="font-normal">
+            <p className="m-0">
+              Si ya tienes cuenta con este correo,{' '}
+              <Link href="/auth/signin?callbackUrl=%2Fusuario%2Fpedidos" className={LIGA}>
+                entra para ver tu pedido
+              </Link>
+              .
+            </p>
+          </AvisoEnLinea>
+        )}
         <AvisoEnLinea tono="exito" as="div" className="font-normal">
           <p className="m-0 font-medium">¡Gracias por elegir productos locales!</p>
           <p className="m-0">Con tu compra contribuyes al desarrollo de productores locales y reduces la huella de carbono de tus alimentos.</p>
