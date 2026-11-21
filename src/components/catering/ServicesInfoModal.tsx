@@ -70,15 +70,15 @@ export default function ServicesInfoModal({ isOpen, onClose }: ServicesInfoModal
           >
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl mx-auto overflow-hidden max-h-[85vh] flex flex-col">
               {/* Header */}
-              <div className="bg-gradient-to-r from-verde-dark to-verde-darker p-6 text-white relative flex-shrink-0">
+              <div className="bg-gradient-to-r from-verde to-verde-dark p-6 text-white relative flex-shrink-0">
                 <button 
                   onClick={onClose}
-                  className="absolute top-6 right-6 text-black hover:text-neutral-700 transition-colors z-10"
+                  className="absolute top-6 right-6 text-white hover:text-neutro-crema transition-colors z-10"
                   aria-label="Cerrar modal"
                 >
                   <X className="w-6 h-6" />
                 </button>
-                <h3 className="text-2xl font-bold pr-12">Servicios de Catering</h3>
+                <h3 className="text-2xl font-bold pr-12 text-white">Servicios de Catering</h3>
                 <p className="text-white pr-12">
                   Descubre todos los servicios que Arca Tierra Catering ofrece para tu evento
                 </p>
@@ -87,17 +87,17 @@ export default function ServicesInfoModal({ isOpen, onClose }: ServicesInfoModal
               {/* Content */}
               <div className="p-6 overflow-y-auto flex-1">
                 {/* Hero Banner */}
-                <div className="mb-8 p-6 rounded-xl bg-verde-light relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 -mr-10 -mt-10 rounded-full bg-verde-medium opacity-20"></div>
+                <div className="mb-8 p-6 rounded-xl bg-white relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 -mr-10 -mt-10 rounded-full opacity-20"></div>
                   <div className="relative z-10">
                     <h4 className="text-xl font-bold text-verde-dark mb-2">Catering Sostenible y Delicioso</h4>
-                    <p className="text-verde-medium mb-4">
+                    <p className="text-verde-tipografia mb-4">
                       Nuestro compromiso con el medio ambiente y la excelencia culinaria nos distingue como 
                       el servicio de catering preferido por clientes exigentes.
                     </p>
                     <button
                       onClick={handleDownloadPDF}
-                      className="inline-flex items-center gap-2 text-verde-dark font-medium hover:text-terracota-primary transition-colors"
+                      className="inline-flex items-center gap-2 text-verde-dark font-medium hover:text-terracota transition-colors"
                     >
                       <Download className="w-5 h-5" />
                       Descargar catálogo completo
@@ -112,11 +112,11 @@ export default function ServicesInfoModal({ isOpen, onClose }: ServicesInfoModal
                     {services.map((service, index) => (
                       <div key={index} className="border border-neutral-200 rounded-lg p-5 hover:shadow-md transition-shadow">
                         <h5 className="text-lg font-semibold text-verde-dark mb-2">{service.title}</h5>
-                        <p className="text-verde-medium mb-4">{service.description}</p>
+                        <p className="text-verde-tipografia mb-4">{service.description}</p>
                         <ul className="space-y-2">
                           {service.items.map((item, i) => (
-                            <li key={i} className="flex items-center gap-2 text-verde-medium">
-                              <ChevronRight className="w-4 h-4 text-terracota-primary" />
+                            <li key={i} className="flex items-center gap-2 text-verde-tipografia">
+                              <ChevronRight className="w-4 h-4 text-verde-tipografia" />
                               {item}
                             </li>
                           ))}
@@ -132,7 +132,7 @@ export default function ServicesInfoModal({ isOpen, onClose }: ServicesInfoModal
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {features.map((feature, index) => (
                       <div key={index} className="flex items-center gap-3">
-                        <div className="bg-terracota-light text-terracota-primary p-2 rounded-full">
+                        <div className="text-verde-tipografia p-2 rounded-full">
                           {feature.icon}
                         </div>
                         <span className="text-verde-dark">{feature.text}</span>

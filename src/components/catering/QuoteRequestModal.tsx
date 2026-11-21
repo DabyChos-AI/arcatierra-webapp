@@ -216,7 +216,7 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
                             required
                             value={formState.name}
                             onChange={handleChange}
-                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-verde-medium focus:border-transparent outline-none transition"
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-verde focus:border-transparent outline-none transition"
                           />
                         </div>
                         
@@ -231,7 +231,7 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
                             required
                             value={formState.email}
                             onChange={handleChange}
-                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-verde-medium focus:border-transparent outline-none transition"
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-verde focus:border-transparent outline-none transition"
                           />
                         </div>
                         
@@ -246,7 +246,7 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
                             required
                             value={formState.phone}
                             onChange={handleChange}
-                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-verde-medium focus:border-transparent outline-none transition"
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-verde focus:border-transparent outline-none transition"
                           />
                         </div>
                       </div>
@@ -267,7 +267,7 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
                             required
                             value={formState.eventType}
                             onChange={handleChange}
-                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-verde-medium focus:border-transparent outline-none transition"
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-verde focus:border-transparent outline-none transition"
                           >
                             <option value="" style={{ color: '#1F2937' }}>Selecciona una opción</option>
                             {eventTypes.map((type) => (
@@ -290,7 +290,7 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
                             min="1"
                             value={formState.guestCount}
                             onChange={handleChange}
-                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-verde-medium focus:border-transparent outline-none transition"
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-verde focus:border-transparent outline-none transition"
                           />
                         </div>
                         
@@ -304,7 +304,7 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
                             name="eventDate"
                             value={formState.eventDate}
                             onChange={handleChange}
-                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-verde-medium focus:border-transparent outline-none transition"
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-verde focus:border-transparent outline-none transition"
                           />
                         </div>
                         
@@ -319,7 +319,7 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
                             value={formState.eventLocation}
                             onChange={handleChange}
                             placeholder="Ciudad o ubicación"
-                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-verde-medium focus:border-transparent outline-none transition placeholder:text-slate-500"
+                            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-verde focus:border-transparent outline-none transition placeholder:text-slate-500"
                           />
                         </div>
                       </div>
@@ -335,7 +335,7 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
                           value={formState.message}
                           onChange={handleChange}
                           placeholder="Cuéntanos más sobre tu evento, requerimientos especiales, etc."
-                          className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-verde-medium focus:border-transparent outline-none transition resize-none placeholder:text-slate-500"
+                          className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-verde focus:border-transparent outline-none transition resize-none placeholder:text-slate-500"
                         />
                       </div>
                     </div>
@@ -382,7 +382,7 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
                   </form>
                 ) : (
                   <div className="py-8 text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-verde-light rounded-full text-verde-dark mb-4">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-neutro-crema rounded-full text-verde-dark mb-4">
                       <CheckCircle className="w-8 h-8" />
                     </div>
                     <h4 className="text-2xl font-bold mb-2" style={{ color: '#33503E' }}>¡Gracias por contactarnos!</h4>

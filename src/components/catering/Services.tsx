@@ -74,7 +74,7 @@ export default function CateringServices() {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
-            className="text-verde-medium text-lg mb-4 font-medium"
+            className="text-verde-tipografia text-lg mb-4 font-medium"
           >
             Nuestros servicios
           </motion.p>
@@ -90,7 +90,7 @@ export default function CateringServices() {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl text-verde-medium max-w-3xl mx-auto"
+            className="text-xl text-verde-tipografia max-w-3xl mx-auto"
           >
             Además de hacer menús a la medida, ofrecemos todo tipo de servicio
           </motion.p>
@@ -133,11 +133,11 @@ export default function CateringServices() {
           transition={{ duration: 0.6, delay: 0.8 }}
           className="text-center"
         >
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-neutral-light max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-verde-tipografia max-w-2xl mx-auto">
             <h3 className="text-2xl font-bold text-verde-dark mb-4">
               ¿Listo para planificar tu evento?
             </h3>
-            <p className="text-verde-medium mb-6">
+            <p className="text-verde-tipografia mb-6">
               Contáctanos y diseñemos juntos el menú perfecto para tu ocasión especial
             </p>
             <button
