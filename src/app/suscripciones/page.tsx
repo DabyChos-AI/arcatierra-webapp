@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Calendar, Package, Leaf, Users, Star, CheckCircle, XCircle } from 'lucide-react'
@@ -8,6 +8,29 @@ import { Button } from '@/components/ui/button'
 import SubscriptionCheckoutForm from '@/components/SubscriptionCheckoutForm'
 import { aviso } from '@/components/ui/Avisos'
 import { precioLegible } from '@/lib/precio'
+import { calcularCostoEnvio } from '@/lib/envio'
+import { API_URL } from '@/lib/api'
+
+type EstadoPrecios = { fase: 'cargando' } | { fase: 'listo'; precios: Record<string, number> } | { fase: 'error' }
+
+/** `{ planes: [{ id, price }] }` de `GET /api/subscriptions/planes` → `{ id: precio }`; null si la forma no es esa. */
+function preciosDePlanes(datos: unknown): Record<string, number> | null {
+  const lista = (datos as { planes?: unknown } | null)?.planes
+  if (!Array.isArray(lista)) return null
+  const precios: Record<string, number> = {}
+  for (const p of lista) {
+    const fila = p as { id?: unknown; price?: unknown } | null
+    const precio = typeof fila?.price === 'number' ? fila.price : typeof fila?.price === 'string' && fila.price.trim() ? Number(fila.price) : NaN
+    if (typeof fila?.id === 'string' && Number.isFinite(precio) && precio >= 0) precios[fila.id] = precio
+  }
+  return precios
+}
+
+/** «4.5 kg» → 4.5; «Variable» → null (para el precio por kilo, que sale del precio real). */
+function kilosDe(peso: string): number | null {
+  const m = /^(\d+(?:\.\d+)?)\s*kg$/i.exec(peso.trim())
+  return m ? Number(m[1]) : null
+}
 
 const SUBSCRIPTION_PLANS = [
   // CANASTAS REGULARES
@@ -17,7 +40,6 @@ const SUBSCRIPTION_PLANS = [
     codigo: 'INDIVIDUAL',
     name: 'Canasta Individual',
     description: 'Perfecta para personas solteras o parejas',
-    price: 290,
     weight: '3.5 kg',
     ideal: '1-2 personas',
     tipo: 'regular',
@@ -29,7 +51,6 @@ const SUBSCRIPTION_PLANS = [
       'Fácil de consumir en una semana',
       'Incluye fruta y verduras de temporada'
     ],
-    precioKg: 82.86,
     popular: true
   },
   {
@@ -38,7 +59,6 @@ const SUBSCRIPTION_PLANS = [
     codigo: 'MEDIA',
     name: 'Canasta Media',
     description: 'Equilibrio perfecto entre variedad y cantidad',
-    price: 350,
     weight: '5 kg',
     ideal: '2-3 personas',
     tipo: 'regular',
@@ -50,7 +70,6 @@ const SUBSCRIPTION_PLANS = [
       'Ideal para familias pequeñas',
       'Excelente relación calidad-precio'
     ],
-    precioKg: 70.00,
     popular: true
   },
   {
@@ -59,7 +78,6 @@ const SUBSCRIPTION_PLANS = [
     codigo: 'COMPLETA',
     name: 'Canasta Completa',
     description: 'Variedad amplia con productos especiales',
-    price: 510,
     weight: '7.5 kg',
     ideal: '3-4 personas',
     tipo: 'regular',
@@ -71,7 +89,6 @@ const SUBSCRIPTION_PLANS = [
       'Perfecta para familias medianas',
       'Mayor diversidad nutricional'
     ],
-    precioKg: 68.00,
     popular: false
   },
   // CANASTAS BÁSICAS (CON EXTRAS)
@@ -81,7 +98,6 @@ const SUBSCRIPTION_PLANS = [
     codigo: 'BASICA_INDIVIDUAL',
     name: 'Canasta Básica Individual',
     description: 'Con productos básicos esenciales y artesanales',
-    price: 471,
     weight: '4.5 kg',
     ideal: '1-2 personas (productos básicos)',
     tipo: 'basica',
@@ -101,7 +117,6 @@ const SUBSCRIPTION_PLANS = [
       '12 huevos de gallinas de libre pastoreo en las chinampas',
       'Todo proveniente de productores locales'
     ],
-    precioKg: 104.67,
     popular: false
   },
   {
@@ -110,7 +125,6 @@ const SUBSCRIPTION_PLANS = [
     codigo: 'BASICA_MEDIA',
     name: 'Canasta Básica Media',
     description: 'Combo completo para alimentación variada',
-    price: 1023,
     weight: '8 kg',
     ideal: '2-4 personas (productos básicos)',
     tipo: 'basica',
@@ -131,7 +145,6 @@ const SUBSCRIPTION_PLANS = [
       '500 g de milanesas de pollo de origen regenerativo',
       '500 g de bistec de res de origen regenerativo'
     ],
-    precioKg: 127.88,
     popular: false
   },
   {
@@ -140,7 +153,6 @@ const SUBSCRIPTION_PLANS = [
     codigo: 'BASICA_FAMILIAR',
     name: 'Canasta Básica Familiar',
     description: 'El combo más completo para familias',
-    price: 1488,
     weight: '13 kg',
     ideal: '4-6 personas (productos básicos)',
     tipo: 'basica',
@@ -171,7 +183,6 @@ const SUBSCRIPTION_PLANS = [
         ]
       }
     },
-    precioKg: 114.46,
     popular: false
   },
   // CANASTAS ESPECIALES
@@ -181,7 +192,6 @@ const SUBSCRIPTION_PLANS = [
     codigo: 'FAMILIAR',
     name: 'Canasta Familiar',
     description: 'La opción más popular para familias grandes',
-    price: 670,
     weight: '10 kg',
     ideal: '4-6 personas',
     tipo: 'regular',
@@ -193,7 +203,6 @@ const SUBSCRIPTION_PLANS = [
       'Incluye fruta y verduras de temporada',
       'Máximo aprovechamiento familiar'
     ],
-    precioKg: 67.00,
     popular: true
   },
   {
@@ -201,7 +210,6 @@ const SUBSCRIPTION_PLANS = [
     codigo: 'RETORNABLE',
     name: 'Canasta Retornable',
     description: 'Opción ecológica con contenedor reutilizable',
-    price: 310,
     weight: 'Variable',
     ideal: 'Consumo sustentable',
     tipo: 'especial',
@@ -213,7 +221,6 @@ const SUBSCRIPTION_PLANS = [
       'Contenedor reutilizable',
       'Compromiso con el medio ambiente'
     ],
-    precioKg: 0,
     popular: false
   },
   // ─── Planes de prueba ─────────────────────────────────────────────────────
@@ -225,7 +232,6 @@ const SUBSCRIPTION_PLANS = [
     codigo: 'QA-01',
     name: 'Test 01 — Canasta de prueba',
     description: 'Producto de prueba del sistema. No es un producto real y no se surte.',
-    price: 0,
     weight: '3.5 kg',
     ideal: 'Pruebas internas',
     tipo: 'prueba',
@@ -237,7 +243,6 @@ const SUBSCRIPTION_PLANS = [
       'No genera costo de envío',
       'Sirve para validar el sistema de punta a punta'
     ],
-    precioKg: 0,
     popular: false
   },
   {
@@ -245,7 +250,6 @@ const SUBSCRIPTION_PLANS = [
     codigo: 'QA-02',
     name: 'Test 02 — Canasta básica de prueba',
     description: 'Producto de prueba del sistema. No es un producto real y no se surte.',
-    price: 0,
     weight: '7.5 kg',
     ideal: 'Pruebas internas',
     tipo: 'prueba',
@@ -257,7 +261,6 @@ const SUBSCRIPTION_PLANS = [
       'No genera costo de envío',
       'Sirve para validar el sistema de punta a punta'
     ],
-    precioKg: 0,
     popular: false
   }
 ]
@@ -283,57 +286,55 @@ function SuscripcionesContent() {
   const [isSubscribing, setIsSubscribing] = useState(false)
   const [carneSelections, setCarneSelections] = useState<Record<string, string>>({})
   
-  // Estado para canastas con precios dinámicos desde BD
-  const [plans, setPlans] = useState(SUBSCRIPTION_PLANS)
-  
+  // SUBP0 §9.3 (S67): los precios salen de la API, de la MISMA consulta con la que cobra `crear_suscripcion`
+  // (`GET /api/subscriptions/planes`, `routers/subscriptions.py:273-294`). Antes un `fetch('/api/products…')` relativo daba 404
+  // y la página pintaba precios escritos en el código (Básica Familiar $1,488 contra $1,413.60 cobrados). Sin respaldo a otro
+  // número: si no llegan, la canasta dice «Precio no disponible» y no se puede agregar.
+  const [estadoPrecios, setEstadoPrecios] = useState<EstadoPrecios>({ fase: 'cargando' })
+  const pedidoPreciosRef = useRef(0)
+  const cargarPrecios = useCallback(async () => {
+    const pedido = ++pedidoPreciosRef.current
+    setEstadoPrecios({ fase: 'cargando' })
+    try {
+      const res = await fetch(`${API_URL}/api/subscriptions/planes`, { cache: 'no-store' })
+      const datos: unknown = res.ok ? await res.json().catch(() => null) : null
+      if (pedido !== pedidoPreciosRef.current) return
+      const precios = preciosDePlanes(datos)
+      setEstadoPrecios(precios ? { fase: 'listo', precios } : { fase: 'error' })
+    } catch {
+      if (pedido === pedidoPreciosRef.current) setEstadoPrecios({ fase: 'error' })
+    }
+  }, [])
+
+  useEffect(() => {
+    void cargarPrecios()
+  }, [cargarPrecios])
+
+  const plans = SUBSCRIPTION_PLANS.map((plan) => {
+    const price =
+      estadoPrecios.fase === 'listo' && Object.prototype.hasOwnProperty.call(estadoPrecios.precios, plan.id)
+        ? estadoPrecios.precios[plan.id]
+        : null
+    const kg = kilosDe(plan.weight)
+    return { ...plan, price, precioKg: price !== null && kg ? Math.round((price / kg) * 100) / 100 : 0 }
+  })
 
   const currentFrequency = DELIVERY_FREQUENCIES.find(freq => freq.id === selectedFrequency)
-  const selectedPlans = plans.filter(plan => selectedCanastas.includes(plan.id))
-  
+  // Solo las que tienen precio de la API (una sin precio no se puede contratar).
+  const selectedPlans = plans
+    .filter((plan) => selectedCanastas.includes(plan.id))
+    .flatMap((plan) => (plan.price !== null ? [{ ...plan, price: plan.price }] : []))
+
+  // SUBP0 §9.1: lo que cobra MercadoPago = precio + `calcular_costo_envio(precio)` (`routers/subscriptions.py:137-141`).
   const finalPrice = selectedPlans.reduce((total, plan) => total + plan.price, 0)
+  const envioTotal = selectedPlans.reduce((total, plan) => total + calcularCostoEnvio(plan.price), 0)
+  const totalPorEntrega = Math.round((finalPrice + envioTotal) * 100) / 100
 
   // Helper: Obtener nombre de canasta desde ID
   const getNombreCanasta = (id: string) => {
     const plan = plans.find(p => p.id === id)
     return plan ? plan.name : 'Canasta'
   }
-
-  // Cargar precios dinámicos desde BD
-  useEffect(() => {
-    const fetchPrecios = async () => {
-      try {
-        // Llamar a API existente para obtener canastas de suscripción
-        const response = await fetch('/api/products?search=suscripcion&limit=50')
-        
-        if (response.ok) {
-          const data = await response.json()
-          const productos = data.items || []
-          
-          // Actualizar precios de cada canasta según itemcode
-          const updatedPlans = SUBSCRIPTION_PLANS.map(plan => {
-            // Buscar producto en BD por itemcode
-            const productoDB = productos.find((p: any) => p.itemcode === plan.itemcode)
-            
-            if (productoDB && productoDB.precio_unitario) {
-              return {
-                ...plan,
-                price: parseFloat(productoDB.precio_unitario)
-              }
-            }
-            return plan // Si no encuentra, mantiene precio default
-          })
-          
-          setPlans(updatedPlans)
-          console.log('✅ Precios actualizados desde BD')
-        }
-      } catch (error) {
-        console.error('Error cargando precios:', error)
-        // Si falla, mantiene precios hardcoded como fallback
-      }
-    }
-    
-    fetchPrecios()
-  }, [])
 
   // Pre-cargar canasta seleccionada desde tienda
   useEffect(() => {
@@ -348,12 +349,10 @@ function SuscripcionesContent() {
     }
   }, [esPrecarga, canastaPreseleccionada])
 
+  // SUBP0 §9.2 (versión mínima, S67): una sola canasta a la vez. El alta suscribe SOLO la primera (`onSubscribe` abajo) y el botón
+  // sumaba todas las marcadas; elegir otra reemplaza a la anterior.
   const addToSubscription = (canastaId: string) => {
-    if (selectedCanastas.includes(canastaId)) {
-      setSelectedCanastas(prev => prev.filter(id => id !== canastaId))
-    } else {
-      setSelectedCanastas(prev => [...prev, canastaId])
-    }
+    setSelectedCanastas((prev) => (prev.includes(canastaId) ? [] : [canastaId]))
   }
 
   return (
@@ -422,7 +421,20 @@ function SuscripcionesContent() {
           <h2 className="text-3xl font-bold text-center text-[#33503E] mb-8">
             Elige tu Canasta Ideal
           </h2>
-          
+
+          {estadoPrecios.fase === 'error' && (
+            <div
+              data-testid="suscripcion-precios-error"
+              role="alert"
+              className="mx-auto mb-6 max-w-2xl rounded-lg border border-red-200 bg-red-50 p-4 text-center text-sm text-red-800"
+            >
+              No pudimos cargar el precio de las canastas. Sin el precio no puedes suscribirte todavía.{' '}
+              <button type="button" onClick={() => void cargarPrecios()} className="font-medium text-[#B15543] underline">
+                Intentar de nuevo
+              </button>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:p-8">
             {plans.map((plan) => (
               <div
@@ -438,7 +450,7 @@ function SuscripcionesContent() {
                     <span className="bg-[#B15543] text-white px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap">
                       {plan.id === 'familiar' ? '⭐ Más Popular' : 'Popular'}
                     </span>
-                    {plan.id === 'familiar' && (
+                    {plan.id === 'familiar' && plan.precioKg > 0 && (
                       <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap">
                         💰 Más barata ${plan.precioKg}/kg
                       </span>
@@ -449,15 +461,31 @@ function SuscripcionesContent() {
                 <div className="text-center mb-6">
                   <h3 className="text-xl font-bold text-[#33503E] mb-2">{plan.name}</h3>
                   <p className="text-gray-600 mb-4">{plan.description}</p>
-                  {/* PNT1 (S67): con sus centavos (`precioLegible`), como la tienda */}
+                  {/* PNT1 (S67): con sus centavos (`precioLegible`), como la tienda. SUBP0 §9.1/§9.3: el precio de la API y el
+                      envío que cobra MercadoPago, con el texto de la rama (`sitio-nuevo/tienda/AltaSuscripcion.tsx:375`). */}
                   <div
                     className="text-3xl font-bold text-[#B15543] mb-1"
                     data-testid={`suscripcion-plan-precio-${plan.id}`}
-                    data-monto={plan.price}
+                    data-monto={plan.price ?? undefined}
+                    data-estado={estadoPrecios.fase}
                   >
-                    {precioLegible(plan.price)}
+                    {plan.price !== null
+                      ? precioLegible(plan.price)
+                      : estadoPrecios.fase === 'cargando'
+                        ? 'Cargando precio…'
+                        : 'Precio no disponible'}
                   </div>
-                  <p className="text-sm text-gray-500">por entrega</p>
+                  <p
+                    className="text-sm text-gray-500"
+                    data-testid={`suscripcion-plan-envio-${plan.id}`}
+                    data-envio={plan.price !== null ? calcularCostoEnvio(plan.price) : undefined}
+                  >
+                    {plan.price === null
+                      ? 'por entrega'
+                      : calcularCostoEnvio(plan.price) > 0
+                        ? `por entrega · + ${precioLegible(calcularCostoEnvio(plan.price))} de envío`
+                        : 'por entrega · Envío gratis'}
+                  </p>
                 </div>
 
                 <div className="space-y-3 mb-6">
@@ -536,6 +564,8 @@ function SuscripcionesContent() {
                 <div className="text-center">
                   <Button
                     onClick={() => addToSubscription(plan.id)}
+                    disabled={plan.price === null}
+                    data-testid={`suscripcion-plan-agregar-${plan.id}`}
                     className={`w-full ${
                       selectedCanastas.includes(plan.id)
                         ? 'bg-green-600 hover:bg-green-700 text-white'
@@ -593,7 +623,7 @@ function SuscripcionesContent() {
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Canastas seleccionadas:</span>
-                  <span className="font-medium">{selectedCanastas.length} canasta{selectedCanastas.length !== 1 ? 's' : ''}</span>
+                  <span className="font-medium">{selectedPlans.length} canasta{selectedPlans.length !== 1 ? 's' : ''}</span>
                 </div>
                 {selectedPlans.length > 0 && (
                   <div className="bg-gray-50 p-3 rounded-lg">
@@ -614,10 +644,18 @@ function SuscripcionesContent() {
                   <span className="text-gray-600">Frecuencia:</span>
                   <span className="font-medium">{currentFrequency?.name}</span>
                 </div>
+                {selectedPlans.length > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Envío:</span>
+                    <span className="font-medium" data-testid="suscripcion-pagina-envio" data-monto={envioTotal}>
+                      {envioTotal > 0 ? precioLegible(envioTotal) : 'Envío gratis'}
+                    </span>
+                  </div>
+                )}
                 <div className="border-t pt-3 flex justify-between text-lg font-bold">
                   <span className="text-[#33503E]">Total por entrega:</span>
-                  <span className="text-[#B15543]" data-testid="suscripcion-pagina-total" data-monto={finalPrice}>
-                    {precioLegible(finalPrice)}
+                  <span className="text-[#B15543]" data-testid="suscripcion-pagina-total" data-monto={totalPorEntrega}>
+                    {precioLegible(totalPorEntrega)}
                   </span>
                 </div>
               </div>

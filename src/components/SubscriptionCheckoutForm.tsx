@@ -13,6 +13,7 @@ import type { PrimeraEntregaRespuesta } from '@/types/cuenta'
 import { TEXTO_METODO_PAGO_CORTO } from '@/types/tienda'
 import { aviso } from '@/components/ui/Avisos'
 import { precioLegible } from '@/lib/precio'
+import { calcularCostoEnvio } from '@/lib/envio'
 
 interface SubscriptionPlan {
   id: string
@@ -87,6 +88,10 @@ export default function SubscriptionCheckoutForm({
   const pedidoPrimeraRef = useRef(0)
 
   const finalPrice = selectedPlans.reduce((total, plan) => total + plan.price, 0)
+  // SUBP0 §9.1 (S67): MercadoPago cobra precio + `calcular_costo_envio(precio)` por canasta (`routers/subscriptions.py:137-141`;
+  // el alta nunca manda `tipo_entrega`, así que siempre es a domicilio). Antes decía «Envío: Incluido» y el total iba sin los $100.
+  const envio = selectedPlans.reduce((total, plan) => total + calcularCostoEnvio(plan.price), 0)
+  const totalPorEntrega = Math.round((finalPrice + envio) * 100) / 100
 
   // Función para auto-validar código postal contra API de zonas
   const autoValidatePostalCode = async (cp: string) => {
@@ -573,12 +578,18 @@ export default function SubscriptionCheckoutForm({
               </div>
               <div className="flex justify-between">
                 <span>Envío</span>
-                <span className="text-green-600 font-medium">Incluido</span>
+                <span
+                  className={envio > 0 ? '' : 'text-green-600 font-medium'}
+                  data-testid="suscripcion-resumen-envio"
+                  data-monto={envio}
+                >
+                  {envio > 0 ? precioLegible(envio) : 'Envío gratis'}
+                </span>
               </div>
               <div className="border-t pt-2 flex justify-between font-semibold text-lg">
                 <span>Total por entrega</span>
-                <span className="text-[#B15543]" data-testid="suscripcion-resumen-total" data-monto={finalPrice}>
-                  {precioLegible(finalPrice)}
+                <span className="text-[#B15543]" data-testid="suscripcion-resumen-total" data-monto={totalPorEntrega}>
+                  {precioLegible(totalPorEntrega)}
                 </span>
               </div>
             </div>
@@ -589,7 +600,7 @@ export default function SubscriptionCheckoutForm({
         <Button
           onClick={handleSubmit}
           data-testid="suscripcion-confirmar"
-          data-monto={finalPrice}
+          data-monto={totalPorEntrega}
           disabled={isSubscribing || !customerData.nombre || !customerData.telefono || 
                    !deliveryData.address || !zonaEntrega}
           className="w-full bg-[#B15543] hover:bg-[#9a4a3a] text-white text-lg py-6"
@@ -600,7 +611,7 @@ export default function SubscriptionCheckoutForm({
               Procesando...
             </div>
           ) : (
-            `Confirmar Suscripción - ${precioLegible(finalPrice)}`
+            `Confirmar Suscripción - ${precioLegible(totalPorEntrega)}`
           )}
         </Button>
 
