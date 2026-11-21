@@ -7,6 +7,7 @@ import { Calendar, Package, Leaf, Users, Star, CheckCircle, XCircle } from 'luci
 import { Button } from '@/components/ui/button'
 import SubscriptionCheckoutForm from '@/components/SubscriptionCheckoutForm'
 import { aviso } from '@/components/ui/Avisos'
+import { precioLegible } from '@/lib/precio'
 
 const SUBSCRIPTION_PLANS = [
   // CANASTAS REGULARES
@@ -448,8 +449,13 @@ function SuscripcionesContent() {
                 <div className="text-center mb-6">
                   <h3 className="text-xl font-bold text-[#33503E] mb-2">{plan.name}</h3>
                   <p className="text-gray-600 mb-4">{plan.description}</p>
-                  <div className="text-3xl font-bold text-[#B15543] mb-1">
-                    ${plan.price}
+                  {/* PNT1 (S67): con sus centavos (`precioLegible`), como la tienda */}
+                  <div
+                    className="text-3xl font-bold text-[#B15543] mb-1"
+                    data-testid={`suscripcion-plan-precio-${plan.id}`}
+                    data-monto={plan.price}
+                  >
+                    {precioLegible(plan.price)}
                   </div>
                   <p className="text-sm text-gray-500">por entrega</p>
                 </div>
@@ -596,7 +602,9 @@ function SuscripcionesContent() {
                       {selectedPlans.map((plan) => (
                         <li key={plan.id} className="flex justify-between text-sm">
                           <span className="text-gray-600">{plan.name}</span>
-                          <span className="font-medium">${plan.price}</span>
+                          <span className="font-medium" data-testid={`suscripcion-detalle-precio-${plan.id}`} data-monto={plan.price}>
+                            {precioLegible(plan.price)}
+                          </span>
                         </li>
                       ))}
                     </ul>
@@ -608,7 +616,9 @@ function SuscripcionesContent() {
                 </div>
                 <div className="border-t pt-3 flex justify-between text-lg font-bold">
                   <span className="text-[#33503E]">Total por entrega:</span>
-                  <span className="text-[#B15543]">${finalPrice.toFixed(0)}</span>
+                  <span className="text-[#B15543]" data-testid="suscripcion-pagina-total" data-monto={finalPrice}>
+                    {precioLegible(finalPrice)}
+                  </span>
                 </div>
               </div>
 

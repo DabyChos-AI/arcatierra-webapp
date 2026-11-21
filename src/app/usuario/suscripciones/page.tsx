@@ -8,6 +8,7 @@ import { AlertTriangle, CalendarDays, Leaf, RefreshCw, Repeat, Truck } from 'luc
 import { API_URL } from '@/lib/api'
 import { TEXTO_COBRO_FALLIDO, type MiSuscripcion } from '@/types/cuenta'
 import { aviso, confirmar } from '@/components/ui/Avisos'
+import { calcularCostoEnvio } from '@/lib/envio'
 import { extraerMensajeError } from '@/app/admin/reservas/components/errores'
 import {
   TEXTO_CONFIRMAR_CANCELAR,
@@ -36,6 +37,16 @@ const TEXTO_ERROR = 'No pudimos cargar tus suscripciones. Intenta de nuevo en un
 const TEXTO_SESION = 'Tu sesión expiró. Vuelve a iniciar sesión.'
 const TEXTO_CANCELADA = 'Suscripción cancelada'
 
+/**
+ * SUSP1 (S67, David 20-nov): el precio por entrega CON el envío que cobra MercadoPago (`routers/subscriptions.py:137-141`: precio de la
+ * base + `calcular_costo_envio(precio)`), igual que la página de la rama (`sitio-nuevo/compras/MisSuscripciones.tsx:65-70`, D-F6-08 P-2) y
+ * en todos los estados como ella. La API manda solo `precio` (= `precio_base`); el envío guardado en la API queda para después (David).
+ * Todas las suscripciones de la base son a domicilio (el alta nunca manda `tipo_entrega`). Sin la llave cruda `tipo_canasta` (P-4).
+ */
+function textoPrecio(precio: number, envio: number): string {
+  return envio > 0 ? `${dinero(precio)} + ${dinero(envio)} de envío por entrega` : `${dinero(precio)} por entrega · Envío gratis`
+}
+
 function TarjetaSuscripcion({
   s,
   cancelando,
@@ -49,6 +60,7 @@ function TarjetaSuscripcion({
 }) {
   const frecuencia = textoFrecuencia(s.frecuencia)
   const proxima = fechaLarga(s.proxima_entrega)
+  const envio = s.precio !== null ? calcularCostoEnvio(s.precio) : null
   return (
     <li
       data-testid={`mis-suscripcion-${s.id}`}
@@ -64,11 +76,11 @@ function TarjetaSuscripcion({
         )}
       </div>
       <ul className="mb-3 space-y-1 text-base text-verde-tipografia">
-        {(s.tipo_canasta || s.precio !== null) && (
+        {s.precio !== null && envio !== null && (
           <li className="flex items-start gap-2">
             <Leaf className="mt-0.5 h-5 w-5 shrink-0 text-terracota" aria-hidden="true" />
-            <span>
-              {[s.tipo_canasta, s.precio !== null ? `${dinero(s.precio)} por entrega` : null].filter(Boolean).join(' · ')}
+            <span data-testid="mis-suscripcion-precio" data-precio={s.precio} data-envio={envio}>
+              {textoPrecio(s.precio, envio)}
             </span>
           </li>
         )}

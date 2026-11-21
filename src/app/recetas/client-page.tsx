@@ -33,6 +33,8 @@ export default function ClientRecetasPage() {
   const [maxCookTime, setMaxCookTime] = useState(60);
   const [showFilters, setShowFilters] = useState(false);
   const [likedRecipes, setLikedRecipes] = useState<string[]>([]);
+  // RACC1 (S67): la receta cuyo velo de ingredientes se abrió con su botón (dedo o teclado); null = ninguna.
+  const [ingredientesAbiertos, setIngredientesAbiertos] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<'recetas' | 'consejos' | 'comunidad'>('recetas');
 
   // Cargar favoritos desde localStorage - USAR EL MISMO SISTEMA QUE PRODUCTOS
@@ -479,7 +481,11 @@ export default function ClientRecetasPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {filteredRecipes.map((recipe, index) => (
+                  {filteredRecipes.map((recipe, index) => {
+                    const favorita = likedRecipes.includes(recipe.id);
+                    const ingredientesVisibles = ingredientesAbiertos === recipe.id;
+                    const idIngredientes = `receta-ingredientes-${recipe.id}`;
+                    return (
                     <motion.div
                       key={recipe.id}
                       data-testid="receta-tarjeta"
@@ -498,8 +504,18 @@ export default function ClientRecetasPage() {
                           className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                         
-                        {/* Ingredients Hover Overlay */}
-                        <div className="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center p-4">
+                        {/* Velo de ingredientes. RACC1 (S67): antes solo con hover (con el dedo dependía del «hover pegado» del
+                            navegador y no había cómo cerrarlo; con teclado no salía). Ahora lo abre y cierra un estado: el botón
+                            «Ingredientes» (teclado y dedo) o tocar la foto. El hover queda solo donde hay ratón: (hover:hover). */}
+                        <div
+                          id={idIngredientes}
+                          data-testid="receta-ingredientes"
+                          aria-hidden={!ingredientesVisibles}
+                          onClick={() => setIngredientesAbiertos(ingredientesVisibles ? null : recipe.id)}
+                          className={`absolute inset-0 bg-black/75 [@media(hover:hover)]:group-hover:opacity-100 transition-all duration-300 flex items-center justify-center p-4 ${
+                            ingredientesVisibles ? 'opacity-100' : 'opacity-0'
+                          }`}
+                        >
                           <div className="text-white text-center max-w-full overflow-hidden">
                             <h4 className="text-sm font-semibold mb-3 text-yellow-300">🥘 Ingredientes:</h4>
                             <div className="space-y-1 max-h-32 overflow-y-auto scrollbar-thin">
@@ -512,15 +528,31 @@ export default function ClientRecetasPage() {
                           </div>
                         </div>
 
+                        {/* RACC1: el corazón con nombre accesible y su estado (antes era un botón sin nombre) */}
                         <button
+                          type="button"
+                          data-testid="receta-favorito"
+                          aria-pressed={favorita}
+                          aria-label={favorita ? `Quitar ${recipe.title} de favoritos` : `Añadir ${recipe.title} a favoritos`}
                           onClick={() => toggleLike(recipe.id)}
-                          className={`absolute top-3 right-3 p-2 rounded-full transition-all z-10 ${
-                            likedRecipes.includes(recipe.id)
+                          className={`absolute top-3 right-3 p-2 rounded-full transition-all z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B15543] ${
+                            favorita
                               ? 'bg-red-100 text-red-600'
                               : 'bg-white/80 text-gray-600 hover:text-red-600'
                           }`}
                         >
-                          <Heart className={`w-5 h-5 ${likedRecipes.includes(recipe.id) ? 'fill-current' : ''}`} />
+                          <Heart aria-hidden="true" className={`w-5 h-5 ${favorita ? 'fill-current' : ''}`} />
+                        </button>
+                        <button
+                          type="button"
+                          data-testid="receta-ver-ingredientes"
+                          aria-expanded={ingredientesVisibles}
+                          aria-controls={idIngredientes}
+                          onClick={() => setIngredientesAbiertos(ingredientesVisibles ? null : recipe.id)}
+                          className="absolute bottom-3 right-3 z-10 px-3 py-1 bg-white/90 rounded-full text-xs font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B15543]"
+                          style={{ color: '#33503E' }}
+                        >
+                          {ingredientesVisibles ? 'Ocultar ingredientes' : 'Ingredientes'}
                         </button>
                         <div className="absolute bottom-3 left-3 flex gap-2 z-10">
                           <span className="px-2 py-1 bg-white/90 rounded-full text-xs font-medium" style={{ color: '#33503E' }}>
@@ -595,7 +627,8 @@ export default function ClientRecetasPage() {
                         </div>
                       </div>
                     </motion.div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>

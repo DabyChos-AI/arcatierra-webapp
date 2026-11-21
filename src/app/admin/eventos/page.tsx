@@ -66,7 +66,10 @@ export default function EventosPage() {
   const token = session?.accessToken as string | undefined
   const catalogos = useCatalogosEventos(token)
 
-  const [mes, setMes] = useState(() => primeroDelMes(hoyMexico()))
+  // PRER1 (S67): el día 1 del mes que se ve. Empieza en null y se fija al montar: la página es «use client» y Next la
+  // prerenderiza en el build; con el mes calculado en el `useState` el HTML traía horneado el mes del build y, al cambiar el
+  // mes, React daba un error de hidratación (#418) en cada visita. Hasta tener mes (y token) no se pide nada a la API.
+  const [mes, setMes] = useState<string | null>(null)
   const [pestana, setPestana] = useState<Pestana>('publicas')
   const [eventos, setEventos] = useState<EventoPlaneacion[]>([])
   const [loading, setLoading] = useState(true)
@@ -86,9 +89,14 @@ export default function EventosPage() {
   // Descarta respuestas viejas si se cambia de mes a media carga
   const peticionRef = useRef(0)
 
+  // PRER1: el mes de hoy (México) se calcula ya en el navegador, después de montar.
+  useEffect(() => {
+    setMes((prev) => prev ?? primeroDelMes(hoyMexico()))
+  }, [])
+
   const fetchEventos = useCallback(
     async (silent = false) => {
-      if (!token) return
+      if (!token || !mes) return
       const id = ++peticionRef.current
       if (!silent) setLoading(true)
       setError(null)
@@ -140,13 +148,13 @@ export default function EventosPage() {
   // Fecha sugerida para un interno nuevo: hoy si cae en el mes que se ve, si no el día 1
   const fechaSugerida = useMemo(() => {
     const hoy = hoyMexico()
-    return primeroDelMes(hoy) === mes ? hoy : mes
+    return !mes || primeroDelMes(hoy) === mes ? hoy : mes
   }, [mes])
 
   const handleInternoGuardado = (guardado: EventoPlaneacion, creado: boolean) => {
     setEditandoInterno(undefined)
     setPestana('internos')
-    const enEsteMes = primeroDelMes(guardado.fecha_evento) === mes
+    const enEsteMes = mes !== null && primeroDelMes(guardado.fecha_evento) === mes
     setMensaje(
       `«${guardado.nombre_evento}» ${creado ? 'creado' : 'guardado'} para el ${formatFechaMexico(
         guardado.fecha_evento,
@@ -182,7 +190,8 @@ export default function EventosPage() {
   }
 
   const columnas = pestana === 'publicas' ? 8 : 7
-  const esMesActual = primeroDelMes(hoyMexico()) === mes
+  // Sin mes todavía (primer render, igual en el servidor y en el navegador): «Hoy» deshabilitado
+  const esMesActual = mes === null || primeroDelMes(hoyMexico()) === mes
 
   return (
     <div className="flex flex-col h-full">
@@ -229,7 +238,8 @@ export default function EventosPage() {
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={() => cambiarMes(sumarMeses(mes, -1))}
+            onClick={() => mes && cambiarMes(sumarMeses(mes, -1))}
+            disabled={!mes}
             aria-label="Mes anterior"
             data-testid="eventos-mes-anterior"
             className="p-2 border border-neutro-borde rounded-lg text-verde hover:bg-neutro-light"
@@ -241,11 +251,12 @@ export default function EventosPage() {
             data-testid="eventos-mes"
             aria-live="polite"
           >
-            {etiquetaMes(mes)}
+            {mes ? etiquetaMes(mes) : '\u00A0'}
           </p>
           <button
             type="button"
-            onClick={() => cambiarMes(sumarMeses(mes, 1))}
+            onClick={() => mes && cambiarMes(sumarMeses(mes, 1))}
+            disabled={!mes}
             aria-label="Mes siguiente"
             data-testid="eventos-mes-siguiente"
             className="p-2 border border-neutro-borde rounded-lg text-verde hover:bg-neutro-light"

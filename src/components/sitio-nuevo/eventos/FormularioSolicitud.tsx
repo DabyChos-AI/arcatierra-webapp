@@ -154,10 +154,12 @@ export default function FormularioSolicitud({
   }
 
   // La pista de hoy (`[slug]/page.tsx:341, :845-848`): solo con un número real de la API (`personasIncluidasValidas`: entero > 0);
-  // con 0, negativo o sin dato, «Un aproximado basta…» (D-F4-20).
+  // con 0, negativo o sin dato, «Un aproximado basta…» (D-F4-20). PIS1 (S67): «1 persona» en singular, como hoy en `main`.
   const incluidas = elegida ? personasIncluidasValidas(elegida.personas_incluidas) : null
   const pista =
-    incluidas !== null ? `Incluye ${incluidas} personas; puedes pedir más o menos` : 'Un aproximado basta; lo confirmamos contigo'
+    incluidas !== null
+      ? `Incluye ${incluidas} ${incluidas === 1 ? 'persona' : 'personas'}; puedes pedir más o menos`
+      : 'Un aproximado basta; lo confirmamos contigo'
   const adicional = elegida ? textoAdicionalPrivada(elegida.precio_persona_adicional) : null
 
   return (

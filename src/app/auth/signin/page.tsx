@@ -88,9 +88,11 @@ export default function SignIn() {
   const handleGoogleSignIn = async () => {
     setLoading(true)
     try {
-      await signIn('google', { 
-        callbackUrl: DESTINO_POR_OMISION,
-        redirect: true 
+      // AUTH2 (S67): el mismo destino que el login con correo (el callbackUrl del mismo sitio, o la cuenta);
+      // el callback `redirect` de auth-config.ts lo vuelve a revisar en el servidor.
+      await signIn('google', {
+        callbackUrl: destinoTrasLogin(),
+        redirect: true
       })
     } catch (error) {
       console.error('Error signing in:', error)

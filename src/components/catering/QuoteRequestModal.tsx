@@ -124,7 +124,9 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
+        // CTG6 (S67): z-[950] como CorporateRequestModal (CORP1, Z_INDEX_HIERARCHY.md: modales públicos). Con z-50 la burbuja de
+        // WhatsApp (750) y el tirador «Carrito» (900) quedaban encima del modal; el encabezado público (1000) lo libra el `pt-36`.
+        <div className="fixed inset-0 z-[950] overflow-y-auto">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -142,9 +144,17 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
             transition={{ duration: 0.3 }}
             className="relative min-h-screen flex items-start justify-center pt-36 px-4 pb-8"
           >
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl mx-auto max-h-[calc(100vh-180px)] overflow-y-auto">
+            <div
+              className="bg-white rounded-2xl shadow-xl w-full max-w-3xl mx-auto max-h-[calc(100vh-180px)] overflow-y-auto"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="cotiza-titulo"
+              data-testid="cotiza-modal"
+            >
               {/* Header */}
-              <div className="bg-gradient-to-r from-verde-medium to-verde-dark p-6 text-white relative">
+              {/* CTG6: `from-verde-medium` no existe en tailwind.config.ts y el degradado no se pintaba: la cabecera salía blanca y
+                  la descripción y la «X» (blancas) no se veían. `from-verde` (#33503E) → `to-verde-dark` (#1F3024). */}
+              <div className="bg-gradient-to-r from-verde to-verde-dark p-6 text-white relative">
                 <button 
                   onClick={closeModal}
                   style={{
@@ -169,7 +179,8 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
                 >
                   <X className="w-6 h-6" />
                 </button>
-                <h3 className="text-2xl font-bold">Cotiza tu evento</h3>
+                {/* text-white en el propio título: la regla global h1…h6 de globals.css (#3A4741) le gana al color heredado */}
+                <h3 id="cotiza-titulo" className="text-2xl font-bold text-white">Cotiza tu evento</h3>
                 <p style={{ color: 'white', fontWeight: '500' }}>
                   Obtén una cotización personalizada para tu evento en menos de 24 horas
                 </p>
@@ -190,7 +201,8 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
                     )}
                     {/* Información personal */}
                     <div className="space-y-4">
-                      <h4 className="text-lg font-semibold" style={{ color: 'white', fontWeight: '700' }}>Tu información</h4>
+                      {/* CTG6: iba en blanco sobre el fondo blanco del formulario; verde oscuro (`text-verde-dark`, #1F3024) como los títulos del corporativo */}
+                      <h4 className="text-lg font-bold text-verde-dark" data-testid="cotiza-subtitulo-info">Tu información</h4>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -242,7 +254,7 @@ export default function QuoteRequestModal({ isOpen, onClose }: QuoteRequestModal
                     
                     {/* Información del evento */}
                     <div className="space-y-4">
-                      <h4 className="text-lg font-semibold" style={{ color: 'white', fontWeight: '700' }}>Información del evento</h4>
+                      <h4 className="text-lg font-bold text-verde-dark" data-testid="cotiza-subtitulo-evento">Información del evento</h4>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>

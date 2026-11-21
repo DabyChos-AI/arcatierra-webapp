@@ -12,6 +12,7 @@ import { formatFechaMexico } from '@/lib/dates'
 import type { PrimeraEntregaRespuesta } from '@/types/cuenta'
 import { TEXTO_METODO_PAGO_CORTO } from '@/types/tienda'
 import { aviso } from '@/components/ui/Avisos'
+import { precioLegible } from '@/lib/precio'
 
 interface SubscriptionPlan {
   id: string
@@ -560,7 +561,10 @@ export default function SubscriptionCheckoutForm({
               {selectedPlans.map((plan) => (
                 <div key={plan.id} className="flex justify-between text-gray-600 pl-2">
                   <span>{plan.name}</span>
-                  <span>${plan.price}</span>
+                  {/* PNT1 (S67): el monto con sus centavos (`precioLegible`, el de la tienda), nunca redondeado */}
+                  <span data-testid={`suscripcion-resumen-precio-${plan.id}`} data-monto={plan.price}>
+                    {precioLegible(plan.price)}
+                  </span>
                 </div>
               ))}
               <div className="flex justify-between">
@@ -573,7 +577,9 @@ export default function SubscriptionCheckoutForm({
               </div>
               <div className="border-t pt-2 flex justify-between font-semibold text-lg">
                 <span>Total por entrega</span>
-                <span className="text-[#B15543]">${finalPrice.toFixed(0)}</span>
+                <span className="text-[#B15543]" data-testid="suscripcion-resumen-total" data-monto={finalPrice}>
+                  {precioLegible(finalPrice)}
+                </span>
               </div>
             </div>
           </div>
@@ -582,6 +588,8 @@ export default function SubscriptionCheckoutForm({
         {/* Botón de confirmación */}
         <Button
           onClick={handleSubmit}
+          data-testid="suscripcion-confirmar"
+          data-monto={finalPrice}
           disabled={isSubscribing || !customerData.nombre || !customerData.telefono || 
                    !deliveryData.address || !zonaEntrega}
           className="w-full bg-[#B15543] hover:bg-[#9a4a3a] text-white text-lg py-6"
@@ -592,7 +600,7 @@ export default function SubscriptionCheckoutForm({
               Procesando...
             </div>
           ) : (
-            `Confirmar Suscripción - $${finalPrice.toFixed(0)}`
+            `Confirmar Suscripción - ${precioLegible(finalPrice)}`
           )}
         </Button>
 

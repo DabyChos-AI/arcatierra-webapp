@@ -4,8 +4,8 @@
 // cadena-v2/f6/acceso-F6.md §2. Original = `src/app/auth/signin/page.tsx` (S): la misma conducta, las mismas llamadas y los mismos textos.
 // - Las dos pestañas de hoy (S:160-182) son las dos tarjetas de la maqueta: la blanca lleva el formulario del modo elegido y la crema invita al
 //   otro modo (S:382-402). Un solo estado para los dos formularios, como hoy (S:18-23): el correo y la contraseña pasan de un modo al otro.
-// - Entrar: `signIn('credentials', { redirect: false })` → `destinoTrasLogin` (S:43-86). Google: `signIn('google')` con el destino por omisión,
-//   como hoy (S:88-100; no usa el `callbackUrl`). Crear cuenta: el proxy de hoy `POST /api/auth/create-account` (S:102-136).
+// - Entrar: `signIn('credentials', { redirect: false })` → `destinoTrasLogin` (S:43-86). Google: `signIn('google')` con el mismo
+//   `destino()` (AUTH2, S67; hoy S:88-100 lo mismo). Crear cuenta: el proxy de hoy `POST /api/auth/create-account` (S:102-136).
 // - Avisos del alta en la página (`ui/AvisoEnLinea`) y no flotantes (D-F6-09 P-3); la longitud de la contraseña se revisa antes del POST con el
 //   texto del proxy (P-4); al cambiar de modo el foco va al título de la tarjeta blanca (P-11).
 // - La sesión se lee en el navegador (`getSession`, como hoy): nada del cliente en el servidor (D-F6-10 P-5).
@@ -125,7 +125,9 @@ export default function Entrar() {
   const entrarConGoogle = async () => {
     setCargando(true)
     try {
-      await signIn('google', { callbackUrl: DESTINO_POR_OMISION, redirect: true })
+      // AUTH2 (S67): el mismo destino que «Entrar» con correo (`destino()`, el callbackUrl del mismo sitio o la cuenta);
+      // el callback `redirect` de `src/lib/auth-config.ts` lo vuelve a revisar en el servidor.
+      await signIn('google', { callbackUrl: destino(), redirect: true })
     } catch (error) {
       console.error('Error signing in:', error)
     } finally {
