@@ -101,7 +101,7 @@ export default function CateringClients() {
   ];
 
   return (
-    <section className="py-20 cream-section bg-neutral-light">
+    <section className="py-20 cream-section bg-neutro-crema">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
@@ -109,7 +109,7 @@ export default function CateringClients() {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
-            className="text-lg mb-4 font-medium text-verde-medium"
+            className="text-lg mb-4 font-medium text-verde-tipografia"
           >
             Confianza empresarial
           </motion.p>
@@ -125,7 +125,7 @@ export default function CateringClients() {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl max-w-3xl mx-auto text-verde-medium"
+            className="text-xl max-w-3xl mx-auto text-verde-tipografia"
           >
             Empresas líderes confían en nosotros para sus eventos más importantes
           </motion.p>
@@ -139,7 +139,7 @@ export default function CateringClients() {
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 text-center border border-neutral-light"
+              className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 text-center border border-verde-tipografia"
             >
               {client.hasLogo && client.logo ? (
                 <div className="h-16 flex items-center justify-center mb-4">
@@ -156,7 +156,7 @@ export default function CateringClients() {
                   <h3 className="text-lg font-bold text-verde-dark">{client.name}</h3>
                 </div>
               )}
-              <p className="text-sm font-medium text-verde-medium">{client.category}</p>
+              <p className="text-sm font-medium text-verde-tipografia">{client.category}</p>
             </motion.div>
           ))}
         </div>
@@ -169,9 +169,9 @@ export default function CateringClients() {
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.8 + index * 0.2 }}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-neutral-light relative overflow-hidden"
+              className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-verde-tipografia relative overflow-hidden"
             >
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-terracota-primary to-terracota-light"></div>
+              <div className="absolute top-0 left-0 w-full h-1"></div>
               
               <div className="flex mb-4">
                 {[...Array(testimonial.rating)].map((_, i) => (
@@ -185,7 +185,7 @@ export default function CateringClients() {
               
               <div className="relative z-10">
                 <p className="font-semibold text-verde-dark">{testimonial.author}</p>
-                <p className="text-verde-medium text-sm">{testimonial.company}</p>
+                <p className="text-verde-tipografia text-sm">{testimonial.company}</p>
               </div>
             </motion.div>
           ))}
@@ -198,11 +198,11 @@ export default function CateringClients() {
           transition={{ duration: 0.6, delay: 1.2 }}
           className="text-center"
         >
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-neutral-light max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-verde-tipografia max-w-2xl mx-auto">
             <h3 className="text-2xl font-bold text-verde-dark mb-4">
               ¿Tu empresa será la siguiente?
             </h3>
-            <p className="text-verde-medium mb-6">
+            <p className="text-verde-tipografia mb-6">
               Únete a las empresas líderes que confían en Arca Tierra para sus eventos corporativos y celebraciones especiales
             </p>
             <button
@@ -242,11 +242,11 @@ export default function CateringClients() {
         >
           {stats.map((stat, index) => (
             <div key={index} className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-terracota-primary rounded-full text-white mb-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-terracota rounded-full text-white mb-4">
                 {stat.icon}
               </div>
               <h3 className="text-3xl font-bold text-verde-dark mb-2">{stat.number}</h3>
-              <p className="text-verde-medium">{stat.label}</p>
+              <p className="text-verde-tipografia">{stat.label}</p>
             </div>
           ))}
         </motion.div>
