@@ -53,22 +53,7 @@ export const metadata: Metadata = {
       "acceptsReservations": true,
       "hasMenu": "https://arcatierra.com/baldio/menu",
       "award": ["Estrella Michelin", "Estrella Verde Michelin"],
-      "starRating": {
-        "@type": "Rating",
-        "ratingValue": "5"
-      },
-      "review": {
-        "@type": "Review",
-        "reviewRating": {
-          "@type": "Rating",
-          "ratingValue": "5"
-        },
-        "author": {
-          "@type": "Organization",
-          "name": "Guía Michelin"
-        },
-        "reviewBody": "Excepcional compromiso con la sostenibilidad y excelencia culinaria."
-      },
+      // RESF1 (S68): sin `starRating` ni `review`. La reseña de 5 estrellas firmada por «Guía Michelin» y su cita no tenían fuente.
       "specialties": ["Cocina de cero desperdicio", "Ingredientes de chinampas", "Menú degustación de temporada"],
       "image": "https://arcatierra.com/images/baldio/exterior_logo_baldio.jpg",
       "geo": {

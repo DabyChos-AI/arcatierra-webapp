@@ -398,28 +398,9 @@ const storeStructuredData = {
     "description": "Entrega gratuita en Ciudad de México de lunes a viernes",
     "areaServed": "Ciudad de México, México",
     "availableDeliveryMethod": "OnSitePickup"
-  },
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.8",
-    "bestRating": "5",
-    "ratingCount": "127"
-  },
-  "review": [
-    {
-      "@type": "Review",
-      "author": {
-        "@type": "Person",
-        "name": "María González"
-      },
-      "reviewRating": {
-        "@type": "Rating",
-        "ratingValue": "5",
-        "bestRating": "5"
-      },
-      "reviewBody": "La calidad es impresionante. Realmente puedes notar la diferencia en sabor y frescura. Saber que viene directamente del agricultor me da mucha confianza."
-    }
-  ]
+  }
+  // RESF1 (S68): sin `aggregateRating` ni `review`. Eran inventados (4.8 de 127 y una reseña de «María González» sin fuente) y
+  // Google castiga las reseñas falsas en datos estructurados. Vuelven solo si salen de reseñas reales.
 };
 
 // Schema.org para organización y red de productores
