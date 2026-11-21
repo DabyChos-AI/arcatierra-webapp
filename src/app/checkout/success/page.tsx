@@ -2,7 +2,8 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { CheckCircle, Package, Home, ShoppingCart } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { CheckCircle, Package, Home, ShoppingCart, UserRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { experienciasDelCarrito, leerCarrito, vaciarCarrito } from '@/lib/carrito'
@@ -23,6 +24,9 @@ interface DatosPagoExitoso {
 function PagoExitosoContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  // GST3 (S68): el «Inicia sesión» ya no sale al escribir el correo (no debe delatar quién tiene cuenta); se le ofrece a TODO
+  // el que pagó sin sesión, aquí, con el mismo texto para todos.
+  const { status: estadoSesion } = useSession()
   const [loading, setLoading] = useState(true)
   const [paymentData, setPaymentData] = useState<DatosPagoExitoso | null>(null)
   // Lo que traía el carrito ANTES de vaciarlo (con `prev ||`: el segundo efecto de React ya lo ve vacío).
@@ -145,6 +149,25 @@ function PagoExitosoContent() {
               </div>
             </div>
           </div>
+
+          {estadoSesion === 'unauthenticated' && (
+            <div
+              data-testid="pago-exitoso-entrar"
+              className="mb-6 flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 text-left"
+            >
+              <UserRound className="mt-0.5 h-5 w-5 shrink-0 text-[#33503E]" aria-hidden="true" />
+              <p className="mb-0 text-sm text-gray-700">
+                Si ya tienes cuenta con este correo,{' '}
+                <Link
+                  href="/auth/signin?callbackUrl=%2Fusuario%2Fpedidos"
+                  className="font-medium text-[#B15543] underline hover:text-[#9a4a3a]"
+                >
+                  entra para ver tu pedido
+                </Link>
+                .
+              </p>
+            </div>
+          )}
 
           {/* Mensaje ambiental */}
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-8">
