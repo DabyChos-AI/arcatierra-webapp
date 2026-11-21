@@ -136,16 +136,20 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async redirect({ url, baseUrl }) {
-      // Redirigir al dashboard personal después de login
-      if (url === baseUrl || url === `${baseUrl}/`) {
-        return `${baseUrl}/usuario/dashboard`
+      // AUTH2 (S67): antes TODO lo que no fuera /usuario/dashboard iba al dashboard, así que entrar con Google perdía el
+      // callbackUrl (el login con correo no pasa por aquí: usa `redirect: false` y `destinoTrasLogin()`). Ahora se respeta
+      // cualquier destino del MISMO origen (relativo o absoluto); uno de otro origen (`https://otro…`, `//otro…`, `/\otro…`) sigue
+      // yendo al dashboard: sin redirección abierta. La raíz sigue mandando a la cuenta, como hoy (también el `signOut({ callbackUrl: '/' })`).
+      const DESTINO_POR_OMISION = `${baseUrl}/usuario/dashboard`
+      let destino: URL
+      try {
+        destino = new URL(url, baseUrl)
+      } catch {
+        return DESTINO_POR_OMISION
       }
-      // Si ya es una URL del dashboard personal, permitirla
-      if (url.startsWith(`${baseUrl}/usuario/dashboard`)) {
-        return url
-      }
-      // Para otras URLs, redirigir al dashboard personal
-      return `${baseUrl}/usuario/dashboard`
+      if (destino.origin !== new URL(baseUrl).origin) return DESTINO_POR_OMISION
+      if (destino.pathname === '/') return DESTINO_POR_OMISION
+      return destino.href
     },
     async signIn({ user, account, profile }) {
       // Cuando un usuario se registra con Google, guardarlo en BD

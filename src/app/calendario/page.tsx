@@ -14,7 +14,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { API_URL } from '@/lib/api'
-import { formatFechaMexico, hoyMexico } from '@/lib/dates'
+import { formatFechaMexico, hoyMexico, mesMexico } from '@/lib/dates'
 import { normalizarSlug, rutaExperiencia } from '@/app/experiencias/[slug]/slug'
 import { horario } from '@/app/admin/eventos/components/fechas'
 import { formatMXN } from '@/types/reservas'
@@ -176,7 +176,10 @@ function esDeCategoria(fecha: FechaPublica, categoriaId: string): boolean {
 }
 
 export default function CalendarioPage() {
-  const [fechaActual, setFechaActual] = useState(new Date()) // Mes actual
+  // PRER1 (S67): el mes que se ve (día 1, Date local). Empieza en null y se fija al montar con el mes de México: la página es
+  // «use client» y Next la prerenderiza en el build; con `useState(new Date())` el HTML traía horneado el mes del build y, en
+  // cuanto cambiaba el mes, el navegador pintaba otro y React daba un error de hidratación (#418) en cada visita.
+  const [fechaActual, setFechaActual] = useState<Date | null>(null)
   const [vista] = useState<'calendario' | 'lista'>('lista')
   const [fechaSeleccionada, setFechaSeleccionada] = useState<Date | null>(null)
   // La fecha cuyo selector está abierto (F2: «Agregar al carrito» abre SelectorFecha en el modal)
@@ -222,8 +225,15 @@ export default function CalendarioPage() {
     cargarEventos()
   }, [])
 
+  // PRER1: el mes de hoy se calcula ya en el navegador (después de montar), nunca en el build.
+  useEffect(() => {
+    const [año, mes] = mesMexico().split('-').map(Number)
+    setFechaActual((prev) => prev ?? new Date(año, mes - 1, 1))
+  }, [])
+
   // Calcular experiencias del mes actual
   const experienciasDelMes = useMemo(() => {
+    if (!fechaActual) return []
     const año = fechaActual.getFullYear()
     const mes = fechaActual.getMonth() + 1 // JavaScript mes es 0-11, necesitamos 1-12
     return fechasCalendario.filter((f) => {
@@ -241,6 +251,7 @@ export default function CalendarioPage() {
 
   // Generar días del calendario
   const generarDiasCalendario = () => {
+    if (!fechaActual) return []
     const año = fechaActual.getFullYear()
     const mes = fechaActual.getMonth()
     const primerDia = new Date(año, mes, 1)
@@ -276,6 +287,7 @@ export default function CalendarioPage() {
 
   const navegarMes = (direccion: 'anterior' | 'siguiente') => {
     setFechaActual((prev) => {
+      if (!prev) return prev
       const año = prev.getFullYear()
       const mes = prev.getMonth()
       return direccion === 'anterior' ? new Date(año, mes - 1, 1) : new Date(año, mes + 1, 1)
@@ -421,8 +433,9 @@ export default function CalendarioPage() {
                     <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                   </button>
                   
-                  <h2 className="text-2xl font-bold text-[#3A4741]">
-                    {fechaActual.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+                  {/* PRER1: hasta montar, un espacio duro que guarda el alto del título (sin mes horneado) */}
+                  <h2 className="text-2xl font-bold text-[#3A4741]" data-testid="cal-mes">
+                    {fechaActual ? fechaActual.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }) : '\u00A0'}
                   </h2>
                   
                   <button

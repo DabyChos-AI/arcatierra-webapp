@@ -183,6 +183,15 @@ const nextConfig = {
           },
         ],
       },
+      // ── REFT1 (S67, seguridad): la liga del correo trae el token de restablecer en la URL (una credencial) ──
+      // La meta `no-referrer` de `auth/restablecer/layout.tsx` llega en el <head> DESPUÉS de los preloads, CSS y scripts, que ya
+      // salieron con la URL completa en el `Referer` (medido: 21 peticiones hoy, 35 en el sitio nuevo; acceso-F6 §11.2). La cabecera
+      // vale desde el primer byte. Va DESPUÉS de '/(.*)': con la misma llave, la última entrada que casa gana. Casa la dirección
+      // pública, así que cubre también la página del sitio nuevo (el middleware reescribe después de las cabeceras).
+      {
+        source: '/auth/restablecer',
+        headers: [{ key: 'Referrer-Policy', value: 'no-referrer' }],
+      },
       // ── Service worker de la app instalable (A10, Fase 3) ──────────────
       // Nunca en caché (ni navegador ni Cloudflare): si hay que apagarlo, el kill-switch
       // (`public/sw-apagar.js` copiado sobre `sw.js`) tiene que llegar en la siguiente visita.

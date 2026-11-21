@@ -54,21 +54,14 @@
   
   <!-- Páginas Legales -->
   <url>
-    <loc>https://www.arcatierra.com/legal/privacidad</loc>
+    <loc>https://www.arcatierra.com/privacidad</loc>
     <lastmod>2025-01-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   
   <url>
-    <loc>https://www.arcatierra.com/legal/terminos</loc>
-    <lastmod>2025-01-01</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  
-  <url>
-    <loc>https://www.arcatierra.com/legal/cookies</loc>
+    <loc>https://www.arcatierra.com/terminos</loc>
     <lastmod>2025-01-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>

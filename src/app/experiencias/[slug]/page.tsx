@@ -844,7 +844,7 @@ export default function ExperienciaPage({ params }: ExperienciaPageProps) {
                   />
                   <p id="priv-personas-pista" data-testid="priv-personas-pista" className="mt-1 text-xs text-gray-500">
                     {personasIncluidas !== null
-                      ? `Incluye ${personasIncluidas} personas; puedes pedir más o menos`
+                      ? `Incluye ${personasIncluidas} ${personasIncluidas === 1 ? 'persona' : 'personas'}; puedes pedir más o menos` // PIS1
                       : 'Un aproximado basta; lo confirmamos contigo'}
                   </p>
                 </div>
