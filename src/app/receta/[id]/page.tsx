@@ -104,13 +104,8 @@ export default async function RecipePage({ params }: PageProps) {
       "text": step.description,
       ...(step.duration && { "totalTime": `PT${step.duration}M` })
     })) || [],
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": recipe.rating,
-      "reviewCount": recipe.reviews,
-      "bestRating": "5",
-      "worstRating": "1"
-    }
+    // RESF1 (S68): sin `aggregateRating`. `recipe.rating` y `recipe.reviews` están escritos a mano en src/data/recetas.ts
+    // (p. ej. 4.8 y 127): no salen de reseñas reales y Google castiga las calificaciones sin fuente en datos estructurados.
   };
 
   return (
