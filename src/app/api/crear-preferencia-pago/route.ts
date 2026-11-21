@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-config';
 import { cabecerasDelCliente } from '@/lib/ip-cliente';
+import { CABECERA_LLAVE_INVITADO, guardarLlaveInvitado, llaveDelNavegador } from '@/lib/llave-invitado';
 
 const BACKEND_URL = process.env.INTERNAL_API_URL || 'http://arca-api:8000';
 
@@ -10,12 +11,13 @@ const ERROR_GENERICO = 'No pudimos crear tu pago. Intenta de nuevo.';
 /** Token de invitado, o el status y el `detail` REALES de /auth/guest-token (429, 403 del equipo, 409 con cuenta…). */
 type TokenInvitado = { token: string } | { status: number; detail: unknown };
 
-async function getGuestToken(origen: Headers, email: string, nombre?: string, apellidos?: string, telefono?: string): Promise<TokenInvitado> {
+async function getGuestToken(origen: Headers, llave: string, email: string, nombre?: string, apellidos?: string, telefono?: string): Promise<TokenInvitado> {
   try {
     const response = await fetch(`${BACKEND_URL}/api/auth/guest-token`, {
       method: 'POST',
-      // guest-token tiene límite de 5/min: debe contar por cliente, no por servidor (A13)
-      headers: { 'Content-Type': 'application/json', ...cabecerasDelCliente(origen) },
+      // guest-token tiene límite de 5/min: debe contar por cliente, no por servidor (A13).
+      // GST2 (S68): la llave de este navegador (lib/llave-invitado.ts), la misma que usó el sync.
+      headers: { 'Content-Type': 'application/json', ...cabecerasDelCliente(origen), [CABECERA_LLAVE_INVITADO]: llave },
       body: JSON.stringify({ email, nombre, apellidos, telefono }),
     });
     const data = await response.json().catch(() => null);
@@ -45,6 +47,9 @@ export async function POST(request: NextRequest) {
     }
 
     let bearerToken: string | null = null;
+    // GST2 (S68): solo el invitado que pide un token nuevo aquí lleva la llave; el `_guest_token` del sync ya la trae.
+    let llave: string | null = null;
+    const responder = (res: NextResponse) => (llave ? guardarLlaveInvitado(res, llave) : res);
 
     if (session?.user?.email) {
       // Usuario logueado: usa token de sesion
@@ -61,8 +66,10 @@ export async function POST(request: NextRequest) {
       if (!body.email || typeof body.email !== 'string') {
         return NextResponse.json({ detail: 'Escribe tu correo para continuar.' }, { status: 400 });
       }
+      llave = llaveDelNavegador(request);
       const invitado = await getGuestToken(
         request.headers,
+        llave,
         body.email,
         body.nombre,
         body.apellido || body.apellidos,
@@ -71,12 +78,12 @@ export async function POST(request: NextRequest) {
       if (!('token' in invitado)) {
         // Status y texto del backend tal cual (antes todo salía como 409 «tiene cuenta registrada»).
         // 409 (el correo tiene cuenta) y 403 (correo del equipo) se resuelven iniciando sesión: `code` le dice al
-        // checkout que ofrezca el enlace, sin adivinar por el texto.
+        // checkout que ofrezca el enlace, sin adivinar por el texto. GST3 (S68): solo con la API de antes.
         const pideSesion = invitado.status === 409 || invitado.status === 403;
-        return NextResponse.json(
+        return responder(NextResponse.json(
           pideSesion ? { detail: invitado.detail, code: 'inicia_sesion' } : { detail: invitado.detail },
           { status: invitado.status }
-        );
+        ));
       }
       bearerToken = invitado.token;
     }
@@ -102,10 +109,10 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       console.error('Backend crear-preferencia-pago error:', response.status);
-      return NextResponse.json(data, { status: response.status });
+      return responder(NextResponse.json(data, { status: response.status }));
     }
 
-    return NextResponse.json(data);
+    return responder(NextResponse.json(data));
   } catch (error) {
     console.error('Error en proxy crear-preferencia-pago:', error);
     return NextResponse.json({ detail: 'Error generando preferencia de pago' }, { status: 500 });
