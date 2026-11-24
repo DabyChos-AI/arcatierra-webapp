@@ -244,6 +244,7 @@ export function TuPedido({
   // `checkout/page.tsx:176-177`: los productos con la fórmula de lib/envio.ts y las experiencias con la suya.
   const subtotalProductos = subtotalDeProductos(items)
   const subtotalExperiencias = items.filter(esItemExperiencia).reduce((s, i) => s + subtotalRenglon(i), 0)
+  const co2DelPedido = items.reduce((s, i) => s + co2Ahorrado(i), 0)
   const textoEnvio = !hayProductos
     ? 'Sin envío'
     : canasta
@@ -334,10 +335,11 @@ export function TuPedido({
           <span>{dinero(subtotalProductos + subtotalExperiencias + envio - (descuento?.descuento ?? 0))}</span>
         </div>
       </div>
-      {hayProductos && (
+      {/* S69 · Ronda 2: sin métricas (los renglones del sitio nuevo no traen `environmental_metrics`) la línea decía siempre «0.0 kg de
+          CO₂», un relleno; solo se pinta cuando hay un ahorro que contar. */}
+      {hayProductos && co2DelPedido > 0 && (
         <p data-testid="sn-checkout-pedido-co2" className="m-0 rounded-sn-campo bg-sn-warm p-3 font-sn-texto text-sn-cuerpo-xs text-sn-ink">
-          Con tu compra ahorras aproximadamente{' '}
-          <span className="font-medium">{items.reduce((s, i) => s + co2Ahorrado(i), 0).toFixed(1)} kg de CO₂</span>
+          Con tu compra ahorras aproximadamente <span className="font-medium">{co2DelPedido.toFixed(1)} kg de CO₂</span>
         </p>
       )}
     </aside>

@@ -18,6 +18,7 @@ import { FOCO, unirClases } from '@/components/sitio-nuevo/ui/clases'
 import { FOTO_RESPALDO } from './TarjetaProducto'
 import { agregarProducto, textoAgregado } from './carritoTienda'
 import type { ProductoTienda } from './catalogo'
+import { unidadLegible } from '../unidad'
 
 interface Props {
   producto: ProductoTienda | null
@@ -59,7 +60,9 @@ export default function VistaRapida({ producto: p, favorito, alAlternarFavorito,
               <>
                 <p data-testid="sn-tienda-vista-precio" className="m-0 font-sn-titulos text-[24px] font-normal text-sn-ink">
                   {precioLegible(p.precio)}
-                  {!esGratuito(p.precio) && p.unidad ? <span className="font-sn-mono text-sn-cuerpo-xs"> / {p.unidad}</span> : null}
+                  {!esGratuito(p.precio) && unidadLegible(p.unidad, p.nombre) ? (
+                    <span className="font-sn-mono text-sn-cuerpo-xs"> / {unidadLegible(p.unidad, p.nombre)}</span>
+                  ) : null}
                 </p>
                 <div className="flex items-center gap-3">
                   <button

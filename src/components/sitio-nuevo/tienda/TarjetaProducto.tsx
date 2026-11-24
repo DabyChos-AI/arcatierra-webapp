@@ -15,6 +15,7 @@ import { LEVANTA } from '@/components/sitio-nuevo/movimiento'
 import Foto from '@/components/sitio-nuevo/ui/Foto'
 import { FOCO, unirClases } from '@/components/sitio-nuevo/ui/clases'
 import { SIN_CATEGORIA, quedanPocos, type ProductoTienda } from './catalogo'
+import { unidadLegible } from '../unidad'
 import { agregarProducto, textoAgregado } from './carritoTienda'
 
 /** La foto de respaldo de hoy (tienda/page.tsx:102, :1323). */
@@ -90,7 +91,7 @@ export default function TarjetaProducto({ producto: p, favorito, alAlternarFavor
         {p.enVenta ? (
           <p data-testid="sn-tienda-catalogo-producto-precio" className="m-0 font-sn-mono text-[12px] font-medium text-sn-green">
             {precioLegible(p.precio)}
-            {!esGratuito(p.precio) && p.unidad ? ` / ${p.unidad}` : ''}
+            {!esGratuito(p.precio) && unidadLegible(p.unidad, p.nombre) ? ` / ${unidadLegible(p.unidad, p.nombre)}` : ''}
           </p>
         ) : (
           <p data-testid="sn-tienda-catalogo-producto-agotado" className="m-0 font-sn-mono text-[12px] font-medium text-sn-terra">

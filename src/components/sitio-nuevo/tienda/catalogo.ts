@@ -5,6 +5,7 @@
 import { aNumero, esCanasta } from '@/types/tienda'
 import { enOracion } from './oracion'
 import { disponibleDe, enVentaDe, type DisponibilidadApi } from './disponibilidad'
+import { categoriaReal } from '../categoria'
 
 export interface ProductoApi extends DisponibilidadApi {
   itemcode: string
@@ -35,7 +36,8 @@ export function deApi(item: ProductoApi): ProductoTienda {
   return {
     id: item.itemcode,
     nombre: enOracion(item.nombre),
-    categoria: item.categoria || SIN_CATEGORIA,
+    // CATS1: el texto «Sin categoría», «null» o vacío no es una categoría (categoria.ts)
+    categoria: categoriaReal(item.categoria) ?? SIN_CATEGORIA,
     precio: aNumero(item.precio_unitario),
     imagen: item.imagen_url || '',
     descripcion: item.descripcion || '',
@@ -66,11 +68,8 @@ export function sueltos(productos: ProductoTienda[]): ProductoTienda[] {
 export function categoriasDe(productos: ProductoTienda[]): string[] {
   const vistas = new Set<string>()
   for (const p of productos) {
-    const c = p.categoria
-    if (!c || c === 'null' || c.trim() === '') continue
-    const minus = c.toLowerCase().trim()
-    if (minus === 'sin categoría' || minus === 'sin categoria' || minus === SIN_CATEGORIA) continue
-    vistas.add(c)
+    const c = categoriaReal(p.categoria)
+    if (c) vistas.add(c)
   }
   return [...vistas]
 }

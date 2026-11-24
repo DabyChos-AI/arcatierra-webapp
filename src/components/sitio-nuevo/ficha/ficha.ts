@@ -11,6 +11,7 @@
 import { API_URL } from '@/lib/api'
 import { guardarCarrito, leerCarrito } from '@/lib/carrito'
 import { aNumero, esCanasta, itemcodeCompraUnica } from '@/types/tienda'
+import { categoriaReal } from '../categoria'
 
 /** Las llaves de `GET /api/products/{itemcode}` que lee la ficha (routers/products.py:24-29). */
 export interface ProductoApi {
@@ -134,7 +135,7 @@ export async function pedirFicha(itemcode: string): Promise<ProductoFicha | null
       itemcode: base.itemcode,
       itemcodeCarrito,
       nombre,
-      categoria: base.categoria ?? null,
+      categoria: categoriaReal(base.categoria),
       descripcion: base.descripcion ?? '',
       imagen: base.imagen_url ?? '',
       unidad: base.unidad_medida ?? '',

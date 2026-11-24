@@ -28,6 +28,7 @@ import {
 } from '@/lib/carrito'
 import { calcularCostoEnvio, subtotalProductos as subtotalDeProductos, UMBRAL_ENVIO_GRATIS } from '@/lib/envio'
 import { precioLegible } from '@/lib/precio'
+import { unidadLegible } from '../unidad'
 import { esItemExperiencia, subtotalExperiencia, textoPersonas, TEXTO_SOLO_TARJETA } from '@/types/compra-experiencias'
 import { TEXTO_PAGO_TIENDA } from '@/types/tienda'
 
@@ -64,7 +65,8 @@ function RenglonProducto({ item }: { item: ItemCarrito }) {
   const nombre = String(item.name ?? '')
   const precio = Number(item.price) || 0
   const cantidad = Number(item.quantity) || 0
-  const unidad = typeof item.unit === 'string' ? item.unit : null
+  // UNID1: el renglón puede venir de la tienda de hoy con la unidad cruda («KGM»); aquí se lee como cliente (unidad.ts)
+  const unidad = unidadLegible(item.unit, nombre) || null
   // `CartSidebar.tsx:113-119`: en 0 se quita el renglón (y el apartado, que ya no corresponde).
   const cambiar = (nueva: number) => {
     if (nueva <= 0) {

@@ -20,6 +20,7 @@ import { useFavoritos } from '@/hooks/useFavoritos'
 import { esGratuito, precioLegible } from '@/lib/precio'
 import { TEXTO_AGOTADO } from '@/types/tienda'
 import { agregarAlCarrito, itemDeLaFicha, type ProductoFicha } from './ficha'
+import { unidadLegible } from '../unidad'
 
 const BOTON_CANTIDAD = unirClases(
   'inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent font-sn-mono text-[16px] text-sn-ink',
@@ -53,7 +54,7 @@ export default function CompraFicha({ producto }: { producto: ProductoFicha }) {
         {producto.conPrecio && (
           <Precio
             valor={precioLegible(venta.precio)}
-            unidad={!esGratuito(venta.precio) && producto.unidad ? producto.unidad : undefined}
+            unidad={!esGratuito(venta.precio) ? unidadLegible(producto.unidad, producto.nombre) || undefined : undefined}
             tamano="grande"
             testId="sn-ficha-precio"
           />

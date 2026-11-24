@@ -16,6 +16,7 @@ import Titulo from '@/components/sitio-nuevo/ui/Titulo'
 import { FOCO, unirClases } from '@/components/sitio-nuevo/ui/clases'
 import Catalogo, { type Columnas } from './Catalogo'
 import { categoriasDe, filtrar, TODAS, type Orden } from './catalogo'
+import { categoriaReal } from '../categoria'
 import { useFavoritosTienda } from './useFavoritosTienda'
 import type { Carga, DatosTienda } from './Tienda'
 
@@ -29,12 +30,18 @@ interface Sugerencia {
 
 function leerSugerencias(datos: unknown): Sugerencia[] {
   if (!Array.isArray(datos)) return []
-  return datos.filter(
-    (s): s is Sugerencia =>
-      !!s &&
-      typeof s.texto === 'string' &&
-      (typeof s.categoria === 'string' || s.categoria === null) &&
-      (s.tipo === 'producto' || s.tipo === 'categoria'),
+  return (
+    datos
+      .filter(
+        (s): s is Sugerencia =>
+          !!s &&
+          typeof s.texto === 'string' &&
+          (typeof s.categoria === 'string' || s.categoria === null) &&
+          (s.tipo === 'producto' || s.tipo === 'categoria'),
+      )
+      // CATS1: «Sin categoría» / «null» no se pinta junto al precio, ni como sugerencia de categoría (categoria.ts)
+      .map((s) => ({ ...s, categoria: categoriaReal(s.categoria) }))
+      .filter((s) => s.tipo === 'producto' || categoriaReal(s.texto) !== null)
   )
 }
 
