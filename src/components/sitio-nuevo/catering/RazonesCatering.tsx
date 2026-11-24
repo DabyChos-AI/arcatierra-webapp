@@ -28,17 +28,17 @@ const RAZONES: readonly Razon[] = [
     titulo: 'Menús de temporada',
     texto:
       'Diseñamos menús de temporada con ingredientes frescos y locales, garantizando sabores deliciosos y responsables. Trabajamos de la mano de nuestros chefs para ofrecer platillos inspirados en la temporada.',
-    cifra: { que: 'familias campesinas en la red', quien: 'David' },
+    cifra: { que: 'familias campesinas en la red', quien: 'Lucio y Pablo' },
   },
   {
     numero: '02',
     titulo: { que: 'sello de que Baldío cocina en tu evento', quien: 'Lucio y Pablo' },
-    cifra: { que: 'año de la Estrella Verde Michelin', quien: 'David' },
+    cifra: { que: 'año de la Estrella Verde Michelin', quien: 'Lucio y Pablo' },
   },
   {
     numero: '03',
     titulo: { que: 'sello de que el dinero va directo a los productores', quien: 'Lucio y Pablo' },
-    cifra: { que: 'familias campesinas de catering', quien: 'David' },
+    cifra: { que: 'familias campesinas de catering', quien: 'Lucio y Pablo' },
   },
 ]
 

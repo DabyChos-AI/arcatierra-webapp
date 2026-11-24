@@ -96,7 +96,7 @@ export function BloqueCanasta({
       {/* D-F3-07 a (pregunta C51): el −$100 de DR-18 no existe todavía: el pedido de extras va con envío gratis, como hoy. */}
       {abiertas.length > 0 && (
         <p className="m-0 font-sn-texto text-sn-cuerpo-sm">
-          <Falta que="descuento del envío de la canasta al llegar a $1,000 con extras" quien="David" />
+          <Falta que="descuento del envío de la canasta al llegar a $1,000 con extras" quien="Lucio y Pablo" />
         </p>
       )}
     </Bloque>

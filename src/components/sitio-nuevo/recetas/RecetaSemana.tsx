@@ -8,7 +8,7 @@ export default function RecetaSemana() {
   return (
     <Seccion testId="sn-recetas-semana" fondo="warm" espacio="ninguno" className="pt-sn-seccion-movil min-[861px]:pt-12">
       <Contenedor ancho="medio">
-        <Falta que="receta de la semana" quien="David" como="bloque" />
+        <Falta que="receta de la semana" quien="Lucio y Pablo" como="bloque" />
       </Contenedor>
     </Seccion>
   )

@@ -15,15 +15,15 @@ export default function TerminosCondiciones() {
       <h2 id="sn-legal-terminos-titulo" data-testid="sn-legal-terminos-titulo" className="sr-only font-sn-titulos font-normal">
         Términos y Condiciones
       </h2>
-      <Apartado que="operador del sitio: razón social, RFC y dominio" />
-      <Apartado que="condiciones de venta de productos y precios" />
-      <Apartado que="condiciones de las suscripciones" />
-      <Apartado que="condiciones de entrega" />
-      <Apartado que="cambios y devoluciones de productos perecederos" />
-      <Apartado que="política de cancelación y reembolso de experiencias" />
-      <Apartado que="limitación de responsabilidad" />
-      <Apartado que="propiedad intelectual del contenido del sitio" />
-      <Apartado que="legislación aplicable y tribunales competentes" />
+      <Apartado que="operador del sitio: razón social, RFC y dominio" quien="Lucio y Pablo" />
+      <Apartado que="condiciones de venta de productos y precios" quien="Lucio y Pablo" />
+      <Apartado que="condiciones de las suscripciones" quien="Lucio y Pablo" />
+      <Apartado que="condiciones de entrega" quien="Lucio y Pablo" />
+      <Apartado que="cambios y devoluciones de productos perecederos" quien="Lucio y Pablo" />
+      <Apartado que="política de cancelación y reembolso de experiencias" quien="Lucio y Pablo" />
+      <Apartado que="limitación de responsabilidad" quien="Lucio y Pablo" />
+      <Apartado que="propiedad intelectual del contenido del sitio" quien="Lucio y Pablo" />
+      <Apartado que="legislación aplicable y tribunales competentes" quien="Lucio y Pablo" />
       <div data-testid="sn-legal-terminos-contacto" className="flex flex-col gap-2">
         <h3 className={SUBTITULO_LEGAL}>Contacto</h3>
         <p className="m-0 flex flex-col gap-1">

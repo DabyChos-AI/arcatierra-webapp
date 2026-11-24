@@ -67,11 +67,11 @@ const ETAPAS: readonly Etapa[] = [
 
 /** Las cifras de la maqueta que no tienen ruta, con el `que` del manifiesto de la portada. */
 const CIFRAS: ReadonlyArray<{ que: string; quien: QuienFalta }> = [
-  { que: 'años en el campo', quien: 'David' },
-  { que: 'familias campesinas en la red', quien: 'David' },
-  { que: 'estados de la red', quien: 'David' },
+  { que: 'años en el campo', quien: 'Lucio y Pablo' },
+  { que: 'familias campesinas en la red', quien: 'Lucio y Pablo' },
+  { que: 'estados de la red', quien: 'Lucio y Pablo' },
   { que: 'cuáles son los 10 estados', quien: 'Lucio y Pablo' },
-  { que: 'año de la Estrella Verde Michelin', quien: 'David' },
+  { que: 'año de la Estrella Verde Michelin', quien: 'Lucio y Pablo' },
 ]
 
 export default function HistoriaNosotros() {
@@ -90,7 +90,7 @@ export default function HistoriaNosotros() {
                   <h3 data-testid={`${H}-etapa-anio`} className="m-0 font-sn-mono text-sn-etiqueta font-medium uppercase text-sn-terra">
                     {anio ?? (
                       <span className="font-sn-texto normal-case">
-                        <Falta que="año de inicio" quien="David" />
+                        <Falta que="año de inicio" quien="Lucio y Pablo" />
                       </span>
                     )}
                   </h3>

@@ -120,7 +120,7 @@ export default function TresPuertas() {
                     <div className="mt-auto flex items-center justify-between gap-3 border-t border-solid border-sn-border pt-4">
                       {puerta.numero === '01' && (
                         <p className="m-0 font-sn-texto text-sn-cuerpo-xs">
-                          <Falta que="precio «desde» de la compra suelta" quien="David" />
+                          <Falta que="precio «desde» de la compra suelta" quien="Lucio y Pablo" />
                         </p>
                       )}
                       {puerta.numero === '02' && <PrecioCanastaLista />}

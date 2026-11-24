@@ -111,7 +111,7 @@ export default function ValidadorColonia() {
                         <p data-testid="sn-tienda-colonia-proxima" data-fecha={proxima} className="m-0 font-sn-texto text-sn-cuerpo-xs font-normal">
                           Próxima entrega disponible:{' '}
                           <span className="font-medium">{formatFechaMexico(proxima, LARGO)}</span>{' '}
-                          <Falta que="hora de corte de los pedidos de antes de las 12" quien="David" />
+                          <Falta que="hora de corte de los pedidos de antes de las 12" quien="Lucio y Pablo" />
                         </p>
                       )}
                     </li>

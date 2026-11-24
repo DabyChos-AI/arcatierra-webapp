@@ -270,7 +270,7 @@ export default function Calendario({ modo, codigoPostal, seleccionado, onElegir,
 
       {hayCalendario && (
         <p className="m-0 font-sn-texto text-sn-cuerpo-sm">
-          <Falta que="hora de corte de los pedidos de antes de las 12" quien="David" />
+          <Falta que="hora de corte de los pedidos de antes de las 12" quien="Lucio y Pablo" />
         </p>
       )}
     </div>

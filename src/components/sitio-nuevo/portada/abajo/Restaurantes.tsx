@@ -38,7 +38,7 @@ export default function Restaurantes() {
         </div>
 
         <div data-testid="sn-portada-restaurantes-nombres" className="flex justify-start min-[861px]:justify-center">
-          <Falta que="restaurantes que se muestran en la portada" quien="David" />
+          <Falta que="restaurantes que se muestran en la portada" quien="Lucio y Pablo" />
         </div>
 
         <div>

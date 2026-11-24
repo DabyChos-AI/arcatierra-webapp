@@ -92,7 +92,7 @@ export default function CuatroCaminos() {
                     Estrella Verde Michelin
                   </Insignia>
                   <span className="font-sn-texto text-sn-cuerpo-xs">
-                    <Falta que="año de la Estrella Verde Michelin" quien="David" />
+                    <Falta que="año de la Estrella Verde Michelin" quien="Lucio y Pablo" />
                   </span>
                 </div>
               ) : null}

@@ -22,7 +22,7 @@ export default function OtrosDeLaTienda() {
           </span>
         </h2>
         <div data-testid="sn-ficha-otros-productos" className="font-sn-texto text-sn-cuerpo-xs">
-          <Falta que="productos que se muestran en «Otros de la tienda»" quien="David" como="bloque" />
+          <Falta que="productos que se muestran en «Otros de la tienda»" quien="Lucio y Pablo" como="bloque" />
         </div>
       </Contenedor>
     </Seccion>

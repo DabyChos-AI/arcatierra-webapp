@@ -285,7 +285,7 @@ export default function FormularioSolicitud({
       )}
 
       <p data-testid={`${testId}-privacidad`} className="m-0 font-sn-texto text-sn-cuerpo-xs">
-        <Falta que="aviso de privacidad del formulario de solicitud" quien="David" />
+        <Falta que="aviso de privacidad del formulario de solicitud" quien="Lucio y Pablo" />
       </p>
 
       <div className="flex flex-col gap-3 min-[861px]:flex-row min-[861px]:flex-wrap">

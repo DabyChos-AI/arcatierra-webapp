@@ -296,7 +296,7 @@ export default function AltaSuscripcion({ abierto, planes, retornable, info, alC
                     <>
                       {kilos && <span className="block">{kilos}</span>}
                       <span className="block">
-                        {personas === null ? <Falta que="personas de la Canasta Completa" quien="David" /> : personas}
+                        {personas === null ? <Falta que="personas de la Canasta Completa" quien="Lucio y Pablo" /> : personas}
                       </span>
                       <span className="block font-medium">{`${precioLegible(p.price)} por entrega`}</span>
                     </>
@@ -349,7 +349,7 @@ export default function AltaSuscripcion({ abierto, planes, retornable, info, alC
                             {plan.id === PLAN_CON_CARNE && (
                               <>
                                 {' '}
-                                <Falta que="elección de la carne en la compra única de la Canasta Básica Familiar" quien="David" />
+                                <Falta que="elección de la carne en la compra única de la Canasta Básica Familiar" quien="Lucio y Pablo" />
                               </>
                             )}
                           </>
@@ -369,7 +369,7 @@ export default function AltaSuscripcion({ abierto, planes, retornable, info, alC
                       ) : (
                         <>
                           Cada 15 días{' '}
-                          <Falta que="si la opción se llama «Cada 15 días» o «Cada 2 semanas» (se cobra cada 14 días)" quien="David" />
+                          <Falta que="si la opción se llama «Cada 15 días» o «Cada 2 semanas» (se cobra cada 14 días)" quien="Lucio y Pablo" />
                         </>
                       ),
                     detalle: `${precioLegible(plan.price)} por entrega · ${envio > 0 ? `+ ${precioLegible(envio)} de envío` : 'Envío gratis'}`,
@@ -459,7 +459,7 @@ export default function AltaSuscripcion({ abierto, planes, retornable, info, alC
               <div data-testid="sn-suscripcion-alta-retornable" className="flex flex-col gap-1 rounded-sn-tarjeta bg-sn-cream p-4 text-sn-ink">
                 <p className="m-0 font-sn-texto text-sn-cuerpo-sm font-medium">{retornable.name}</p>
                 <p className="m-0 font-sn-texto text-sn-cuerpo-xs">
-                  <Falta que="precio y descripción de la canasta retornable" quien="David" />
+                  <Falta que="precio y descripción de la canasta retornable" quien="Lucio y Pablo" />
                 </p>
               </div>
             )}

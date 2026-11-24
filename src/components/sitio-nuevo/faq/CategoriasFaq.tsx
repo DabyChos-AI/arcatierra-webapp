@@ -44,7 +44,7 @@ export default function CategoriasFaq() {
               <PreguntaPlegable key={p.id} id={p.id} pregunta={p.pregunta} origen={p.origen} abiertaAlInicio={p.respuesta === null}>
                 <Texto tamano="chico" tono="ink-suave">
                   {p.respuesta === null ? (
-                    <Falta que="política de cancelación y reembolso de experiencias" quien="David" />
+                    <Falta que="política de cancelación y reembolso de experiencias" quien="Lucio y Pablo" />
                   ) : (
                     p.respuesta
                   )}

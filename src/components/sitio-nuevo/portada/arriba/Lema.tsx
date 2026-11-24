@@ -12,7 +12,7 @@ export default function Lema() {
       <Contenedor>
         <p className="m-0 text-center font-sn-texto text-sn-cuerpo-sm font-normal text-sn-ink">
           <Falta que="lema de la portada" quien="Lucio y Pablo" />{' '}
-          <Falta que="año de inicio («desde»), cifra de la base sin ruta" quien="David" />
+          <Falta que="año de inicio («desde»), cifra de la base sin ruta" quien="Lucio y Pablo" />
         </p>
       </Contenedor>
     </Seccion>

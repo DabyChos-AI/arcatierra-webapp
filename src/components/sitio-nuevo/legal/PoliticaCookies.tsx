@@ -8,7 +8,7 @@ export default function PoliticaCookies() {
       <h2 id="sn-legal-cookies-titulo" data-testid="sn-legal-cookies-titulo" className="m-0 font-sn-titulos text-sn-h3 font-normal text-sn-terra">
         Cookies
       </h2>
-      <Apartado que="texto de la política de cookies" />
+      <Apartado que="texto de la política de cookies" quien="Lucio y Pablo" />
     </section>
   )
 }

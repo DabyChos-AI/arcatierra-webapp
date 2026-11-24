@@ -28,7 +28,7 @@ export default function Prensa() {
           Prensa
         </h2>
         <div data-testid="sn-portada-prensa-medios">
-          <Falta que="medios de prensa que se muestran en la portada" quien="David" />
+          <Falta que="medios de prensa que se muestran en la portada" quien="Lucio y Pablo" />
         </div>
       </Contenedor>
     </Seccion>

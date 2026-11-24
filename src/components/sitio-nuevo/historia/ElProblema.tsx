@@ -42,7 +42,7 @@ export default function ElProblema() {
                 leyenda=""
                 valor={
                   <span className="block font-sn-texto text-sn-cuerpo-sm leading-normal">
-                    <Falta que={que} quien="David" />
+                    <Falta que={que} quien="Lucio y Pablo" />
                   </span>
                 }
               />

@@ -958,7 +958,7 @@ export default function PaginaCheckout() {
                 </p>
                 {/* D-F3-20 P-3 (pregunta C38): la política de reembolso de hoy no se pinta. */}
                 <p className="m-0 font-sn-texto text-sn-cuerpo-sm">
-                  <Falta que="política de cancelación y reembolso de experiencias" quien="David" />
+                  <Falta que="política de cancelación y reembolso de experiencias" quien="Lucio y Pablo" />
                 </p>
                 <p data-testid="sn-checkout-experiencias-maximo" className="m-0 font-sn-texto text-sn-cuerpo-xs text-sn-ink">
                   Máximo {MAX_LUGARES_POR_COMPRA} lugares por fecha. Para cambiar personas, vuelve a elegir la fecha en el calendario.

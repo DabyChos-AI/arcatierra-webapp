@@ -82,7 +82,7 @@ export default function ProximaEntrega({ suscripcionId, estado, onReintentar, te
       </Boton>
       {entrega.abierta && (
         <p className="m-0 font-sn-texto text-sn-cuerpo-xs">
-          <Falta que="descuento del envío de la canasta al llegar a $1,000 con extras" quien="David" />
+          <Falta que="descuento del envío de la canasta al llegar a $1,000 con extras" quien="Lucio y Pablo" />
         </p>
       )}
     </div>

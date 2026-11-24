@@ -21,11 +21,11 @@ const ID_TITULO = 'sn-portada-manifiesto-titulo'
 
 /** Las cifras del manifiesto que no tienen ruta, en el orden de la maqueta; la de cuáles estados va junto a la de cuántos. */
 const CIFRAS: ReadonlyArray<{ que: string; quien: QuienFalta }> = [
-  { que: 'años en el campo', quien: 'David' },
-  { que: 'familias campesinas en la red', quien: 'David' },
-  { que: 'estados de la red', quien: 'David' },
+  { que: 'años en el campo', quien: 'Lucio y Pablo' },
+  { que: 'familias campesinas en la red', quien: 'Lucio y Pablo' },
+  { que: 'estados de la red', quien: 'Lucio y Pablo' },
   { que: 'cuáles son los 10 estados', quien: 'Lucio y Pablo' },
-  { que: 'año de la Estrella Verde Michelin', quien: 'David' },
+  { que: 'año de la Estrella Verde Michelin', quien: 'Lucio y Pablo' },
 ]
 
 export default function Manifiesto() {
@@ -34,7 +34,7 @@ export default function Manifiesto() {
       <div className="mx-auto flex w-full max-w-[920px] flex-col items-center text-center">
         <Insignia tono="contorno" forma="pildora" tamano="chica" testId="sn-portada-manifiesto-sello" className="mb-7 gap-1">
           <span className="font-sn-texto">
-            <Falta que="año de inicio" quien="David" />
+            <Falta que="año de inicio" quien="Lucio y Pablo" />
           </span>
           <span aria-hidden="true">·</span>
           <span>Xochimilco</span>

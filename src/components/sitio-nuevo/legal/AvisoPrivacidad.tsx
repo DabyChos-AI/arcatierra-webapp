@@ -13,7 +13,7 @@ export default function AvisoPrivacidad() {
       <h2 id="sn-legal-privacidad-titulo" data-testid="sn-legal-privacidad-titulo" className="sr-only font-sn-titulos font-normal">
         Política de Privacidad
       </h2>
-      <Apartado que="responsable de los datos personales: razón social, domicilio fiscal y RFC" />
+      <Apartado que="responsable de los datos personales: razón social, domicilio fiscal y RFC" quien="Lucio y Pablo" />
       <div className="flex flex-col gap-3">
         <h3 className={SUBTITULO_LEGAL}>Datos que recolectamos</h3>
         <dl data-testid="sn-legal-privacidad-datos" className="m-0 flex flex-col gap-5">
@@ -29,10 +29,10 @@ export default function AvisoPrivacidad() {
           <span className="block">{TEXTO_METODO_PAGO_CORTO}</span>
         </p>
       </div>
-      <Apartado que="finalidades del uso de los datos personales" />
-      <Apartado que="a quién se transfieren los datos: proveedores de logística y de facturación" />
-      <Apartado que="correo para ejercer los derechos ARCO" />
-      <Apartado que="cómo se avisan los cambios del aviso y fecha de su última actualización" />
+      <Apartado que="finalidades del uso de los datos personales" quien="Lucio y Pablo" />
+      <Apartado que="a quién se transfieren los datos: proveedores de logística y de facturación" quien="Lucio y Pablo" />
+      <Apartado que="correo para ejercer los derechos ARCO" quien="Lucio y Pablo" />
+      <Apartado que="cómo se avisan los cambios del aviso y fecha de su última actualización" quien="Lucio y Pablo" />
     </section>
   )
 }

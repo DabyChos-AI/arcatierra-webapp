@@ -86,7 +86,7 @@ export default function CanalesContacto() {
               </a>
             </p>
             <p className={DETALLE}>
-              Respondemos en menos de <Falta que="tiempo de respuesta a un mensaje de contacto" quien="David" />
+              Respondemos en menos de <Falta que="tiempo de respuesta a un mensaje de contacto" quien="Lucio y Pablo" />
             </p>
           </li>
 

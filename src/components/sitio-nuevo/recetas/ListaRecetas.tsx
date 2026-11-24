@@ -211,7 +211,7 @@ export default function ListaRecetas() {
             </Titulo>
           </div>
           <Texto tamano="chico" peso="normal" className="mt-2">
-            <Falta que="porciones de cada receta" quien="David" />
+            <Falta que="porciones de cada receta" quien="Lucio y Pablo" />
           </Texto>
           <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-6 p-0 min-[861px]:grid-cols-3">
             {recetas.map((receta) => (

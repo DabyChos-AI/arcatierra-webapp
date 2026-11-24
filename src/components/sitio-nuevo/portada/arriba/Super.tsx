@@ -28,7 +28,7 @@ export default function Super() {
           </Boton>
         </div>
         <div data-testid="sn-portada-super-productos" className="mt-10 flex min-[861px]:mt-14">
-          <Falta como="bloque" que="productos de la sección del súper" quien="David" />
+          <Falta como="bloque" que="productos de la sección del súper" quien="Lucio y Pablo" />
         </div>
         <div className="mt-12 flex justify-center">
           <Boton href={HREF_TIENDA} variante="contorno" tamano="chico" flecha testId="sn-portada-super-tienda-fin">

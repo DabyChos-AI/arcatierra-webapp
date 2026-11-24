@@ -97,7 +97,7 @@ export default function CotizarCatering() {
             </Titulo>
             <Texto peso="ligero" testId="sn-catering-cotizar-texto">
               Nuestro equipo te contactará en menos de{' '}
-              <Falta que="tiempo de respuesta a una solicitud de catering" quien="David" /> para cotizar.
+              <Falta que="tiempo de respuesta a una solicitud de catering" quien="Lucio y Pablo" /> para cotizar.
             </Texto>
           </div>
 
